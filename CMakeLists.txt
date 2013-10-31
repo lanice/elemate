@@ -28,7 +28,9 @@ endmacro()
 
 set(SOURCES
 
-    source/main.cpp
+    src/main.cpp
+    src/worlddrawable.cpp
+    src/worlddrawable.h
 )
 
 
