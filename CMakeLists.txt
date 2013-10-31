@@ -25,7 +25,15 @@ macro( config_project PROJNAME LIBNAME )
     target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY} )
 endmacro()
 
-add_executable( ${PROJECT_NAME} main.cpp )
+
+set(SOURCES
+
+    source/main.cpp
+)
+
+
+add_executable( ${PROJECT_NAME} ${SOURCES} )
+
 config_project( ${PROJECT_NAME} OPENTHREADS )
 config_project( ${PROJECT_NAME} OSG )
 config_project( ${PROJECT_NAME} OSGDB )
