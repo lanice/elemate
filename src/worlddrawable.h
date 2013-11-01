@@ -22,18 +22,16 @@ public:
 
     virtual osg::BoundingBox computeBound() const override;
 
-    osg::ref_ptr<osg::Program> program() const { return m_program; }
-
 protected:
     void doLazyInitialize(osg::RenderInfo & renderInfo) const;
     void initialize(osg::RenderInfo & renderInfo);
-    void reloadShaders(osg::State & state);
+    //void reloadShaders(osg::State & state);
 
     // we need some mutable members for lazy initialization (drawImplementation has to be const..)
 
     bool m_isComplete;
     GLuint m_vertexBuffer;
-    const std::vector<float> m_vertices;
+    const std::vector<osg::Vec3f> m_vertices;
 
-    osg::ref_ptr<osg::Program> m_program;
+    //osg::ref_ptr<osg::Program> m_program;
 };
