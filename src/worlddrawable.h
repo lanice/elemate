@@ -25,13 +25,11 @@ public:
 protected:
     void doLazyInitialize(osg::RenderInfo & renderInfo) const;
     void initialize(osg::RenderInfo & renderInfo);
-    //void reloadShaders(osg::State & state);
-
-    // we need some mutable members for lazy initialization (drawImplementation has to be const..)
+    void reloadShaders();
 
     bool m_isComplete;
     GLuint m_vertexBuffer;
-    const std::vector<osg::Vec3f> m_vertices;
+    std::vector<osg::Vec3f> m_vertices;
 
-    //osg::ref_ptr<osg::Program> m_program;
+    osg::ref_ptr<osg::Program> m_program;
 };
