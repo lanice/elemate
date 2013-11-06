@@ -11,7 +11,7 @@
 int main( int argc, char** argv )
 {
     osgViewer::Viewer viewer;
-	//Game game;
+	Game game;
     // for easier debugging: set up in window mode
     // lol see in header osgViewer/Viewer:
     // /** depreacted, use view.apply(new osgViewer::SingleWindow(x,y,width,screenNum)). */
@@ -64,9 +64,9 @@ int main( int argc, char** argv )
     navigation->home(0.0);
     viewer.setCameraManipulator(navigation);
 	
-	//game.start();
+	game.start();
 	viewer.run();
-	//game.end();
+	game.end();
 
 	return 0;
 }
