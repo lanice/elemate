@@ -5,6 +5,8 @@
 #include <iostream>
 #include "worlddrawable.h"
 
+#include "PxPhysicsAPI.h"
+
 int main( int argc, char** argv )
 {
     osgViewer::Viewer viewer;
@@ -50,8 +52,7 @@ int main( int argc, char** argv )
             osg::ref_ptr<osg::Geode> root = new osg::Geode;
             root->addDrawable(quad.get());*/
 
-
-    viewer.setSceneData(root.get());
+	viewer.setSceneData(root.get());
 
     osgGA::TrackballManipulator * navigation = new osgGA::TrackballManipulator();
     navigation->setHomePosition(
@@ -61,5 +62,5 @@ int main( int argc, char** argv )
     navigation->home(0.0);
     viewer.setCameraManipulator(navigation);
 
-    return viewer.run();
+	return viewer.run();
 }

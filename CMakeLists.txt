@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
 # PROJECT CONFIG
@@ -7,6 +6,8 @@ set(META_PROJECT_NAME "elemate")
 
 set(META_VERSION_MAJOR "0")
 set(META_VERSION_MINOR "0")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 set(PROJECT_NAME ${META_PROJECT_NAME})  
 project(${PROJECT_NAME} C CXX)
@@ -20,6 +21,8 @@ find_package( osgDB )
 find_package( osgUtil )
 find_package( osgViewer )
 find_package( osgGA )
+find_package( PhysX REQUIRED)
+# find_package( APEX )
 
 macro( config_project PROJNAME LIBNAME )
     include_directories( ${${LIBNAME}_INCLUDE_DIR} )
@@ -43,3 +46,5 @@ config_project( ${PROJECT_NAME} OSGDB )
 config_project( ${PROJECT_NAME} OSGUTIL )
 config_project( ${PROJECT_NAME} OSGVIEWER )
 config_project( ${PROJECT_NAME} OSGGA )
+config_project( ${PROJECT_NAME} PHYSX )
+# config_project( ${PROJECT_NAME} APEX )
