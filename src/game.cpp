@@ -9,18 +9,12 @@ Game::Game() :
 }
 
 Game::~Game(){
-	if (m_thread){
-		delete m_thread;
-		m_thread = nullptr;
-	}
-	if (m_physics_wrapper){
-		delete m_physics_wrapper;
-		m_physics_wrapper = nullptr;
-	}
+	m_thread.release();
+	m_physics_wrapper.release();
 }
 
 void Game::initialize(){
-	m_physics_wrapper = new PhysicsWrapper();
+	m_physics_wrapper.reset(new PhysicsWrapper());
 }
 
 void Game::fatalError(string error_message){
@@ -33,11 +27,8 @@ void Game::fatalError(string error_message){
 }
 
 void Game::start(){
-	if (m_thread){
-		delete m_thread;
-		m_thread = nullptr;
-	}
-	m_thread = new std::thread(&Game::loop, this);
+	m_thread.release();
+	m_thread.reset(new std::thread(&Game::loop, this));
 }
 
 void Game::interrupt(){

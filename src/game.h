@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <memory>
 
 using std::string;
 
@@ -29,9 +30,9 @@ protected:
 	void fatalError(string error_message);
 	void loop();
 
-	PhysicsWrapper*	m_physics_wrapper;
-	bool			m_interrupted;
-	std::thread*	m_thread;
+	std::unique_ptr<PhysicsWrapper>	m_physics_wrapper;
+	bool							m_interrupted;
+	std::unique_ptr<std::thread>	m_thread;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(Game);
