@@ -3,14 +3,15 @@
 #include <osg/GraphicsContext>
 #include <osgGA/TrackballManipulator>
 #include <iostream>
+#include <thread>
 
 #include "worlddrawable.h"
-#include "physicswrapper.h"
+#include "game.h"
 
 int main( int argc, char** argv )
 {
-	PhysicsWrapper physic_wrapper;
     osgViewer::Viewer viewer;
+	//Game game;
     // for easier debugging: set up in window mode
     // lol see in header osgViewer/Viewer:
     // /** depreacted, use view.apply(new osgViewer::SingleWindow(x,y,width,screenNum)). */
@@ -62,6 +63,10 @@ int main( int argc, char** argv )
         osg::Vec3d(0.0, 1.0, 0.0));
     navigation->home(0.0);
     viewer.setCameraManipulator(navigation);
+	
+	//game.start();
+	viewer.run();
+	//game.end();
 
-	return viewer.run();
+	return 0;
 }
