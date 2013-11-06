@@ -35,6 +35,8 @@ set(SOURCES
     src/main.cpp
     src/worlddrawable.cpp
     src/worlddrawable.h
+    src/physicswrapper.cpp
+    src/physicswrapper.h
 )
 
 

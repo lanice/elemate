@@ -3,12 +3,13 @@
 #include <osg/GraphicsContext>
 #include <osgGA/TrackballManipulator>
 #include <iostream>
-#include "worlddrawable.h"
 
-#include "PxPhysicsAPI.h"
+#include "worlddrawable.h"
+#include "physicswrapper.h"
 
 int main( int argc, char** argv )
 {
+	PhysicsWrapper physic_wrapper;
     osgViewer::Viewer viewer;
     // for easier debugging: set up in window mode
     // lol see in header osgViewer/Viewer:
