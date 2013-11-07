@@ -1,6 +1,6 @@
 SET(PHYSX_INCLUDE_PATH_DESCRIPTION "The Base directory containing the PhysX include files. E.g /usr/include/PhysX/2.8.0 or C:/Program\ Files/Ageia\ Technologies/SDK/2.8.0")
 
-SET(PhysX_DIR_SEARCH $ENV{PHYSX_ROOT})
+SET(PhysX_DIR_SEARCH $ENV{PHYSX_ROOT}/Include)
 
 SET(VERSION_SUFFIX_FOR_PATH
    v3.2.1
@@ -18,7 +18,6 @@ SET(PhysX_DIR_SEARCH
   "C:/Program Files/NVIDIA Corporation/NVIDIA PhysX SDK"
   "C:/Program Files/AGEIA Technologies/AGEIA PhysX SDK"
   "C:/Program Files/AGEIA Technologies/SDK"
-  "D:/Programme/Apex-PhsyX-SDK 3.2.4/Include"
 )
 
 FIND_PATH(PHYSX_INCLUDES PxPhysicsAPI.h PATH_SUFFIXES ${VERSION_SUFFIX_FOR_PATH} PATHS
