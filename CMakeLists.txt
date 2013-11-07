@@ -39,6 +39,13 @@ set(SOURCES
     src/physicswrapper.h
     src/game.cpp
     src/game.h
+    src/hpicgs/CyclicTime.cpp
+    src/hpicgs/CyclicTime.h
+    src/hpicgs/Timer.cpp
+    src/hpicgs/Timer.h
+    src/hpicgs/MathMacros.h
+    src/hpicgs/ChronoTimer.cpp
+    src/hpicgs/ChronoTimer.h
 )
 
 

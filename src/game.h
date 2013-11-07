@@ -1,28 +1,17 @@
 #pragma once
 
-//Own Classes
-#include "physicswrapper.h"
-#include "worlddrawable.h"
-
-//OSG Classes
-#include <osgViewer/Viewer>
-#include <osgViewer/View>
-#include <osg/GraphicsContext>
-#include <osgGA/TrackballManipulator>
-
-// Standard Libs
-#include <string>
-#include <iostream>
-#include <thread>
-#include <memory>
-
-using std::string;
-
-
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)	\
 	TypeName(const TypeName&);				\
 	void operator=(const TypeName&);
 
+#include <osg/GraphicsContext> // ref_ptr
+#include <memory> //shared_ptr
+
+//Forward Declarations
+class PhysicsWrapper;
+namespace std {			class thread; }
+namespace osg {			class Geode;  }
+namespace osgViewer {	class Viewer; }
 
 /** The Game Class that invokes a game loop and initializes PhysX.
  *	To receive the initialized physics, call getPhysicsWrapper(). See for its usage the documentation of PhysicsWrapper class.
@@ -42,9 +31,6 @@ public:
 	  */
 	void start(bool spawn_new_thread);
 
-	/** If a Game loop is running, this function ends it gently. */
-	void interrupt();
-
 	/** True if the game loop is running. */
 	bool isRunning() const;
 
@@ -58,21 +44,19 @@ protected:
 	void initialize();
 
 	/** Prints an error message and end the application after pressing enter. */
-	void fatalError(string error_message);
+	void fatalError(std::string error_message);
 
-	/** Deletes the thread pointer. If it is currently running, stop it, wait for finishing and delete it afterwards. */
-	void destroyThread();
-
-	/** This is where the magic happens. Currently: Physics calculation. */
+	/** The Game's loop containing drawing and triggering physics is placed right here. */
 	void loop();
 
-	void setOsgCamera(); ///< Doesn't really belong here
+	/** This is where the magic happens. Currently: Physics calculation. */
+	void setOsgCamera();
 
 	std::shared_ptr<PhysicsWrapper>	m_physics_wrapper;
 	bool							m_interrupted;
 	std::thread*					m_thread;
-	osgViewer::Viewer*				m_viewer;		///< Doesn't really belong here
-	osg::ref_ptr<osg::Geode>		m_root;			///< Doesn't really belong here
+	osgViewer::Viewer*				m_viewer;
+	osg::ref_ptr<osg::Geode>		m_root;
 
 
 private:

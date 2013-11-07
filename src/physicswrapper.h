@@ -1,19 +1,11 @@
 #pragma once
 
-// Standard Libs
-#include <string>
-#include <iostream>
-#include <memory>
-
-using std::string;
-
-// NVIDIA PhysX Libs
-#include "PxPhysicsAPI.h"
-
-
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)	\
 	TypeName(const TypeName&);				\
 	void operator=(const TypeName&);	
+
+#include <string>
+#include "PxPhysicsAPI.h"
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
  * At the moment, the properly initialized physics and scene object are accessible via functions.
@@ -54,7 +46,7 @@ protected:
 	void shutdown();
 
 	/** Prints an error message and end the application after pressing enter. */
-	void fatalError(string error_message);
+	void fatalError(std::string error_message);
 
 	physx::PxFoundation*				m_foundation;
 	//physx::PxProfileZoneManager*		m_profile_zone_manager; ///< currently disabled.

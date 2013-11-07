@@ -1,5 +1,22 @@
 #include "game.h"
 
+//Own Classes
+#include "physicswrapper.h"
+#include "worlddrawable.h"
+
+//Classes from CGS chair
+#include "HPICGS/CyclicTime.h"
+
+//OSG Classes
+#include <osgViewer/Viewer>
+#include <osgViewer/View>
+#include <osgGA/TrackballManipulator>
+
+// Standard Libs
+#include <iostream>
+#include <thread>
+#include <string> 
+
 Game::Game() : 
 	m_interrupted(true),
 	m_physics_wrapper(nullptr),
@@ -11,7 +28,11 @@ Game::Game() :
 }
 
 Game::~Game(){
-	destroyThread();
+	if (m_thread){
+		end();
+		delete m_thread;
+		m_thread = nullptr;
+	}
 	if (m_viewer)
 		delete m_viewer;
 }
@@ -25,19 +46,11 @@ void Game::initialize(){
 	m_root = new osg::Geode();
 }
 
-void Game::destroyThread(){
-	if (m_thread){
-		end();
-		delete m_thread;
-		m_thread = nullptr;
-	}
-}
-
-void Game::fatalError(string error_message){
+void Game::fatalError(std::string error_message){
 	std::cerr << "Game Error occured:" << std::endl;
 	std::cerr << error_message << std::endl;
 	std::cerr << "Press Enter to close the Application" << std::endl;
-	string temp;
+	std::string temp;
 	std::getline(std::cin, temp);
 	exit(1);
 }
@@ -53,24 +66,28 @@ void Game::setOsgCamera(){
 }
 
 void Game::start(bool spawn_new_thread){
-	destroyThread();
-	
 	WorldDrawable * world = new WorldDrawable;
 	m_root->addDrawable(world);
 	m_viewer->setSceneData(m_root.get());
 	
 	setOsgCamera();
 	
-	loop();
-}
-
-void Game::interrupt(){
-	m_interrupted = true;
+	if (spawn_new_thread){
+		if (m_thread){
+			end();
+			delete m_thread;
+			m_thread = nullptr;
+		}
+		m_thread = new std::thread(&Game::loop, this);
+	}
+	else {
+		loop();
+	}
 }
 
 void Game::end(){
 	if (isRunning()){
-		interrupt();
+		m_viewer->setDone(true);
 		if(m_thread)
 			m_thread->join();
 	}
@@ -78,7 +95,7 @@ void Game::end(){
 
 void Game::loop(){
 	m_interrupted = false;
-	while (!m_viewer->done() && isRunning())
+	while (isRunning())
 	{
 		m_viewer->frame();
 		m_physics_wrapper->step(10);
@@ -88,7 +105,7 @@ void Game::loop(){
 }
 
 bool Game::isRunning()const{
-	return !m_interrupted;
+	return !m_viewer->done();
 }
 
 std::shared_ptr<PhysicsWrapper> Game::physicsWrapper(){

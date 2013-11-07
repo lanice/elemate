@@ -1,5 +1,8 @@
 #include "physicswrapper.h"
 
+// Standard Libs
+#include <iostream>
+
 #pragma comment(lib, "PhysX3_x64.lib")
 #pragma comment(lib, "PhysX3Common_x64.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
@@ -106,11 +109,11 @@ void PhysicsWrapper::shutdown(){
 	m_foundation->release();
 }
 
-void PhysicsWrapper::fatalError(string error_message){
+void PhysicsWrapper::fatalError(std::string error_message){
 	std::cerr << "PhysX Error occured:" << std::endl;
 	std::cerr << error_message << std::endl;
 	std::cerr << "Press Enter to close the Application" << std::endl;
-	string temp;
+	std::string temp;
 	std::getline(std::cin, temp);
 	exit(1);
 }
