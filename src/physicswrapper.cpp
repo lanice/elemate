@@ -10,7 +10,7 @@ const int	PhysicsWrapper::kNumberOfThreads = 2;
 PhysicsWrapper::PhysicsWrapper():
 		m_foundation(nullptr),
 		m_physics(nullptr),
-		m_profile_zone_manager(nullptr),
+		//m_profile_zone_manager(nullptr),
 		m_scene(nullptr),
 		m_cpu_dispatcher(nullptr),
 		m_accumulator(0.0f),
@@ -101,6 +101,8 @@ void PhysicsWrapper::shutdown(){
 	m_scene->release();
 	m_physics->release();
 	m_cpu_dispatcher->release();
+	//Please don't forget if you activate this feature.
+	//m_profile_zone_manager->release();
 	m_foundation->release();
 }
 

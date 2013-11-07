@@ -23,19 +23,19 @@ using std::string;
  */
 class Game{
 public:
-	explicit Game();	///< Explicit Constructor because Copying and Assignments are disabled
+	explicit Game();	///< Explicit Constructor because Copying and Assignments are disabled.
 	~Game();
 
-	void start();			///< Starts the Game Loop in a new thread until interrupt() is called
-	void interrupt();		///< If a Game loop is running, this function ends it gently
-	bool isRunning() const;	///< True if the game loop is running
-	void end();				///< Calls interrupt() and waits for finishing ending the loop
+	void start();			///< Starts the Game Loop in a new thread until interrupt() is called.
+	void interrupt();		///< If a Game loop is running, this function ends it gently.
+	bool isRunning() const;	///< True if the game loop is running.
+	void end();				///< Calls interrupt() and waits for finishing ending the loop.
 
-	std::shared_ptr<PhysicsWrapper> physicsWrapper();
+	std::shared_ptr<PhysicsWrapper> physicsWrapper(); ///< Returns properly initialized PhysicsWrapper.
 
 protected:
 	void initialize();
-	void fatalError(string error_message); ///< Prints an error message and end the application after pressing enter
+	void fatalError(string error_message); ///< Prints an error message and end the application after pressing enter.
 	void destroyThread();				   ///< Deletes the thread pointer. If it is currently running, stop it, wait for finishing and delete it afterwards.
 	void loop();						   ///< This is where the magic happens. Currently: Physics calculation.
 
