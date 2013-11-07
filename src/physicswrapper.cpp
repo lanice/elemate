@@ -4,7 +4,18 @@
 #pragma comment(lib, "PhysX3Common_x64.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
 
-PhysicsWrapper::PhysicsWrapper(){
+const float PhysicsWrapper::kDefaultStepSize = 1.0f / 60.0f;
+const int	PhysicsWrapper::kNumberOfThreads = 2;
+
+PhysicsWrapper::PhysicsWrapper():
+		m_foundation(nullptr),
+		m_physics(nullptr),
+		m_profile_zone_manager(nullptr),
+		m_scene(nullptr),
+		m_cpu_dispatcher(nullptr),
+		m_accumulator(0.0f),
+		m_step_size(kDefaultStepSize)
+{
 	initializePhysics();
 	initializeScene();
 }
@@ -20,7 +31,7 @@ void PhysicsWrapper::initializePhysics(){
 	m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
 	if (!m_foundation)
 		fatalError("PxCreateFoundation failed!");
-	m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, physx::PxTolerancesScale());
+	m_physics= PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, physx::PxTolerancesScale());
 	if (!m_physics)
 		fatalError("PxCreatePhysics failed!");
 
@@ -66,7 +77,7 @@ void PhysicsWrapper::initializeScene(){
 	if (!sceneDesc.filterShader)
 		sceneDesc.filterShader = &physx::PxDefaultSimulationFilterShader;
 
-	m_scene = m_physics->createScene(sceneDesc);
+	m_scene= m_physics->createScene(sceneDesc);
 	if (!m_scene)
 		fatalError("createScene failed!");
 }
@@ -87,8 +98,10 @@ bool PhysicsWrapper::step(physx::PxReal dt){
 }
 
 void PhysicsWrapper::shutdown(){
-	m_foundation->release();
+	m_scene->release();
 	m_physics->release();
+	m_cpu_dispatcher->release();
+	m_foundation->release();
 }
 
 void PhysicsWrapper::fatalError(string error_message){
@@ -98,4 +111,12 @@ void PhysicsWrapper::fatalError(string error_message){
 	string temp;
 	std::getline(std::cin, temp);
 	exit(1);
+}
+
+physx::PxPhysics* PhysicsWrapper::physics()const{
+	return m_physics;
+}
+
+physx::PxScene*	PhysicsWrapper::scene()const{
+	return m_scene;
 }

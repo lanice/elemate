@@ -9,11 +9,19 @@ Game::Game() :
 }
 
 Game::~Game(){
-	m_thread.release();
+	destroyThread();
 }
 
 void Game::initialize(){
 	m_physics_wrapper.reset(new PhysicsWrapper());
+}
+
+void Game::destroyThread(){
+	if (m_thread){
+		end();
+		delete m_thread;
+		m_thread = nullptr;
+	}
 }
 
 void Game::fatalError(string error_message){
@@ -26,8 +34,8 @@ void Game::fatalError(string error_message){
 }
 
 void Game::start(){
-	m_thread.release();
-	m_thread.reset(new std::thread(&Game::loop, this));
+	destroyThread();
+	m_thread = new std::thread(&Game::loop, this);
 }
 
 void Game::interrupt(){
@@ -54,6 +62,6 @@ bool Game::isRunning()const{
 	return !m_interrupted;
 }
 
-std::shared_ptr<PhysicsWrapper> Game::getPhysicsWrapper(){
+std::shared_ptr<PhysicsWrapper> Game::physicsWrapper(){
 	return m_physics_wrapper;
 }
