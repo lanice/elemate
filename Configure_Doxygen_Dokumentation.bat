@@ -1,2 +1,2 @@
-doxywizard Doxygen.cfg
+START doxywizard Doxygen.cfg
 exit
