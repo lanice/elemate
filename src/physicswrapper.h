@@ -23,29 +23,44 @@ using std::string;
  */
 class PhysicsWrapper{
 public:
-	explicit PhysicsWrapper();	///< Explicit Constructor because Copying and Assignments are disabled.
+	/** Explicit Constructor because Copying and Assignments are disabled. */
+	explicit PhysicsWrapper();
 	~PhysicsWrapper();			
 
-	bool	step(physx::PxReal dt);			///< Proceeds with simulation for amount of given time and returns if enough time has passed to do another step.
+	/** Proceeds with simulation for amount of given time and returns if enough time has passed to do another step. */
+	bool	step(physx::PxReal dt);
 
-	physx::PxPhysics*	physics() const;	///< The returned object is initialized.
-	physx::PxScene*		scene() const;		///< The returned object is initialized.
+	/** The returned object is initialized. */
+	physx::PxPhysics*	physics() const;
+	/** The returned object is initialized. */
+	physx::PxScene*		scene() const;
 
 protected:
-	static const int	kNumberOfThreads;	///< Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library.
-	static const float	kDefaultStepSize;	///< The step size reqiured for a simulation step. There is an accumulator which saves past steps until they reach the step size.
+	/** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
+	static const int	kNumberOfThreads;
+	/** The step size reqiured for a simulation step. There is an accumulator which saves past steps until they reach the step size. */
+	static const float	kDefaultStepSize;
 
-	void initializePhysics();								///< Creation of PxFoundation, PxPhysics and Initialization of PxExtensions.
-	void initializeScene();									///< Creation of PxDefaultCpuDispatcher and PxScene after customized SceneDescription provided by customizeSceneDescription()
-	void customizeSceneDescription(physx::PxSceneDesc&);	///< Specifies special scene description. 
-	void shutdown();										///< Releases all members to free their instances. Automatically called in Destructor.
-	void fatalError(string error_message);					///< Prints an error message and end the application after pressing enter.
+	/** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
+	void initializePhysics();
 
-	physx::PxFoundation*				m_foundation;			///< 
+	/** Creation of PxDefaultCpuDispatcher and PxScene after customized SceneDescription provided by customizeSceneDescription() */
+	void initializeScene();
+
+	/** Specifies special scene description.  */
+	void customizeSceneDescription(physx::PxSceneDesc&);
+
+	/** Releases all members to free their instances. Automatically called in Destructor. */
+	void shutdown();
+
+	/** Prints an error message and end the application after pressing enter. */
+	void fatalError(string error_message);
+
+	physx::PxFoundation*				m_foundation;
 	//physx::PxProfileZoneManager*		m_profile_zone_manager; ///< currently disabled.
-	physx::PxDefaultCpuDispatcher*		m_cpu_dispatcher;		///< 
-	physx::PxPhysics*					m_physics;				///< 
-	physx::PxScene*						m_scene;				///< 
+	physx::PxDefaultCpuDispatcher*		m_cpu_dispatcher;
+	physx::PxPhysics*					m_physics;
+	physx::PxScene*						m_scene;
 
 	float m_accumulator;
 	float m_step_size;
