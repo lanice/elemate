@@ -64,9 +64,9 @@ int main( int argc, char** argv )
     navigation->home(0.0);
     viewer.setCameraManipulator(navigation);
 	
-	game.start();
+	game.start(); //In separate Thread
 	viewer.run();
-	game.end();
+	game.end(); // Waits for GameThread
 
 	return 0;
 }

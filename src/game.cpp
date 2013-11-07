@@ -10,7 +10,6 @@ Game::Game() :
 
 Game::~Game(){
 	m_thread.release();
-	m_physics_wrapper.release();
 }
 
 void Game::initialize(){
@@ -47,10 +46,14 @@ void Game::loop(){
 	while (isRunning())
 	{
 		m_physics_wrapper->step(100);
-		_sleep(100);
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
 
-bool Game::isRunning(){
+bool Game::isRunning()const{
 	return !m_interrupted;
+}
+
+std::shared_ptr<PhysicsWrapper> Game::getPhysicsWrapper(){
+	return m_physics_wrapper;
 }

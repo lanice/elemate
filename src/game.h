@@ -22,15 +22,17 @@ public:
 
 	void start();
 	void interrupt();
-	bool isRunning();
+	bool isRunning() const;
 	void end();
+
+	std::shared_ptr<PhysicsWrapper> getPhysicsWrapper();
 
 protected:
 	void initialize();
 	void fatalError(string error_message);
 	void loop();
 
-	std::unique_ptr<PhysicsWrapper>	m_physics_wrapper;
+	std::shared_ptr<PhysicsWrapper>	m_physics_wrapper;
 	bool							m_interrupted;
 	std::unique_ptr<std::thread>	m_thread;
 

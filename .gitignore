@@ -3,6 +3,8 @@ CMakeLists.txt.user
 build*/
 codeblocks/
 3rdparty/
+documentation/
+
 
 *.sublime-project
 *.sublime-workspace
