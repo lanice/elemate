@@ -9,6 +9,7 @@
 
 //Forward Declarations
 class PhysicsWrapper;
+class CyclicTime;
 namespace std {			class thread; }
 namespace osg {			class Geode;  }
 namespace osgViewer {	class Viewer; }
@@ -38,13 +39,10 @@ public:
 	void end();
 
 	/** Returns properly initialized PhysicsWrapper. */
-	std::shared_ptr<PhysicsWrapper> physicsWrapper();
+	std::shared_ptr<PhysicsWrapper> physicsWrapper() const;
 
 protected:
 	void initialize();
-
-	/** Prints an error message and end the application after pressing enter. */
-	void fatalError(std::string error_message);
 
 	/** The Game's loop containing drawing and triggering physics is placed right here. */
 	void loop();
@@ -53,10 +51,10 @@ protected:
 	void setOsgCamera();
 
 	std::shared_ptr<PhysicsWrapper>	m_physics_wrapper;
-	bool							m_interrupted;
 	std::thread*					m_thread;
 	osgViewer::Viewer*				m_viewer;
 	osg::ref_ptr<osg::Geode>		m_root;
+	CyclicTime*						m_cyclic_time;
 
 
 private:
