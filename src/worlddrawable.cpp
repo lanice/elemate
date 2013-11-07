@@ -48,7 +48,7 @@ void WorldDrawable::doLazyInitialize(osg::RenderInfo & renderInfo) const
 void WorldDrawable::initialize(osg::RenderInfo & renderInfo)
 {
     osg::StateSet * stateSet = getOrCreateStateSet();
-    //stateSet->addUniform(new osg::Uniform("namederuniform", osg::Vec3(0.3, 0.1, 1.0)));
+    stateSet->addUniform(new osg::Uniform("namederuniform", osg::Vec3(0.3, 0.1, 1.0)));
 
     if (m_isComplete)
         return;
