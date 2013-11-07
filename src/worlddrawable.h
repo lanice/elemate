@@ -25,11 +25,9 @@ public:
 protected:
     void doLazyInitialize(osg::RenderInfo & renderInfo) const;
     void initialize(osg::RenderInfo & renderInfo);
-    void reloadShaders();
+    osg::Program * reloadShaders();
 
     bool m_isComplete;
     GLuint m_vertexBuffer;
     std::vector<osg::Vec3f> m_vertices;
-
-    osg::ref_ptr<osg::Program> m_program;
 };
