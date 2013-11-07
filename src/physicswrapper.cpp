@@ -83,6 +83,10 @@ void PhysicsWrapper::initializeScene(){
 	m_scene= m_physics->createScene(sceneDesc);
 	if (!m_scene)
 		fatalError("createScene failed!");
+	
+	m_materials["default"] = m_physics->createMaterial(0.5f, 0.5f, 0.1f); 
+	if (!m_materials["default"])
+		fatalError("createMterial failed!");
 }
 
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
@@ -101,6 +105,7 @@ bool PhysicsWrapper::step(physx::PxReal dt){
 }
 
 void PhysicsWrapper::shutdown(){
+	m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
 	m_scene->release();
 	m_physics->release();
 	m_cpu_dispatcher->release();
@@ -124,4 +129,8 @@ physx::PxPhysics* PhysicsWrapper::physics()const{
 
 physx::PxScene*	PhysicsWrapper::scene()const{
 	return m_scene;
+}
+
+physx::PxMaterial*	PhysicsWrapper::material(std::string material_name)const{
+	return m_materials.at(material_name);
 }

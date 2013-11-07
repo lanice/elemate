@@ -5,6 +5,7 @@
 	void operator=(const TypeName&);	
 
 #include <string>
+#include <hash_map>
 #include "PxPhysicsAPI.h"
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -26,6 +27,7 @@ public:
 	physx::PxPhysics*	physics() const;
 	/** The returned object is initialized. */
 	physx::PxScene*		scene() const;
+	physx::PxMaterial*  material(std::string material_name)const;
 
 protected:
 	/** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
@@ -48,11 +50,12 @@ protected:
 	/** Prints an error message and end the application after pressing enter. */
 	void fatalError(std::string error_message);
 
-	physx::PxFoundation*				m_foundation;
-	//physx::PxProfileZoneManager*		m_profile_zone_manager; ///< currently disabled.
-	physx::PxDefaultCpuDispatcher*		m_cpu_dispatcher;
-	physx::PxPhysics*					m_physics;
-	physx::PxScene*						m_scene;
+	physx::PxFoundation*							m_foundation;
+	//physx::PxProfileZoneManager*					m_profile_zone_manager; ///< currently disabled.
+	physx::PxDefaultCpuDispatcher*					m_cpu_dispatcher;
+	physx::PxPhysics*								m_physics;
+	physx::PxScene*									m_scene;
+	std::hash_map<std::string, physx::PxMaterial*>	m_materials;
 
 	float m_accumulator;
 	float m_step_size;

@@ -4,13 +4,16 @@
 #include "physicswrapper.h"
 #include "worlddrawable.h"
 
-//Classes from CGS chair
+// Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
 
-//OSG Classes
+// OSG Classes
 #include <osgViewer/Viewer>
 #include <osgViewer/View>
 #include <osgGA/TrackballManipulator>
+
+// PhysxX Classes
+#include "PxPhysicsAPI.h"
 
 // Standard Libs
 #include <iostream>
@@ -42,7 +45,7 @@ Game::~Game(){
 void Game::initialize(){
 	m_physics_wrapper.reset(new PhysicsWrapper());
 
-	m_cyclic_time = new CyclicTime();
+	m_cyclic_time = new CyclicTime(0.0L,5.0L);
 
 	m_viewer = new osgViewer::Viewer();
 	m_viewer->setUpViewInWindow(50, 50, 500, 500);
@@ -72,11 +75,23 @@ void Game::start(bool spawn_new_thread){
 }
 
 void Game::loop(){
+	auto aSphereActor = PxCreateDynamic(*m_physics_wrapper->physics(), physx::PxTransform(physx::PxVec3(0, 1, 0)), physx::PxSphereGeometry(1.0F), *m_physics_wrapper->material("default"), 1.0F);
+	aSphereActor->setLinearVelocity(physx::PxVec3(0, 1, 0));
+	m_physics_wrapper->scene()->addActor(*aSphereActor);
+
+	//Creates a plane
+	physx::PxRigidStatic* plane = PxCreatePlane(*(m_physics_wrapper->physics()), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *m_physics_wrapper->material("default"));
+	m_physics_wrapper->scene()->addActor(*plane);
+
+	auto now = m_cyclic_time->getf();
+	auto last_time = m_cyclic_time->getf();
 	while (isRunning())
 	{
+		now = m_cyclic_time->getf(true);
 		m_viewer->frame();
-		m_cyclic_time->update();
-		m_physics_wrapper->step(m_cyclic_time->getf());
+
+		m_physics_wrapper->step(now-last_time);
+		last_time = now;
 	}
 	m_viewer->setDone(true);
 	m_cyclic_time->stop();
