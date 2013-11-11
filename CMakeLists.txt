@@ -46,6 +46,8 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
+    src/SimpleConfigReader.cpp
+    src/SimpleConfigReader.h
 )
 
 
