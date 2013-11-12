@@ -1,8 +1,8 @@
-#version 330
+#version 110
 
-out vec3 worldPos;
-out vec3 viewPos;
-out vec3 normal;
+varying vec3 worldPos;
+varying vec3 viewPos;
+varying vec3 normal;
 
 void main()
 {
