@@ -3,6 +3,7 @@
 //Own Classes
 #include "physicswrapper.h"
 #include "worlddrawable.h"
+#include "terraingenerator.h"
 
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
@@ -11,6 +12,7 @@
 #include <osgViewer/Viewer>
 #include <osgViewer/View>
 #include <osgGA/TrackballManipulator>
+#include <osgTerrain/Terrain>
 
 // PhysxX Classes
 #include "PxPhysicsAPI.h"
@@ -54,9 +56,14 @@ void Game::initialize(){
 }
 
 void Game::start(bool spawn_new_thread){
-	WorldDrawable * world = new WorldDrawable;
+/*	WorldDrawable * world = new WorldDrawable;
 	m_root->addDrawable(world);
-	m_viewer->setSceneData(m_root.get());	
+	m_viewer->setSceneData(m_root.get());*/
+    TerrainGenerator * terrainGen = new TerrainGenerator;
+    osg::ref_ptr<osgTerrain::Terrain> terrain = terrainGen->getTerrain();
+    delete terrainGen;
+
+    m_viewer->setSceneData(terrain);
 	setOsgCamera();
 
 	m_cyclic_time->start();

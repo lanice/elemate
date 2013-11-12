@@ -37,6 +37,8 @@ set(SOURCES
     src/hpicgs/ChronoTimer.h
     src/SimpleConfigReader.cpp
     src/SimpleConfigReader.h
+    src/terraingenerator.cpp
+    src/terraingenerator.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -49,6 +51,7 @@ find_package( osgDB )
 find_package( osgUtil )
 find_package( osgViewer )
 find_package( osgGA )
+find_package( osgTerrain )
 find_package( PhysX REQUIRED)
 # find_package( APEX )
 
@@ -60,5 +63,6 @@ config_project( ${PROJECT_NAME} OSGDB )
 config_project( ${PROJECT_NAME} OSGUTIL )
 config_project( ${PROJECT_NAME} OSGVIEWER )
 config_project( ${PROJECT_NAME} OSGGA )
+config_project( ${PROJECT_NAME} OSGTERRAIN )
 config_project( ${PROJECT_NAME} PHYSX )
 # config_project( ${PROJECT_NAME} APEX )
