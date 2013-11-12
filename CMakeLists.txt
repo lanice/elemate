@@ -15,31 +15,12 @@ project(${PROJECT_NAME} C CXX)
 option(OPTION_LIMIT_CONFIGS "Generate limited configs (Release; Debug)" ON)
 option(OPTION_LOCAL_INSTALL "Install to local directory instead of system" OFF)
 
-find_package( OpenThreads )
-find_package( osg )
-find_package( osgDB )
-find_package( osgUtil )
-find_package( osgViewer )
-find_package( osgGA )
-find_package( PhysX REQUIRED)
-# find_package( APEX )
 
-macro( config_project PROJNAME LIBNAME )
-    include_directories( ${${LIBNAME}_INCLUDE_DIR} )
-    
-    if( ${LIBNAME}_LIBRARY_DEBUG )
-        message(STATUS "adding library: " ${LIBNAME} " (optimized/debug)")
-        target_link_libraries( ${PROJNAME}
-            optimized ${${LIBNAME}_LIBRARY}
-            debug   ${${LIBNAME}_LIBRARY_DEBUG})
-    else()
-        message(STATUS "adding library: " ${LIBNAME} " (optimized only)")
-        target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY})
-    endif()
-endmacro()
+include(cmake/Custom.cmake)
+
+set(ELEMATE_SOURCE_GROUP "Source Files")
 
 set(SOURCES
-
     src/main.cpp
     src/worlddrawable.cpp
     src/worlddrawable.h
@@ -58,6 +39,18 @@ set(SOURCES
     src/SimpleConfigReader.h
 )
 
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
+    ${ELEMATE_SOURCE_GROUP} ${SOURCES})
+
+
+find_package( OpenThreads )
+find_package( osg )
+find_package( osgDB )
+find_package( osgUtil )
+find_package( osgViewer )
+find_package( osgGA )
+find_package( PhysX REQUIRED)
+# find_package( APEX )
 
 add_executable( ${PROJECT_NAME} ${SOURCES} )
 
