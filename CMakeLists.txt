@@ -26,9 +26,17 @@ find_package( PhysX REQUIRED)
 
 macro( config_project PROJNAME LIBNAME )
     include_directories( ${${LIBNAME}_INCLUDE_DIR} )
-    target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY} )
+    
+    if( ${LIBNAME}_LIBRARY_DEBUG )
+        message(STATUS "adding library: " ${LIBNAME} " (optimized/debug)")
+        target_link_libraries( ${PROJNAME}
+            optimized ${${LIBNAME}_LIBRARY}
+            debug   ${${LIBNAME}_LIBRARY_DEBUG})
+    else()
+        message(STATUS "adding library: " ${LIBNAME} " (optimized only)")
+        target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY})
+    endif()
 endmacro()
-
 
 set(SOURCES
 
