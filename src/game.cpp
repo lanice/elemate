@@ -119,9 +119,9 @@ void Game::end(){
 void Game::setOsgCamera(){
 	osgGA::TrackballManipulator * navigation = new osgGA::TrackballManipulator();
 	navigation->setHomePosition(
-		osg::Vec3d(0.0, 3.0, 2.0),
+		osg::Vec3d(0.0, 15.0, 10.0),
 		osg::Vec3d(0.0, 0.0, 0.0),
-		osg::Vec3d(0.0, 1.0, 0.0));
+		osg::Vec3d(0.0, 0.0, 1.0));
 	navigation->home(0.0);
 	m_viewer->setCameraManipulator(navigation);
 }

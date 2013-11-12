@@ -1,4 +1,3 @@
-#include <vector>
 #include <osg/ref_ptr>
 
 namespace osg {

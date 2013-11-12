@@ -32,7 +32,7 @@ TerrainGenerator::TerrainGenerator(int numColumns, int numRows)
 
 osg::ref_ptr<osgTerrain::Terrain> TerrainGenerator::getTerrain()
 {
-    osg::HeightField * heightField = new osg::HeightField;
+    osg::ref_ptr<osg::HeightField> heightField = new osg::HeightField;
     heightField->allocate(m_numColumns, m_numRows);
 
     std::normal_distribution<float> normal_dist(0.0f, 0.2f);
@@ -42,21 +42,20 @@ osg::ref_ptr<osgTerrain::Terrain> TerrainGenerator::getTerrain()
         heightField->setHeight(c, r, normal_dist(rng));
     }
 
-    osgTerrain::Locator * locator = new osgTerrain::Locator();
-    //locator->setCoordinateSystemType(osgTerrain::Locator::GEOCENTRIC);
+    osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
     double scale = 10.0;
     locator->setTransformAsExtents(-scale, -scale, scale, scale);
 
-    osgTerrain::HeightFieldLayer * layer = new osgTerrain::HeightFieldLayer(heightField);
+    osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
 
-    layer->setLocator(locator);
+    layer->setLocator(locator.get());
 
-    osgTerrain::TerrainTile * tile = new osgTerrain::TerrainTile();
-    tile->setElevationLayer(layer);
+    osg::ref_ptr<osgTerrain::TerrainTile> tile = new osgTerrain::TerrainTile();
+    tile->setElevationLayer(layer.get());
 
-    osgTerrain::Terrain * terrain = new osgTerrain::Terrain();
+    osg::ref_ptr<osgTerrain::Terrain> terrain = new osgTerrain::Terrain();
 
-    terrain->addChild(tile);
+    terrain->addChild(tile.get());
     //terrain->updateTerrainTileOnNextFrame(tile);
 
     return terrain;
