@@ -50,6 +50,11 @@ void Game::initialize(){
 	m_viewer = new osgViewer::Viewer();
 	m_viewer->setUpViewInWindow(50, 50, 500, 500);
 
+    // use modern OpenGL
+    osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
+    graphicsState->setUseModelViewAndProjectionUniforms(true);
+    graphicsState->setUseVertexAttributeAliasing(true);
+
 	m_root = new osg::Geode();
 }
 

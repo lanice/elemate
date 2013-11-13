@@ -1,8 +1,8 @@
-#version 110
+#version 330
 
-varying vec3 worldPos;
-varying vec3 viewPos;
-varying vec3 normal;
+in vec3 worldPos;
+in vec3 viewPos;
+in vec3 normal;
 uniform vec3 namederuniform;
 
 void main()
