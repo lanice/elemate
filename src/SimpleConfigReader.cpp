@@ -5,7 +5,7 @@
  * \version 1.0
  */
 
-#include "SimpleConfigReader.h"
+#include "simpleconfigreader.h"
 #include <fstream>
 
 SimpleConfigReader::SimpleConfigReader():
