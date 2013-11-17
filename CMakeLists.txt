@@ -19,6 +19,7 @@ option(OPTION_LOCAL_INSTALL "Install to local directory instead of system" OFF)
 include(cmake/Custom.cmake)
 
 set(ELEMATE_SOURCE_GROUP "Source Files")
+set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
@@ -35,8 +36,8 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
-    src/SimpleConfigReader.cpp
-    src/SimpleConfigReader.h
+    src/simpleconfigreader.cpp
+    src/simpleconfigreader.h
     src/terraingenerator.cpp
     src/terraingenerator.h
 )
@@ -44,6 +45,15 @@ set(SOURCES
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
     ${ELEMATE_SOURCE_GROUP} ${SOURCES})
 
+
+set(SHADER
+    data/world.frag
+    data/world.vert
+)
+
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/data "\\\\.frag$|\\\\.vert$|\\\\.geo$"
+    ${ELEMATE_SHADER_GROUP} ${SHADER})
+    
 
 find_package( OpenThreads )
 find_package( osg )
@@ -55,7 +65,9 @@ find_package( osgTerrain )
 find_package( PhysX REQUIRED)
 # find_package( APEX )
 
-add_executable( ${PROJECT_NAME} ${SOURCES} )
+list(APPEND SOURCES ${SHADER})
+
+add_executable( ${PROJECT_NAME} ${SOURCES})
 
 config_project( ${PROJECT_NAME} OPENTHREADS )
 config_project( ${PROJECT_NAME} OSG )

@@ -86,7 +86,7 @@ void PhysicsWrapper::initializeScene(){
 	
 	m_materials["default"] = m_physics->createMaterial(0.5f, 0.5f, 0.1f); 
 	if (!m_materials["default"])
-		fatalError("createMterial failed!");
+		fatalError("createMaterial failed!");
 }
 
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){

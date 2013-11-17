@@ -4,10 +4,13 @@ out vec3 worldPos;
 out vec3 viewPos;
 out vec3 normal;
 
+//uniform mat4 osg_ModelViewMatrix;
+uniform mat4 osg_ModelViewProjectionMatrix;
+
 void main()
 {
     worldPos = gl_Vertex.xyz / gl_Vertex.z;
     normal = gl_Normal.xyz;
-    gl_Position = ftransform(); // = gl_ModelViewMatrix * gl_Vertex; (built in variables)
+    gl_Position = osg_ModelViewProjectionMatrix * gl_Vertex;
     viewPos = gl_Position.xyz / gl_Position.z;
 }

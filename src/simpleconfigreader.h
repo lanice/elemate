@@ -1,4 +1,4 @@
-/** \file SimpleConfigReader.h
+/** \file simpleconfigreader.h
  * Contains the declarations for the SimpleConfigReader class.
  * This class reads a given config file as soon as one is passed and returns the values for a given key. See doxygen documentation for further advices.
  * \author  Friedrich Horschig
