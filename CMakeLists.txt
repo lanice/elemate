@@ -36,6 +36,8 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
+    src/sharedgeometrytechnique.cpp
+    src/sharedgeometrytechnique.h
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/terraingenerator.cpp

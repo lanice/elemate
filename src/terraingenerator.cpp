@@ -2,6 +2,7 @@
 
 #include <random>
 #include <cstdint>
+#include <iostream>
 
 #include <osg/Vec3f>
 #include <osg/Shape>
@@ -9,6 +10,14 @@
 #include <osgTerrain/Locator>
 #include <osgTerrain/TerrainTile>
 #include <osgTerrain/Terrain>
+#include "sharedgeometrytechnique.h"
+//#include <PxHeightFieldGeometry.h> 
+
+#include <PxPhysics.h>
+#include <cooking/PxCooking.h>
+#include <extensions/PxDefaultStreams.h>
+#include <geometry/PxTriangleMesh.h>
+#include <geometry/PxTriangleMeshGeometry.h>
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -60,12 +69,50 @@ osg::ref_ptr<osgTerrain::TerrainTile> TerrainGenerator::createTile(double xyScal
 osg::ref_ptr<osgTerrain::Terrain> TerrainGenerator::getTerrain()
 {
     osg::ref_ptr<osgTerrain::Terrain> terrain = new osgTerrain::Terrain();
+    terrain->setTerrainTechniquePrototype(new osgTerrain::SharedGeometryTechnique());
 
     osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(2000, 100.f, 0.005);
+    tile->setTileID(osgTerrain::TileID(0, 0, 0));
+    //tile->setTerrain(terrain.get());
     terrain->addChild(tile.get());
 
+    //tile->setTerrainTechnique(new osgTerrain::SharedGeometryTechnique());
+    //tile->init(0, false);
 
     //terrain->updateTerrainTileOnNextFrame(tile);
 
     return terrain;
+}
+
+physx::PxTriangleMeshGeometry * TerrainGenerator::pxTerrainGeometry(const osgTerrain::Terrain * terrain)
+{
+    osg::ref_ptr<const osgTerrain::TerrainTile> tile = terrain->getTile(osgTerrain::TileID(0, 0, 0));
+    osg::ref_ptr<const osgTerrain::SharedGeometryTechnique> technique =
+        dynamic_cast<const osgTerrain::SharedGeometryTechnique*>(tile->getTerrainTechnique());
+    if (technique.valid()) {
+        osg::ref_ptr<osg::Geometry> geo = technique->getGeometry();
+ /*       if (geo.valid())
+            std::cout << "Terrain Primitive sets: " << geo->getNumPrimitiveSets() << std::endl;
+        std::cout << "\tIndices: " << geo->getPrimitiveSet(0)->getNumIndices() << std::endl;*/
+
+        osg::ref_ptr<const osg::Vec3Array> vertexData = dynamic_cast<osg::Vec3Array*>(geo->getVertexArray());
+        if (!vertexData.valid()) {
+            std::cerr << "Expected terrain vertexdata to be vec3array but wasn't" << std::endl;
+            exit(2);
+        }
+
+        /*physx::PxDefaultMemoryInputData ogsData((physx::PxU8*) vertexData->getDataPointer(),
+                            vertexData->size());*/
+
+        physx::PxCookingParams cookingParams;
+        // cookingParams...
+        physx::PxCooking * cooking = PxCreateCooking(PX_PHYSICS_VERSION, PxGetPhysics().getFoundation(), cookingParams);
+        physx::PxTriangleMeshDesc meshDesc;
+        meshDesc.points = vertexData->getDataPointer();
+        cooking->cookTriangleMesh(osgData, )
+        physx::PxTriangleMesh * mesh = PxGetPhysics().createTriangleMesh(stream);
+        physx::PxTriangleMeshGeometry * pGeo = new physx::PxTriangleMeshGeometry(mesh);
+        return pGeo;
+    }
+    return nullptr;
 }

@@ -18,6 +18,7 @@
 
 // PhysxX Classes
 #include "PxPhysicsAPI.h"
+#include <geometry/PxTriangleMeshGeometry.h>
 
 // Standard Libs
 #include <iostream>
@@ -58,7 +59,13 @@ void Game::initialize(osgViewer::Viewer* viewer){
 
 void Game::start(){
 	if (isRunning())
-		return;
+        return;
+
+    // create terrain
+    TerrainGenerator * terrainGen = new TerrainGenerator();
+    osg::ref_ptr<osgTerrain::Terrain> terrain = terrainGen->getTerrain();
+    delete terrainGen;
+    m_root->addChild(terrain.get());
 	
 	// Creates a Sphere
 	m_sphere.first = new osg::MatrixTransform();
@@ -70,17 +77,21 @@ void Game::start(){
 	m_sphere.second->setLinearVelocity(physx::PxVec3(0, 1, 0));
 	m_physics_wrapper->scene()->addActor(*m_sphere.second);
 
-	//Creates a plane
-	physx::PxRigidStatic* plane = PxCreatePlane(*(m_physics_wrapper->physics()), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *m_physics_wrapper->material("default"));
-	m_physics_wrapper->scene()->addActor(*plane);
-    TerrainGenerator * terrainGen = new TerrainGenerator();
-    osg::ref_ptr<osgTerrain::Terrain> terrain = terrainGen->getTerrain();
-    delete terrainGen;
-
-    m_root->addChild(terrain.get());
-
+    // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
     m_viewer->setSceneData(m_root.get());
-	setOsgCamera();
+    setOsgCamera();
+
+    //Creates a plane
+    physx::PxTriangleMeshGeometry * pxTerrainGeo = TerrainGenerator::pxTerrainGeometry(terrain.get());
+    physx::PxRigidStatic * pxTerrain = PxCreateStatic(PxGetPhysics(),
+        physx::PxTransform(),
+        *pxTerrainGeo,
+        *m_physics_wrapper->material("default"));
+    m_physics_wrapper->scene()->addActor(*pxTerrain);
+    
+
+	//physx::PxRigidStatic* plane = PxCreatePlane(*(m_physics_wrapper->physics()), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *m_physics_wrapper->material("default"));
+	//m_physics_wrapper->scene()->addActor(*plane);
 
 	m_cyclic_time->start();
 	m_interrupted = false;
@@ -100,9 +111,9 @@ void Game::loop(){
 		last_time = now;
 
 		m_physics_wrapper->scene()->fetchResults();
-		std::cout	<< "("	<< m_sphere.second->getGlobalPose().p.x << ", " 
+		/*std::cout	<< "("	<< m_sphere.second->getGlobalPose().p.x << ", " 
 							<< m_sphere.second->getGlobalPose().p.y << ", " 
-							<< m_sphere.second->getGlobalPose().p.z << ")" << std::endl;
+							<< m_sphere.second->getGlobalPose().p.z << ")" << std::endl;*/
 		m_sphere.first->setMatrix(osg::Matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, m_sphere.second->getGlobalPose().p.x, m_sphere.second->getGlobalPose().p.y, m_sphere.second->getGlobalPose().p.z, 1 ));
 	}
 	m_interrupted = true;
