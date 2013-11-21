@@ -120,8 +120,8 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
         heightField->setHeight(c, r, m_maxHeight * normal_dist(rng));
     }
 
-    osg::ref_ptr<osgTerrain::xzPlaneLocator> locator = new osgTerrain::xzPlaneLocator();
-    //osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
+    //osg::ref_ptr<osgTerrain::xzPlaneLocator> locator = new osgTerrain::xzPlaneLocator();
+    osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
 
     float xyMax = m_settings.sizeX / 2.0f;
     locator->setTransformAsExtents(-xyMax, -xyMax, xyMax, xyMax);

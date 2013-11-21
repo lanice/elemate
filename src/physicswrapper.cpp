@@ -71,7 +71,7 @@ void PhysicsWrapper::initializePhysics(){
 
 void PhysicsWrapper::initializeScene(){
     physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+    sceneDesc.gravity = physx::PxVec3(0.0f, 0.0f, -9.81f);
     customizeSceneDescription(sceneDesc);
 
     if (!sceneDesc.cpuDispatcher)
