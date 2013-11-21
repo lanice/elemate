@@ -63,9 +63,9 @@ void Game::start(){
 
     // create terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
-    osg::ref_ptr<osgTerrain::Terrain> terrain = terrainGen->getTerrain();
+    ElemateHeightFieldTerrain * terrain = terrainGen->createHeightFieldTerrain();
     delete terrainGen;
-    m_root->addChild(terrain.get());
+    m_root->addChild(terrain->m_osgTerrain);
 	
 	// Creates a Sphere
 	m_sphere.first = new osg::MatrixTransform();
@@ -82,12 +82,12 @@ void Game::start(){
     setOsgCamera();
 
     //Creates a plane
-    physx::PxTriangleMeshGeometry * pxTerrainGeo = TerrainGenerator::pxTerrainGeometry(terrain.get());
-    physx::PxRigidStatic * pxTerrain = PxCreateStatic(PxGetPhysics(),
+    /*physx::PxRigidStatic * pxTerrain = PxCreateStatic(PxGetPhysics(),
         physx::PxTransform(),
         *pxTerrainGeo,
-        *m_physics_wrapper->material("default"));
-    m_physics_wrapper->scene()->addActor(*pxTerrain);
+        *m_physics_wrapper->material("default"));*/
+
+    m_physics_wrapper->scene()->addActor(*terrain->m_actor);
     
 
 	//physx::PxRigidStatic* plane = PxCreatePlane(*(m_physics_wrapper->physics()), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *m_physics_wrapper->material("default"));
