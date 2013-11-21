@@ -9,6 +9,7 @@
 
 //Forward Declarations
 class PhysicsWrapper;
+class ElemateHeightFieldTerrain;
 namespace std {			class thread; }
 namespace osg {			class Group;  
 						class MatrixTransform;
@@ -56,6 +57,8 @@ protected:
 	osgViewer::Viewer*				m_viewer;
 	bool							m_interrupted;
 	osg::ref_ptr<osg::Group>		m_root;
+
+    std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
 	
     DrawableAndPhysXObject			m_sphere1;
     DrawableAndPhysXObject			m_sphere2;

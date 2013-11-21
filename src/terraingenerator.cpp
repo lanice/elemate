@@ -4,28 +4,24 @@
 #include <cstdint>
 #include <iostream>
 #include <cassert>
-
-#include <osg/Vec3f>
+//
+//#include <osg/Vec3f>
 #include <osg/Shape>
 #include <osgTerrain/Layer>
 #include "osg/xzPlaneLocator.h"
 #include <osgTerrain/TerrainTile>
 #include <osgTerrain/Terrain>
-#include "osg/sharedgeometrytechnique.h"
+//#include "osg/sharedgeometrytechnique.h"
 
 #include <PxPhysics.h>
-//#include <cooking/PxCooking.h>
-#include <foundation/PxTransform.h>
-//#include <extensions/PxDefaultStreams.h>
-#include <extensions/PxSimpleFactory.h>
-//#include <PxRigidDynamic.h>
 #include <PxRigidStatic.h>
-#include <PxMaterial.h>
 #include <geometry/PxHeightFieldSample.h>
 #include <geometry/PxHeightFieldDesc.h>
+#include <geometry/PxHeightField.h>
 #include <geometry/PxHeightFieldGeometry.h>
-//#include <geometry/PxTriangleMesh.h>
-//#include <geometry/PxTriangleMeshGeometry.h>
+#include <foundation/PxMat44.h>
+
+#include "helper.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -43,118 +39,158 @@ namespace {
     bool didRngInit = initRng();
 }
 
-TerrainGenerator::TerrainGenerator(int numColumns, int numRows)
-: m_numColumns(numColumns)
-, m_numRows(numRows)
-, m_elemateTerrain(new ElemateHeightFieldTerrain())
+TerrainSettings::TerrainSettings()
+: sizeX(20.0f)
+, sizeZ(20.0f)
+, columns(100u)
+, rows(100u)
+, tilesX(1u)
+, tilesZ(1u)
 {
 }
 
-osg::ref_ptr<osgTerrain::TerrainTile> TerrainGenerator::createTile(double xyScale, float heightScale, float heightSigma)
+TerrainGenerator::TerrainGenerator()
+: artifact(nullptr)
+, m_heightSigma(0.2f)
+, m_maxHeight(1.f)
+{
+}
+
+ElemateHeightFieldTerrain * TerrainGenerator::generate() const
+{
+    ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
+    
+    if ((m_settings.tilesX != 1) || (m_settings.tilesZ != 1))
+        std::cerr << "Warning: creation of multiple terrain tiles not supported. Ignoring settings." << std::endl;
+
+    osg::ref_ptr<osgTerrain::Terrain> osgTerrain = new osgTerrain::Terrain();
+    terrain->m_osgTerrain = osgTerrain;
+
+    //osgTerrain->setTerrainTechniquePrototype(new osgTerrain::SharedGeometryTechnique());
+
+    {   // for each tile (...)
+        osgTerrain::TileID tileID(0, 0, 0);
+
+        osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(tileID);
+        assert(tile.valid());
+        osgTerrain->addChild(tile);
+
+        osgTerrain::HeightFieldLayer * osgHeightField = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile->getElevationLayer());
+        assert(osgHeightField);
+        PxMat44 transform = matrixOsgToPx(osgHeightField->getLocator()->getTransform());
+        PxRigidStatic * actor = PxGetPhysics().createRigidStatic(PxTransform(transform));
+        terrain->m_pxActors.emplace(tileID, actor);
+
+        PxShape * pxShape = createPxShape(*osgHeightField->getHeightField(), *actor);
+        terrain->m_pxShapes.emplace(tileID, pxShape);
+    }
+
+    return terrain;
+}
+
+void TerrainGenerator::setHeightSigma(float sigma)
+{
+    m_heightSigma = sigma;
+}
+
+float TerrainGenerator::heightSigma() const
+{
+    return m_heightSigma;
+}
+
+void TerrainGenerator::setMaxHeight(float height)
+{
+    m_maxHeight = height;
+}
+float TerrainGenerator::maxHeight() const
+{
+    return m_maxHeight;
+}
+
+osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID & tileID) const
 {
     osg::ref_ptr<osg::HeightField> heightField = new osg::HeightField;
-    heightField->allocate(m_numColumns, m_numRows);
+    heightField->allocate(m_settings.columns, m_settings.rows);
 
 
+    std::normal_distribution<float> normal_dist(0.0f, m_heightSigma);
 
-    m_elemateTerrain->m_osgHeightField = heightField;
-
-
-
-    std::normal_distribution<float> normal_dist(0.0f, heightSigma);
-
-    for (int c = 0; c < m_numColumns; ++c)
-    for (int r = 0; r < m_numRows; ++r) {
-        heightField->setHeight(c, r, heightScale * normal_dist(rng));
+    for (unsigned c = 0; c < m_settings.columns; ++c)
+    for (unsigned r = 0; r < m_settings.rows; ++r) {
+        heightField->setHeight(c, r, m_maxHeight * normal_dist(rng));
     }
 
     osg::ref_ptr<osgTerrain::xzPlaneLocator> locator = new osgTerrain::xzPlaneLocator();
+    //osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
 
-    double scale = xyScale * 0.5;
-    locator->setTransformAsExtents(-scale, -scale, scale, scale);
+    float xyMax = m_settings.sizeX / 2.0f;
+    locator->setTransformAsExtents(-xyMax, -xyMax, xyMax, xyMax);
 
     osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
 
     layer->setLocator(locator.get());
 
-    osg::ref_ptr<osgTerrain::TerrainTile> tile = new osgTerrain::TerrainTile();
+    osgTerrain::TerrainTile * tile = new osgTerrain::TerrainTile();
     tile->setElevationLayer(layer.get());
+    tile->setTileID(tileID);
 
     return tile;
 }
 
-osg::ref_ptr<osgTerrain::Terrain> TerrainGenerator::getTerrain()
+PxShape * TerrainGenerator::createPxShape(const osg::HeightField & osgHeightField, PxRigidStatic & pxActor) const
 {
-    osg::ref_ptr<osgTerrain::Terrain> terrain = new osgTerrain::Terrain();
-    terrain->setTerrainTechniquePrototype(new osgTerrain::SharedGeometryTechnique());
+    assert(m_settings.rows > 0);
+    assert(m_settings.columns > 0);
+    assert(osgHeightField.getFloatArray());
+    assert(osgHeightField.getFloatArray()->size() > 0);
 
-    osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(2000, 100.f, 0.005);
-    tile->setTileID(osgTerrain::TileID(0, 0, 0));
-    //tile->setTerrain(terrain.get());
-    terrain->addChild(tile.get());
-
-    //tile->setTerrainTechnique(new osgTerrain::SharedGeometryTechnique());
-    //tile->init(0, false);
-
-    //terrain->updateTerrainTileOnNextFrame(tile);
-
-    return terrain;
-}
-
-ElemateHeightFieldTerrain * TerrainGenerator::createHeightFieldTerrain()
-{
-    m_elemateTerrain->m_osgTerrain = getTerrain();
-    m_elemateTerrain->m_numRows = m_numRows;
-    m_elemateTerrain->m_numColumns = m_numColumns;
-    m_elemateTerrain->m_rowScale = m_elemateTerrain->m_colScale = 1.0f;
-    m_elemateTerrain->m_heightScale = 1.0f;
-    m_elemateTerrain->heightFieldShape(); // creates it...
-    return m_elemateTerrain;
-}
-
-ElemateHeightFieldTerrain::ElemateHeightFieldTerrain()
-: m_actor(PxGetPhysics().createRigidStatic(PxTransform()))
-, m_shape(nullptr)
-, m_pxHeightField(nullptr)
-, m_pxHfGeometry(nullptr)
-{
-}
-
-PxRigidStatic * ElemateHeightFieldTerrain::actor() const
-{
-    return m_actor;
-}
-
-PxShape * ElemateHeightFieldTerrain::heightFieldShape() {
-    if (m_shape != nullptr)
-        return m_shape;
-
-    PxHeightFieldSample* hfSamples = new PxHeightFieldSample[m_numRows*m_numColumns];
-    for (unsigned c = 0; c < m_numColumns; ++c) 
-    for (unsigned r = 0; r < m_numRows; ++r) {
+    PxHeightFieldSample* hfSamples = new PxHeightFieldSample[m_settings.rows * m_settings.columns];
+    for (unsigned c = 0; c < m_settings.columns; ++c)
+    for (unsigned r = 0; r < m_settings.rows; ++r) {
         unsigned i = c * r + r;
         hfSamples[i].materialIndex0 = 0;
         hfSamples[i].materialIndex1 = 0;
         hfSamples[i].clearTessFlag();
-        hfSamples[i].height = m_osgHeightField->getHeight(c, r);
+        hfSamples[i].height = osgHeightField.getHeight(c, r);
     }
 
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;
-    hfDesc.nbColumns = m_numColumns;
-    hfDesc.nbRows = m_numRows;
+    hfDesc.nbColumns = m_settings.columns;
+    hfDesc.nbRows = m_settings.rows;
     hfDesc.samples.data = hfSamples;
-    hfDesc.samples.stride = sizeof( PxHeightFieldSample ); // not better 0 ??
+    hfDesc.samples.stride = sizeof(PxHeightFieldSample); // not better 0 ??
 
-    m_pxHeightField = PxGetPhysics().createHeightField(hfDesc);
+    PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
     PxMaterial * mat[1];
     mat[0] = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.1f);
 
-    assert(PX_MIN_HEIGHTFIELD_XZ_SCALE <= m_rowScale);
-    assert(PX_MIN_HEIGHTFIELD_XZ_SCALE <= m_colScale);
-    m_pxHfGeometry = new  PxHeightFieldGeometry(m_pxHeightField, PxMeshGeometryFlags(), 100.0f, 0.5f, 0.5f);
-    m_shape = actor()->createShape(*m_pxHfGeometry, mat, 1);
+    PxHeightFieldGeometry * m_pxHfGeometry = new  PxHeightFieldGeometry(pxHeightField, PxMeshGeometryFlags(), 1.0f, 1.0f, 1.0f);
+    PxShape * shape = pxActor.createShape(*m_pxHfGeometry, mat, 1);
 
-    return m_shape;
+    assert(shape);
+
+    return shape;
 }
+
+ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & settings)
+: m_settings(settings)
+{
+}
+
+osgTerrain::Terrain * ElemateHeightFieldTerrain::osgTerrain() const
+{
+    return m_osgTerrain.get();
+}
+
+PxShape const * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & tileID) const
+{
+    return m_pxShapes.at(tileID);
+}
+
+PxRigidStatic * ElemateHeightFieldTerrain::pxActor(const osgTerrain::TileID & tileID) const
+{
+    return m_pxActors.at(tileID);
+}
+

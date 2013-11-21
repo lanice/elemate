@@ -23,6 +23,8 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
+    src/helper.h
+    src/helper.cpp
     src/worlddrawable.cpp
     src/worlddrawable.h
     src/physicswrapper.cpp

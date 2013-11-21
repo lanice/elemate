@@ -31,7 +31,8 @@ Game::Game(osgViewer::Viewer* viewer) :
 m_physics_wrapper(nullptr),
 m_interrupted(true),
 m_viewer(nullptr),
-m_root(nullptr)
+m_root(nullptr),
+m_terrain(nullptr)
 {
 	initialize(viewer);
 }
@@ -83,18 +84,18 @@ void Game::start(){
 
 	//Creates a plane
     TerrainGenerator * terrainGen = new TerrainGenerator();
-    ElemateHeightFieldTerrain * heightFieldTerrain = terrainGen->createHeightFieldTerrain();
+    m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 
     // OSG Object
-    m_root->addChild(heightFieldTerrain->m_osgTerrain);
+    m_root->addChild(m_terrain->osgTerrain());
 
     // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
     m_viewer->setSceneData(m_root.get());
     setOsgCamera();
 
     // PhysX Object
-    m_physics_wrapper->scene()->addActor(*heightFieldTerrain->actor());
+    m_physics_wrapper->scene()->addActor(*( m_terrain->pxActor(osgTerrain::TileID(0, 0, 0)) ));
 
 
     m_physics_wrapper->startSimulation();
