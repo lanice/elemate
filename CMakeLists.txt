@@ -36,12 +36,14 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
-    src/sharedgeometrytechnique.cpp
-    src/sharedgeometrytechnique.h
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/terraingenerator.cpp
     src/terraingenerator.h
+    src/osg/xzPlaneLocator.cpp
+    src/osg/xzPlaneLocator.h
+    src/osg/sharedgeometrytechnique.cpp
+    src/osg/sharedgeometrytechnique.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -71,12 +73,12 @@ list(APPEND SOURCES ${SHADER})
 
 add_executable( ${PROJECT_NAME} ${SOURCES})
 
-config_project( ${PROJECT_NAME} OPENTHREADS )
-config_project( ${PROJECT_NAME} OSG )
-config_project( ${PROJECT_NAME} OSGDB )
-config_project( ${PROJECT_NAME} OSGUTIL )
-config_project( ${PROJECT_NAME} OSGVIEWER )
-config_project( ${PROJECT_NAME} OSGGA )
-config_project( ${PROJECT_NAME} OSGTERRAIN )
-config_project( ${PROJECT_NAME} PHYSX )
+config_project( ${PROJECT_NAME} OPENTHREADS 1 )
+config_project( ${PROJECT_NAME} OSG 1 )
+config_project( ${PROJECT_NAME} OSGDB 1 )
+config_project( ${PROJECT_NAME} OSGUTIL 1 )
+config_project( ${PROJECT_NAME} OSGVIEWER 1 )
+config_project( ${PROJECT_NAME} OSGGA 1 )
+config_project( ${PROJECT_NAME} OSGTERRAIN 1 )
+config_project( ${PROJECT_NAME} PHYSX 0 )
 # config_project( ${PROJECT_NAME} APEX )

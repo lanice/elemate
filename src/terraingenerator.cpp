@@ -3,14 +3,15 @@
 #include <random>
 #include <cstdint>
 #include <iostream>
+#include <cassert>
 
 #include <osg/Vec3f>
 #include <osg/Shape>
 #include <osgTerrain/Layer>
-#include <osgTerrain/Locator>
+#include "osg/xzPlaneLocator.h"
 #include <osgTerrain/TerrainTile>
 #include <osgTerrain/Terrain>
-#include "sharedgeometrytechnique.h"
+#include "osg/sharedgeometrytechnique.h"
 
 #include <PxPhysics.h>
 //#include <cooking/PxCooking.h>
@@ -67,7 +68,7 @@ osg::ref_ptr<osgTerrain::TerrainTile> TerrainGenerator::createTile(double xyScal
         heightField->setHeight(c, r, heightScale * normal_dist(rng));
     }
 
-    osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
+    osg::ref_ptr<osgTerrain::xzPlaneLocator> locator = new osgTerrain::xzPlaneLocator();
 
     double scale = xyScale * 0.5;
     locator->setTransformAsExtents(-scale, -scale, scale, scale);
@@ -150,7 +151,9 @@ PxShape * ElemateHeightFieldTerrain::heightFieldShape() {
     PxMaterial * mat[1];
     mat[0] = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.1f);
 
-    m_pxHfGeometry = new  PxHeightFieldGeometry(m_pxHeightField, PxMeshGeometryFlags(), m_heightScale, m_rowScale, m_colScale);
+    assert(PX_MIN_HEIGHTFIELD_XZ_SCALE <= m_rowScale);
+    assert(PX_MIN_HEIGHTFIELD_XZ_SCALE <= m_colScale);
+    m_pxHfGeometry = new  PxHeightFieldGeometry(m_pxHeightField, PxMeshGeometryFlags(), 100.0f, 0.5f, 0.5f);
     m_shape = actor()->createShape(*m_pxHfGeometry, mat, 1);
 
     return m_shape;
