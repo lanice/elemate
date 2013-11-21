@@ -63,7 +63,8 @@ void Game::start(){
     m_root->addChild(m_sphere1.first);
     //PhysX Object
     m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere1.second->setLinearVelocity(physx::PxVec3(-2, 4.0, 0));
+    m_sphere1.second->setLinearVelocity(physx::PxVec3(  -2, 4.0,   0));
+    m_sphere1.second->setAngularVelocity(physx::PxVec3(6.0, 13.0, 1.0));
     m_physics_wrapper->scene()->addActor(*m_sphere1.second);
 
     // Creates a Sphere
@@ -106,9 +107,27 @@ void Game::loop(){
 
 		m_physics_wrapper->scene()->fetchResults();
 
-        m_sphere1.first->setMatrix(osg::Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, m_sphere1.second->getGlobalPose().p.x, m_sphere1.second->getGlobalPose().p.y, m_sphere1.second->getGlobalPose().p.z, 1));
-        m_sphere2.first->setMatrix(osg::Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, m_sphere2.second->getGlobalPose().p.x, m_sphere2.second->getGlobalPose().p.y, m_sphere2.second->getGlobalPose().p.z, 1));
-	}
+        physx::PxMat44 new_pos(m_sphere1.second->getGlobalPose());
+        m_sphere1.first->setMatrix(
+            osg::Matrix(
+                new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
+                new_pos(0, 1), new_pos(1, 1), new_pos(2, 1), new_pos(3, 1),
+                new_pos(0, 2), new_pos(1, 2), new_pos(2, 2), new_pos(3, 2),
+                new_pos(0, 3), new_pos(1, 3), new_pos(2, 3), new_pos(3, 3)
+            )
+        );
+
+
+        new_pos = physx::PxMat44(m_sphere2.second->getGlobalPose());
+        m_sphere2.first->setMatrix(
+            osg::Matrix(
+            new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
+            new_pos(0, 1), new_pos(1, 1), new_pos(2, 1), new_pos(3, 1),
+            new_pos(0, 2), new_pos(1, 2), new_pos(2, 2), new_pos(3, 2),
+            new_pos(0, 3), new_pos(1, 3), new_pos(2, 3), new_pos(3, 3)
+            )
+        );
+    }
 	m_interrupted = true;
     m_physics_wrapper->stopSimulation();
 }

@@ -96,7 +96,7 @@ void PhysicsWrapper::initializeScene(){
 void PhysicsWrapper::initializeTime(){
     if (m_cyclic_time)
         delete m_cyclic_time;
-    m_cyclic_time = new CyclicTime(0.0L, 5.0L);
+    m_cyclic_time = new CyclicTime(0.0L, 1.0L);
 }
 
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
