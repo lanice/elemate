@@ -9,12 +9,10 @@
 
 //Forward Declarations
 class PhysicsWrapper;
+class ObjectsContainer;
 namespace std {			class thread; }
-namespace osg {			class Group;  
-						class MatrixTransform;
-}
+namespace osg {			class Group;}
 namespace osgViewer {	class Viewer; }
-namespace physx{ class PxRigidDynamic; }
 
 /** The Game Class that invokes a game loop and initializes PhysX.
  *	To receive the initialized physics, call getPhysicsWrapper(). See for its usage the documentation of PhysicsWrapper class.
@@ -22,8 +20,6 @@ namespace physx{ class PxRigidDynamic; }
  */
 class Game{
 public:
-
-	typedef std::pair<osg::MatrixTransform*, physx::PxRigidDynamic*> DrawableAndPhysXObject;
 
 	/** Explicit Constructor because Copying and Assignments are disabled. 	*/
 	explicit Game();	
@@ -39,12 +35,8 @@ public:
 
 	/** Ending the loop. */
 	void end();
-
-	/** Returns properly initialized PhysicsWrapper. */
-	std::shared_ptr<PhysicsWrapper> physicsWrapper() const;
-
 protected:
-	void initialize(osgViewer::Viewer* viewer);
+    virtual void initialize(osgViewer::Viewer* viewer) final;
 
 	/** The Game's loop containing drawing and triggering physics is placed right here. */
 	void loop();
@@ -52,13 +44,11 @@ protected:
 	/** This is where the magic happens. Currently: Physics calculation. */
 	void setOsgCamera();
 
-	std::shared_ptr<PhysicsWrapper>	m_physics_wrapper;
-	osgViewer::Viewer*				m_viewer;
-	bool							m_interrupted;
-	osg::ref_ptr<osg::Group>		m_root;
-	
-    DrawableAndPhysXObject			m_sphere1;
-    DrawableAndPhysXObject			m_sphere2;
+	std::shared_ptr<PhysicsWrapper>	    m_physics_wrapper;
+    std::shared_ptr<ObjectsContainer>   m_objects_container;
+	osgViewer::Viewer*				    m_viewer;
+	osg::ref_ptr<osg::Group>		    m_root;
+	bool							    m_interrupted;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(Game);
