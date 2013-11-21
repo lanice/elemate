@@ -28,22 +28,18 @@ Game::Game() : Game(nullptr)
 Game::Game(osgViewer::Viewer* viewer) :
 m_physics_wrapper(nullptr),
 m_interrupted(true),
-m_cyclic_time(nullptr),
 m_viewer(nullptr),
 m_root(nullptr)
 {
 	initialize(viewer);
 }
 
-Game::~Game(){
-	if (m_cyclic_time)
-		delete m_cyclic_time;
-}
+Game::~Game()
+{}
 
 void Game::initialize(osgViewer::Viewer* viewer){
 	m_physics_wrapper.reset(new PhysicsWrapper());
 
-	m_cyclic_time = new CyclicTime(0.0L,5.0L);
 	m_viewer = viewer;
 	
     // use modern OpenGL
@@ -58,52 +54,63 @@ void Game::start(){
 	if (isRunning())
 		return;
 	
-	// Creates a Sphere
-	m_sphere.first = new osg::MatrixTransform();
-	osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
-	sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 5), 1)));
-	m_sphere.first->addChild(sphere_geode);
-	m_root->addChild(m_sphere.first);
-	m_sphere.second = PxCreateDynamic(*m_physics_wrapper->physics(), physx::PxTransform(physx::PxVec3(0, 0, 5)), physx::PxSphereGeometry(1.0F), *m_physics_wrapper->material("default"), 1.0F);
-	m_sphere.second->setLinearVelocity(physx::PxVec3(0, 1, 0));
-	m_physics_wrapper->scene()->addActor(*m_sphere.second);
+    // Creates a Sphere
+    //OSG Object
+    m_sphere1.first = new osg::MatrixTransform();
+    osg::ref_ptr<osg::Geode> sphere1_geode = new osg::Geode();
+    sphere1_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
+    m_sphere1.first->addChild(sphere1_geode);
+    m_root->addChild(m_sphere1.first);
+    //PhysX Object
+    m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
+    m_sphere1.second->setLinearVelocity(physx::PxVec3(-2, 4.0, 0));
+    m_physics_wrapper->scene()->addActor(*m_sphere1.second);
+
+    // Creates a Sphere
+    //OSG Object
+    m_sphere2.first = new osg::MatrixTransform();
+    osg::ref_ptr<osg::Geode> sphere2_geode = new osg::Geode();
+    sphere2_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
+    m_sphere2.first->addChild(sphere2_geode);
+    m_root->addChild(m_sphere2.first);
+    //PhysX Object
+    m_sphere2.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(-1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
+    m_sphere2.second->setLinearVelocity(physx::PxVec3(2, 4.0, 0));
+    m_physics_wrapper->scene()->addActor(*m_sphere2.second);
 
 	//Creates a plane
-	physx::PxRigidStatic* plane = PxCreatePlane(*(m_physics_wrapper->physics()), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *m_physics_wrapper->material("default"));
+        //OSG Object
+    osg::ref_ptr<WorldDrawable> world = new WorldDrawable;
+    osg::ref_ptr<osg::Geode> world_geode = new osg::Geode();
+    world_geode->addDrawable(world.get());
+    m_root->addChild(world_geode.get());
+        //PhysXObject
+    physx::PxRigidStatic* plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0, 1, 0), 0.0F), *m_physics_wrapper->material("default"));
 	m_physics_wrapper->scene()->addActor(*plane);
-	osg::ref_ptr<WorldDrawable> world = new WorldDrawable;
-	osg::ref_ptr<osg::Geode> world_geode = new osg::Geode();
-	world_geode->addDrawable(world.get());
-	m_root->addChild(world_geode.get());
-
+	
 	m_viewer->setSceneData(m_root.get());	
 	setOsgCamera();
 
-	m_cyclic_time->start();
+    m_physics_wrapper->startSimulation();
 	m_interrupted = false;
 
 	loop();
 }
 
 void Game::loop(){
-	t_longf now = m_cyclic_time->getf();
-	t_longf last_time = m_cyclic_time->getf();
 	while (isRunning())
 	{
-		now = m_cyclic_time->getf(true);
-		m_viewer->frame();
+        m_viewer->frame();
 
-		m_physics_wrapper->step(now-last_time);
-		last_time = now;
+        m_physics_wrapper->step();
 
 		m_physics_wrapper->scene()->fetchResults();
-		std::cout	<< "("	<< m_sphere.second->getGlobalPose().p.x << ", " 
-							<< m_sphere.second->getGlobalPose().p.y << ", " 
-							<< m_sphere.second->getGlobalPose().p.z << ")" << std::endl;
-		m_sphere.first->setMatrix(osg::Matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, m_sphere.second->getGlobalPose().p.x, m_sphere.second->getGlobalPose().p.y, m_sphere.second->getGlobalPose().p.z, 1 ));
+
+        m_sphere1.first->setMatrix(osg::Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, m_sphere1.second->getGlobalPose().p.x, m_sphere1.second->getGlobalPose().p.y, m_sphere1.second->getGlobalPose().p.z, 1));
+        m_sphere2.first->setMatrix(osg::Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, m_sphere2.second->getGlobalPose().p.x, m_sphere2.second->getGlobalPose().p.y, m_sphere2.second->getGlobalPose().p.z, 1));
 	}
 	m_interrupted = true;
-	m_cyclic_time->stop();
+    m_physics_wrapper->stopSimulation();
 }
 
 bool Game::isRunning()const{
@@ -118,8 +125,8 @@ void Game::end(){
 void Game::setOsgCamera(){
 	osgGA::TrackballManipulator * navigation = new osgGA::TrackballManipulator();
 	navigation->setHomePosition(
-		osg::Vec3d(0.0, 3.0, 2.0),
-		osg::Vec3d(0.0, 0.0, 0.0),
+		osg::Vec3d(0.0, 6.0, 12.0),
+		osg::Vec3d(0.0, 3.0, 0.0),
 		osg::Vec3d(0.0, 1.0, 0.0));
 	navigation->home(0.0);
 	m_viewer->setCameraManipulator(navigation);

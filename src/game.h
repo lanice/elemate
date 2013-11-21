@@ -9,7 +9,6 @@
 
 //Forward Declarations
 class PhysicsWrapper;
-class CyclicTime;
 namespace std {			class thread; }
 namespace osg {			class Group;  
 						class MatrixTransform;
@@ -57,9 +56,9 @@ protected:
 	osgViewer::Viewer*				m_viewer;
 	bool							m_interrupted;
 	osg::ref_ptr<osg::Group>		m_root;
-	CyclicTime*						m_cyclic_time;
 	
-	DrawableAndPhysXObject			m_sphere;
+    DrawableAndPhysXObject			m_sphere1;
+    DrawableAndPhysXObject			m_sphere2;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(Game);

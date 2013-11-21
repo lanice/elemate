@@ -9,8 +9,8 @@ uniform mat4 osg_ModelViewProjectionMatrix;
 
 void main()
 {
-    worldPos = gl_Vertex.xyz / gl_Vertex.z;
+    worldPos = gl_Vertex.xyz / gl_Vertex.w;
     normal = gl_Normal.xyz;
     gl_Position = osg_ModelViewProjectionMatrix * gl_Vertex;
-    viewPos = gl_Position.xyz / gl_Position.z;
+    viewPos = gl_Position.xyz / gl_Position.w;
 }
