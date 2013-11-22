@@ -28,6 +28,8 @@ set(SOURCES
     src/physicswrapper.h
     src/game.cpp
     src/game.h
+    src/godmanipulator.cpp
+    src/godmanipulator.h
     src/hpicgs/CyclicTime.cpp
     src/hpicgs/CyclicTime.h
     src/hpicgs/Timer.cpp
