@@ -101,12 +101,6 @@ void Game::start(){
     m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 
-    /*osg::ref_ptr<osg::StateSet> terrainStateSet = m_terrain->osgTerrain()->getOrCreateStateSet();
-    terrainStateSet->setMode(GL_LIGHTING,
-        osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED);*/
-    /*root->getOrCreateStateSet()->setMode(GL_LIGHTING,
-        osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);*/
-
     // OSG Object
     m_root->addChild(m_terrain->osgTransformedTerrain());
 

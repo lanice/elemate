@@ -3,28 +3,18 @@
 #include <random>
 #include <cstdint>
 #include <iostream>
-#include <cassert>
 #include <iomanip>
 #include <limits>
-//
-//#include <osg/Vec3f>
-#include <osg/MatrixTransform>
-#include <osg/Shape>
-#include <osgTerrain/Layer>
-#include "osg/xzPlaneLocator.h"
-#include <osgTerrain/TerrainTile>
-#include <osgTerrain/Terrain>
-//#include "osg/sharedgeometrytechnique.h"
+#include <cmath>
 
-#include <PxPhysics.h>
+#include <osg/MatrixTransform>
+#include <osgTerrain/Terrain>
+
 #include <PxRigidStatic.h>
 #include <geometry/PxHeightFieldSample.h>
 #include <geometry/PxHeightFieldDesc.h>
-#include <geometry/PxHeightField.h>
 #include <geometry/PxHeightFieldGeometry.h>
 #include <foundation/PxMat44.h>
-
-#include "helper.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -43,19 +33,19 @@ namespace {
 }
 
 TerrainSettings::TerrainSettings()
-: sizeX(5.0f)
-, sizeY(5.0f)
-, columns(3)
-, rows(3)
+: sizeX(20.0f)
+, sizeZ(20.0f)
+, columns(20)
+, rows(20)
 , tilesX(1u)
-, tilesY(1u)
+, tilesZ(1u)
 {
 }
 
 TerrainGenerator::TerrainGenerator()
 : artifact(nullptr)
-, m_heightSigma(0.2f)
-, m_maxHeight(1.f)
+, m_heightSigma(0.02f)
+, m_maxHeight(5.f)
 {
 }
 
@@ -63,7 +53,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 {
     ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
     
-    if ((m_settings.tilesX != 1) || (m_settings.tilesY != 1))
+    if ((m_settings.tilesX != 1) || (m_settings.tilesZ != 1))
         std::cerr << "Warning: creation of multiple terrain tiles not supported. Ignoring settings." << std::endl;
 
     osg::ref_ptr<osgTerrain::Terrain> osgTerrain = new osgTerrain::Terrain();
@@ -80,8 +70,6 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     terrain->m_osgTerrainTransform = new osg::MatrixTransform(baseTransformOsgToPx);
     terrain->m_osgTerrainTransform->addChild(osgTerrain.get());
 
-    //osgTerrain->setTerrainTechniquePrototype(new osgTerrain::SharedGeometryTechnique());
-
     {   // for each tile (...)
         osgTerrain::TileID tileID(0, 0, 0);
 
@@ -93,41 +81,78 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         assert(osgHeightField);
         
         // center the terrain in the scene
-        PxTransform pxTerrainTransform = PxTransform(PxVec3(-m_settings.sizeX / 2.0f, 0.0f, -m_settings.sizeY / 2.0f));
+        PxTransform pxTerrainTransform = PxTransform(PxVec3(-m_settings.sizeX / 2.0f, 0.0f, -m_settings.sizeZ / 2.0f));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
         terrain->m_pxActors.emplace(tileID, actor);
 
         PxShape * pxShape = createPxShape(*osgHeightField->getHeightField(), *actor, PxTransform().createIdentity(), pxTerrainTransform);
         terrain->m_pxShapes.emplace(tileID, pxShape);
-
-        // debug the height geometries
-        std::cout << "OSG x(right) y(front) z(up)" << std::endl;
-        std::cout << std::setprecision(1);
-        std::cout << std::fixed;
-        for (unsigned c = 0; c < m_settings.columns; ++c) {
-            std::cout << "Column " << c << std::endl;
-            for (unsigned r = 0; r < m_settings.rows; ++r) {
-                osg::Vec3 v = osgHeightField->getHeightField()->getVertex(c, r);
-                osg::Vec3 vt = v * osgHeightField->getLocator()->getTransform() * baseTransformOsgToPx;
-                std::cout.width(5); std::cout << v.x() << " ";
-                std::cout.width(5); std::cout << v.y() << " ";
-                std::cout.width(5); std::cout << v.z() << "     ";
-
-                std::cout.width(5); std::cout << vt.x() << " ";
-                std::cout.width(5); std::cout << vt.y() << " ";
-                std::cout.width(5); std::cout << vt.z() << std::endl;
-            }
-            std::cout << std::endl;
-        }
-
-
     }
 
     return terrain;
 }
 
+void TerrainGenerator::setExtentsInWorld(float x, float z)
+{
+    assert(x > 0 && z > 0);
+    m_settings.sizeX = x;
+    m_settings.sizeZ = z;
+}
+
+float TerrainGenerator::xExtens() const
+{
+    return m_settings.sizeX;
+}
+
+float TerrainGenerator::zExtens() const
+{
+    return m_settings.sizeZ;
+}
+
+void TerrainGenerator::setSamplesPerWorldXCoord(float xSamples)
+{
+    assert(xSamples > 0.0f);
+    unsigned int xSamplesui = unsigned int(ceil(m_settings.sizeX * xSamples));
+    m_settings.columns = xSamplesui >= 2 ? xSamplesui : 2;
+}
+
+void TerrainGenerator::setSamplesPerWorldZCoord(float zSamples)
+{
+    assert(zSamples > 0.0f);
+    unsigned int zSamplesui = unsigned int(ceil(m_settings.sizeZ * zSamples));
+    m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
+}
+
+float TerrainGenerator::samplesPerWorldXCoord() const
+{
+    return m_settings.samplesPerXCoord();
+}
+
+float TerrainGenerator::samplesPerWorldZCoord() const
+{
+    return m_settings.samplesPerZCoord();
+}
+
+void TerrainGenerator::setTilesPerAxis(unsigned x, unsigned z)
+{
+    assert(x >= 2 && z >= 2);
+    m_settings.tilesX = x;
+    m_settings.tilesZ = z;
+}
+
+int TerrainGenerator::tilesPerXAxis() const
+{
+    return m_settings.tilesX;
+}
+
+int TerrainGenerator::tilesPerZAxis() const
+{
+    return m_settings.tilesZ;
+}
+
 void TerrainGenerator::setHeightSigma(float sigma)
 {
+    assert(sigma >= 0.0f);
     m_heightSigma = sigma;
 }
 
@@ -138,6 +163,7 @@ float TerrainGenerator::heightSigma() const
 
 void TerrainGenerator::setMaxHeight(float height)
 {
+    assert(height > 0.0f);
     m_maxHeight = height;
 }
 float TerrainGenerator::maxHeight() const
@@ -159,11 +185,10 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
         heightField->setHeight(c, r, value);
     }
 
-    //osg::ref_ptr<osgTerrain::xzPlaneLocator> locator = new osgTerrain::xzPlaneLocator();
     osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
 
     float xScaled = m_settings.sizeX * 0.5;
-    float yScaled = m_settings.sizeY * 0.5;
+    float zScaled = m_settings.sizeZ * 0.5;
     assert(m_settings.columns > 1);
     assert(m_settings.rows > 1);
     // locator->setTransformAsExtents() does only what the name suggests, when we set the intervalls as below
@@ -171,7 +196,7 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
     //  ~ worldX = columns * (maxX-minX) + minX
     heightField->setXInterval(1.0f / (m_settings.columns - 1));
     heightField->setYInterval(1.0f / (m_settings.rows - 1));
-    locator->setTransformAsExtents(-xScaled, -yScaled, xScaled, yScaled);
+    locator->setTransformAsExtents(-xScaled, -zScaled, xScaled, zScaled);
 
     osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
 
@@ -222,34 +247,9 @@ PxShape * TerrainGenerator::createPxShape(const osg::HeightField & osgHeightFiel
 
     // create and scale height field geometry
     float rowScale = m_settings.intervalX();
-    float columnScale = m_settings.intervalY();
+    float columnScale = m_settings.intervalZ();
     PxHeightFieldGeometry * m_pxHfGeometry = new  PxHeightFieldGeometry(pxHeightField, PxMeshGeometryFlags(), heightScaleToOsg, rowScale, columnScale);
     PxShape * shape = pxActor.createShape(*m_pxHfGeometry, mat, 1);
-
-
-    // debug the height geometries
-    std::cout << "phyx: x(right) y(up) z(back)" << std::endl;
-    std::cout << std::setprecision(1);
-    std::cout << std::fixed;
-
-    for (unsigned c = 0; c < m_settings.columns; ++c) {
-        std::cout << "Column " << c << std::endl;
-        for (unsigned r = 0; r < m_settings.rows; ++r) {
-            PxVec3 v = PxVec3(
-                PxReal(r) * m_pxHfGeometry->rowScale, 
-                PxReal(hfSamples[c + (r*m_settings.columns)].height) * m_pxHfGeometry->heightScale,
-                PxReal(c) * m_pxHfGeometry->columnScale);
-            PxVec3 vt = transform.transform(v);
-            std::cout.width(5); std::cout << v.x << " ";
-            std::cout.width(5); std::cout << v.y << " ";
-            std::cout.width(5); std::cout << v.z << "     ";
-
-            std::cout.width(5); std::cout << vt.x << " ";
-            std::cout.width(5); std::cout << vt.y << " ";
-            std::cout.width(5); std::cout << vt.z << std::endl;
-        }
-        std::cout << std::endl;
-    }
 
     assert(shape);
 

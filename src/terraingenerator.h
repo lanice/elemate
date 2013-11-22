@@ -6,11 +6,8 @@
 #include <foundation/PxSimpleTypes.h>
 
 namespace osg {
-    class Vec3f;
-    class Array;
-    class Geometry;
-    class HeightField;
     class MatrixTransform;
+    class HeightField;
 }
 namespace osgTerrain {
     class Terrain;
@@ -20,8 +17,6 @@ namespace osgTerrain {
 namespace physx {
     class PxShape;
     class PxRigidStatic;
-    class PxHeightField;
-    class PxHeightFieldGeometry;
     class PxMat44;
     class PxTransform;
 }
@@ -29,15 +24,15 @@ namespace physx {
 struct TerrainSettings {
     TerrainSettings();
     float sizeX;
-    float sizeY;
+    float sizeZ;
     unsigned columns;
     unsigned rows;
     unsigned tilesX;
-    unsigned tilesY;
+    unsigned tilesZ;
     inline float samplesPerXCoord() const { assert(sizeX > 0); return columns / sizeX; }
-    inline float samplesPerYCoord() const { assert(sizeY > 0); return rows / sizeY; }
+    inline float samplesPerZCoord() const { assert(sizeZ > 0); return rows / sizeZ; }
     inline float intervalX() const { assert(columns > 1); return sizeX / (columns - 1); }
-    inline float intervalY() const { assert(rows > 1); return sizeY / (rows - 1); }
+    inline float intervalZ() const { assert(rows > 1); return sizeZ / (rows - 1); }
 };
 
 
@@ -52,7 +47,11 @@ public:
     osg::MatrixTransform * osgTransformedTerrain() const;
     /** osg terrain object containing terrain tiles with hight fields */
     osgTerrain::Terrain * osgTerrain() const;
+    /** PhysX shape containing height field geometry for one tile
+      * terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxShape const * pxShape(const osgTerrain::TileID & tileID) const;
+    /** static PhysX actor for specified terrain tile 
+      * terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;
 
 private:
@@ -73,27 +72,40 @@ private:
 friend class TerrainGenerator;
 };
 
+
+/** Generator for height field terrains
+  * Creates height field data and wraps it into osg and PhysX objects. 
+  * Terrains are oriented in the xz-plane, using the default PhysX coordinate system for heightfields.
+  * Creates a transform node for the osg terrain object, because osg terrains are aligned along the xy plane. */
 class TerrainGenerator {
 public:
     /** creates a generator with default settings */
     TerrainGenerator();
     /** terrain size in world coordinates */
-    void setExtentsInWorld(float x, float y);
+    void setExtentsInWorld(float x, float z);
     float xExtens() const;
-    float yExtens() const;
-    /** height values per world coordinate 
+    float zExtens() const;
+    /** Set number of columns and rows in height field so that the terrain gets xzSamples of height values per world coordinate.
       * The applied value may be a bit different as the number of total samples is an integral value. */
-    void setSamplesPerWorldCoord(float xySamples);
-    float samplesPerWorldCoord() const;
-    void setTilesPerAxis(unsigned x, unsigned y);
-    float tilesPerXAxis() const;
-    float tilesPerYAxis() const;
+    void setSamplesPerWorldXCoord(float xSamples);
+    void setSamplesPerWorldZCoord(float zSamples);
+    float samplesPerWorldXCoord() const;
+    float samplesPerWorldZCoord() const;
+    void setTilesPerAxis(unsigned x, unsigned z);
+    int tilesPerXAxis() const;
+    int tilesPerZAxis() const;
 
     /** generation specific settings */
+
     /** sigma parameter for used normal distribution */
     void setHeightSigma(float sigma);
+    /** sigma parameter for used normal distribution */
     float heightSigma() const;
+    /** maximum latitude (y value) in world coordinates
+      *  -maxHeight < y <= maxHeight */
     void setMaxHeight(float height);
+    /** maximum latitude (y value) in world coordinates
+      * -maxHeight < y <= maxHeight */
     float maxHeight() const;
 
     /** applies all settings and creates the height field osg and physx objects */
@@ -110,12 +122,4 @@ private:
     /** creates a terrain tile, and sets its tileID */
     osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID) const;
     physx::PxShape * createPxShape(const osg::HeightField & osgHeightField, physx::PxRigidStatic & pxActor, const physx::PxTransform & scaling, const physx::PxMat44 & transform) const;
-
-    //osg::ref_ptr<osgTerrain::Terrain> getTerrain();
-    //ElemateHeightFieldTerrain * createHeightFieldTerrain();
-    //osg::ref_ptr<osgTerrain::TerrainTile> createTile(double xyScale, float heightScale, float heightSigma);
-
-    //int m_numColumns;
-    //int m_numRows;
-    //ElemateHeightFieldTerrain * m_elemateTerrain;
 };

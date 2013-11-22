@@ -23,8 +23,6 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
-    src/helper.h
-    src/helper.cpp
     src/worlddrawable.cpp
     src/worlddrawable.h
     src/physicswrapper.cpp
@@ -42,10 +40,6 @@ set(SOURCES
     src/simpleconfigreader.h
     src/terraingenerator.cpp
     src/terraingenerator.h
-    src/osg/xzPlaneLocator.cpp
-    src/osg/xzPlaneLocator.h
-    src/osg/sharedgeometrytechnique.cpp
-    src/osg/sharedgeometrytechnique.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
