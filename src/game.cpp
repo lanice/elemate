@@ -54,7 +54,9 @@ void Game::start(){
 	if (isRunning())
 		return;
 	
-    m_objects_container->makeBall(m_root);
+    m_objects_container->makeStandardBall(m_root, physx::PxVec3( 1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    m_objects_container->makeStandardBall(m_root, physx::PxVec3(-1, 3, 0), 0.2F, physx::PxVec3(2, 4, 0), physx::PxVec3(0, 0, 0));
+    m_objects_container->makeStandardBall(m_root, physx::PxVec3(0, 3, 0), 0.2F, physx::PxVec3(0, 0, 0), physx::PxVec3(0, 50, 0));
     m_objects_container->makePlane(m_root);
 	
 	m_viewer->setSceneData(m_root.get());	
@@ -67,6 +69,7 @@ void Game::start(){
 }
 
 void Game::loop(){
+    t_longf newBallRounds = 10.0F;
 	while (isRunning())
 	{
         m_viewer->frame();

@@ -11,62 +11,43 @@ ObjectsContainer::ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapp
 {}
 
 ObjectsContainer::~ObjectsContainer()
-{}
+{
+    m_objects.clear();
+}
 
 void ObjectsContainer::updateAllObjects(){
     m_physics_wrapper->scene()->fetchResults();
-
-    physx::PxMat44 new_pos(m_sphere1.second->getGlobalPose());
-    m_sphere1.first->setMatrix(
-        osg::Matrix(
-        new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
-        new_pos(0, 1), new_pos(1, 1), new_pos(2, 1), new_pos(3, 1),
-        new_pos(0, 2), new_pos(1, 2), new_pos(2, 2), new_pos(3, 2),
-        new_pos(0, 3), new_pos(1, 3), new_pos(2, 3), new_pos(3, 3)
-        )
-    );
-
-
-    new_pos = physx::PxMat44(m_sphere2.second->getGlobalPose());
-    m_sphere2.first->setMatrix(
-        osg::Matrix(
-        new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
-        new_pos(0, 1), new_pos(1, 1), new_pos(2, 1), new_pos(3, 1),
-        new_pos(0, 2), new_pos(1, 2), new_pos(2, 2), new_pos(3, 2),
-        new_pos(0, 3), new_pos(1, 3), new_pos(2, 3), new_pos(3, 3)
-        )
-    );
+    
+    physx::PxMat44 new_pos;
+    for (auto& current_object : m_objects){
+        new_pos = physx::PxMat44(current_object.second->getGlobalPose());
+        current_object.first->setMatrix(
+            osg::Matrix(
+            new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
+            new_pos(0, 1), new_pos(1, 1), new_pos(2, 1), new_pos(3, 1),
+            new_pos(0, 2), new_pos(1, 2), new_pos(2, 2), new_pos(3, 2),
+            new_pos(0, 3), new_pos(1, 3), new_pos(2, 3), new_pos(3, 3)
+            )
+        );
+    }
 }
 
-void ObjectsContainer::makeBall(osg::ref_ptr<osg::Group> parent){
-    // Creates a Sphere
-    //OSG Object
-    m_sphere1.first = new osg::MatrixTransform();
-    osg::ref_ptr<osg::Geode> sphere1_geode = new osg::Geode();
-    sphere1_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
-    m_sphere1.first->addChild(sphere1_geode);
-    parent->addChild(m_sphere1.first);
-    //PhysX Object
-    m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere1.second->setLinearVelocity(physx::PxVec3(-2, 4.0, 0));
-    m_sphere1.second->setAngularVelocity(physx::PxVec3(6.0, 13.0, 1.0));
-    m_physics_wrapper->scene()->addActor(*m_sphere1.second);
+void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity){
+    auto osg_object = new osg::MatrixTransform();
+    osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
+    sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0,0,0), radius)));
+    osg_object->addChild(sphere_geode);
+    parent->addChild(osg_object);
 
-    // Creates a Sphere
-    //OSG Object
-    m_sphere2.first = new osg::MatrixTransform();
-    osg::ref_ptr<osg::Geode> sphere2_geode = new osg::Geode();
-    sphere2_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
-    m_sphere2.first->addChild(sphere2_geode);
-    parent->addChild(m_sphere2.first);
-    //PhysX Object
-    m_sphere2.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(-1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere2.second->setLinearVelocity(physx::PxVec3(2, 4.0, 0));
-    m_physics_wrapper->scene()->addActor(*m_sphere2.second);
+    auto physx_object = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(global_position), physx::PxSphereGeometry(radius), *m_physics_wrapper->material("default"), 1.0F);
+    physx_object->setLinearVelocity(linear_velocity);
+    physx_object->setAngularVelocity(angular_velocity);
+    m_physics_wrapper->scene()->addActor(*physx_object);
+
+    m_objects.push_back(DrawableAndPhysXObject(osg_object, physx_object));
 }
 
 void ObjectsContainer::makePlane(osg::ref_ptr<osg::Group> parent){
-    //Creates a plane
     //OSG Object
     osg::ref_ptr<WorldDrawable> world = new WorldDrawable;
     osg::ref_ptr<osg::Geode> world_geode = new osg::Geode();
