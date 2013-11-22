@@ -1,8 +1,6 @@
 
 #include "godmanipulator.h"
 
-using namespace osg;
-using namespace osgGA;
 
 
 /// Constructor.
@@ -18,8 +16,8 @@ GodManipulator::GodManipulator( int flags )
 
 
 /// Constructor.
-GodManipulator::GodManipulator( const GodManipulator& gpm, const CopyOp& copyOp )
-   : osg::Object(gpm, copyOp),
+GodManipulator::GodManipulator( const GodManipulator& gpm, const osg::CopyOp& copyOp )
+   : Object(gpm, copyOp),
      inherited( gpm, copyOp ),
      _eye( gpm._eye ),
      _rotation( gpm._rotation )//,
@@ -32,7 +30,7 @@ GodManipulator::GodManipulator( const GodManipulator& gpm, const CopyOp& copyOp 
 
 
 /** Set the position of the manipulator using a 4x4 matrix.*/
-void GodManipulator::setByMatrix( const Matrixd& matrix )
+void GodManipulator::setByMatrix( const osg::Matrixd& matrix )
 {
    // set variables
    _eye = matrix.getTrans();
@@ -45,24 +43,24 @@ void GodManipulator::setByMatrix( const Matrixd& matrix )
 
 
 /** Set the position of the manipulator using a 4x4 matrix.*/
-void GodManipulator::setByInverseMatrix( const Matrixd& matrix )
+void GodManipulator::setByInverseMatrix( const osg::Matrixd& matrix )
 {
-   setByMatrix( Matrixd::inverse( matrix ) );
+   setByMatrix( osg::Matrixd::inverse( matrix ) );
 }
 
 
 /** Get the position of the manipulator as 4x4 matrix.*/
-Matrixd GodManipulator::getMatrix() const
+osg::Matrixd GodManipulator::getMatrix() const
 {
-   return Matrixd::rotate( _rotation ) * Matrixd::translate( _eye );
+   return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _eye );
 }
 
 
 /** Get the position of the manipulator as a inverse matrix of the manipulator,
     typically used as a model view matrix.*/
-Matrixd GodManipulator::getInverseMatrix() const
+osg::Matrixd GodManipulator::getInverseMatrix() const
 {
-   return Matrixd::translate( -_eye ) * Matrixd::rotate( _rotation.inverse() );
+   return osg::Matrixd::translate( -_eye ) * osg::Matrixd::rotate( _rotation.inverse() );
 }
 
 
