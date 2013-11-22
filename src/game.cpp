@@ -56,6 +56,20 @@ void Game::initialize(osgViewer::Viewer* viewer){
 void Game::start(){
 	if (isRunning())
 		return;
+
+    // Set light source
+    osg::ref_ptr<osg::Light> light = new osg::Light;
+    light->setLightNum(1);
+    light->setPosition(osg::Vec4(0, 0, 7, 1.0f));
+
+    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+    lightSource->setLight(light.get());
+
+    m_root->addChild(lightSource.get());
+    lightSource->setStateSetModes(*m_root->getOrCreateStateSet(),
+        osg::StateAttribute::ON);
+    
+
 	
     // Creates a Sphere
     //OSG Object
@@ -65,8 +79,8 @@ void Game::start(){
     m_sphere1.first->addChild(sphere1_geode);
     m_root->addChild(m_sphere1.first);
     //PhysX Object
-    m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 0, 10)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere1.second->setLinearVelocity(physx::PxVec3(-1.0, 0.0, 4.0));
+    m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 0, 5)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
+    m_sphere1.second->setLinearVelocity(physx::PxVec3(-0.5, 0.0, 4.0));
     m_sphere1.second->setAngularVelocity(physx::PxVec3(6.0, 13.0, 1.0));
     m_physics_wrapper->scene()->addActor(*m_sphere1.second);
 
@@ -78,14 +92,20 @@ void Game::start(){
     m_sphere2.first->addChild(sphere2_geode);
     m_root->addChild(m_sphere2.first);
     //PhysX Object
-    m_sphere2.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(-1, 0, 10)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere2.second->setLinearVelocity(physx::PxVec3(1.0, 0.0, 4.0));
+    m_sphere2.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(-1, 0, 5)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
+    m_sphere2.second->setLinearVelocity(physx::PxVec3(0.5, 0.0, 4.0));
     m_physics_wrapper->scene()->addActor(*m_sphere2.second);
 
 	//Creates a plane
     TerrainGenerator * terrainGen = new TerrainGenerator();
     m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
+
+    /*osg::ref_ptr<osg::StateSet> terrainStateSet = m_terrain->osgTerrain()->getOrCreateStateSet();
+    terrainStateSet->setMode(GL_LIGHTING,
+        osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED);*/
+    /*root->getOrCreateStateSet()->setMode(GL_LIGHTING,
+        osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);*/
 
     // OSG Object
     m_root->addChild(m_terrain->osgTerrain());

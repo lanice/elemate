@@ -40,10 +40,10 @@ namespace {
 }
 
 TerrainSettings::TerrainSettings()
-: sizeX(20.0f)
-, sizeZ(20.0f)
-, columns(100u)
-, rows(100u)
+: sizeX(2.0f)
+, sizeZ(2.0f)
+, columns(3)
+, rows(3)
 , tilesX(1u)
 , tilesZ(1u)
 {
