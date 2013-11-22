@@ -13,7 +13,7 @@ physx::PxMat44 matrixOsgToPx(const osg::Matrixd & m)
     return physx::PxMat44(px);
 }
 
-physx::PxMat44 matrixOsgToPxTranslate(const osg::Matrixd & m)
+physx::PxMat44 matrixOsgToPxInverte(const osg::Matrixd & m)
 {
     const osg::Matrixd::value_type * old = m.ptr();
     physx::PxReal inv[16];

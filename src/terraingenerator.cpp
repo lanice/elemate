@@ -80,19 +80,22 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         osgTerrain::HeightFieldLayer * osgHeightField = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile->getElevationLayer());
         assert(osgHeightField);
         PxMat44 osgTransform(matrixOsgToPx(osgHeightField->getLocator()->getTransform()));
-        PxMat44 osgTransformTranslated(matrixOsgToPxTranslate(osgHeightField->getLocator()->getTransform()));
+        PxMat44 osgTransformInverted(matrixOsgToPxInverte(osgHeightField->getLocator()->getTransform()));
         // transform physx height field coordinates to osg
-        PxTransform rotate1(PxQuat(-std::_Pi / 2.0f, PxVec3(1, 0, 0)));
-        PxTransform rotate2(PxQuat(-std::_Pi / 2.0f, PxVec3(0, 1, 0)));
-        PxTransform mirror(PxMat44(PxVec4(-1, 1, -1, 1)));
-
-        PxTransform transform(mirror * (rotate1 * rotate2));
+        PxMat44 baseTransform(
+            PxVec4(0, 1, 0, 0),
+            PxVec4(0, 0, 1, 0),
+            PxVec4(1, 0, 0, 0),
+            PxVec4(0, 0, 0, 1));
+        PxMat44 transform_mat(osgTransformInverted * baseTransform);
+        PxTransform transform(transform_mat);
+        PxMat44 transform_remat(transform);
         
         // center the terrain in the scene
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(transform);
         terrain->m_pxActors.emplace(tileID, actor);
 
-        PxShape * pxShape = createPxShape(*osgHeightField->getHeightField(), *actor, PxTransform(), transform);
+        PxShape * pxShape = createPxShape(*osgHeightField->getHeightField(), *actor, PxTransform(), transform_mat);
         terrain->m_pxShapes.emplace(tileID, pxShape);
 
         // debug the height geometries

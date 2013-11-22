@@ -11,4 +11,4 @@ namespace physx {
 physx::PxMat44 matrixOsgToPx(const osg::Matrixd & m);
 
 /** converts osg to physx matrix data format and mirrors along the diagonal */
-physx::PxMat44 matrixOsgToPxTranslate(const osg::Matrixd & m);
+physx::PxMat44 matrixOsgToPxInverte(const osg::Matrixd & m);
