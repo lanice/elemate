@@ -60,7 +60,7 @@ void Game::start(){
     // Set light source
     osg::ref_ptr<osg::Light> light = new osg::Light;
     light->setLightNum(1);
-    light->setPosition(osg::Vec4(0, 0, 7, 1.0f));
+    light->setPosition(osg::Vec4(0, 7, 0, 1.0f));
 
     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
     lightSource->setLight(light.get());
@@ -79,8 +79,8 @@ void Game::start(){
     m_sphere1.first->addChild(sphere1_geode);
     m_root->addChild(m_sphere1.first);
     //PhysX Object
-    m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 0, 5)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere1.second->setLinearVelocity(physx::PxVec3(-0.5, 0.0, 4.0));
+    m_sphere1.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
+    m_sphere1.second->setLinearVelocity(physx::PxVec3(-2, 4.0, 0));
     m_sphere1.second->setAngularVelocity(physx::PxVec3(6.0, 13.0, 1.0));
     m_physics_wrapper->scene()->addActor(*m_sphere1.second);
 
@@ -92,8 +92,8 @@ void Game::start(){
     m_sphere2.first->addChild(sphere2_geode);
     m_root->addChild(m_sphere2.first);
     //PhysX Object
-    m_sphere2.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(-1, 0, 5)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
-    m_sphere2.second->setLinearVelocity(physx::PxVec3(0.5, 0.0, 4.0));
+    m_sphere2.second = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(physx::PxVec3(-1, 3, 0)), physx::PxSphereGeometry(0.2F), *m_physics_wrapper->material("default"), 1.0F);
+    m_sphere2.second->setLinearVelocity(physx::PxVec3(2, 4.0, 0));
     m_physics_wrapper->scene()->addActor(*m_sphere2.second);
 
 	//Creates a plane
@@ -108,7 +108,7 @@ void Game::start(){
         osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);*/
 
     // OSG Object
-    m_root->addChild(m_terrain->osgTerrain());
+    m_root->addChild(m_terrain->osgTransformedTerrain());
 
     // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
     m_viewer->setSceneData(m_root.get());
@@ -169,11 +169,11 @@ void Game::end(){
 
 void Game::setOsgCamera(){
 	osgGA::TrackballManipulator * navigation = new osgGA::TrackballManipulator();
-	//navigation->setHomePosition(
-	//	osg::Vec3d(0.0, 6.0, 12.0),
-	//	osg::Vec3d(0.0, 3.0, 0.0),
-	//	osg::Vec3d(0.0, 1.0, 0.0));
-	//navigation->home(0.0);
+	navigation->setHomePosition(
+		osg::Vec3d(0.0, 10.0, 12.0),
+		osg::Vec3d(0.0, 2.0, 0.0),
+		osg::Vec3d(0.0, 1.0, 0.0));
+	navigation->home(0.0);
 	m_viewer->setCameraManipulator(navigation);
 }
 

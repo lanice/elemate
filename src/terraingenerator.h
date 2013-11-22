@@ -10,6 +10,7 @@ namespace osg {
     class Array;
     class Geometry;
     class HeightField;
+    class MatrixTransform;
 }
 namespace osgTerrain {
     class Terrain;
@@ -46,6 +47,10 @@ class ElemateHeightFieldTerrain {
 public:
     explicit ElemateHeightFieldTerrain(const TerrainSettings & settings);
 
+    /** osg transform node with terrain as child node
+      * transforms the terrain to physx/opengl coordinates */
+    osg::MatrixTransform * osgTransformedTerrain() const;
+    /** osg terrain object containing terrain tiles with hight fields */
     osgTerrain::Terrain * osgTerrain() const;
     physx::PxShape const * pxShape(const osgTerrain::TileID & tileID) const;
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;
@@ -54,11 +59,15 @@ private:
     /** osg terrain object that can consist of multiple tiles */
     osg::ref_ptr<osgTerrain::Terrain> m_osgTerrain;
 
+    /** osg transform to bring the terrain in physx world */
+    osg::ref_ptr<osg::MatrixTransform> m_osgTerrainTransform;
+
     /** physx height field shape per terrain tile */
     std::map<osgTerrain::TileID, physx::PxShape*> m_pxShapes;
     /** physx static actor per terrain tile */
     std::map<osgTerrain::TileID, physx::PxRigidStatic*> m_pxActors;
 
+    /** stores terrain configuration, set up by terrain generator */
     const TerrainSettings m_settings;
 
 friend class TerrainGenerator;
