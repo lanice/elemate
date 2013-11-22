@@ -1,4 +1,6 @@
+#pragma once
 
+#include <cassert>
 #include <map>
 #include <osg/ref_ptr>
 #include <foundation/PxSimpleTypes.h>
@@ -19,18 +21,22 @@ namespace physx {
     class PxRigidStatic;
     class PxHeightField;
     class PxHeightFieldGeometry;
+    class PxMat44;
+    class PxTransform;
 }
 
 struct TerrainSettings {
     TerrainSettings();
     float sizeX;
-    float sizeZ;
+    float sizeY;
     unsigned columns;
     unsigned rows;
     unsigned tilesX;
-    unsigned tilesZ;
-    float xSamplesPerCoord() const { return columns / sizeX; }
-    float zSamplesPerCoord() const { return rows / sizeZ; }
+    unsigned tilesY;
+    inline float samplesPerXCoord() const { assert(sizeX > 0); return columns / sizeX; }
+    inline float samplesPerYCoord() const { assert(sizeY > 0); return rows / sizeY; }
+    inline float intervalX() const { assert(columns > 1); return sizeX / (columns - 1); }
+    inline float intervalY() const { assert(rows > 1); return sizeY / (rows - 1); }
 };
 
 
@@ -63,16 +69,16 @@ public:
     /** creates a generator with default settings */
     TerrainGenerator();
     /** terrain size in world coordinates */
-    void setExtentsInWorld(float x, float z);
+    void setExtentsInWorld(float x, float y);
     float xExtens() const;
-    float zExtens() const;
+    float yExtens() const;
     /** height values per world coordinate 
       * The applied value may be a bit different as the number of total samples is an integral value. */
-    void setSamplesPerWorldCoord(float xzSamples);
+    void setSamplesPerWorldCoord(float xySamples);
     float samplesPerWorldCoord() const;
-    void setTilesPerAxis(unsigned x, unsigned z);
+    void setTilesPerAxis(unsigned x, unsigned y);
     float tilesPerXAxis() const;
-    float tilesPerZAxis() const;
+    float tilesPerYAxis() const;
 
     /** generation specific settings */
     /** sigma parameter for used normal distribution */
@@ -94,7 +100,7 @@ private:
 
     /** creates a terrain tile, and sets its tileID */
     osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID) const;
-    physx::PxShape * createPxShape(const osg::HeightField & osgHeightField, physx::PxRigidStatic & pxActor) const;
+    physx::PxShape * createPxShape(const osg::HeightField & osgHeightField, physx::PxRigidStatic & pxActor, const physx::PxTransform & scaling, const physx::PxMat44 & transform) const;
 
     //osg::ref_ptr<osgTerrain::Terrain> getTerrain();
     //ElemateHeightFieldTerrain * createHeightFieldTerrain();
