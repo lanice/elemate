@@ -13,6 +13,7 @@
 #include <osgGA/TrackballManipulator>
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
+#include <osgUtil/GLObjectsVisitor>
 
 // PhysxX Classes
 #include "PxPhysicsAPI.h"
@@ -48,7 +49,7 @@ void Game::initialize(osgViewer::Viewer* viewer){
     // use modern OpenGL
     osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
     graphicsState->setUseModelViewAndProjectionUniforms(true);
-    graphicsState->setUseVertexAttributeAliasing(true);
+    //graphicsState->setUseVertexAttributeAliasing(true);
 
 	m_root = new osg::Group();
 }
@@ -60,7 +61,7 @@ void Game::start(){
     // Set light source
     osg::ref_ptr<osg::Light> light = new osg::Light;
     light->setLightNum(1);
-    light->setPosition(osg::Vec4(0, 7, 0, 1.0f));
+    light->setPosition(osg::Vec4(3, 10, 5, 1.0f));
 
     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
     lightSource->setLight(light.get());
