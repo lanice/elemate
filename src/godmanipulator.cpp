@@ -106,3 +106,78 @@ void GodManipulator::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg
    eye = _eye;
    up = _rotation * osg::Vec3d( 0.,1.,0. );
 }
+
+
+/// Handles GUIEventAdapter::KEYDOWN event.
+bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+{
+    switch( ea.getKey() )
+    {
+        case osgGA::GUIEventAdapter::KEY_Space:
+            flushMouseEventStack();
+            _thrown = false;
+            home(ea,us);
+            return true;
+
+        case osgGA::GUIEventAdapter::KEY_W:
+            // move forward
+            moveForward( 1.0 );
+            us.requestRedraw();
+            us.requestContinuousUpdate( true );
+            return true;
+
+        case osgGA::GUIEventAdapter::KEY_S:
+            // move backward
+            moveForward( -1.0 );
+            us.requestRedraw();
+            us.requestContinuousUpdate( true );
+            return true;
+
+        case osgGA::GUIEventAdapter::KEY_A:
+            // move left
+            moveRight( -1.0 );
+            us.requestRedraw();
+            us.requestContinuousUpdate( true );
+            return true;
+
+        case osgGA::GUIEventAdapter::KEY_D:
+            // move right
+            moveRight( 1.0 );
+            us.requestRedraw();
+            us.requestContinuousUpdate( true );
+            return true;
+
+        default:
+            return false;
+    }
+
+    return false;
+}
+
+
+/// Move camera forward by distance parameter.
+void GodManipulator::moveForward( const double distance )
+{
+   moveForward( _rotation, distance );
+}
+
+
+/// Move camera forward by distance parameter.
+void GodManipulator::moveForward( const osg::Quat& rotation, const double distance )
+{
+   _eye += rotation * osg::Vec3d( 0., 0., -distance );
+}
+
+
+/// Move camera right by distance parameter.
+void GodManipulator::moveRight( const double distance )
+{
+   _eye += _rotation * osg::Vec3d( distance, 0., 0. );
+}
+
+
+/// Move camera up by distance parameter.
+void GodManipulator::moveUp( const double distance )
+{
+   _eye += _rotation * osg::Vec3d( 0., distance, 0. );
+}

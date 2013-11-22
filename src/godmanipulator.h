@@ -26,6 +26,13 @@ class GodManipulator : public osgGA::StandardManipulator
 
     protected:
 
+        virtual bool handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+
+        virtual void moveForward( const double distance );
+        virtual void moveForward( const osg::Quat& rotation, const double distance );
+        virtual void moveRight( const double distance );
+        virtual void moveUp( const double distance );
+
         osg::Vec3d _eye;
         osg::Quat  _rotation;
 };
