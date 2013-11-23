@@ -32,10 +32,28 @@ class GodManipulator : public osgGA::StandardManipulator
         /** Get manipulator's focal center, eye position, and up vector.*/
         virtual void getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const;
 
+        /** Set distance per frame the manipulator should move.*/
+        virtual void setVelocity( const double& velocity );
+        /** Get distance per frame the manipulator moves.*/
+        virtual double getVelocity() const;
+
     protected:
 
         /** Handles GUIEventAdapter::KEYDOWN event.*/
         virtual bool handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+        /** Handles GUIEventAdapter::KEYUP event.*/
+        virtual bool handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+
+        /** Make movement step of manipulator. Returns true if any movement was made.*/
+        virtual bool performMovement();
+        /** Make movement step of manipulator. This method implements movement for W key.*/
+        virtual bool performMovementKeyW( const double distance );
+        /** Make movement step of manipulator. This method implements movement for S key.*/
+        virtual bool performMovementKeyS( const double distance );
+        /** Make movement step of manipulator. This method implements movement for A key.*/
+        virtual bool performMovementKeyA( const double distance );
+        /** Make movement step of manipulator. This method implements movement for D key.*/
+        virtual bool performMovementKeyD( const double distance );
 
         /** Move camera forward by distance parameter.*/
         virtual void moveForward( const double distance );
@@ -46,6 +64,13 @@ class GodManipulator : public osgGA::StandardManipulator
         /** Move camera up by distance parameter.*/
         virtual void moveUp( const double distance );
 
+
         osg::Vec3d _eye;
         osg::Quat  _rotation;
+        double _velocity;
+
+        bool _keyPressedW;
+        bool _keyPressedS;
+        bool _keyPressedA;
+        bool _keyPressedD;
 };
