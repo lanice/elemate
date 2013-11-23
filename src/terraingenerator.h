@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <map>
+#include <limits>
 #include <osg/ref_ptr>
 #include <foundation/PxSimpleTypes.h>
 
@@ -19,20 +20,42 @@ namespace physx {
     class PxRigidStatic;
     class PxMat44;
     class PxTransform;
+    struct PxHeightFieldSample;
+    class PxHeightFieldGeometry;
 }
 
 struct TerrainSettings {
     TerrainSettings();
     float sizeX;
     float sizeZ;
-    unsigned columns;
+    /** maximal possible height value in terrain, as used in the generator */
+    float m_maxHeight;
+    /** number of sample points along the x axis in one tile */
     unsigned rows;
+    /** number of sample points along the z axis in one tile */
+    unsigned columns;
+    /** number of tiles along the x axis */
     unsigned tilesX;
+    /** number of tiles along the z axis */
     unsigned tilesZ;
-    inline float samplesPerXCoord() const { assert(sizeX > 0); return columns / sizeX; }
-    inline float samplesPerZCoord() const { assert(sizeZ > 0); return rows / sizeZ; }
-    inline float intervalX() const { assert(columns > 1); return sizeX / (columns - 1); }
-    inline float intervalZ() const { assert(rows > 1); return sizeZ / (rows - 1); }
+    /** size of one tile along the x axis */
+    inline float tileSizeX() const { assert(tilesX >= 1); return sizeX / tilesX; };
+    /** size of one tile along the z axis */
+    inline float tileSizeZ() const { assert(tilesZ >= 1); return sizeZ / tilesZ; };
+    /** number of sample points along the x axis in the hole terrain */
+    unsigned samplesX() const { assert(( (long long) rows*tilesX ) < std::numeric_limits<unsigned>::max());
+        return rows * tilesX; }
+    /** number of sample points along the z axis in the hole terrain */
+    unsigned samplesZ() const { assert(( (long long) columns*tilesZ ) < std::numeric_limits<unsigned>::max());
+        return columns * tilesZ; }
+    /** number of sample columns per x coordinate */
+    inline float samplesPerXCoord() const { assert(sizeX > 0); return rows / sizeX; }
+    /** number of sample rows per z coordinate */
+    inline float samplesPerZCoord() const { assert(sizeZ > 0); return columns / sizeZ; }
+    /** distance between two sample points along the x axis */
+    inline float intervalX() const { assert(rows >= 2); return sizeX / ( rows - 1 ); }
+    /** distance between two sample points along the z axis */
+    inline float intervalZ() const { assert(columns >= 2); return sizeZ / (columns - 1); }
 };
 
 
@@ -74,9 +97,12 @@ friend class TerrainGenerator;
 
 
 /** Generator for height field terrains
-  * Creates height field data and wraps it into osg and PhysX objects. 
+  * Creates height field data and wraps it into PhysX and OSG objects. 
   * Terrains are oriented in the xz-plane, using the default PhysX coordinate system for heightfields.
-  * Creates a transform node for the osg terrain object, because osg terrains are aligned along the xy plane. */
+  * x is right, y is up, z is back
+  * Creates a transform node for the osg terrain object, to transform it in our cordinate system.
+  * rows = x axis, height = y axis, columns = z axis
+  * This is PhysX logic, OSG is kind of inverse, so don't get confused when reading the cpp =) */
 class TerrainGenerator {
 public:
     /** creates a generator with default settings */
@@ -85,7 +111,7 @@ public:
     void setExtentsInWorld(float x, float z);
     float xExtens() const;
     float zExtens() const;
-    /** Set number of columns and rows in height field so that the terrain gets xzSamples of height values per world coordinate.
+    /** Set number of rows and columns in height field so that the terrain gets xzSamples of height values per world coordinate.
       * The applied value may be a bit different as the number of total samples is an integral value. */
     void setSamplesPerWorldXCoord(float xSamples);
     void setSamplesPerWorldZCoord(float zSamples);
@@ -95,7 +121,7 @@ public:
     int tilesPerXAxis() const;
     int tilesPerZAxis() const;
 
-    /** generation specific settings */
+    /** generation time specific settings */
 
     /** sigma parameter for used normal distribution */
     void setHeightSigma(float sigma);
@@ -117,9 +143,9 @@ private:
     mutable ElemateHeightFieldTerrain * artifact;
 
     float m_heightSigma;
-    float m_maxHeight;
 
     /** creates a terrain tile, and sets its tileID */
-    osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID) const;
-    physx::PxShape * createPxShape(const osg::HeightField & osgHeightField, physx::PxRigidStatic & pxActor, const physx::PxTransform & scaling, const physx::PxMat44 & transform) const;
+    physx::PxHeightFieldSample * createPxHeightFieldData(unsigned numSamples) const;
+    physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples, const physx::PxMat44 & transform) const;
+    osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
 };

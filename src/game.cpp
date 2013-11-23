@@ -61,7 +61,7 @@ void Game::start(){
     // Set light source
     osg::ref_ptr<osg::Light> light = new osg::Light;
     light->setLightNum(1);
-    light->setPosition(osg::Vec4(3, 10, 5, 1.0f));
+    light->setPosition(osg::Vec4(-10, 10, 5, 1.0f));
 
     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
     lightSource->setLight(light.get());
