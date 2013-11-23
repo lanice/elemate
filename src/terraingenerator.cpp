@@ -35,10 +35,10 @@ namespace {
 }
 
 TerrainSettings::TerrainSettings()
-: sizeX(10.0f)
-, sizeZ(20.0f)
-, rows(4)
-, columns(3)
+: sizeX(150.0f)
+, sizeZ(200.0f)
+, rows(150)
+, columns(200)
 , tilesX(1u)
 , tilesZ(1u)
 , m_maxHeight(2.f)
@@ -99,31 +99,31 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         assert(osgHeightField);
 
 
-        // debug the height geometries
-        std::cout << "OSG x(right)columns y(front)row z(up)" << std::endl;
-        std::cout << std::setprecision(1);
-        std::cout << std::fixed;
-        osg::Matrix transformOsgComlete = osgHeightField->getLocator()->getTransform() * osgBaseTransformToPx;
-        // use osg way of columns and rows here
-        for (unsigned c = 0; c < m_settings.rows; ++c) {
-            std::cout << "Column " << c << std::endl;
-            for (unsigned r = 0; r < m_settings.columns; ++r) {
-                //osg::Vec3 o = osgHeightField->getHeightField()->getOrigin();
-                osg::Vec3 v = osgHeightField->getHeightField()->getVertex(c, r);
-                osg::Vec3 vt = osg::Vec3(c, r, 0) * transformOsgComlete;
-                float height;
-                osgHeightField->getInterpolatedValue(c / m_settings.rows, r / m_settings.columns, height);
-                vt[2] = height;
-                std::cout.width(5); std::cout << v.x() << " ";
-                std::cout.width(5); std::cout << v.y() << " ";
-                std::cout.width(5); std::cout << v.z() << "     ";
+        //// debug the height geometries
+        //std::cout << "OSG x(right)columns y(front)row z(up)" << std::endl;
+        //std::cout << std::setprecision(1);
+        //std::cout << std::fixed;
+        //osg::Matrix transformOsgComlete = osgHeightField->getLocator()->getTransform() * osgBaseTransformToPx;
+        //// use osg way of columns and rows here
+        //for (unsigned c = 0; c < m_settings.rows; ++c) {
+        //    std::cout << "Column " << c << std::endl;
+        //    for (unsigned r = 0; r < m_settings.columns; ++r) {
+        //        //osg::Vec3 o = osgHeightField->getHeightField()->getOrigin();
+        //        osg::Vec3 v = osgHeightField->getHeightField()->getVertex(c, r);
+        //        osg::Vec3 vt = osg::Vec3(c, r, 0) * transformOsgComlete;
+        //        float height;
+        //        osgHeightField->getInterpolatedValue(c / m_settings.rows, r / m_settings.columns, height);
+        //        vt[2] = height;
+        //        std::cout.width(5); std::cout << v.x() << " ";
+        //        std::cout.width(5); std::cout << v.y() << " ";
+        //        std::cout.width(5); std::cout << v.z() << "     ";
 
-                std::cout.width(5); std::cout << vt.x() << " ";
-                std::cout.width(5); std::cout << vt.y() << " ";
-                std::cout.width(5); std::cout << vt.z() << std::endl;
-            }
-            std::cout << std::endl;
-        }
+        //        std::cout.width(5); std::cout << vt.x() << " ";
+        //        std::cout.width(5); std::cout << vt.y() << " ";
+        //        std::cout.width(5); std::cout << vt.z() << std::endl;
+        //    }
+        //    std::cout << std::endl;
+        //}
     }
 
     return terrain;
@@ -253,29 +253,29 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
         heightScale, m_settings.intervalX(), m_settings.intervalZ());
     PxShape * shape = pxActor.createShape(*m_pxHfGeometry, mat, 1);
 
-    // debug the height geometries
-    std::cout << "phyx: x(right)rows y(up) z(back)columns" << std::endl;
-    std::cout << std::setprecision(1);
-    std::cout << std::fixed;
+    //// debug the height geometries
+    //std::cout << "phyx: x(right)rows y(up) z(back)columns" << std::endl;
+    //std::cout << std::setprecision(1);
+    //std::cout << std::fixed;
 
-    for (unsigned r = 0; r < hfDesc.nbRows; ++r) {
-        std::cout << "Row: " << r << std::endl;
-        for (unsigned c = 0; c < hfDesc.nbColumns; ++c) {
-            PxVec3 v = PxVec3(
-                PxReal(r) * m_pxHfGeometry->rowScale,
-                PxReal(hfSamples[c + ( r*hfDesc.nbColumns )].height) * m_pxHfGeometry->heightScale,
-                PxReal(c) * m_pxHfGeometry->columnScale);
-            PxVec3 vt = transform.transform(v);
-            std::cout.width(5); std::cout << v.x << " ";
-            std::cout.width(5); std::cout << v.y << " ";
-            std::cout.width(5); std::cout << v.z << "     ";
+    //for (unsigned r = 0; r < hfDesc.nbRows; ++r) {
+    //    std::cout << "Row: " << r << std::endl;
+    //    for (unsigned c = 0; c < hfDesc.nbColumns; ++c) {
+    //        PxVec3 v = PxVec3(
+    //            PxReal(r) * m_pxHfGeometry->rowScale,
+    //            PxReal(hfSamples[c + ( r*hfDesc.nbColumns )].height) * m_pxHfGeometry->heightScale,
+    //            PxReal(c) * m_pxHfGeometry->columnScale);
+    //        PxVec3 vt = transform.transform(v);
+    //        std::cout.width(5); std::cout << v.x << " ";
+    //        std::cout.width(5); std::cout << v.y << " ";
+    //        std::cout.width(5); std::cout << v.z << "     ";
 
-            std::cout.width(5); std::cout << vt.x << " ";
-            std::cout.width(5); std::cout << vt.y << " ";
-            std::cout.width(5); std::cout << vt.z << std::endl;
-        }
-        std::cout << std::endl;
-    }
+    //        std::cout.width(5); std::cout << vt.x << " ";
+    //        std::cout.width(5); std::cout << vt.y << " ";
+    //        std::cout.width(5); std::cout << vt.z << std::endl;
+    //    }
+    //    std::cout << std::endl;
+    //}
 
     assert(shape);
 
