@@ -230,47 +230,66 @@ bool GodManipulator::performMovement()
     if( dx == 0. && dy == 0. )
         return false;*/
 
+    bool rotated = false;
     bool moved = false;
     
+    osg::Vec3d movementDirection = osg::Vec3d( 0., 0., 0. );
     // call appropriate methods
     if ( _keyPressedW )
-        moved = performMovementKeyW( c_velocityNormal );
+        calculateMovementDirectionKeyW( movementDirection );
     if ( _keyPressedS )
-        moved = performMovementKeyS( c_velocityNormal );
+        calculateMovementDirectionKeyS( movementDirection );
     if ( _keyPressedA )
-        moved = performMovementKeyA( c_velocityNormal );
+        calculateMovementDirectionKeyA( movementDirection );
     if ( _keyPressedD )
-        moved = performMovementKeyD( c_velocityNormal );
+        calculateMovementDirectionKeyD( movementDirection );
 
-    return moved;
+    // normalize vector to move at constant speed in any direction. check if any movement will happen.
+    if ( movementDirection.normalize() == 0 )
+        return rotated;
+    else
+        moved = performMovementKeyboard( movementDirection, c_velocityNormal );
+
+    return ( moved || rotated );
 }
 
 
-bool GodManipulator::performMovementKeyW( const double distance )
+bool GodManipulator::performMovementKeyboard( const osg::Vec3d& movementDirection, const double distance )
 {
-    moveForward( distance );
+    _eye += (movementDirection * distance);
     return true;
 }
 
 
-bool GodManipulator::performMovementKeyS( const double distance )
+void GodManipulator::calculateMovementDirectionKeyW( osg::Vec3d& movementDirection )
 {
-    moveForward( -distance );
-    return true;
+    osg::Vec3d lookAtFront = _rotation * osg::Vec3d( 0., 0., -1. );
+
+    movementDirection += osg::Vec3d( lookAtFront.x(), 0., lookAtFront.z() );
 }
 
 
-bool GodManipulator::performMovementKeyA( const double distance )
+void GodManipulator::calculateMovementDirectionKeyS( osg::Vec3d& movementDirection )
 {
-    moveRight( -distance );
-    return true;
+    osg::Vec3d lookAtBack = _rotation * osg::Vec3d( 0., 0., 1. );
+
+    movementDirection += osg::Vec3d( lookAtBack.x(), 0., lookAtBack.z() );
 }
 
 
-bool GodManipulator::performMovementKeyD( const double distance )
+void GodManipulator::calculateMovementDirectionKeyA( osg::Vec3d& movementDirection )
 {
-    moveRight( distance );
-    return true;
+    osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
+
+    movementDirection += osg::Vec3d( lookAtLeft.x(), 0., lookAtLeft.z() );
+}
+
+
+void GodManipulator::calculateMovementDirectionKeyD( osg::Vec3d& movementDirection )
+{
+    osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
+
+    movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
 }
 
 

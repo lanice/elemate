@@ -49,15 +49,19 @@ class GodManipulator : public osgGA::StandardManipulator
 
         /** Make movement step of manipulator. Returns true if any movement was made.*/
         virtual bool performMovement();
-        /** Make movement step of manipulator. This method implements movement for W key.*/
-        virtual bool performMovementKeyW( const double distance );
-        /** Make movement step of manipulator. This method implements movement for S key.*/
-        virtual bool performMovementKeyS( const double distance );
-        /** Make movement step of manipulator. This method implements movement for A key.*/
-        virtual bool performMovementKeyA( const double distance );
-        /** Make movement step of manipulator. This method implements movement for D key.*/
-        virtual bool performMovementKeyD( const double distance );
+        /** Move the camera in direction movementDirection by distance parameter.*/
+        virtual bool performMovementKeyboard( const osg::Vec3d& movementDirection, const double distance );
 
+
+        /** Calculate movement direction when pressing W key and adding it to movementDirection vector.*/
+        virtual void calculateMovementDirectionKeyW( osg::Vec3d& movementDirection );
+        /** Calculate movement direction when pressing S key and adding it to movementDirection vector.*/
+        virtual void calculateMovementDirectionKeyS( osg::Vec3d& movementDirection );
+        /** Calculate movement direction when pressing A key and adding it to movementDirection vector.*/
+        virtual void calculateMovementDirectionKeyA( osg::Vec3d& movementDirection );
+        /** Calculate movement direction when pressing D key and adding it to movementDirection vector.*/
+        virtual void calculateMovementDirectionKeyD( osg::Vec3d& movementDirection );
+        
         /** Move camera forward by distance parameter.*/
         virtual void moveForward( const double distance );
         /** Move camera right by distance parameter.*/
