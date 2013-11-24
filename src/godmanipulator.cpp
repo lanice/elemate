@@ -166,24 +166,28 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 }
 
 
-bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
+bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
     switch( ea.getKey() )
     {
         case osgGA::GUIEventAdapter::KEY_W:
             _keyPressedW = false;
+            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_S:
             _keyPressedS = false;
+            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_A:
             _keyPressedA = false;
+            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_D:
             _keyPressedD = false;
+            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         default:
@@ -191,6 +195,16 @@ bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
     }
 
     return false;
+}
+
+
+void GodManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& us )
+{
+    if ( !_keyPressedW && !_keyPressedS && !_keyPressedA && !_keyPressedD )
+    {
+        _thrown = false;
+        us.requestContinuousUpdate( false );
+    }
 }
 
 
@@ -262,13 +276,7 @@ bool GodManipulator::performMovementKeyD( const double distance )
 
 void GodManipulator::moveForward( const double distance )
 {
-   moveForward( _rotation, distance );
-}
-
-
-void GodManipulator::moveForward( const osg::Quat& rotation, const double distance )
-{
-   _eye += rotation * osg::Vec3d( 0., 0., -distance );
+   _eye += _rotation * osg::Vec3d( 0., 0., -distance );
 }
 
 

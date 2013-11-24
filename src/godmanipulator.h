@@ -44,6 +44,9 @@ class GodManipulator : public osgGA::StandardManipulator
         /** Handles GUIEventAdapter::KEYUP event.*/
         virtual bool handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
+        /** Set requestContinuousUpdate( bool ) to false if no movement key is pressed.*/
+        virtual void disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+
         /** Make movement step of manipulator. Returns true if any movement was made.*/
         virtual bool performMovement();
         /** Make movement step of manipulator. This method implements movement for W key.*/
@@ -57,8 +60,6 @@ class GodManipulator : public osgGA::StandardManipulator
 
         /** Move camera forward by distance parameter.*/
         virtual void moveForward( const double distance );
-        /** Move camera forward by distance parameter.*/
-        virtual void moveForward( const osg::Quat& rotation, const double distance );
         /** Move camera right by distance parameter.*/
         virtual void moveRight( const double distance );
         /** Move camera up by distance parameter.*/
