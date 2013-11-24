@@ -2,7 +2,7 @@
 #include "godmanipulator.h"
 
 
-static const double c_velocityNormal = 10.0;
+static const double c_velocityNormal = 1.0;
 
 
 GodManipulator::GodManipulator( int flags )
