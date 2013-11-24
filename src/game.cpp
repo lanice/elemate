@@ -1,21 +1,21 @@
 #include "game.h"
 
-//Own Classes
+// Own Classes
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "terraingenerator.h"
+#include "godmanipulator.h"
 
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
 
 // OSG Classes
 #include <osgViewer/Viewer>
-#include <osgGA/TrackballManipulator>
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
 #include <osgUtil/GLObjectsVisitor>
 
-// PhysxX Classes
+// PhysX Classes
 #include "PxPhysicsAPI.h"
 
 // Standard Libs
@@ -118,7 +118,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-	osgGA::TrackballManipulator * navigation = new osgGA::TrackballManipulator();
+	GodManipulator * navigation = new GodManipulator();
 	navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),
