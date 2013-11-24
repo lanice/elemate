@@ -35,12 +35,12 @@ namespace {
 }
 
 TerrainSettings::TerrainSettings()
-: sizeX(150.0f)
-, sizeZ(200.0f)
-, rows(150)
-, columns(200)
-, tilesX(1u)
-, tilesZ(1u)
+: sizeX(10)
+, sizeZ(15)
+, rows(3)
+, columns(5)
+, tilesX(2)
+, tilesZ(1)
 , m_maxHeight(2.f)
 {
 }
@@ -72,13 +72,25 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     terrain->m_osgTerrainTransform = new osg::MatrixTransform(osgBaseTransformToPx);
     terrain->m_osgTerrainTransform->addChild(osgTerrain.get());
 
-    {   // for each tile (...)
-        osgTerrain::TileID tileID(0, 0, 0);
+
+    /** The tileID determines the position of the current tile in the grid of tiles.
+      * Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
+      */
+    
+    int maxxID = m_settings.tilesX - (m_settings.tilesX + 1) * 0.5;
+    int minxID = maxxID - m_settings.tilesX + 1;
+    int maxzID = m_settings.tilesZ - (m_settings.tilesZ + 1) * 0.5;
+    int minzID = maxzID - m_settings.tilesZ + 1;
+
+    for (int xID = minxID; xID <= maxxID; ++xID)
+    for (int zID = minzID; zID <= maxzID; ++zID)
+    {
+        osgTerrain::TileID tileID(0, xID, zID);
 
         /** create terrain data and store it in PhysX terrain object */
 
-        // center the terrain in the scene
-        PxTransform pxTerrainTransform = PxTransform(PxVec3(-m_settings.sizeX / 2.0f, 0.0f, -m_settings.sizeZ / 2.0f));
+        // move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin
+        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
         terrain->m_pxActors.emplace(tileID, actor);
 
@@ -93,13 +105,15 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 
         osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(tileID, pxHeightFieldSamples);
         assert(tile.valid());
-        osgTerrain->addChild(tile);
-
-        osgTerrain::HeightFieldLayer * osgHeightField = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile->getElevationLayer());
-        assert(osgHeightField);
+        tile->setTerrain(terrain->osgTerrain());
+        
+        osgTerrain->addChild(tile.get());
 
 
         //// debug the height geometries
+
+        //osgTerrain::HeightFieldLayer * osgHeightField = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile->getElevationLayer());
+        //assert(osgHeightField);
         //std::cout << "OSG x(right)columns y(front)row z(up)" << std::endl;
         //std::cout << std::setprecision(1);
         //std::cout << std::fixed;
@@ -238,7 +252,7 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     hfDesc.nbRows = m_settings.rows;
     hfDesc.nbColumns = m_settings.columns;
     hfDesc.samples.data = hfSamples;
-    hfDesc.samples.stride = sizeof( PxHeightFieldSample ); // not better 0 ??
+    hfDesc.samples.stride = sizeof( PxHeightFieldSample );
 
     PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
@@ -301,26 +315,17 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
 
     // compute extents depending on TileID, which sets the row/column positions of the tile
 
-    // locator->setTransformAsExtents() does only what the name suggests, when we set the intervalls as below
-    // the "real" extents depend on the number of columns/rows
-    //  ~ worldX = columns * (maxX-minX) + minX
-    // we need to use z as y for osg, otherwise the terrain generation will not work as it expects this orientation
-    /*osg::Matrixd transform(
-        m_settings.tileSizeX(), 0, 0, 0,
-        0, m_settings.tileSizeZ(), 0, 0,
-        0, 0, 1, 0,
-        -m_settings.tileSizeX() * 0.5, -m_settings.tileSizeX() * 0.5, 0, 1);*/
-    //locator->setTransform(transform);
-    //locator->setTransformAsExtents(-xScaled, -zScaled, xScaled, zScaled);
-
-    float xScaled = m_settings.sizeX * 0.5f;
-    float zScaled = m_settings.sizeZ * 0.5f;
+    float minX = m_settings.tileSizeX() * (tileID.x - 0.5);
+    float minZ = m_settings.tileSizeZ() * (tileID.y - 0.5);
 
     heightField->setXInterval(m_settings.intervalX());
     heightField->setYInterval(m_settings.intervalZ());
 
-    //locator->setTransform(osg::Matrixd());
-    locator->setTransformAsExtents(-xScaled, -zScaled, xScaled, zScaled);
+    locator->setTransform(osg::Matrixd(
+        m_settings.tileSizeX(), 0, 0, 0,
+        0, m_settings.tileSizeZ(), 0, 0,
+        0, 0, 1, 0,
+        minX, minZ, 0, 1));
 
     osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
 
@@ -361,5 +366,10 @@ PxShape const * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & ti
 PxRigidStatic * ElemateHeightFieldTerrain::pxActor(const osgTerrain::TileID & tileID) const
 {
     return m_pxActors.at(tileID);
+}
+
+const std::map<osgTerrain::TileID, physx::PxRigidStatic*> ElemateHeightFieldTerrain::pxActorMap() const
+{
+    return m_pxActors;
 }
 

@@ -76,6 +76,8 @@ public:
     /** static PhysX actor for specified terrain tile 
       * terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;
+    /** map of static PhysX actors */
+    const std::map<osgTerrain::TileID, physx::PxRigidStatic*> pxActorMap() const;
 
 private:
     /** osg terrain object that can consist of multiple tiles */

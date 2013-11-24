@@ -14,6 +14,7 @@
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
 #include <osgUtil/GLObjectsVisitor>
+#include <osgGA/TrackballManipulator>
 
 // PhysX Classes
 #include "PxPhysicsAPI.h"
@@ -84,7 +85,9 @@ void Game::start(){
     // OSG Object
     m_root->addChild(m_terrain->osgTransformedTerrain());
     // PhysX Object
-    m_physics_wrapper->scene()->addActor(*(m_terrain->pxActor(osgTerrain::TileID(0, 0, 0))));
+    for (const auto & actor : m_terrain->pxActorMap()){
+        m_physics_wrapper->scene()->addActor(*actor.second);
+    }
 
     // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
     m_viewer->setSceneData(m_root.get());
@@ -118,7 +121,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-	GodManipulator * navigation = new GodManipulator();
+    osgGA::CameraManipulator * navigation = new osgGA::TrackballManipulator();
 	navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),
