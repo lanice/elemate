@@ -1,5 +1,7 @@
 #include "physicswrapper.h"
 
+#include "hpicgs\CyclicTime.h"
+
 // Standard Libs
 #include <iostream>
 
@@ -7,24 +9,26 @@
 #pragma comment(lib, "PhysX3Common_x64.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
 
-const float PhysicsWrapper::kDefaultStepSize = 1.0f / 60.0f;
 const int	PhysicsWrapper::kNumberOfThreads = 2;
 
 PhysicsWrapper::PhysicsWrapper():
 		m_foundation(nullptr),
 		m_physics(nullptr),
 		//m_profile_zone_manager(nullptr),
+        m_cyclic_time(nullptr),
 		m_scene(nullptr),
 		m_cpu_dispatcher(nullptr),
-		m_accumulator(0.0f),
-		m_step_size(kDefaultStepSize)
+		m_elapsed(0.0f)
 {
 	initializePhysics();
 	initializeScene();
+    initializeTime();
 }
 
 PhysicsWrapper::~PhysicsWrapper(){
 	shutdown();
+    if (m_cyclic_time)
+        delete m_cyclic_time;
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -66,41 +70,48 @@ void PhysicsWrapper::initializePhysics(){
 }
 
 void PhysicsWrapper::initializeScene(){
-	physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
-	sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
-	customizeSceneDescription(sceneDesc);
+    physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
+    sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+    customizeSceneDescription(sceneDesc);
 
-	if (!sceneDesc.cpuDispatcher)
-	{
-		m_cpu_dispatcher = physx::PxDefaultCpuDispatcherCreate(kNumberOfThreads);
-		if (!m_cpu_dispatcher)
-			fatalError("PxDefaultCpuDispatcherCreate failed!");
-		sceneDesc.cpuDispatcher = m_cpu_dispatcher;
-	}
-	if (!sceneDesc.filterShader)
-		sceneDesc.filterShader = &physx::PxDefaultSimulationFilterShader;
+    if (!sceneDesc.cpuDispatcher)
+    {
+        m_cpu_dispatcher = physx::PxDefaultCpuDispatcherCreate(kNumberOfThreads);
+        if (!m_cpu_dispatcher)
+            fatalError("PxDefaultCpuDispatcherCreate failed!");
+        sceneDesc.cpuDispatcher = m_cpu_dispatcher;
+    }
+    if (!sceneDesc.filterShader)
+        sceneDesc.filterShader = &physx::PxDefaultSimulationFilterShader;
 
-	m_scene= m_physics->createScene(sceneDesc);
-	if (!m_scene)
-		fatalError("createScene failed!");
-	
-	m_materials["default"] = m_physics->createMaterial(0.5f, 0.5f, 0.1f); 
-	if (!m_materials["default"])
-		fatalError("createMterial failed!");
+    m_scene = m_physics->createScene(sceneDesc);
+    if (!m_scene)
+        fatalError("createScene failed!");
+
+    m_materials["default"] = m_physics->createMaterial(0.5f, 0.5f, 0.1f);
+    if (!m_materials["default"])
+        fatalError("createMaterial failed!");
+}
+
+void PhysicsWrapper::initializeTime(){
+    if (m_cyclic_time)
+        delete m_cyclic_time;
+    m_cyclic_time = new CyclicTime(0.0L, 1.0L);
 }
 
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
 	//Modify the Scene Description 
 }
 
-bool PhysicsWrapper::step(physx::PxReal dt){
-	m_accumulator += dt;
-	if (m_accumulator < m_step_size)
-		return false;
+bool PhysicsWrapper::step(){
+    static t_longf now = m_cyclic_time->getNonModf();
+    static t_longf last_time = m_cyclic_time->getNonModf();
+    
+    now = m_cyclic_time->getNonModf(true);
+    m_elapsed = now - last_time;
+    last_time = now;
 
-	m_accumulator -= m_step_size;
-
-	m_scene->simulate(m_step_size);
+    m_scene->simulate(elapsedTime());
 	return true;
 }
 
@@ -123,8 +134,22 @@ void PhysicsWrapper::fatalError(std::string error_message){
 	exit(1);
 }
 
-physx::PxPhysics* PhysicsWrapper::physics()const{
-	return m_physics;
+void PhysicsWrapper::startSimulation(){
+    m_cyclic_time->start();
+}
+
+void PhysicsWrapper::pauseSimulation(){
+    m_cyclic_time->pause();
+}
+
+void PhysicsWrapper::stopSimulation(){
+    m_cyclic_time->stop();
+    m_cyclic_time->reset();
+}
+
+
+t_longf PhysicsWrapper::elapsedTime()const{
+    return m_elapsed;
 }
 
 physx::PxScene*	PhysicsWrapper::scene()const{

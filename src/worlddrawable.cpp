@@ -7,8 +7,8 @@
 
 // coordinates according to navigation:
 // x is right
-// y is up
-// -z is front
+// y is front
+// z is up
 
 WorldDrawable::WorldDrawable()
 : m_isComplete(false)

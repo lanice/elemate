@@ -2,7 +2,7 @@
 
 // Own Classes
 #include "physicswrapper.h"
-#include "worlddrawable.h"
+#include "objectscontainer.h"
 #include "terraingenerator.h"
 #include "godmanipulator.h"
 
@@ -11,9 +11,9 @@
 
 // OSG Classes
 #include <osgViewer/Viewer>
-#include <osgViewer/View>
 #include <osgTerrain/Terrain>
-// #include <osgGA/FirstPersonManipulator>
+#include <osg/MatrixTransform>
+#include <osgUtil/GLObjectsVisitor>
 
 // PhysX Classes
 #include "PxPhysicsAPI.h"
@@ -23,111 +23,106 @@
 #include <thread>
 #include <string> 
 
-Game::Game() :
-	m_physics_wrapper(nullptr),
-	m_thread(nullptr),
-	m_cyclic_time(nullptr),
-	m_viewer(nullptr),
-	m_root(nullptr)
+Game::Game() : Game(nullptr)
+{}
+
+Game::Game(osgViewer::Viewer* viewer) :
+m_physics_wrapper(nullptr),
+m_objects_container(nullptr),
+m_interrupted(true),
+m_viewer(nullptr),
+m_root(nullptr),
+m_terrain(nullptr)
 {
-	initialize();
+	initialize(viewer);
 }
 
-Game::~Game(){
-	if (m_thread){
-		end();
-		delete m_thread;
-		m_thread = nullptr;
-	}
-	if (m_viewer)
-		delete m_viewer;
-	if (m_cyclic_time)
-		delete m_cyclic_time;
+Game::~Game()
+{}
+
+void Game::initialize(osgViewer::Viewer* viewer){
+    m_physics_wrapper.reset(new PhysicsWrapper());
+    m_objects_container.reset(new ObjectsContainer(m_physics_wrapper));
+
+	m_viewer = viewer;
+	
+    // use modern OpenGL
+    osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
+    graphicsState->setUseModelViewAndProjectionUniforms(true);
+    //graphicsState->setUseVertexAttributeAliasing(true);
+
+	m_root = new osg::Group();
 }
 
-void Game::initialize(){
-	m_physics_wrapper.reset(new PhysicsWrapper());
+void Game::start(){
+	if (isRunning())
+        return;
 
-	m_cyclic_time = new CyclicTime(0.0L,5.0L);
+    // Set light source
+    osg::ref_ptr<osg::Light> light = new osg::Light;
+    light->setLightNum(1);
+    light->setPosition(osg::Vec4(3, 10, 5, 1.0f));
 
-	m_viewer = new osgViewer::Viewer();
-	m_viewer->setUpViewInWindow(50, 50, 500, 500);
+    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+    lightSource->setLight(light.get());
 
-	m_root = new osg::Geode();
-}
+    m_root->addChild(lightSource.get());
+    lightSource->setStateSetModes(*m_root->getOrCreateStateSet(),
+        osg::StateAttribute::ON);
 
-void Game::start(bool spawn_new_thread){
-/*	WorldDrawable * world = new WorldDrawable;
-	m_root->addDrawable(world);
-	m_viewer->setSceneData(m_root.get());*/
-    TerrainGenerator * terrainGen = new TerrainGenerator;
-    osg::ref_ptr<osgTerrain::Terrain> terrain = terrainGen->getTerrain();
+    m_objects_container->makeStandardBall(m_root, physx::PxVec3( 1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    m_objects_container->makeStandardBall(m_root, physx::PxVec3(-1, 3, 0), 0.2F, physx::PxVec3(2, 4, 0), physx::PxVec3(0, 0, 0));
+    m_objects_container->makeStandardBall(m_root, physx::PxVec3(0, 3, 0), 0.2F, physx::PxVec3(0, 0, 0), physx::PxVec3(0, 50, 0));
+    //m_objects_container->makePlane(m_root);
+
+	
+    // create terrain
+    TerrainGenerator * terrainGen = new TerrainGenerator();
+    m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 
-    m_viewer->setSceneData(terrain);
-	setOsgCamera();
+    // OSG Object
+    m_root->addChild(m_terrain->osgTransformedTerrain());
+    // PhysX Object
+    m_physics_wrapper->scene()->addActor(*(m_terrain->pxActor(osgTerrain::TileID(0, 0, 0))));
 
-	m_cyclic_time->start();
+    // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
+    m_viewer->setSceneData(m_root.get());
+    setOsgCamera();
 
-	if (spawn_new_thread){
-		if (m_thread){
-			end();
-			delete m_thread;
-			m_thread = nullptr;
-		}
-		m_thread = new std::thread(&Game::loop, this);
-	}
-	else {
-		loop();
-	}
+    m_physics_wrapper->startSimulation();
+	m_interrupted = false;
+
+	loop();
 }
 
 void Game::loop(){
-	auto aSphereActor = PxCreateDynamic(*m_physics_wrapper->physics(), physx::PxTransform(physx::PxVec3(0, 1, 0)), physx::PxSphereGeometry(1.0F), *m_physics_wrapper->material("default"), 1.0F);
-	aSphereActor->setLinearVelocity(physx::PxVec3(0, 1, 0));
-	m_physics_wrapper->scene()->addActor(*aSphereActor);
-
-	//Creates a plane
-	physx::PxRigidStatic* plane = PxCreatePlane(*(m_physics_wrapper->physics()), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *m_physics_wrapper->material("default"));
-	m_physics_wrapper->scene()->addActor(*plane);
-
-	auto now = m_cyclic_time->getf();
-	auto last_time = m_cyclic_time->getf();
+    t_longf newBallRounds = 10.0F;
 	while (isRunning())
 	{
-		now = m_cyclic_time->getf(true);
-		m_viewer->frame();
-
-		m_physics_wrapper->step(now-last_time);
-		last_time = now;
-	}
-	m_viewer->setDone(true);
-	m_cyclic_time->stop();
+        m_viewer->frame();
+        m_physics_wrapper->step();
+        m_objects_container->updateAllObjects();
+    }
+	m_interrupted = true;
+    m_physics_wrapper->stopSimulation();
 }
 
 bool Game::isRunning()const{
-	return !m_viewer->done();
+	return !(m_viewer->done() || m_interrupted);
 }
 
 void Game::end(){
-	if (isRunning()){
-		m_viewer->setDone(true);
-		if(m_thread)
-			m_thread->join();
-	}
+	if (isRunning())
+		m_interrupted = true;
 }
 
 void Game::setOsgCamera(){
 	GodManipulator * navigation = new GodManipulator();
-	// osgGA::FirstPersonManipulator * navigation = new osgGA::FirstPersonManipulator();
 	navigation->setHomePosition(
-		osg::Vec3d(0.0, 15.0, 10.0),
-		osg::Vec3d(0.0, 0.0, 0.0),
-		osg::Vec3d(0.0, 0.0, 1.0));
+		osg::Vec3d(0.0, 10.0, 12.0),
+		osg::Vec3d(0.0, 2.0, 0.0),
+		osg::Vec3d(0.0, 1.0, 0.0));
 	navigation->home(0.0);
 	m_viewer->setCameraManipulator(navigation);
-}
-
-std::shared_ptr<PhysicsWrapper> Game::physicsWrapper() const{
-	return m_physics_wrapper;
 }

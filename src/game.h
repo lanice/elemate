@@ -9,9 +9,10 @@
 
 //Forward Declarations
 class PhysicsWrapper;
-class CyclicTime;
+class ObjectsContainer;
+class ElemateHeightFieldTerrain;
 namespace std {			class thread; }
-namespace osg {			class Geode;  }
+namespace osg {			class Group;}
 namespace osgViewer {	class Viewer; }
 
 /** The Game Class that invokes a game loop and initializes PhysX.
@@ -23,26 +24,20 @@ public:
 
 	/** Explicit Constructor because Copying and Assignments are disabled. 	*/
 	explicit Game();	
-	
+	explicit Game(osgViewer::Viewer* viewer);
+
 	~Game();
 
-	/** 
-	  * Starts the Game Loop in a new thread until interrupt() is called. 	
-	  * @param spawn_new_thread If set true, the game loop is executed in a new thread and start() is not a blocking call.
-	  */
-	void start(bool spawn_new_thread);
+	/** Starts the Game Loop until end() is called.  */
+	void start();
 
 	/** True if the game loop is running. */
 	bool isRunning() const;
 
-	/** Calls interrupt() and waits for finishing ending the loop. */
+	/** Ending the loop. */
 	void end();
-
-	/** Returns properly initialized PhysicsWrapper. */
-	std::shared_ptr<PhysicsWrapper> physicsWrapper() const;
-
 protected:
-	void initialize();
+    virtual void initialize(osgViewer::Viewer* viewer) final;
 
 	/** The Game's loop containing drawing and triggering physics is placed right here. */
 	void loop();
@@ -50,12 +45,12 @@ protected:
 	/** This is where the magic happens. Currently: Physics calculation. */
 	void setOsgCamera();
 
-	std::shared_ptr<PhysicsWrapper>	m_physics_wrapper;
-	std::thread*					m_thread;
-	osgViewer::Viewer*				m_viewer;
-	osg::ref_ptr<osg::Geode>		m_root;
-	CyclicTime*						m_cyclic_time;
-
+	std::shared_ptr<PhysicsWrapper>	    m_physics_wrapper;
+    std::shared_ptr<ObjectsContainer>   m_objects_container;
+	osgViewer::Viewer*				    m_viewer;
+	osg::ref_ptr<osg::Group>		    m_root;
+	bool							    m_interrupted;
+    std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(Game);

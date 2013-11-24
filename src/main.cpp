@@ -3,11 +3,15 @@
 
 #include "game.h"
 
+#include <osgViewer/Viewer>
 int main( int argc, char** argv )
 {
-	Game game;	
-	game.start(false); //In separate Thread
-	game.end(); // Waits for GameThread
+	auto viewer = new osgViewer::Viewer();
+	viewer->setUpViewInWindow(50, 50, 500, 500);
+
+	Game game(viewer);	
+	game.start();
+	game.end();
 
 	return 0;
 }
