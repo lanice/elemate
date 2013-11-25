@@ -35,11 +35,11 @@ namespace {
 }
 
 TerrainSettings::TerrainSettings()
-: sizeX(10)
-, sizeZ(15)
-, rows(3)
-, columns(5)
-, tilesX(2)
+: sizeX(200)
+, sizeZ(200)
+, rows(20)
+, columns(20)
+, tilesX(1)
 , tilesZ(1)
 , m_maxHeight(2.f)
 {
