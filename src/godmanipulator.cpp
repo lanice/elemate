@@ -2,7 +2,7 @@
 #include "godmanipulator.h"
 
 
-static const double c_velocityNormal = 1.0;
+static const double c_velocityNormal = 0.2;
 
 
 GodManipulator::GodManipulator( int flags )
@@ -10,7 +10,9 @@ GodManipulator::GodManipulator( int flags )
      _keyPressedW( false ),
      _keyPressedS( false ),
      _keyPressedA( false ),
-     _keyPressedD( false )
+     _keyPressedD( false ),
+     _keyPressedQ( false ),
+     _keyPressedE( false )
 {
     // setAcceleration( 1.0, true );
     // setMaxVelocity( 0.25, true );
@@ -30,7 +32,9 @@ GodManipulator::GodManipulator( const GodManipulator& gpm, const osg::CopyOp& co
      _keyPressedW( gpm._keyPressedW ),
      _keyPressedS( gpm._keyPressedS ),
      _keyPressedA( gpm._keyPressedA ),
-     _keyPressedD( gpm._keyPressedD )//,
+     _keyPressedD( gpm._keyPressedD ),
+     _keyPressedQ( gpm._keyPressedA ),
+     _keyPressedE( gpm._keyPressedD )//,
      // _acceleration( gpm._acceleration ),
      // _maxVelocity( gpm._maxVelocity ),
      // _wheelMovement( gpm._wheelMovement )
@@ -158,6 +162,20 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
             _thrown = true;
             return true;
 
+        case osgGA::GUIEventAdapter::KEY_Q:
+            us.requestRedraw();
+            us.requestContinuousUpdate( true );
+            _keyPressedQ = true;
+            _thrown = true;
+            return true;
+
+        case osgGA::GUIEventAdapter::KEY_E:
+            us.requestRedraw();
+            us.requestContinuousUpdate( true );
+            _keyPressedE = true;
+            _thrown = true;
+            return true;
+
         default:
             return false;
     }
@@ -190,6 +208,16 @@ bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
             disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
+        case osgGA::GUIEventAdapter::KEY_Q:
+            _keyPressedQ = false;
+            disableContinuousUpdateIfNecessary( ea, us );
+            return true;
+
+        case osgGA::GUIEventAdapter::KEY_E:
+            _keyPressedE = false;
+            disableContinuousUpdateIfNecessary( ea, us );
+            return true;
+
         default:
             return false;
     }
@@ -200,7 +228,7 @@ bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 
 void GodManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& us )
 {
-    if ( !_keyPressedW && !_keyPressedS && !_keyPressedA && !_keyPressedD )
+    if ( !_keyPressedW && !_keyPressedS && !_keyPressedA && !_keyPressedD && !_keyPressedQ && !_keyPressedE )
     {
         _thrown = false;
         us.requestContinuousUpdate( false );
@@ -208,32 +236,17 @@ void GodManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAd
 }
 
 
+// This method is still under construction!
 bool GodManipulator::performMovement()
 {
-    /*// return if less then two events have been added
-    if( _ga_t0.get() == NULL || _ga_t1.get() == NULL )
-        return false;
-
-    // get delta time
-    double eventTimeDelta = _ga_t0->getTime() - _ga_t1->getTime();
-    if( eventTimeDelta < 0. )
-    {
-        OSG_WARN << "Manipulator warning: eventTimeDelta = " << eventTimeDelta << std::endl;
-        eventTimeDelta = 0.;
-    }
-
-    // get deltaX and deltaY
-    float dx = _ga_t0->getXnormalized() - _ga_t1->getXnormalized();
-    float dy = _ga_t0->getYnormalized() - _ga_t1->getYnormalized();
-
-    // return if there is no movement.
-    if( dx == 0. && dy == 0. )
-        return false;*/
-
-    bool rotated = false;
     bool moved = false;
+    double movementSpeed = c_velocityNormal;
+    double yaw = 0.;
+    double distanceToLookAtFactor = 3.;
     
     osg::Vec3d movementDirection = osg::Vec3d( 0., 0., 0. );
+    osg::Vec3d rotateDirection = osg::Vec3d( 0., 0., 0. );
+
     // call appropriate methods
     if ( _keyPressedW )
         calculateMovementDirectionKeyW( movementDirection );
@@ -243,20 +256,47 @@ bool GodManipulator::performMovement()
         calculateMovementDirectionKeyA( movementDirection );
     if ( _keyPressedD )
         calculateMovementDirectionKeyD( movementDirection );
+    if ( _keyPressedQ ) {
+        calculateMovementDirectionKeyQ( rotateDirection );
+        yaw += 0.1;
+    }
+    if ( _keyPressedE ) {
+        calculateMovementDirectionKeyE( rotateDirection );
+        yaw -= 0.1;
+    }
 
-    // normalize vector to move at constant speed in any direction. check if any movement will happen.
-    if ( movementDirection.normalize() == 0 )
-        return rotated;
-    else
-        moved = performMovementKeyboard( movementDirection, c_velocityNormal );
 
-    return ( moved || rotated );
+    if ( movementDirection.length() != 0 ) {
+        performMovement( movementDirection, movementSpeed );
+        moved = true;
+    }
+
+    if ( yaw != 0 ) {
+        performMovement( rotateDirection, movementSpeed*distanceToLookAtFactor );
+        performRotationYaw( yaw/distanceToLookAtFactor );
+        moved = true;
+    }
+
+    return moved;
 }
 
 
-bool GodManipulator::performMovementKeyboard( const osg::Vec3d& movementDirection, const double distance )
+bool GodManipulator::performMovement( const osg::Vec3d& movementDirection, const double distance )
 {
-    _eye += (movementDirection * distance);
+    osg::Vec3d direction = movementDirection;
+    direction.normalize();
+    _eye += (direction * distance);
+    return true;
+}
+
+
+bool GodManipulator::performRotationYaw( const double yaw )
+{
+    // world up vector to rotate with fixed Up vector
+    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
+    osg::Vec3d localUp = getUpVector( coordinateFrame );
+
+    rotateYawPitch( _rotation, yaw, 0., localUp );
     return true;
 }
 
@@ -286,6 +326,22 @@ void GodManipulator::calculateMovementDirectionKeyA( osg::Vec3d& movementDirecti
 
 
 void GodManipulator::calculateMovementDirectionKeyD( osg::Vec3d& movementDirection )
+{
+    osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
+
+    movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
+}
+
+
+void GodManipulator::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection )
+{
+    osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
+
+    movementDirection += osg::Vec3d( lookAtLeft.x(), 0., lookAtLeft.z() );
+}
+
+
+void GodManipulator::calculateMovementDirectionKeyE( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
 
