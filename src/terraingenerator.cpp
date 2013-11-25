@@ -77,9 +77,9 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
       * Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
       */
     
-    int maxxID = m_settings.tilesX - (m_settings.tilesX + 1) * 0.5;
+    int maxxID = m_settings.tilesX - int((m_settings.tilesX + 1) * 0.5);
     int minxID = maxxID - m_settings.tilesX + 1;
-    int maxzID = m_settings.tilesZ - (m_settings.tilesZ + 1) * 0.5;
+    int maxzID = m_settings.tilesZ - int((m_settings.tilesZ + 1) * 0.5);
     int minzID = maxzID - m_settings.tilesZ + 1;
 
     for (int xID = minxID; xID <= maxxID; ++xID)
