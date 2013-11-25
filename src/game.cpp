@@ -13,8 +13,6 @@
 #include <osgViewer/Viewer>
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
-#include <osgUtil/GLObjectsVisitor>
-#include <osgGA/TrackballManipulator>
 
 // PhysX Classes
 #include "PxPhysicsAPI.h"
@@ -62,7 +60,7 @@ void Game::start(){
     // Set light source
     osg::ref_ptr<osg::Light> light = new osg::Light;
     light->setLightNum(1);
-    light->setPosition(osg::Vec4(-10, 10, 5, 1.0f));
+    light->setPosition(osg::Vec4(-10, 4, 5, 1.0f));
 
     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
     lightSource->setLight(light.get());
@@ -74,11 +72,15 @@ void Game::start(){
     m_objects_container->makeStandardBall(m_root, physx::PxVec3( 1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
     m_objects_container->makeStandardBall(m_root, physx::PxVec3(-1, 3, 0), 0.2F, physx::PxVec3(2, 4, 0), physx::PxVec3(0, 0, 0));
     m_objects_container->makeStandardBall(m_root, physx::PxVec3(0, 3, 0), 0.2F, physx::PxVec3(0, 0, 0), physx::PxVec3(0, 50, 0));
-    //m_objects_container->makePlane(m_root);
 
 	
     // create terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
+    terrainGen->setExtentsInWorld(10, 10);
+    terrainGen->setSamplesPerWorldXCoord(0.5);
+    terrainGen->setSamplesPerWorldZCoord(0.5);
+    terrainGen->setTilesPerAxis(1, 1);
+    terrainGen->setMaxHeight(1.0f);
     m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 
@@ -121,7 +123,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-    osgGA::CameraManipulator * navigation = new osgGA::TrackballManipulator();
+    osgGA::CameraManipulator * navigation = new GodManipulator();
 	navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),

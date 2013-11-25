@@ -186,7 +186,7 @@ float TerrainGenerator::samplesPerWorldZCoord() const
 
 void TerrainGenerator::setTilesPerAxis(unsigned x, unsigned z)
 {
-    assert(x >= 2 && z >= 2);
+    assert(x >= 1 && z >= 1);
     m_settings.tilesX = x;
     m_settings.tilesZ = z;
 }
