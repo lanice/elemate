@@ -59,6 +59,18 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/data "\\\\.frag$|\\\\.vert$|\\\
     ${ELEMATE_SHADER_GROUP} ${SHADER})
     
 
+# PLATFORM AND ARCHITECTURE
+
+# Setup platform specifics (compile flags, etc., ...)
+if(MSVC)
+    message(STATUS "Configuring for platform Windows/MSVC.")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PlatformWindowsMSVC.cmake)
+else()
+    # Unsupported system/compiler
+    message(WARNING "Unsupported platform/compiler combination")
+endif()
+    
+
 find_package( OpenThreads )
 find_package( osg )
 find_package( osgDB )
@@ -72,6 +84,16 @@ find_package( PhysX REQUIRED)
 list(APPEND SOURCES ${SHADER})
 
 add_executable( ${PROJECT_NAME} ${SOURCES})
+
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    LINKER_LANGUAGE CXX
+    COMPILE_DEFINITIONS_DEBUG   "${DEFAULT_COMPILE_DEFS_DEBUG}"
+    COMPILE_DEFINITIONS_RELEASE "${DEFAULT_COMPILE_DEFS_RELEASE}"
+    COMPILE_FLAGS               "${DEFAULT_COMPILE_FLAGS}"
+    LINK_FLAGS_DEBUG            "${DEFAULT_LINKER_FLAGS_DEBUG}"
+    LINK_FLAGS_RELEASE          "${DEFAULT_LINKER_FLAGS_RELEASE}"
+)
 
 config_project( ${PROJECT_NAME} OPENTHREADS 1 )
 config_project( ${PROJECT_NAME} OSG 1 )
