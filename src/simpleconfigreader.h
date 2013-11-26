@@ -49,7 +49,7 @@ public:
 	void setValue(const std::string& key, const std::string& value);
 
 	/** If the key hasn't been defined, this function returns an empty string. */
-	const std::string&  value(std::string key) const;
+	std::string  value(std::string key) const;
 	bool				auto_update() const;
 
 protected:
