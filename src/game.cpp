@@ -5,6 +5,7 @@
 #include "objectscontainer.h"
 #include "terraingenerator.h"
 #include "godmanipulator.h"
+#include "godeventhandler.h"
 
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
@@ -90,6 +91,10 @@ void Game::start(){
     for (const auto & actor : m_terrain->pxActorMap()){
         m_physics_wrapper->scene()->addActor(*actor.second);
     }
+
+    // Add EventHandler to the Viewer that handles events that don't belong to the navigation
+    osgGA::GUIEventHandler * eventHandler = new GodEventHandler();
+    m_viewer->addEventHandler(eventHandler);
 
     // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
     m_viewer->setSceneData(m_root.get());

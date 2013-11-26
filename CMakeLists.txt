@@ -29,6 +29,8 @@ set(SOURCES
     src/physicswrapper.h
     src/game.cpp
     src/game.h
+    src/godeventhandler.cpp
+    src/godeventhandler.h
     src/godmanipulator.cpp
     src/godmanipulator.h
     src/objectscontainer.cpp
