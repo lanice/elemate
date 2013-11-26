@@ -83,7 +83,7 @@ inline long double CyclicTime::elapsed() const
 
 void CyclicTime::update()
 {
-    const t_longf elapsed = TimeCycling == m_mode ? this->elapsed() : m_lastModeChangeTime;
+    // const t_longf elapsed = TimeCycling == m_mode ? this->elapsed() : m_lastModeChangeTime;
 
     const t_longf elapsedTimef = m_secondsPerCycle > 0.f ? this->elapsed() / m_secondsPerCycle : 0.f;
 
