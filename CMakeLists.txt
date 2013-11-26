@@ -37,6 +37,8 @@ set(SOURCES
     src/game.h
     src/godmanipulator.cpp
     src/godmanipulator.h
+    src/godnavigation.cpp
+    src/godnavigation.h
     src/objectscontainer.cpp
     src/objectscontainer.h
     src/hpicgs/CyclicTime.cpp

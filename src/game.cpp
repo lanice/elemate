@@ -4,6 +4,7 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "terraingenerator.h"
+#include "godnavigation.h"
 #include "godmanipulator.h"
 
 // Classes from CGS chair
@@ -91,6 +92,10 @@ void Game::start(){
         m_physics_wrapper->scene()->addActor(*actor.second);
     }
 
+    // Add EventHandler to the Viewer that handles events that don't belong to the navigation
+    osgGA::GUIEventHandler * eventHandler = new GodManipulator();
+    m_viewer->addEventHandler(eventHandler);
+
     // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
     m_viewer->setSceneData(m_root.get());
     setOsgCamera();
@@ -123,7 +128,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-    osgGA::CameraManipulator * navigation = new GodManipulator();
+    osgGA::CameraManipulator * navigation = new GodNavigation();
 	navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),
