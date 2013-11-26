@@ -14,6 +14,8 @@ class GodManipulator : public osgGA::StandardManipulator
         GodManipulator( int flags = DEFAULT_SETTINGS );
         GodManipulator( const GodManipulator& fpm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
+        META_Object(osgGA, GodManipulator);
+
         /** Set the position of the manipulator using a 4x4 matrix.*/
         virtual void setByMatrix( const osg::Matrixd& matrix );
         /** Set the position of the manipulator using a 4x4 matrix.*/

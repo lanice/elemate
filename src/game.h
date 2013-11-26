@@ -11,6 +11,7 @@
 class PhysicsWrapper;
 class ObjectsContainer;
 class ElemateHeightFieldTerrain;
+class GodManipulator;
 namespace std {			class thread; }
 namespace osg {			class Group;}
 namespace osgViewer {	class Viewer; }
@@ -50,6 +51,7 @@ protected:
 	osgViewer::Viewer*				    m_viewer;
 	osg::ref_ptr<osg::Group>		    m_root;
 	bool							    m_interrupted;
+    osg::ref_ptr<GodManipulator>  m_navigation;
     std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
 
 private:
