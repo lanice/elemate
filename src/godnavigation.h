@@ -12,7 +12,7 @@ class GodNavigation : public osgGA::StandardManipulator
     public:
 
         GodNavigation( int flags = DEFAULT_SETTINGS );
-        GodNavigation( const GodNavigation& fpm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
+        GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
         /** Set the position of the manipulator using a 4x4 matrix.*/
         virtual void setByMatrix( const osg::Matrixd& matrix );

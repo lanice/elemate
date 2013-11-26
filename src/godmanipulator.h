@@ -12,7 +12,7 @@ class GodManipulator : public osgGA::GUIEventHandler
     public:
 
         GodManipulator();
-        GodManipulator( const GodManipulator& geh, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
+        GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
         /** Handles events. Returns true if handled, false otherwise.*/
         virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );

@@ -23,21 +23,21 @@ GodNavigation::GodNavigation( int flags )
 }
 
 
-GodNavigation::GodNavigation( const GodNavigation& gpm, const osg::CopyOp& copyOp )
-   : Object(gpm, copyOp),
-     inherited( gpm, copyOp ),
-     _eye( gpm._eye ),
-     _rotation( gpm._rotation ),
-     _velocity( gpm._velocity ),
-     _keyPressedW( gpm._keyPressedW ),
-     _keyPressedS( gpm._keyPressedS ),
-     _keyPressedA( gpm._keyPressedA ),
-     _keyPressedD( gpm._keyPressedD ),
-     _keyPressedQ( gpm._keyPressedA ),
-     _keyPressedE( gpm._keyPressedD )//,
-     // _acceleration( gpm._acceleration ),
-     // _maxVelocity( gpm._maxVelocity ),
-     // _wheelMovement( gpm._wheelMovement )
+GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp )
+   : Object(gn, copyOp),
+     inherited( gn, copyOp ),
+     _eye( gn._eye ),
+     _rotation( gn._rotation ),
+     _velocity( gn._velocity ),
+     _keyPressedW( gn._keyPressedW ),
+     _keyPressedS( gn._keyPressedS ),
+     _keyPressedA( gn._keyPressedA ),
+     _keyPressedD( gn._keyPressedD ),
+     _keyPressedQ( gn._keyPressedA ),
+     _keyPressedE( gn._keyPressedD )//,
+     // _acceleration( gn._acceleration ),
+     // _maxVelocity( gn._maxVelocity ),
+     // _wheelMovement( gn._wheelMovement )
 {
 }
 

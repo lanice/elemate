@@ -8,9 +8,9 @@ GodManipulator::GodManipulator()
 }
 
 
-GodManipulator::GodManipulator( const GodManipulator& geh, const osg::CopyOp& copyOp )
-   : Object(geh, copyOp),
-     inherited( geh, copyOp )
+GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp )
+   : Object(gm, copyOp),
+     inherited( gm, copyOp )
 {
 }
 
