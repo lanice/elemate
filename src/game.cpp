@@ -85,9 +85,8 @@ void Game::start(){
 	
     // create terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
-    terrainGen->setExtentsInWorld(10, 10);
-    terrainGen->setSamplesPerWorldXCoord(0.5);
-    terrainGen->setSamplesPerWorldZCoord(0.5);
+    terrainGen->setExtentsInWorld(100, 100);
+    terrainGen->applySamplesPerWorldCoord(0.5);
     terrainGen->setTilesPerAxis(1, 1);
     terrainGen->setMaxHeight(1.0f);
     m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());

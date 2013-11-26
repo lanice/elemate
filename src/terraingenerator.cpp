@@ -160,17 +160,12 @@ float TerrainGenerator::zExtens() const
     return m_settings.sizeZ;
 }
 
-void TerrainGenerator::setSamplesPerWorldXCoord(float xSamples)
+void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
 {
-    assert(xSamples > 0.0f);
-    unsigned int xSamplesui = unsigned int(ceil(m_settings.sizeX * xSamples));
+    assert(xzSamplesPerCoord > 0.0f);
+    unsigned int xSamplesui = unsigned int(ceil(m_settings.sizeX * xzSamplesPerCoord));
     m_settings.rows = xSamplesui >= 2 ? xSamplesui : 2;
-}
-
-void TerrainGenerator::setSamplesPerWorldZCoord(float zSamples)
-{
-    assert(zSamples > 0.0f);
-    unsigned int zSamplesui = unsigned int(ceil(m_settings.sizeZ * zSamples));
+    unsigned int zSamplesui = unsigned int(ceil(m_settings.sizeZ * xzSamplesPerCoord));
     m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
 }
 

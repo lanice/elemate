@@ -115,8 +115,7 @@ public:
     float zExtens() const;
     /** Set number of rows and columns in height field so that the terrain gets xzSamples of height values per world coordinate.
       * The applied value may be a bit different as the number of total samples is an integral value. */
-    void setSamplesPerWorldXCoord(float xSamples);
-    void setSamplesPerWorldZCoord(float zSamples);
+    void applySamplesPerWorldCoord(float xzSamplesPerCoord);
     float samplesPerWorldXCoord() const;
     float samplesPerWorldZCoord() const;
     void setTilesPerAxis(unsigned x, unsigned z);
