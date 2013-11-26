@@ -19,7 +19,7 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
 
 
 set(WIN32_COMPILE_FLAGS
-    "/nologo /Zc:wchar_t /Zc:forScope /GL /GF /GR /Zi /fp:precise /MP /arch:AVX /W4"
+    "/nologo /Zc:wchar_t /Zc:forScope /GF /GR /Zi /fp:precise /MP /arch:AVX /W4"
     # nologo       -> no logo
     # Zc:wchar_t   -> treat wchar_t as built-in type: yes
     # Zc:forScope  -> force conformance in for loop scope: Yes
@@ -60,27 +60,31 @@ set(WIN32_COMPILE_FLAGS
 
 set(DEFAULT_COMPILE_FLAGS ${WIN32_COMPILE_FLAGS})
 
-set(DEFAULT_COMPILE_FLAGS_DEBUG "${WIN32_COMPILER_FLAGS} /RTC1c /Od /GS" )
+set(DEFAULT_COMPILE_FLAGS_DEBUG "/MDd /RTC1c /Od /GS" )
 
-set(DEFAULT_COMPILE_FLAGS_RELEASE "${WIN32_COMPILER_FLAGS} /Ot /Ob2 /Ox /GS-" )
+set(DEFAULT_COMPILE_FLAGS_RELEASE "/MD /Ot /Ob2 /Ox /GS- /GL" )
+
+
 
 set(WIN32_LINKER_FLAGS
-    "/NOLOGO /INCREMENTAL:NO /NXCOMPAT /DYNAMICBASE:NO"
+    "/NOLOGO /NXCOMPAT /NODEFAULTLIB:libcmt.lib"
     # NOLOGO                                            -> suppress logo
     # INCREMENTAL:NO                                    -> enable incremental linking: no
     # MANIFEST                                          -> generate manifest: yes
     # MANIFESTUAC:"level='asInvoker' uiAccess='false'"  -> uac execution level: asinvoker, uac bypass ui protection: false
     # NXCOMPAT                                          -> data execution prevention (dep): image is compatible with dep
     # DYNAMICBASE:NO                                    -> randomized base address: disable image randomization
+    # /NODEFAULTLIB:library                             -> disable warning according runtime library linking, see http://msdn.microsoft.com/EN-US/library/6wtdswk0%28v=VS.110,d=hv.2%29.aspx
+                                                         # this warning is caused by physx runtime library linking.
 )
 
 set(DEFAULT_LINKER_FLAGS_DEBUG
-    "${WIN32_LINKER_FLAGS} /DEBUG /LTCG"
+    "${WIN32_LINKER_FLAGS} /DEBUG /DYNAMICBASE:NO"
     # DEBUG        -> create debug info
 )
 
 set(DEFAULT_LINKER_FLAGS_RELEASE
-    "${WIN32_LINKER_FLAGS} /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD"
+    "${WIN32_LINKER_FLAGS} /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO"
     # OPT:REF      -> references: eliminate unreferenced data
     # OPT:ICF      -> enable comdat folding: remove redundant comdats
     # LTCG         -> link time code generation: use link time code generation
