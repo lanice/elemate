@@ -4,9 +4,9 @@
 #include "game.h"
 
 #include <osgViewer/Viewer>
-int main( int argc, char** argv )
+int main()
 {
-	auto viewer = new osgViewer::Viewer();
+    osgViewer::Viewer* viewer = new osgViewer::Viewer();
 	viewer->setUpViewInWindow(50, 50, 500, 500);
 
 	Game game(viewer);	

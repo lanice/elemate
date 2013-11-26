@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
 # PROJECT CONFIG
 
@@ -12,8 +12,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(PROJECT_NAME ${META_PROJECT_NAME})  
 project(${PROJECT_NAME} C CXX)
 
+
 option(OPTION_LIMIT_CONFIGS "Generate limited configs (Release; Debug)" ON)
 option(OPTION_LOCAL_INSTALL "Install to local directory instead of system" OFF)
+
+
+if(OPTION_LIMIT_CONFIGS)
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited Configs" FORCE)
+endif()
 
 
 include(cmake/Custom.cmake)
@@ -74,6 +80,33 @@ find_package( PhysX REQUIRED)
 list(APPEND SOURCES ${SHADER})
 
 add_executable( ${PROJECT_NAME} ${SOURCES})
+
+# PLATFORM AND ARCHITECTURE
+
+# Setup platform specifics (compile flags, etc., ...)
+if(MSVC)
+    message(STATUS "Configuring for platform Windows/MSVC.")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PlatformWindowsMSVC.cmake)
+else()
+    # Unsupported system/compiler
+    message(WARNING "Unsupported platform/compiler combination")
+endif()
+
+
+# set c++ compiler options globally
+set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_RELEASE}" )
+set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_DEBUG}" )
+
+
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    LINKER_LANGUAGE CXX
+    COMPILE_DEFINITIONS_DEBUG   "${DEFAULT_COMPILE_DEFS_DEBUG}"
+    COMPILE_DEFINITIONS_RELEASE "${DEFAULT_COMPILE_DEFS_RELEASE}"
+    #COMPILE_FLAGS               "${DEFAULT_COMPILE_FLAGS}"
+    LINK_FLAGS_DEBUG            "${DEFAULT_LINKER_FLAGS_DEBUG}"
+    LINK_FLAGS_RELEASE          "${DEFAULT_LINKER_FLAGS_RELEASE}"
+)
 
 config_project( ${PROJECT_NAME} OPENTHREADS 1 )
 config_project( ${PROJECT_NAME} OSG 1 )
