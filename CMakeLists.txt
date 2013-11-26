@@ -29,10 +29,10 @@ set(SOURCES
     src/physicswrapper.h
     src/game.cpp
     src/game.h
-    src/godeventhandler.cpp
-    src/godeventhandler.h
     src/godmanipulator.cpp
     src/godmanipulator.h
+    src/godnavigation.cpp
+    src/godnavigation.h
     src/objectscontainer.cpp
     src/objectscontainer.h
     src/hpicgs/CyclicTime.cpp

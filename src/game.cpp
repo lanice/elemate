@@ -4,8 +4,8 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "terraingenerator.h"
+#include "godnavigation.h"
 #include "godmanipulator.h"
-#include "godeventhandler.h"
 
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
@@ -93,7 +93,7 @@ void Game::start(){
     }
 
     // Add EventHandler to the Viewer that handles events that don't belong to the navigation
-    osgGA::GUIEventHandler * eventHandler = new GodEventHandler();
+    osgGA::GUIEventHandler * eventHandler = new GodManipulator();
     m_viewer->addEventHandler(eventHandler);
 
     // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
@@ -128,7 +128,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-    osgGA::CameraManipulator * navigation = new GodManipulator();
+    osgGA::CameraManipulator * navigation = new GodNavigation();
 	navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),
