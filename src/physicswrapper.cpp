@@ -111,7 +111,7 @@ bool PhysicsWrapper::step(){
     m_elapsed = now - last_time;
     last_time = now;
 
-    m_scene->simulate(elapsedTime());
+    m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
 	return true;
 }
 

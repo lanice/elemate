@@ -69,7 +69,6 @@ void Game::start(){
 }
 
 void Game::loop(){
-    t_longf newBallRounds = 10.0F;
 	while (isRunning())
 	{
         m_viewer->frame();
