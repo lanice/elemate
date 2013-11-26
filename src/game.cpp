@@ -4,7 +4,7 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "terraingenerator.h"
-#include "makermanipulator.h"
+#include "godmanipulator.h"
 
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
@@ -123,7 +123,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-    osgGA::CameraManipulator * navigation = new MakerManipulator();
+    osgGA::CameraManipulator * navigation = new GodManipulator();
 	navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),

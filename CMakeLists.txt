@@ -29,8 +29,8 @@ set(SOURCES
     src/physicswrapper.h
     src/game.cpp
     src/game.h
-    src/makermanipulator.cpp
-    src/makermanipulator.h
+    src/godmanipulator.cpp
+    src/godmanipulator.h
     src/objectscontainer.cpp
     src/objectscontainer.h
     src/hpicgs/CyclicTime.cpp
