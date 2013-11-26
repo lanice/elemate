@@ -42,10 +42,12 @@ protected:
 	/** The Game's loop containing drawing and triggering physics is placed right here. */
 	void loop();
 
-	/** This is where the magic happens. Currently: Physics calculation. */
 	void setOsgCamera();
+    void setLightSource();
+    void generateTerrain();
 
-	std::shared_ptr<PhysicsWrapper>	    m_physics_wrapper;
+	
+    std::shared_ptr<PhysicsWrapper>	    m_physics_wrapper;
     std::shared_ptr<ObjectsContainer>   m_objects_container;
 	osgViewer::Viewer*				    m_viewer;
 	osg::ref_ptr<osg::Group>		    m_root;
