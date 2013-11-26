@@ -5,14 +5,14 @@
 
 
 
-class GodManipulator : public osgGA::StandardManipulator
+class MakerManipulator : public osgGA::StandardManipulator
 {
         typedef osgGA::StandardManipulator inherited;
 
     public:
 
-        GodManipulator( int flags = DEFAULT_SETTINGS );
-        GodManipulator( const GodManipulator& fpm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
+        MakerManipulator( int flags = DEFAULT_SETTINGS );
+        MakerManipulator( const MakerManipulator& fpm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
         /** Set the position of the manipulator using a 4x4 matrix.*/
         virtual void setByMatrix( const osg::Matrixd& matrix );

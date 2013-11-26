@@ -1,11 +1,11 @@
 
-#include "godmanipulator.h"
+#include "makermanipulator.h"
 
 
 static const double c_velocityNormal = 0.2;
 
 
-GodManipulator::GodManipulator( int flags )
+MakerManipulator::MakerManipulator( int flags )
    : inherited( flags ),
      _keyPressedW( false ),
      _keyPressedS( false ),
@@ -23,7 +23,7 @@ GodManipulator::GodManipulator( int flags )
 }
 
 
-GodManipulator::GodManipulator( const GodManipulator& gpm, const osg::CopyOp& copyOp )
+MakerManipulator::MakerManipulator( const MakerManipulator& gpm, const osg::CopyOp& copyOp )
    : Object(gpm, copyOp),
      inherited( gpm, copyOp ),
      _eye( gpm._eye ),
@@ -42,7 +42,7 @@ GodManipulator::GodManipulator( const GodManipulator& gpm, const osg::CopyOp& co
 }
 
 
-void GodManipulator::setByMatrix( const osg::Matrixd& matrix )
+void MakerManipulator::setByMatrix( const osg::Matrixd& matrix )
 {
    // set variables
    _eye = matrix.getTrans();
@@ -54,25 +54,25 @@ void GodManipulator::setByMatrix( const osg::Matrixd& matrix )
 }
 
 
-void GodManipulator::setByInverseMatrix( const osg::Matrixd& matrix )
+void MakerManipulator::setByInverseMatrix( const osg::Matrixd& matrix )
 {
    setByMatrix( osg::Matrixd::inverse( matrix ) );
 }
 
 
-osg::Matrixd GodManipulator::getMatrix() const
+osg::Matrixd MakerManipulator::getMatrix() const
 {
    return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _eye );
 }
 
 
-osg::Matrixd GodManipulator::getInverseMatrix() const
+osg::Matrixd MakerManipulator::getInverseMatrix() const
 {
    return osg::Matrixd::translate( -_eye ) * osg::Matrixd::rotate( _rotation.inverse() );
 }
 
 
-void GodManipulator::setTransformation( const osg::Vec3d& eye, const osg::Quat& rotation )
+void MakerManipulator::setTransformation( const osg::Vec3d& eye, const osg::Quat& rotation )
 {
    // set variables
    _eye = eye;
@@ -84,14 +84,14 @@ void GodManipulator::setTransformation( const osg::Vec3d& eye, const osg::Quat& 
 }
 
 
-void GodManipulator::getTransformation( osg::Vec3d& eye, osg::Quat& rotation ) const
+void MakerManipulator::getTransformation( osg::Vec3d& eye, osg::Quat& rotation ) const
 {
    eye = _eye;
    rotation = _rotation;
 }
 
 
-void GodManipulator::setTransformation( const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up )
+void MakerManipulator::setTransformation( const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up )
 {
    // set variables
    osg::Matrixd m( osg::Matrixd::lookAt( eye, center, up ) );
@@ -104,7 +104,7 @@ void GodManipulator::setTransformation( const osg::Vec3d& eye, const osg::Vec3d&
 }
 
 
-void GodManipulator::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const
+void MakerManipulator::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const
 {
    center = _eye + _rotation * osg::Vec3d( 0.,0.,-1. );
    eye = _eye;
@@ -112,19 +112,19 @@ void GodManipulator::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg
 }
 
 
-void GodManipulator::setVelocity( const double& velocity )
+void MakerManipulator::setVelocity( const double& velocity )
 {
    _velocity = velocity;
 }
 
 
-double GodManipulator::getVelocity() const
+double MakerManipulator::getVelocity() const
 {
    return _velocity;
 }
 
 
-bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+bool MakerManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
     switch( ea.getKey() )
     {
@@ -184,7 +184,7 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 }
 
 
-bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+bool MakerManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
     switch( ea.getKey() )
     {
@@ -226,7 +226,7 @@ bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 }
 
 
-void GodManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& us )
+void MakerManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& us )
 {
     if ( !_keyPressedW && !_keyPressedS && !_keyPressedA && !_keyPressedD && !_keyPressedQ && !_keyPressedE )
     {
@@ -237,7 +237,7 @@ void GodManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAd
 
 
 // This method is still under construction!
-bool GodManipulator::performMovement()
+bool MakerManipulator::performMovement()
 {
     bool moved = false;
     double movementSpeed = c_velocityNormal;
@@ -281,7 +281,7 @@ bool GodManipulator::performMovement()
 }
 
 
-bool GodManipulator::performMovement( const osg::Vec3d& movementDirection, const double distance )
+bool MakerManipulator::performMovement( const osg::Vec3d& movementDirection, const double distance )
 {
     osg::Vec3d direction = movementDirection;
     direction.normalize();
@@ -290,7 +290,7 @@ bool GodManipulator::performMovement( const osg::Vec3d& movementDirection, const
 }
 
 
-bool GodManipulator::performRotationYaw( const double yaw )
+bool MakerManipulator::performRotationYaw( const double yaw )
 {
     // world up vector to rotate with fixed Up vector
     osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
@@ -301,7 +301,7 @@ bool GodManipulator::performRotationYaw( const double yaw )
 }
 
 
-void GodManipulator::calculateMovementDirectionKeyW( osg::Vec3d& movementDirection )
+void MakerManipulator::calculateMovementDirectionKeyW( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtFront = _rotation * osg::Vec3d( 0., 0., -1. );
 
@@ -309,7 +309,7 @@ void GodManipulator::calculateMovementDirectionKeyW( osg::Vec3d& movementDirecti
 }
 
 
-void GodManipulator::calculateMovementDirectionKeyS( osg::Vec3d& movementDirection )
+void MakerManipulator::calculateMovementDirectionKeyS( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtBack = _rotation * osg::Vec3d( 0., 0., 1. );
 
@@ -317,7 +317,7 @@ void GodManipulator::calculateMovementDirectionKeyS( osg::Vec3d& movementDirecti
 }
 
 
-void GodManipulator::calculateMovementDirectionKeyA( osg::Vec3d& movementDirection )
+void MakerManipulator::calculateMovementDirectionKeyA( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
 
@@ -325,7 +325,7 @@ void GodManipulator::calculateMovementDirectionKeyA( osg::Vec3d& movementDirecti
 }
 
 
-void GodManipulator::calculateMovementDirectionKeyD( osg::Vec3d& movementDirection )
+void MakerManipulator::calculateMovementDirectionKeyD( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
 
@@ -333,7 +333,7 @@ void GodManipulator::calculateMovementDirectionKeyD( osg::Vec3d& movementDirecti
 }
 
 
-void GodManipulator::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection )
+void MakerManipulator::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
 
@@ -341,7 +341,7 @@ void GodManipulator::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirecti
 }
 
 
-void GodManipulator::calculateMovementDirectionKeyE( osg::Vec3d& movementDirection )
+void MakerManipulator::calculateMovementDirectionKeyE( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
 
@@ -349,19 +349,19 @@ void GodManipulator::calculateMovementDirectionKeyE( osg::Vec3d& movementDirecti
 }
 
 
-void GodManipulator::moveForward( const double distance )
+void MakerManipulator::moveForward( const double distance )
 {
    _eye += _rotation * osg::Vec3d( 0., 0., -distance );
 }
 
 
-void GodManipulator::moveRight( const double distance )
+void MakerManipulator::moveRight( const double distance )
 {
    _eye += _rotation * osg::Vec3d( distance, 0., 0. );
 }
 
 
-void GodManipulator::moveUp( const double distance )
+void MakerManipulator::moveUp( const double distance )
 {
    _eye += _rotation * osg::Vec3d( 0., distance, 0. );
 }
