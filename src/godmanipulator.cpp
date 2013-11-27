@@ -2,366 +2,96 @@
 #include "godmanipulator.h"
 
 
-static const double c_velocityNormal = 0.2;
-
-
-GodManipulator::GodManipulator( int flags )
-   : inherited( flags ),
-     _keyPressedW( false ),
-     _keyPressedS( false ),
-     _keyPressedA( false ),
-     _keyPressedD( false ),
-     _keyPressedQ( false ),
-     _keyPressedE( false )
-{
-    // setAcceleration( 1.0, true );
-    // setMaxVelocity( 0.25, true );
-    // setWheelMovement( 0.05, true );
-    setVelocity( c_velocityNormal );
-    if( _flags & SET_CENTER_ON_WHEEL_FORWARD_MOVEMENT )
-        setAnimationTime( 0.2 );
-}
-
-
-GodManipulator::GodManipulator( const GodManipulator& gpm, const osg::CopyOp& copyOp )
-   : Object(gpm, copyOp),
-     inherited( gpm, copyOp ),
-     _eye( gpm._eye ),
-     _rotation( gpm._rotation ),
-     _velocity( gpm._velocity ),
-     _keyPressedW( gpm._keyPressedW ),
-     _keyPressedS( gpm._keyPressedS ),
-     _keyPressedA( gpm._keyPressedA ),
-     _keyPressedD( gpm._keyPressedD ),
-     _keyPressedQ( gpm._keyPressedA ),
-     _keyPressedE( gpm._keyPressedD )//,
-     // _acceleration( gpm._acceleration ),
-     // _maxVelocity( gpm._maxVelocity ),
-     // _wheelMovement( gpm._wheelMovement )
+GodManipulator::GodManipulator()
+   : inherited()
 {
 }
 
 
-void GodManipulator::setByMatrix( const osg::Matrixd& matrix )
+GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp )
+   : Object(gm, copyOp),
+     inherited( gm, copyOp )
 {
-   // set variables
-   _eye = matrix.getTrans();
-   _rotation = matrix.getRotate();
-
-   // fix current rotation
-   if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
 }
 
 
-void GodManipulator::setByInverseMatrix( const osg::Matrixd& matrix )
+bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
-   setByMatrix( osg::Matrixd::inverse( matrix ) );
-}
+    if( ea.getHandled() )
+        return false;
 
-
-osg::Matrixd GodManipulator::getMatrix() const
-{
-   return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _eye );
-}
-
-
-osg::Matrixd GodManipulator::getInverseMatrix() const
-{
-   return osg::Matrixd::translate( -_eye ) * osg::Matrixd::rotate( _rotation.inverse() );
-}
-
-
-void GodManipulator::setTransformation( const osg::Vec3d& eye, const osg::Quat& rotation )
-{
-   // set variables
-   _eye = eye;
-   _rotation = rotation;
-
-   // fix current rotation
-   if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
-}
-
-
-void GodManipulator::getTransformation( osg::Vec3d& eye, osg::Quat& rotation ) const
-{
-   eye = _eye;
-   rotation = _rotation;
-}
-
-
-void GodManipulator::setTransformation( const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up )
-{
-   // set variables
-   osg::Matrixd m( osg::Matrixd::lookAt( eye, center, up ) );
-   _eye = eye;
-   _rotation = m.getRotate().inverse();
-
-   // fix current rotation
-   if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
-}
-
-
-void GodManipulator::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const
-{
-   center = _eye + _rotation * osg::Vec3d( 0.,0.,-1. );
-   eye = _eye;
-   up = _rotation * osg::Vec3d( 0.,1.,0. );
-}
-
-
-void GodManipulator::setVelocity( const double& velocity )
-{
-   _velocity = velocity;
-}
-
-
-double GodManipulator::getVelocity() const
-{
-   return _velocity;
-}
-
-
-bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
-{
-    switch( ea.getKey() )
+    switch( ea.getEventType() )
     {
-        case osgGA::GUIEventAdapter::KEY_Space:
-            flushMouseEventStack();
-            _thrown = false;
-            home(ea,us);
-            return true;
+        case osgGA::GUIEventAdapter::MOVE:
+            return handleMouseMove( ea, us );
 
-        case osgGA::GUIEventAdapter::KEY_W:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
-            _keyPressedW = true;
-            _thrown = true;
-            return true;
+        case osgGA::GUIEventAdapter::DRAG:
+            return handleMouseDrag( ea, us );
 
-        case osgGA::GUIEventAdapter::KEY_S:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
-            _keyPressedS = true;
-            _thrown = true;
-            return true;
+        case osgGA::GUIEventAdapter::PUSH:
+            return handleMousePush( ea, us );
 
-        case osgGA::GUIEventAdapter::KEY_A:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
-            _keyPressedA = true;
-            _thrown = true;
-            return true;
+        case osgGA::GUIEventAdapter::RELEASE:
+            return handleMouseRelease( ea, us );
 
-        case osgGA::GUIEventAdapter::KEY_D:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
-            _keyPressedD = true;
-            _thrown = true;
-            return true;
+        case osgGA::GUIEventAdapter::KEYDOWN:
+            return handleKeyDown( ea, us );
 
-        case osgGA::GUIEventAdapter::KEY_Q:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
-            _keyPressedQ = true;
-            _thrown = true;
-            return true;
+        case osgGA::GUIEventAdapter::KEYUP:
+            return handleKeyUp( ea, us );
 
-        case osgGA::GUIEventAdapter::KEY_E:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
-            _keyPressedE = true;
-            _thrown = true;
-            return true;
+        case osgGA::GUIEventAdapter::SCROLL:
+            return handleMouseWheel( ea, us );
 
         default:
             return false;
+    }
+}
+
+
+bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMouseDrag( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMousePush( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
+{
+    if( ea.getKey() == osgGA::GUIEventAdapter::KEY_F )
+    {
+        m_world->makeStandardBall();
+        return true;
     }
 
     return false;
 }
 
 
-bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
 {
-    switch( ea.getKey() )
-    {
-        case osgGA::GUIEventAdapter::KEY_W:
-            _keyPressedW = false;
-            disableContinuousUpdateIfNecessary( ea, us );
-            return true;
-
-        case osgGA::GUIEventAdapter::KEY_S:
-            _keyPressedS = false;
-            disableContinuousUpdateIfNecessary( ea, us );
-            return true;
-
-        case osgGA::GUIEventAdapter::KEY_A:
-            _keyPressedA = false;
-            disableContinuousUpdateIfNecessary( ea, us );
-            return true;
-
-        case osgGA::GUIEventAdapter::KEY_D:
-            _keyPressedD = false;
-            disableContinuousUpdateIfNecessary( ea, us );
-            return true;
-
-        case osgGA::GUIEventAdapter::KEY_Q:
-            _keyPressedQ = false;
-            disableContinuousUpdateIfNecessary( ea, us );
-            return true;
-
-        case osgGA::GUIEventAdapter::KEY_E:
-            _keyPressedE = false;
-            disableContinuousUpdateIfNecessary( ea, us );
-            return true;
-
-        default:
-            return false;
-    }
-
     return false;
 }
 
 
-void GodManipulator::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& us )
+bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
 {
-    if ( !_keyPressedW && !_keyPressedS && !_keyPressedA && !_keyPressedD && !_keyPressedQ && !_keyPressedE )
-    {
-        _thrown = false;
-        us.requestContinuousUpdate( false );
-    }
-}
-
-
-// This method is still under construction!
-bool GodManipulator::performMovement()
-{
-    bool moved = false;
-    double movementSpeed = c_velocityNormal;
-    double yaw = 0.;
-    double distanceToLookAtFactor = 3.;
-    
-    osg::Vec3d movementDirection = osg::Vec3d( 0., 0., 0. );
-    osg::Vec3d rotateDirection = osg::Vec3d( 0., 0., 0. );
-
-    // call appropriate methods
-    if ( _keyPressedW )
-        calculateMovementDirectionKeyW( movementDirection );
-    if ( _keyPressedS )
-        calculateMovementDirectionKeyS( movementDirection );
-    if ( _keyPressedA )
-        calculateMovementDirectionKeyA( movementDirection );
-    if ( _keyPressedD )
-        calculateMovementDirectionKeyD( movementDirection );
-    if ( _keyPressedQ ) {
-        calculateMovementDirectionKeyQ( rotateDirection );
-        yaw += 0.1;
-    }
-    if ( _keyPressedE ) {
-        calculateMovementDirectionKeyE( rotateDirection );
-        yaw -= 0.1;
-    }
-
-
-    if ( movementDirection.length() != 0 ) {
-        performMovement( movementDirection, movementSpeed );
-        moved = true;
-    }
-
-    if ( yaw != 0 ) {
-        performMovement( rotateDirection, movementSpeed*distanceToLookAtFactor );
-        performRotationYaw( yaw/distanceToLookAtFactor );
-        moved = true;
-    }
-
-    return moved;
-}
-
-
-bool GodManipulator::performMovement( const osg::Vec3d& movementDirection, const double distance )
-{
-    osg::Vec3d direction = movementDirection;
-    direction.normalize();
-    _eye += (direction * distance);
-    return true;
-}
-
-
-bool GodManipulator::performRotationYaw( const double yaw )
-{
-    // world up vector to rotate with fixed Up vector
-    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
-    osg::Vec3d localUp = getUpVector( coordinateFrame );
-
-    rotateYawPitch( _rotation, yaw, 0., localUp );
-    return true;
-}
-
-
-void GodManipulator::calculateMovementDirectionKeyW( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtFront = _rotation * osg::Vec3d( 0., 0., -1. );
-
-    movementDirection += osg::Vec3d( lookAtFront.x(), 0., lookAtFront.z() );
-}
-
-
-void GodManipulator::calculateMovementDirectionKeyS( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtBack = _rotation * osg::Vec3d( 0., 0., 1. );
-
-    movementDirection += osg::Vec3d( lookAtBack.x(), 0., lookAtBack.z() );
-}
-
-
-void GodManipulator::calculateMovementDirectionKeyA( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtLeft.x(), 0., lookAtLeft.z() );
-}
-
-
-void GodManipulator::calculateMovementDirectionKeyD( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
-}
-
-
-void GodManipulator::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtLeft.x(), 0., lookAtLeft.z() );
-}
-
-
-void GodManipulator::calculateMovementDirectionKeyE( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
-}
-
-
-void GodManipulator::moveForward( const double distance )
-{
-   _eye += _rotation * osg::Vec3d( 0., 0., -distance );
-}
-
-
-void GodManipulator::moveRight( const double distance )
-{
-   _eye += _rotation * osg::Vec3d( distance, 0., 0. );
-}
-
-
-void GodManipulator::moveUp( const double distance )
-{
-   _eye += _rotation * osg::Vec3d( 0., distance, 0. );
+    return false;
 }
