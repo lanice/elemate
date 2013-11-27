@@ -29,7 +29,7 @@ struct TerrainSettings {
     float sizeX;
     float sizeZ;
     /** maximal possible height value in terrain, as used in the generator */
-    float m_maxHeight;
+    float maxHeight;
     /** number of sample points along the x axis in one tile */
     unsigned rows;
     /** number of sample points along the z axis in one tile */
@@ -56,6 +56,8 @@ struct TerrainSettings {
     inline float intervalX() const { assert(rows >= 2); return sizeX / ( rows - 1 ); }
     /** distance between two sample points along the z axis */
     inline float intervalZ() const { assert(columns >= 2); return sizeZ / (columns - 1); }
+    /** average size of on biome / terrain type */
+    float biomeSize;
 };
 
 
@@ -78,6 +80,8 @@ public:
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;
     /** map of static PhysX actors */
     const std::map<osgTerrain::TileID, physx::PxRigidStatic*> pxActorMap() const;
+    /** Access settings object. This only stores values from creation time and cannot be changed. */
+    const TerrainSettings & settings() const;
 
 private:
     /** osg terrain object that can consist of multiple tiles */
@@ -109,6 +113,9 @@ class TerrainGenerator {
 public:
     /** creates a generator with default settings */
     TerrainGenerator();
+    /** applies all settings and creates the height field osg and physx objects */
+    ElemateHeightFieldTerrain * generate() const;
+
     /** terrain size in world coordinates */
     void setExtentsInWorld(float x, float z);
     float xExtens() const;
@@ -124,29 +131,24 @@ public:
 
     /** generation time specific settings */
 
-    /** sigma parameter for used normal distribution */
-    void setHeightSigma(float sigma);
-    /** sigma parameter for used normal distribution */
-    float heightSigma() const;
     /** maximum latitude (y value) in world coordinates
       *  -maxHeight < y <= maxHeight */
     void setMaxHeight(float height);
     /** maximum latitude (y value) in world coordinates
       * -maxHeight < y <= maxHeight */
     float maxHeight() const;
-
-    /** applies all settings and creates the height field osg and physx objects */
-    ElemateHeightFieldTerrain * generate() const;
+    /** set average size of one biome/terrain type */
+    void setBiomeSize(float xzBiomeSize);
+    /** average size of one biome/terrain type */
+    float biomeSize() const;
 
 private:
     TerrainSettings m_settings;
-
-    mutable ElemateHeightFieldTerrain * artifact;
-
-    float m_heightSigma;
 
     /** creates a terrain tile, and sets its tileID */
     physx::PxHeightFieldSample * createPxHeightFieldData(unsigned numSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples, const physx::PxMat44 & transform) const;
     osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    /** creates biome data, adds it as additional layer to the heightfield, sets pxSample textures accordingly */
+    void createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const;
 };

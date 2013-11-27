@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <osg/MatrixTransform>
+#include <osg/Image>
 #include <osgTerrain/Terrain>
 
 #include <PxRigidStatic.h>
@@ -41,13 +42,12 @@ TerrainSettings::TerrainSettings()
 , columns(20)
 , tilesX(1)
 , tilesZ(1)
-, m_maxHeight(2.f)
+, maxHeight(2.f)
+, biomeSize(5.0f)
 {
 }
 
 TerrainGenerator::TerrainGenerator()
-: artifact(nullptr)
-, m_heightSigma(0.02f)
 {
 }
 
@@ -56,6 +56,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
 
     osg::ref_ptr<osgTerrain::Terrain> osgTerrain = new osgTerrain::Terrain();
+    osgTerrain->setName("terrain root node");
     terrain->m_osgTerrain = osgTerrain.get();
 
     /** transforms osg's base vectors to physx/opengl logic
@@ -106,6 +107,9 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(tileID, pxHeightFieldSamples);
         assert(tile.valid());
         tile->setTerrain(terrain->osgTerrain());
+
+        /** create biomes and set terrain data accordingly */
+        createBiomes(*tile.get(), pxHeightFieldSamples);
         
         osgTerrain->addChild(tile.get());
 
@@ -196,34 +200,33 @@ int TerrainGenerator::tilesPerZAxis() const
     return m_settings.tilesZ;
 }
 
-void TerrainGenerator::setHeightSigma(float sigma)
-{
-    assert(sigma >= 0.0f);
-    m_heightSigma = sigma;
-}
-
-float TerrainGenerator::heightSigma() const
-{
-    return m_heightSigma;
-}
-
 void TerrainGenerator::setMaxHeight(float height)
 {
     assert(height > 0.0f);
-    m_settings.m_maxHeight = height;
+    m_settings.maxHeight = height;
 }
 float TerrainGenerator::maxHeight() const
 {
-    return m_settings.m_maxHeight;
+    return m_settings.maxHeight;
+}
+
+void TerrainGenerator::setBiomeSize(float xzBiomeSize)
+{
+    assert(xzBiomeSize > 0);
+    m_settings.biomeSize = xzBiomeSize;
+}
+
+float TerrainGenerator::biomeSize() const
+{
+    return m_settings.biomeSize;
 }
 
 PxHeightFieldSample * TerrainGenerator::createPxHeightFieldData(unsigned numSamples) const
 {
     assert(m_settings.rows >= 2);
     assert(m_settings.columns >= 2);
-    assert(m_settings.m_maxHeight > 0);
+    assert(m_settings.maxHeight > 0);
 
-    //std::normal_distribution<float> normal_dist(0.0f, m_heightSigma);
     std::uniform_int_distribution<> uniform_dist(
         std::numeric_limits<PxI16>::min(),
         std::numeric_limits<PxI16>::max());
@@ -254,9 +257,9 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     PxMaterial * mat[1];
     mat[0] = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.1f);
 
-    assert(m_settings.m_maxHeight > 0);
+    assert(m_settings.maxHeight > 0);
     // scale height so that we use the full range of PxI16=short
-    PxReal heightScale = m_settings.m_maxHeight / std::numeric_limits<PxI16>::max();
+    PxReal heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
     // create height field geometry and set scale
     PxHeightFieldGeometry * m_pxHfGeometry = new  PxHeightFieldGeometry(pxHeightField, PxMeshGeometryFlags(),
         heightScale, m_settings.intervalX(), m_settings.intervalZ());
@@ -297,7 +300,7 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
     // invert columns <-> rows to match with physx
     heightField->allocate(m_settings.rows, m_settings.columns);
 
-    float heightScale = m_settings.m_maxHeight / std::numeric_limits<PxI16>::max();
+    float heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
 
     // generate the hight field data
     for (unsigned c = 0; c < m_settings.columns; ++c)
@@ -327,10 +330,34 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
     layer->setLocator(locator.get());
 
     osgTerrain::TerrainTile * tile = new osgTerrain::TerrainTile();
+    tile->setName("Terrain tile");
     tile->setElevationLayer(layer.get());
     tile->setTileID(tileID);
+    tile->setRequiresNormals(true);
 
     return tile;
+}
+
+void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const
+{
+    assert(tile.getNumColorLayers() == 0);
+
+    // ignore biome size, set 4 biomes per tile
+    // just set some material ids
+    
+    static uint16_t _terrainData[4] = { 0u, 1u, 2u, 3u };
+
+    osg::ref_ptr<osg::Image> terrainTypeData = new osg::Image();
+    terrainTypeData->setImage(2, 2, 1, GL_R16, GL_RED, GL_UNSIGNED_SHORT,
+        (unsigned char*) _terrainData, osg::Image::AllocationMode::USE_NEW_DELETE);
+
+    osg::ref_ptr<osgTerrain::ImageLayer> terrainTypeLayer = new osgTerrain::ImageLayer(terrainTypeData.get());
+    terrainTypeLayer->setName(std::string("terrainType"));
+
+
+    tile.setColorLayer(0, terrainTypeLayer.get());
+
+    assert(tile.getNumColorLayers() == 1);
 }
 
 ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & settings)
@@ -366,5 +393,10 @@ PxRigidStatic * ElemateHeightFieldTerrain::pxActor(const osgTerrain::TileID & ti
 const std::map<osgTerrain::TileID, physx::PxRigidStatic*> ElemateHeightFieldTerrain::pxActorMap() const
 {
     return m_pxActors;
+}
+
+const TerrainSettings & ElemateHeightFieldTerrain::settings() const
+{
+    return m_settings;
 }
 

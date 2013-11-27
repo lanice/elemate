@@ -68,10 +68,7 @@ void Game::initialize(osgViewer::Viewer* viewer){
     graphicsState->setUseVertexAttributeAliasing(true);
 
     m_root = new osg::Group();
-
-    osg::Program * phong(initShader());
-
-    m_root->getOrCreateStateSet()->setAttributeAndModes(phong);
+    m_root->setName("root node");
 }
 
 void Game::start(){
@@ -104,7 +101,28 @@ void Game::start(){
     setOsgCamera();
 
     m_physics_wrapper->startSimulation();
-	m_interrupted = false;
+    m_interrupted = false;
+
+
+    osg::Program * phong(initShader());
+
+    osg::ref_ptr<osg::StateSet> terrainSS = m_terrain->osgTerrain()->getOrCreateStateSet();
+    terrainSS->setAttributeAndModes(phong);
+    // texture unit 0 should be color layer 0 in all tiles
+    terrainSS->getOrCreateUniform("terrainType", osg::Uniform::Type::UNSIGNED_INT_SAMPLER_2D)->set(0);
+    terrainSS->getOrCreateUniform("tileSize", osg::Uniform::Type::FLOAT_VEC3)->set(osg::Vec3(
+        m_terrain->settings().tileSizeX(),
+        m_terrain->settings().maxHeight,
+        m_terrain->settings().tileSizeZ()));
+
+    //osg::StateSet::TextureAttributeList texs = m_terrain->osgTerrain()->getTile(osgTerrain::TileID(0,0,0))->getOrCreateStateSet()->getTextureAttributeList();
+    //for (const osg::StateSet::AttributeList & tex : texs)
+    //{
+    //    for (const std::pair<osg::StateAttribute::TypeMemberPair, std::pair<osg::ref_ptr<osg::StateAttribute>, osg::StateAttribute::OverrideValue>> & x : tex)
+    //    {
+    //        osg::Texture * me = dynamic_cast<osg::Texture*>(x.second.first.get());
+    //    }
+    //}
 
 	loop();
 }
