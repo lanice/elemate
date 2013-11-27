@@ -60,3 +60,8 @@ osg::Group* World::root()
 {
     return m_root.get();
 }
+
+void World::makeStandardBall()
+{
+    objects_container->makeStandardBall(m_root, physx::PxVec3( 1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+}

@@ -39,7 +39,8 @@ void Game::start(){
         return;
 
     // Add EventHandler to the Viewer that handles events that don't belong to the navigation
-    osgGA::GUIEventHandler * eventHandler = new GodManipulator();
+    GodManipulator * eventHandler = new GodManipulator();
+    eventHandler->setWorld(m_world);
     m_viewer->addEventHandler(eventHandler);
     
     setOsgCamera();
