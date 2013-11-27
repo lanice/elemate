@@ -22,33 +22,54 @@ bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 
     switch( ea.getEventType() )
     {
-        // case osgGA::GUIEventAdapter::MOVE:
-        //     return handleMouseMove( ea, us );
+        case osgGA::GUIEventAdapter::MOVE:
+            return handleMouseMove( ea, us );
 
-        // case osgGA::GUIEventAdapter::DRAG:
-        //     return handleMouseDrag( ea, us );
+        case osgGA::GUIEventAdapter::DRAG:
+            return handleMouseDrag( ea, us );
 
-        // case osgGA::GUIEventAdapter::PUSH:
-        //     return handleMousePush( ea, us );
+        case osgGA::GUIEventAdapter::PUSH:
+            return handleMousePush( ea, us );
 
-        // case osgGA::GUIEventAdapter::RELEASE:
-        //     return handleMouseRelease( ea, us );
+        case osgGA::GUIEventAdapter::RELEASE:
+            return handleMouseRelease( ea, us );
 
         case osgGA::GUIEventAdapter::KEYDOWN:
             return handleKeyDown( ea, us );
 
-        // case osgGA::GUIEventAdapter::KEYUP:
-        //     return handleKeyUp( ea, us );
+        case osgGA::GUIEventAdapter::KEYUP:
+            return handleKeyUp( ea, us );
 
-        // case osgGA::GUIEventAdapter::SCROLL:
-        //     if( _flags & PROCESS_MOUSE_WHEEL )
-        //     return handleMouseWheel( ea, us );
-        //     else
-        //     return false;
+        case osgGA::GUIEventAdapter::SCROLL:
+            return handleMouseWheel( ea, us );
 
         default:
             return false;
     }
+}
+
+
+bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMouseDrag( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMousePush( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
 }
 
 
@@ -60,5 +81,17 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
         return true;
     }
 
+    return false;
+}
+
+
+bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
+    return false;
+}
+
+
+bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+{
     return false;
 }

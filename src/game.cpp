@@ -38,8 +38,11 @@ void Game::start(){
 	if (isRunning())
         return;
 
-    // Add EventHandler to the Viewer that handles events that don't belong to the navigation
+    // Add GodManipulator (event handler) to the Viewer that handles events
+    // that don't belong to the navigation but to game content/logic. 
+    // It is added to Viewers EventHandlerQueue to receive incoming events.
     GodManipulator * eventHandler = new GodManipulator();
+    // The handler gets access to the World to process game content/logic specific events.
     eventHandler->setWorld(m_world);
     m_viewer->addEventHandler(eventHandler);
     

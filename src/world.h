@@ -20,12 +20,14 @@ public:
 
     osg::Group* root();
 
+    /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall();
     
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
     std::shared_ptr<ObjectsContainer>           objects_container;
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+
 protected:
     
     osg::ref_ptr<osg::Group>            m_root;
