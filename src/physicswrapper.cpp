@@ -4,10 +4,13 @@
 
 // Standard Libs
 #include <iostream>
+#include "standardparticles.h"
+#include "nullobjectplaceholder.h"
 
 #pragma comment(lib, "PhysX3_x64.lib")
 #pragma comment(lib, "PhysX3Common_x64.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
+#pragma comment(lib, "ApexFramework_x64.lib")
 
 const int	PhysicsWrapper::kNumberOfThreads = 2;
 
@@ -98,6 +101,38 @@ void PhysicsWrapper::initializeTime(){
     m_cyclic_time = new CyclicTime(0.0L, 1.0L);
 }
 
+void PhysicsWrapper::initializeApex(){
+    // Init Apex
+    static physx::PxDefaultErrorCallback gDefaultErrorCallback;
+    physx::apex::NxResourceCallback* rcallback = new NullResourceCallback();
+    physx::apex::NxApexSDKDesc   apexDesc;
+    apexDesc.outputStream = &gDefaultErrorCallback;
+    apexDesc.resourceCallback = rcallback;
+    apexDesc.physXSDK = m_physics;
+    apexDesc.cooking = m_cooking;
+
+    // THIS IS STUPID IN EVERY WAY! When updated, the NullRenderRessourceManager crashes.
+    m_render_resource_manager = new NullRenderResourceManager();
+    apexDesc.renderResourceManager = m_render_resource_manager;
+
+    if (apexDesc.isValid())
+        m_apex_sdk = NxCreateApexSDK(apexDesc);
+    else
+        return ;
+
+    physx::apex::NxApexSceneDesc apexSceneDesc;
+    apexSceneDesc.scene = m_scene;
+    m_apex_scene = m_apex_sdk->createScene(apexSceneDesc);
+
+
+    static const physx::PxU32 viewIDlookAtRightHand = m_apex_scene->allocViewMatrix(physx::apex::ViewMatrixType::LOOK_AT_RH);
+    static const physx::PxU32 projIDperspectiveCubicRightHand = m_apex_scene->allocProjMatrix(physx::apex::ProjMatrixType::USER_CUSTOMIZED);
+    
+    m_stadard_particles = new StandardParticles();
+    m_stadard_particles->initialize(m_apex_sdk);
+    m_stadard_particles->createEmitter(m_apex_sdk, m_apex_scene);
+}
+
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
     scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
@@ -110,15 +145,22 @@ bool PhysicsWrapper::step(){
     m_elapsed = now - last_time;
     last_time = now;
 
+    //Simulating would fail with Nullobjects
+    //m_apex_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
     m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
 	return true;
 }
 
 void PhysicsWrapper::shutdown(){
+    // This is absolutely necessary to free the scene without conflicts.
+    m_apex_scene->setPhysXScene(0);
+    m_apex_scene->fetchResults(true, NULL);
+    m_apex_scene->release();
+    
 	m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
-	m_scene->release();
+    m_scene->release();
+    m_cpu_dispatcher->release();
 	m_physics->release();
-	m_cpu_dispatcher->release();
 	//Please don't forget if you activate this feature.
 	//m_profile_zone_manager->release();
 	m_foundation->release();
@@ -152,7 +194,11 @@ t_longf PhysicsWrapper::elapsedTime()const{
 }
 
 physx::PxScene*	PhysicsWrapper::scene()const{
-	return m_scene;
+    return m_scene;
+}
+
+physx::NxApexScene*	PhysicsWrapper::apex_scene()const{
+    return m_apex_scene;
 }
 
 physx::PxMaterial*	PhysicsWrapper::material(std::string material_name)const{

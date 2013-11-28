@@ -32,14 +32,15 @@ public:
     explicit ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper);
     ~ObjectsContainer();
 
+    /** fetch Results?*/
+    void updateParticleEmitter();
+
     /** Sets and rotates every OSG object according to its representation in PhysX. */
     void updateAllObjects();
 
     /** Creates a ball. */
     void makeStandardBall(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
 
-    /** Creates the ground plane. */
-    void makePlane(osg::ref_ptr<osg::Group> parent);
 protected:
     std::shared_ptr<PhysicsWrapper>     m_physics_wrapper;
     std::vector<DrawableAndPhysXObject> m_objects;

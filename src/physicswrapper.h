@@ -9,7 +9,15 @@ typedef long double t_longf;
 #include <string>
 #include <hash_map>
 #include "PxPhysicsAPI.h"
-
+namespace physx {
+    namespace apex {
+        class NxApexSDK;
+        class NxApexScene;
+        class NxUserRenderResourceManager;
+        class NxUserRenderer;
+    }
+}
+class StandardParticles;
 class CyclicTime;
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -39,8 +47,9 @@ public:
     t_longf elapsedTime()const;
 
 	/** The returned object is initialized. */
-	physx::PxScene*		scene() const;
-    physx::PxMaterial*  material(std::string material_name)const;
+    physx::PxScene*		        scene() const;
+    physx::apex::NxApexScene*   apex_scene() const;
+    physx::PxMaterial*          material(std::string material_name)const;
 
 protected:
 	/** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
@@ -54,6 +63,9 @@ protected:
 
     /** Creation of CycleTime without starting it. */
     void initializeTime();
+
+    /** Context creation for APEX Particle Emitter. */
+    void initializeApex();
 
 	/** Specifies special scene description.  */
 	void customizeSceneDescription(physx::PxSceneDesc&);
@@ -72,6 +84,13 @@ protected:
 	std::hash_map<std::string, physx::PxMaterial*>	m_materials;
     CyclicTime*						                m_cyclic_time;
     t_longf                                         m_elapsed;
+    physx::PxCooking*                               m_cooking;
+
+    physx::apex::NxApexSDK*                     m_apex_sdk;
+    physx::apex::NxApexScene*                   m_apex_scene;
+    physx::apex::NxUserRenderResourceManager*	m_render_resource_manager;
+    StandardParticles*                          m_stadard_particles;
+    physx::apex::NxUserRenderer*                m_renderer;
 private:
 	DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
 };
