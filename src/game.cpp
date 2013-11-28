@@ -1,9 +1,10 @@
 #include "game.h"
 
 // Own Classes
+#include "world.h"
 #include "physicswrapper.h"
 #include "objectscontainer.h"
-#include "terraingenerator.h"
+#include "godnavigation.h"
 #include "godmanipulator.h"
 
 // Classes from CGS chair
@@ -11,140 +12,61 @@
 
 // OSG Classes
 #include <osgViewer/Viewer>
-#include <osgTerrain/Terrain>
-#include <osg/MatrixTransform>
-#include <osgDB/ReadFile>
 
-// PhysX Classes
-#include "PxPhysicsAPI.h"
-
-// Standard Libs
-#include <iostream>
-#include <thread>
-#include <string> 
 
 Game::Game() : Game(nullptr)
 {}
 
 Game::Game(osgViewer::Viewer* viewer) :
-m_physics_wrapper(nullptr),
-m_objects_container(nullptr),
 m_interrupted(true),
-m_viewer(nullptr),
-m_root(nullptr),
-m_terrain(nullptr)
+m_viewer(viewer),
+m_world(std::make_shared<World>())
 {
-	initialize(viewer);
+	// use modern OpenGL
+    osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
+    graphicsState->setUseModelViewAndProjectionUniforms(true);
+    graphicsState->setUseVertexAttributeAliasing(true);
+
+	m_viewer->setSceneData(m_world->root());
 }
 
 Game::~Game()
 {}
 
-osg::Program * initShader()
-{
-    osg::ref_ptr<osg::Shader> phongVertex =
-        osgDB::readShaderFile("data/phong.vert");
-    osg::ref_ptr<osg::Shader> phongFragment =
-        osgDB::readShaderFile("data/phong.frag");
-    osg::ref_ptr<osg::Shader> phongLightningFragment =
-        osgDB::readShaderFile("data/phongLighting.frag");
-
-    osg::Program * phongLightning = new osg::Program();
-    phongLightning->addShader(phongVertex.get());
-    phongLightning->addShader(phongFragment.get());
-    phongLightning->addShader(phongLightningFragment.get());
-    return phongLightning;
-}
-
-void Game::initialize(osgViewer::Viewer* viewer){
-    m_physics_wrapper.reset(new PhysicsWrapper());
-    m_objects_container.reset(new ObjectsContainer(m_physics_wrapper));
-
-	m_viewer = viewer;
-	
-    // use modern OpenGL
-    osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
-    graphicsState->setUseModelViewAndProjectionUniforms(true);
-    graphicsState->setUseVertexAttributeAliasing(true);
-
-    m_root = new osg::Group();
-    m_root->setName("root node");
-}
-
 void Game::start(){
 	if (isRunning())
         return;
 
-    m_objects_container->makeStandardBall(m_root, physx::PxVec3( 1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
-    m_objects_container->makeStandardBall(m_root, physx::PxVec3(-1, 3, 0), 0.2F, physx::PxVec3(2, 4, 0), physx::PxVec3(0, 0, 0));
-    m_objects_container->makeStandardBall(m_root, physx::PxVec3(0, 3, 0), 0.2F, physx::PxVec3(0, 0, 0), physx::PxVec3(0, 50, 0));
-
-	
-    // create terrain
-    TerrainGenerator * terrainGen = new TerrainGenerator();
-    terrainGen->setExtentsInWorld(100, 100);
-    terrainGen->applySamplesPerWorldCoord(0.5);
-    terrainGen->setTilesPerAxis(1, 1);
-    terrainGen->setMaxHeight(1.0f);
-    m_terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
-    delete terrainGen;
-
-    // OSG Object
-    m_root->addChild(m_terrain->osgTransformedTerrain());
-    // PhysX Object
-    for (const auto & actor : m_terrain->pxActorMap()){
-        m_physics_wrapper->scene()->addActor(*actor.second);
-    }
-
-    // setSceneData also creates the terrain geometry, so we have to pass the geometry to physx after this line
-    m_viewer->setSceneData(m_root.get());
+    // Add GodManipulator (event handler) to the Viewer that handles events
+    // that don't belong to the navigation but to game content/logic. 
+    // It is added to Viewers EventHandlerQueue to receive incoming events.
+    GodManipulator * eventHandler = new GodManipulator();
+    // The handler gets access to the World to process game content/logic specific events.
+    eventHandler->setWorld(m_world);
+    m_viewer->addEventHandler(eventHandler);
+    
     setOsgCamera();
 
-    m_physics_wrapper->startSimulation();
+    m_world->setNavigation(m_navigation.get());
+    m_world->initShader();
+    m_world->setUniforms();
+
+    m_world->physics_wrapper->startSimulation();
     m_interrupted = false;
-
-
-    osg::Program * phong(initShader());
-
-    osg::ref_ptr<osg::StateSet> terrainSS = m_terrain->osgTerrain()->getOrCreateStateSet();
-    terrainSS->setAttributeAndModes(phong);
-    // texture unit 0 should be color layer 0 in all tiles
-    terrainSS->getOrCreateUniform("terrainType", osg::Uniform::Type::UNSIGNED_INT_SAMPLER_2D)->set(0);
-    terrainSS->getOrCreateUniform("tileSize", osg::Uniform::Type::FLOAT_VEC3)->set(osg::Vec3(
-        m_terrain->settings().tileSizeX(),
-        m_terrain->settings().maxHeight,
-        m_terrain->settings().tileSizeZ()));
-
-    //osg::StateSet::TextureAttributeList texs = m_terrain->osgTerrain()->getTile(osgTerrain::TileID(0,0,0))->getOrCreateStateSet()->getTextureAttributeList();
-    //for (const osg::StateSet::AttributeList & tex : texs)
-    //{
-    //    for (const std::pair<osg::StateAttribute::TypeMemberPair, std::pair<osg::ref_ptr<osg::StateAttribute>, osg::StateAttribute::OverrideValue>> & x : tex)
-    //    {
-    //        osg::Texture * me = dynamic_cast<osg::Texture*>(x.second.first.get());
-    //    }
-    //}
 
 	loop();
 }
 
 void Game::loop(){
-    static int doIt = 100;
 	while (isRunning())
     {
-        if (--doIt == 0)
-            m_objects_container->makeStandardBall(m_root, physx::PxVec3(0, 3, 0), 0.2F, physx::PxVec3(0, 0, 0), physx::PxVec3(0, 50, 0));
-
+        m_world->setUniforms();
         m_viewer->frame();
-        m_physics_wrapper->step();
-        m_objects_container->updateAllObjects();
-
-        osg::Vec3d eyed, upd, centerd;
-        m_navigation->getTransformation(eyed, centerd, upd);
-        osg::Vec3 eye(eyed);
-        m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
+        m_world->physics_wrapper->step();
+        m_world->objects_container->updateAllObjects();
     }
 	m_interrupted = true;
-    m_physics_wrapper->stopSimulation();
+    m_world->physics_wrapper->stopSimulation();
 }
 
 bool Game::isRunning()const{
@@ -157,7 +79,7 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-    m_navigation = new GodManipulator();
+    m_navigation = new GodNavigation();
     m_navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),

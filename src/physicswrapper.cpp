@@ -71,7 +71,6 @@ void PhysicsWrapper::initializePhysics(){
 
 void PhysicsWrapper::initializeScene(){
     physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
     customizeSceneDescription(sceneDesc);
 
     if (!sceneDesc.cpuDispatcher)
@@ -100,7 +99,7 @@ void PhysicsWrapper::initializeTime(){
 }
 
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
-	//Modify the Scene Description 
+    scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
 
 bool PhysicsWrapper::step(){
@@ -111,7 +110,7 @@ bool PhysicsWrapper::step(){
     m_elapsed = now - last_time;
     last_time = now;
 
-    m_scene->simulate(elapsedTime());
+    m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
 	return true;
 }
 

@@ -40,7 +40,8 @@ bool SimpleConfigReader::readConfig()
 		}
 	}
 	catch (int error_number)
-	{
+    {
+        error_number; //To Suppress unnecessary warning
 		return false;
 	}
 	file.close();
@@ -60,6 +61,7 @@ bool SimpleConfigReader::writeConfig()
 	}
 	catch(int error_number)
 	{
+        error_number; //To Suppress unnecessary warning
 		return false;
 	}
 	file.close();
@@ -89,7 +91,7 @@ void SimpleConfigReader::setValue(const std::string& key, const std::string& val
 		m_values[key] = value;
 }
 
-const std::string&  SimpleConfigReader::value(std::string key) const
+std::string  SimpleConfigReader::value(std::string key) const
 {
 	auto iterator = m_values.find(key); 
 	if (iterator != m_values.end())
