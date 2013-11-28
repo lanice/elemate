@@ -1,10 +1,13 @@
 
 #pragma once
 
-#include "world.h"
 
 #include <osgGA/GUIEventHandler>
 
+#include <memory> //shared_ptr
+
+
+class World;
 
 /** The EventHandler for game content/logic specific events.
  *  To process an incoming event modify the according handle* class.

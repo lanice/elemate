@@ -13,6 +13,9 @@
 // OSG Classes
 #include <osgViewer/Viewer>
 
+#include <thread>
+#include <chrono>
+
 
 Game::Game() : Game(nullptr)
 {}
@@ -20,7 +23,8 @@ Game::Game() : Game(nullptr)
 Game::Game(osgViewer::Viewer* viewer) :
 m_interrupted(true),
 m_viewer(viewer),
-m_world(std::make_shared<World>())
+m_world(std::make_shared<World>()),
+m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 {
 	// use modern OpenGL
     osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
@@ -49,18 +53,51 @@ void Game::start(){
     setOsgCamera();
 
     m_world->physics_wrapper->startSimulation();
-	m_interrupted = false;
 
 	loop();
 }
 
-void Game::loop(){
+void Game::loop(t_longf delta){
+	m_interrupted = false;
+
+	t_longf nextTime = m_cyclicTime->getNonModf(true);
+	t_longf maxTimeDiff = 0.5L;
+	int skippedFrames = 1;
+	int maxSkippedFrames = 5;
+
 	while (isRunning())
 	{
-        m_viewer->frame();
-        m_world->physics_wrapper->step();
-        m_world->objects_container->updateAllObjects();
+		// get current time
+		t_longf currTime = m_cyclicTime->getNonModf(true);
+
+		// are we too far far behind? then do drawing step now.
+		if ((currTime - nextTime) > maxTimeDiff)
+			nextTime = currTime;
+
+		if (currTime >= nextTime)
+		{
+			nextTime += delta;
+
+			// update physic
+	        m_world->physics_wrapper->step();
+
+	        // update and draw objects if we have time remaining or already too many frames skipped.
+	        if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
+	        {
+		        m_world->objects_container->updateAllObjects();
+		        m_viewer->frame();
+		        skippedFrames = 1;
+	        } else {
+	        	++skippedFrames;
+	        }
+	    } else {
+	    	t_longf sleepTime = nextTime - currTime;
+
+	    	if (sleepTime > 0)
+	    		std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
+	    }
     }
+
 	m_interrupted = true;
     m_world->physics_wrapper->stopSimulation();
 }
