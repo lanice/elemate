@@ -63,14 +63,14 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
-    data/world.frag
-    data/world.vert
-    data/phong.frag
-    data/phong.vert
-    data/phongLighting.frag
+    shader/world.frag
+    shader/world.vert
+    shader/terrain.frag
+    shader/terrain.vert
+    shader/phongLighting.frag
 )
 
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/data "\\\\.frag$|\\\\.vert$|\\\\.geo$"
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
     
 

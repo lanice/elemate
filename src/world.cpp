@@ -78,22 +78,22 @@ void World::initShader()
 {
     assert(m_programsByName.empty());   // until we implement cleanup/reload shaders
 
-    osg::ref_ptr<osg::Shader> phongVertex =
-        osgDB::readShaderFile("data/phong.vert");
-    osg::ref_ptr<osg::Shader> phongFragment =
-        osgDB::readShaderFile("data/phong.frag");
+    osg::ref_ptr<osg::Shader> terrainVertex =
+        osgDB::readShaderFile("shader/terrain.vert");
+    osg::ref_ptr<osg::Shader> terrainFragment =
+        osgDB::readShaderFile("shader/terrain.frag");
     osg::ref_ptr<osg::Shader> phongLightningFragment =
-        osgDB::readShaderFile("data/phongLighting.frag");
+        osgDB::readShaderFile("shader/phongLighting.frag");
 
-    osg::ref_ptr<osg::Program> phongLightning = new osg::Program();
-    phongLightning->addShader(phongVertex.get());
-    phongLightning->addShader(phongFragment.get());
-    phongLightning->addShader(phongLightningFragment.get());
-    m_programsByName.emplace("phongLightning", phongLightning.get());
+    osg::ref_ptr<osg::Program> terrainProgram = new osg::Program();
+    terrainProgram->addShader(terrainVertex.get());
+    terrainProgram->addShader(terrainFragment.get());
+    terrainProgram->addShader(phongLightningFragment.get());
+    m_programsByName.emplace("terrain", terrainProgram.get());
 
 
     osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
-    terrainSS->setAttributeAndModes(programByName("phongLightning"));
+    terrainSS->setAttributeAndModes(terrainProgram);
 }
 
 osg::Program * World::programByName(std::string name) const
