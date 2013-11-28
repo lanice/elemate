@@ -53,7 +53,7 @@ void main()
     vec2 texCoord = worldPos.xy + (tileSize.xz * 0.5);
     texCoord = texCoord / tileSize.xz;
 
-    unsigned int value = texture(terrainType, texCoord);
+    uint value = texture(terrainType, texCoord).r;
 
     vec3 color;
 
