@@ -15,7 +15,7 @@ uniform mat4 osg_ModelViewProjectionMatrix;
 
 void main(void) 
 {
-    f_terrainTypeID = terrainTypeID / 10.0;
+    f_terrainTypeID = terrainTypeID;
     worldPos = gl_Vertex.xyz;
 	normal = normalize(gl_Normal);
     gl_Position = osg_ModelViewProjectionMatrix * gl_Vertex;

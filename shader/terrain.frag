@@ -47,7 +47,7 @@ in float f_terrainTypeID;
 
 void main()
 {
-    gl_FragColor = vec4(f_terrainTypeID);
+    gl_FragColor = vec4(f_terrainTypeID / 3.0);
     return;
 
 	//vec3 n = normal;
