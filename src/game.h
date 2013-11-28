@@ -4,15 +4,11 @@
 	TypeName(const TypeName&);				\
 	void operator=(const TypeName&);
 
-#include <osg/GraphicsContext> // ref_ptr
 #include <memory> //shared_ptr
 
 //Forward Declarations
-class PhysicsWrapper;
-class ObjectsContainer;
-class ElemateHeightFieldTerrain;
+class World;
 namespace std {			class thread; }
-namespace osg {			class Group;}
 namespace osgViewer {	class Viewer; }
 
 /** The Game Class that invokes a game loop and initializes PhysX.
@@ -37,7 +33,6 @@ public:
 	/** Ending the loop. */
 	void end();
 protected:
-    virtual void initialize(osgViewer::Viewer* viewer) final;
 
 	/** The Game's loop containing drawing and triggering physics is placed right here. */
 	void loop();
@@ -47,12 +42,9 @@ protected:
     void generateTerrain();
 
 	
-    std::shared_ptr<PhysicsWrapper>	    m_physics_wrapper;
-    std::shared_ptr<ObjectsContainer>   m_objects_container;
 	osgViewer::Viewer*				    m_viewer;
-	osg::ref_ptr<osg::Group>		    m_root;
+    std::shared_ptr<World>     			m_world;
 	bool							    m_interrupted;
-    std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(Game);
