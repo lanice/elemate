@@ -10,6 +10,8 @@
 #include <osg/MatrixTransform>
 #include <osg/Image>
 #include <osgTerrain/Terrain>
+#include <osgUtil/GLObjectsVisitor>
+#include "osg/sharedgeometrytechnique.h"
 
 #include <PxRigidStatic.h>
 #include <PxShape.h>
@@ -48,16 +50,20 @@ TerrainSettings::TerrainSettings()
 }
 
 TerrainGenerator::TerrainGenerator()
+: m_artifact(nullptr)
 {
 }
 
 ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 {
-    ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
+    assert(m_artifact == nullptr);
+
+    m_artifact = new ElemateHeightFieldTerrain(m_settings);
 
     osg::ref_ptr<osgTerrain::Terrain> osgTerrain = new osgTerrain::Terrain();
     osgTerrain->setName("terrain root node");
-    terrain->m_osgTerrain = osgTerrain.get();
+    osgTerrain->setTerrainTechniquePrototype(new SharedGeometryTechnique());
+    m_artifact->m_osgTerrain = osgTerrain.get();
 
     /** transforms osg's base vectors to physx/opengl logic
       * ! matrix is inverted, in osg logic
@@ -70,8 +76,8 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         0, 1, 0, 0,
         0, 0, 0, 1);
 
-    terrain->m_osgTerrainTransform = new osg::MatrixTransform(osgBaseTransformToPx);
-    terrain->m_osgTerrainTransform->addChild(osgTerrain.get());
+    m_artifact->m_osgTerrainTransform = new osg::MatrixTransform(osgBaseTransformToPx);
+    m_artifact->m_osgTerrainTransform->addChild(osgTerrain.get());
 
 
     /** The tileID determines the position of the current tile in the grid of tiles.
@@ -93,22 +99,29 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         // move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin
         PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
-        terrain->m_pxActors.emplace(tileID, actor);
+        m_artifact->m_pxActors.emplace(tileID, actor);
 
         PxHeightFieldSample * pxHeightFieldSamples = createPxHeightFieldData(m_settings.rows * m_settings.columns);
         assert(pxHeightFieldSamples);
 
         PxShape * pxShape = createPxShape(*actor, pxHeightFieldSamples, pxTerrainTransform);
-        terrain->m_pxShapes.emplace(tileID, pxShape);
+        m_artifact->m_pxShapes.emplace(tileID, pxShape);
 
 
         /** create OSG terrain object and copy PhysX terrain data into it */
 
         osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(tileID, pxHeightFieldSamples);
         assert(tile.valid());
-        tile->setTerrain(terrain->osgTerrain());
+        tile->setTerrain(m_artifact->osgTerrain());
 
-        /** create biomes and set terrain data accordingly */
+
+        /** assigns clones terrain technique to tile and creates geometry */
+        osg::ref_ptr<osgUtil::GLObjectsVisitor> geoVisitor =
+            new osgUtil::GLObjectsVisitor(osgUtil::GLObjectsVisitor::ModeValues::SWITCH_ON_VERTEX_BUFFER_OBJECTS);
+
+        geoVisitor->apply(*tile.get());
+
+        /** adds vertex attribute array to terrain geometry, containing terrain type ids */
         createBiomes(*tile.get(), pxHeightFieldSamples);
         
         osgTerrain->addChild(tile.get());
@@ -144,7 +157,10 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         //}
     }
 
-    return terrain;
+    ElemateHeightFieldTerrain * completeTerrain = m_artifact;
+    m_artifact = nullptr;
+
+    return completeTerrain;
 }
 
 void TerrainGenerator::setExtentsInWorld(float x, float z)
@@ -340,24 +356,23 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
 
 void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const
 {
-    assert(tile.getNumColorLayers() == 0);
+    osg::ref_ptr<SharedGeometryTechnique> technique = dynamic_cast<SharedGeometryTechnique*>( tile.getTerrainTechnique() );
+    assert(technique);
 
-    // ignore biome size, set 4 biomes per tile
-    // just set some material ids
-    
-    static uint16_t _terrainData[4] = { 0u, 1u, 2u, 3u };
+    osg::ref_ptr<osg::Geometry> geometry = technique->getGeometry();
+    assert(geometry);
 
-    osg::ref_ptr<osg::Image> terrainTypeData = new osg::Image();
-    terrainTypeData->setImage(2, 2, 1, GL_R16, GL_RED, GL_UNSIGNED_SHORT,
-        (unsigned char*) _terrainData, osg::Image::AllocationMode::USE_NEW_DELETE);
+    GLint numVertices = geometry->getVertexArray()->getNumElements();
 
-    osg::ref_ptr<osgTerrain::ImageLayer> terrainTypeLayer = new osgTerrain::ImageLayer(terrainTypeData.get());
-    terrainTypeLayer->setName(std::string("terrainType"));
+    std::cout << "Terrain tile vertices: " << numVertices << std::endl;
 
+    osg::IntArray * terrainTypes = new osg::IntArray(/*numVertices*/);
+    for (int i = 0; i < numVertices; ++i)
+    {
+        terrainTypes->push_back(i % 10);
+    }
 
-    tile.setColorLayer(0, terrainTypeLayer.get());
-
-    assert(tile.getNumColorLayers() == 1);
+    geometry->setVertexAttribArray(2, terrainTypes, osg::Array::Binding::BIND_PER_VERTEX);
 }
 
 ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & settings)

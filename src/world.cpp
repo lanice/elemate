@@ -90,6 +90,10 @@ void World::initShader()
     phongLightning->addShader(phongFragment.get());
     phongLightning->addShader(phongLightningFragment.get());
     m_programsByName.emplace("phongLightning", phongLightning.get());
+
+
+    osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
+    terrainSS->setAttributeAndModes(programByName("phongLightning"));
 }
 
 osg::Program * World::programByName(std::string name) const
@@ -109,13 +113,12 @@ void World::setUniforms()
     m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
 
     osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
-    terrainSS->setAttributeAndModes(programByName("phongLightning"));
     // texture unit 0 should be color layer 0 in all tiles
-    terrainSS->getOrCreateUniform("terrainType", osg::Uniform::Type::UNSIGNED_INT_SAMPLER_2D)->set(0);
+    /*terrainSS->getOrCreateUniform("terrainType", osg::Uniform::Type::UNSIGNED_INT_SAMPLER_2D)->set(0);
     terrainSS->getOrCreateUniform("tileSize", osg::Uniform::Type::FLOAT_VEC3)->set(osg::Vec3(
         terrain->settings().tileSizeX(),
         terrain->settings().maxHeight,
-        terrain->settings().tileSizeZ()));
+        terrain->settings().tileSizeZ()));*/
 
     //osg::StateSet::TextureAttributeList texs = m_terrain->osgTerrain()->getTile(osgTerrain::TileID(0,0,0))->getOrCreateStateSet()->getTextureAttributeList();
     //for (const osg::StateSet::AttributeList & tex : texs)

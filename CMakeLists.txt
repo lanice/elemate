@@ -54,6 +54,8 @@ set(SOURCES
     src/simpleconfigreader.h
     src/terraingenerator.cpp
     src/terraingenerator.h
+    src/osg/sharedgeometrytechnique.h;
+    src/osg/sharedgeometrytechnique.cpp;
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 

@@ -143,12 +143,15 @@ public:
     float biomeSize() const;
 
 private:
+    /** contains the (incomplete) terrain during generate() */
+    mutable ElemateHeightFieldTerrain * m_artifact;
+
     TerrainSettings m_settings;
 
     /** creates a terrain tile, and sets its tileID */
     physx::PxHeightFieldSample * createPxHeightFieldData(unsigned numSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples, const physx::PxMat44 & transform) const;
     osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
-    /** creates biome data, adds it as additional layer to the heightfield, sets pxSample textures accordingly */
+    /** creates biome data, adds it as vertex attrib array osg tile, sets pxSample textures accordingly */
     void createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const;
 };
