@@ -36,9 +36,9 @@ void SoundManager::SetVolume(float vol)
 
 
 //loads a soundfile
-void SoundManager::Load(const char * filename)
+void SoundManager::Load(const std::string filename)
 {
-	s_current_sound = (char *)filename;
+	s_current_sound = (char *)filename.c_str();
 	if (s_enabled)
 	{
 		s_result = FMOD_Sound_Release(s_sound);
@@ -81,8 +81,10 @@ char* SoundManager::GetCurrentSound()
 	return s_current_sound;
 }
 
-
-
+FMOD_SYSTEM* SoundManager::GetSystem()
+{
+	return s_fmod_system;
+}
 
 //pause or unpause the sound
 void SoundManager::SetPause(bool pause)
@@ -122,4 +124,17 @@ void SoundManager::TogglePause(void)
 	s_paused = !s_paused;
 	FMOD_Channel_GetPaused(s_channel, &p);
 	FMOD_Channel_SetPaused(s_channel, !p);
+}
+
+SoundEffect::SoundEffect(std::string filename)
+{
+	b_enabled = true;
+	m_sound_name = filename;
+	m_result = FMOD_System_CreateSound(SoundManager::GetSystem(), m_sound_name.c_str(), FMOD_SOFTWARE, 0, &m_sound);
+	assert(m_result == FMOD_OK);
+}
+void SoundEffect::Play()
+{
+	m_result = FMOD_System_PlaySound(SoundManager::GetSystem(), FMOD_CHANNEL_FREE, m_sound, false, 0);
+	assert(m_result == FMOD_OK);
 }

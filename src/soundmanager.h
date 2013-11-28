@@ -1,4 +1,6 @@
 # pragma once
+
+#include <string>
 #include "fmod.h"
 #include "assert.h"
 
@@ -17,7 +19,7 @@ public:
 	static void Update();
 	//Sound Control
 	static void SetVolume(float vol); //Sets the volume of the playing sound
-	static void Load(const char *filename);
+	static void Load(const std::string filename);
 	static void Unload();
 	static void Play(bool pause);
 	//getters
@@ -32,4 +34,18 @@ public:
 	//toggles
 	static void ToggleSound(); //toggles sound on and off
 	static void TogglePause(); //toggle pause on/off
+
+	static FMOD_SYSTEM* GetSystem();
+};
+
+class SoundEffect
+{
+private:
+	bool b_enabled;
+	std::string m_sound_name;
+	FMOD_SOUND* m_sound;
+	FMOD_RESULT m_result;
+public:
+	SoundEffect(std::string filename);
+	void Play();
 };

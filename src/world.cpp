@@ -68,12 +68,20 @@ void World::makeStandardBall()
 	objects_container->makeStandardBall(m_root, physx::PxVec3(1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
 }
 
-void World::playSound()
+void World::playMusic(std::string fileName)
 {
 	if (!SoundManager::GetSoundState()){
 		SoundManager::Init();
-		SoundManager::Load("data\\sounds\\Roads_Untraveled.mp3");
+		SoundManager::Load("data\\sounds\\"+fileName);
 		SoundManager::Play(false);
 	}else
 	SoundManager::TogglePause();
+}
+
+void World::playSoundEffect(std::string fileName){
+	if (!SoundManager::GetSoundState())
+		SoundManager::Init();
+	SoundEffect *soundEffect = new SoundEffect("data\\sounds\\" + fileName);
+	soundEffect->Play();
+	delete soundEffect;
 }

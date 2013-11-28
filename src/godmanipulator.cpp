@@ -75,15 +75,21 @@ bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, o
 
 bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F)
-	{
-		m_world->makeStandardBall();
-		return true;
-	}
-	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_P)
-	{
-		m_world->playSound();
-		return true;
+	switch (ea.getKey()){
+		case osgGA::GUIEventAdapter::KEY_F:
+			m_world->makeStandardBall();
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_P:
+			m_world->playMusic("Roads_Untraveled.mp3");
+			return true;
+			break;
+		
+		case osgGA::GUIEventAdapter::KEY_O:
+			m_world->playSoundEffect("bomb.mp3");
+			return true;
+			break;
 	}
 
     return false;
