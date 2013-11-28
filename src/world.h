@@ -8,6 +8,7 @@
 class PhysicsWrapper;
 class ObjectsContainer;
 class ElemateHeightFieldTerrain;
+class SoundManager;
 namespace osg {         class Group;}
 
 
@@ -21,12 +22,12 @@ public:
     osg::Group* root();
 
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
-    void makeStandardBall();
-    
+	void makeStandardBall();
+	void playSound();
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
-    std::shared_ptr<ObjectsContainer>           objects_container;
-    std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+	std::shared_ptr<ObjectsContainer>           objects_container;
+	std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
 
 protected:
     

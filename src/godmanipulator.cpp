@@ -75,11 +75,16 @@ bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, o
 
 bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    if( ea.getKey() == osgGA::GUIEventAdapter::KEY_F )
-    {
-        m_world->makeStandardBall();
-        return true;
-    }
+	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F)
+	{
+		m_world->makeStandardBall();
+		return true;
+	}
+	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_P)
+	{
+		m_world->playSound();
+		return true;
+	}
 
     return false;
 }
