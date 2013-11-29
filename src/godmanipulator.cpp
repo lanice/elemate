@@ -1,16 +1,20 @@
 
 #include "godmanipulator.h"
 
+#include "world.h"
+
 
 GodManipulator::GodManipulator()
-   : inherited()
+   : inherited(),
+     m_world(nullptr)
 {
 }
 
 
 GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp )
    : Object(gm, copyOp),
-     inherited( gm, copyOp )
+     inherited( gm, copyOp ),
+     m_world( gm.m_world )
 {
 }
 

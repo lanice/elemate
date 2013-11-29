@@ -9,7 +9,8 @@ int main()
     osgViewer::Viewer* viewer = new osgViewer::Viewer();
 	viewer->setUpViewInWindow(50, 50, 500, 500);
 
-	Game game(viewer);	
+	Game game(*viewer);	
+
 	game.start();
 	game.end();
 
