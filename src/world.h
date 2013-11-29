@@ -4,8 +4,6 @@
 #include <map>
 #include <osg/ref_ptr>
 
-
-//Forward Declarations
 class PhysicsWrapper;
 class ObjectsContainer;
 class GodNavigation;
@@ -19,9 +17,8 @@ namespace osg {
 class World {
 public:
 
-    World();    
+    World();
     ~World();
-
 
     osg::Group* root();
 
@@ -29,7 +26,7 @@ public:
     void makeStandardBall();
 
     void setNavigation(GodNavigation * navigation);
-    void initShader();
+    void reloadShader();
     void setUniforms();
     
 
@@ -38,8 +35,8 @@ public:
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
 
 protected:
-    
     osg::ref_ptr<osg::Group> m_root;
+    void initShader();
     osg::Program * programByName(std::string name) const;
     std::map<std::string, osg::ref_ptr<osg::Program>> m_programsByName;
     osg::ref_ptr<GodNavigation> m_navigation;

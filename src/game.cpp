@@ -48,7 +48,7 @@ void Game::start(){
     setOsgCamera();
 
     m_world->setNavigation(m_navigation.get());
-    m_world->initShader();
+    m_world->reloadShader();
     m_world->setUniforms();
 
     m_world->physics_wrapper->startSimulation();

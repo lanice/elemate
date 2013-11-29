@@ -1,10 +1,5 @@
 #include "world.h"
 
-#include "physicswrapper.h"
-#include "objectscontainer.h"
-#include "godnavigation.h"
-#include "terraingenerator.h"
-
 #include "PxPhysicsAPI.h"
 
 #include <osgViewer/Viewer>
@@ -12,15 +7,18 @@
 #include <osg/MatrixTransform>
 #include <osgDB/ReadFile>
 
+#include "physicswrapper.h"
+#include "objectscontainer.h"
+#include "godnavigation.h"
+#include "terraingenerator.h"
+
 
 World::World()
+: physics_wrapper(new PhysicsWrapper())
+, objects_container(new ObjectsContainer(physics_wrapper))
+, m_root(new osg::Group())
 {
-    physics_wrapper.reset(new PhysicsWrapper());
-    objects_container.reset(new ObjectsContainer(physics_wrapper));
-
-    m_root = new osg::Group();
     m_root->setName("root node");
-
 
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
@@ -76,8 +74,6 @@ void World::setNavigation(GodNavigation * navigation)
 
 void World::initShader()
 {
-    assert(m_programsByName.empty());   // until we implement cleanup/reload shaders
-
     osg::ref_ptr<osg::Shader> terrainVertex =
         osgDB::readShaderFile("shader/terrain.vert");
     osg::ref_ptr<osg::Shader> terrainFragment =
@@ -86,20 +82,36 @@ void World::initShader()
         osgDB::readShaderFile("shader/phongLighting.frag");
 
     osg::ref_ptr<osg::Program> terrainProgram = new osg::Program();
-    terrainProgram->addShader(terrainVertex.get());
-    terrainProgram->addShader(terrainFragment.get());
-    terrainProgram->addShader(phongLightningFragment.get());
     m_programsByName.emplace("terrain", terrainProgram.get());
+    terrainProgram->addShader(terrainVertex);
+    terrainProgram->addShader(terrainFragment);
+    terrainProgram->addShader(phongLightningFragment);
 
 
     osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
     terrainSS->setAttributeAndModes(terrainProgram);
 }
 
+void World::reloadShader()
+{
+    if (m_programsByName.empty())
+        return initShader();
+
+    // reload all shader for all program from source
+    for (auto & pair : m_programsByName)
+    {
+        for (unsigned i = 0; i < pair.second->getNumShaders(); ++i)
+        {
+            osg::Shader * shader = pair.second->getShader(i);
+            shader->loadShaderSourceFromFile(shader->getFileName());
+        }
+    }
+}
+
 osg::Program * World::programByName(std::string name) const
 {
     assert(m_programsByName.find(name) != m_programsByName.end());
-    return m_programsByName.at(name);
+    return m_programsByName.at(name).get();
 }
 
 void World::setUniforms()
