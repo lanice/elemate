@@ -63,6 +63,8 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 set(SHADER
     shader/terrain.frag
     shader/terrain.vert
+    shader/sphere.frag
+    shader/sphere.vert
     shader/phongLighting.frag
 )
 

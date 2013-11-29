@@ -17,8 +17,11 @@ World::World()
 : physics_wrapper(new PhysicsWrapper())
 , objects_container(new ObjectsContainer(physics_wrapper))
 , m_root(new osg::Group())
+, m_particleGroup(new osg::Group())
 {
     m_root->setName("root node");
+    m_particleGroup->setName("particle root node");
+    m_root->addChild(m_particleGroup.get());
 
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
@@ -37,18 +40,6 @@ World::World()
     for (const auto & actor : terrain->pxActorMap()){
         physics_wrapper->scene()->addActor(*actor.second);
     }
-
-
-    // Set Light Source
-    osg::ref_ptr<osg::Light> light = new osg::Light;
-    light->setLightNum(1);
-    light->setPosition(osg::Vec4(-10, 4, 5, 1.0f));
-
-    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
-    lightSource->setLight(light.get());
-
-    m_root->addChild(lightSource.get());
-    lightSource->setStateSetModes(*m_root->getOrCreateStateSet(), osg::StateAttribute::ON);
 }
 
 
@@ -65,7 +56,7 @@ osg::Group* World::root()
 void World::makeStandardBall()
 {
     // prototype: hard-coded physx values etc.
-    objects_container->makeStandardBall(m_root, physx::PxVec3( 1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
 }
 
 void World::setNavigation(GodNavigation * navigation)
@@ -90,7 +81,20 @@ void World::initShader()
 
 
     osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
-    terrainSS->setAttributeAndModes(terrainProgram);
+    terrainSS->setAttributeAndModes(terrainProgram.get());
+
+    osg::ref_ptr<osg::Shader> sphereVertex =
+        osgDB::readShaderFile("shader/sphere.vert");
+    osg::ref_ptr<osg::Shader> sphereFragment =
+        osgDB::readShaderFile("shader/sphere.frag");
+
+    osg::ref_ptr<osg::Program> sphereProgram = new osg::Program();
+    m_programsByName.emplace("sphere", sphereProgram.get());
+    sphereProgram->addShader(sphereVertex);
+    sphereProgram->addShader(sphereFragment);
+
+    osg::ref_ptr<osg::StateSet> sphereSS = m_particleGroup->getOrCreateStateSet();
+    sphereSS->setAttributeAndModes(sphereProgram.get());
 }
 
 void World::reloadShader()
@@ -125,20 +129,4 @@ void World::setUniforms()
     osg::Vec3 eye(eyed);
     m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
 
-    osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
-    // texture unit 0 should be color layer 0 in all tiles
-    /*terrainSS->getOrCreateUniform("terrainType", osg::Uniform::Type::UNSIGNED_INT_SAMPLER_2D)->set(0);
-    terrainSS->getOrCreateUniform("tileSize", osg::Uniform::Type::FLOAT_VEC3)->set(osg::Vec3(
-        terrain->settings().tileSizeX(),
-        terrain->settings().maxHeight,
-        terrain->settings().tileSizeZ()));*/
-
-    //osg::StateSet::TextureAttributeList texs = m_terrain->osgTerrain()->getTile(osgTerrain::TileID(0,0,0))->getOrCreateStateSet()->getTextureAttributeList();
-    //for (const osg::StateSet::AttributeList & tex : texs)
-    //{
-    //    for (const std::pair<osg::StateAttribute::TypeMemberPair, std::pair<osg::ref_ptr<osg::StateAttribute>, osg::StateAttribute::OverrideValue>> & x : tex)
-    //    {
-    //        osg::Texture * me = dynamic_cast<osg::Texture*>(x.second.first.get());
-    //    }
-    //}
 }
