@@ -356,7 +356,7 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
 
 void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const
 {
-    osg::ref_ptr<SharedGeometryTechnique> technique = dynamic_cast<SharedGeometryTechnique*>( tile.getTerrainTechnique() );
+    osg::ref_ptr<SharedGeometryTechnique> technique = dynamic_cast<SharedGeometryTechnique*>(tile.getTerrainTechnique());
     assert(technique);
 
     osg::ref_ptr<osg::Geometry> geometry = technique->getGeometry();
@@ -366,30 +366,30 @@ void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHei
 
     std::cout << "Terrain tile vertices: " << numVertices << std::endl;
 
-    osg::IntArray * terrainTypes = new osg::IntArray(/*numVertices*/);
+    osg::IntArray * terrainTypes = new osg::IntArray();
 
     assert(numVertices == m_settings.rows * m_settings.columns);
     unsigned biomeTypeCount = 4;
 
-    // number of biomes along x/z axis
-    unsigned biomeRows = m_settings.tileSizeX() / m_settings.biomeSize;
-    unsigned biomeColumns = m_settings.tileSizeZ() / m_settings.biomeSize;
     // x/z axis sample points per biome
-    unsigned biomeSampleRows = m_settings.rows / biomeRows;
-    unsigned biomeSampleColumns = m_settings.columns / biomeColumns;
+    unsigned biomeSampleRows = m_settings.rows * m_settings.biomeSize / m_settings.tileSizeX();
+    unsigned biomeSampleColumns = m_settings.columns * m_settings.biomeSize / m_settings.tileSizeZ();
 
-    unsigned currentBiomeType = 0;
+    unsigned numBiomeRows = unsigned(std::ceil(m_settings.tileSizeX() / m_settings.biomeSize));
+    unsigned numBiomeColumns = unsigned(std::ceil(m_settings.tileSizeZ() / m_settings.biomeSize));
 
     for (unsigned r = 0; r < m_settings.rows; ++r)
-    for (unsigned c = 0; c < m_settings.columns; ++c)
     {
-        unsigned bRow = r / biomeRows;
-        unsigned bColumn = c / biomeColumns;
-        // in osg heightfield: starting with all column values for first row
-        unsigned i = bColumn + (bRow * m_settings.columns / biomeColumns);
-        // using staticBiomeSize in heightfield [columns/row] space here
-        unsigned id = i % biomeTypeCount;
-        terrainTypes->push_back(id);
+        unsigned r_biomeId = r / biomeSampleRows;
+        for (unsigned c = 0; c < m_settings.columns; ++c)
+        {
+            unsigned c_biomeId = c / biomeSampleColumns;
+
+            unsigned biomeTypeId = c_biomeId + (r_biomeId * numBiomeColumns);
+            biomeTypeId %= biomeTypeCount;
+
+            terrainTypes->push_back(biomeTypeId);
+        }
     }
 
     geometry->setVertexAttribArray(2, terrainTypes, osg::Array::Binding::BIND_PER_VERTEX);

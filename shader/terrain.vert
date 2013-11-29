@@ -2,8 +2,8 @@
 
 // writing int to attrib array and use them as float here seems to work :-D
 layout(location = 2) in float terrainTypeID;
-// you shall not int?
-out float f_terrainTypeID;
+// you shall not int? works only with float for me, int produces some kind of unpredictable values
+flat out float f_terrainTypeID;
 
 out vec3 normal;
 out vec3 position;

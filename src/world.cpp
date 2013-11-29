@@ -26,6 +26,7 @@ World::World()
     terrainGen->applySamplesPerWorldCoord(0.5);
     terrainGen->setTilesPerAxis(1, 1);
     terrainGen->setMaxHeight(1.0f);
+    terrainGen->setBiomeSize(10.f);
     terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 
