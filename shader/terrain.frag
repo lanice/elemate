@@ -4,7 +4,7 @@
 //partly from http://www.opengl.org/sdk/docs/tutorials/TyphoonLabs/Chapter_4.pdf
 
 in vec3 normal;
-in vec3 position;
+in vec3 viewPos;
 in vec3 worldPos;
 
 uniform vec3 cameraposition;
@@ -50,7 +50,7 @@ layout(location = 0)out vec4 fragColor;
 
 void main()
 {
-    vec4 lightColor = phongLighting(normal, position, cameraposition, lightdir, lightdir2, light, light2, lightambientglobal, material);
+    vec4 lightColor = phongLighting(normal, viewPos, cameraposition, lightdir, lightdir2, light, light2, lightambientglobal, material);
 
     int terrainTypeID = int(f_terrainTypeID);
 
