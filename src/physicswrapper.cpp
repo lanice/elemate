@@ -128,9 +128,9 @@ void PhysicsWrapper::initializeApex(){
     static const physx::PxU32 viewIDlookAtRightHand = m_apex_scene->allocViewMatrix(physx::apex::ViewMatrixType::LOOK_AT_RH);
     static const physx::PxU32 projIDperspectiveCubicRightHand = m_apex_scene->allocProjMatrix(physx::apex::ProjMatrixType::USER_CUSTOMIZED);
     
-    m_stadard_particles = new StandardParticles();
-    m_stadard_particles->initialize(m_apex_sdk);
-    m_stadard_particles->createEmitter(m_apex_sdk, m_apex_scene);
+    m_standard_particles = new StandardParticles();
+    m_standard_particles->initialize(m_apex_sdk);
+    m_standard_particles->createEmitter(m_apex_sdk, m_apex_scene);
 }
 
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){

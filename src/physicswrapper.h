@@ -89,7 +89,7 @@ protected:
     physx::apex::NxApexSDK*                     m_apex_sdk;
     physx::apex::NxApexScene*                   m_apex_scene;
     physx::apex::NxUserRenderResourceManager*	m_render_resource_manager;
-    StandardParticles*                          m_stadard_particles;
+    StandardParticles*                          m_standard_particles;
     physx::apex::NxUserRenderer*                m_renderer;
 private:
 	DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
