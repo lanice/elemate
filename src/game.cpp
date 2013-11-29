@@ -1,5 +1,9 @@
 #include "game.h"
 
+#include <iostream>
+#include <thread>
+#include <chrono>
+
 // Own Classes
 #include "world.h"
 #include "physicswrapper.h"
@@ -13,25 +17,30 @@
 // OSG Classes
 #include <osgViewer/Viewer>
 
-#include <thread>
-#include <chrono>
 
-
-Game::Game() : Game(nullptr)
-{}
-
-Game::Game(osgViewer::Viewer* viewer) :
+Game::Game(osgViewer::Viewer& viewer) :
 m_interrupted(true),
 m_viewer(viewer),
 m_world(std::make_shared<World>()),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 {
 	// use modern OpenGL
-    osg::State * graphicsState = m_viewer->getCamera()->getGraphicsContext()->getState();
+    osg::State * graphicsState = m_viewer.getCamera()->getGraphicsContext()->getState();
     graphicsState->setUseModelViewAndProjectionUniforms(true);
     //graphicsState->setUseVertexAttributeAliasing(true);
+    
+    // create new context traits to configure vsync etc
+    osg::ref_ptr< osg::GraphicsContext::Traits > traits = new osg::GraphicsContext::Traits(*m_viewer.getCamera()->getGraphicsContext()->getTraits());
 
-	m_viewer->setSceneData(m_world->root());
+    traits->windowName = "Elemate";
+    traits->vsync = false;
+    // traits->useCursor = false;
+
+    // apply new settings viewer
+    osg::ref_ptr< osg::GraphicsContext > gc = osg::GraphicsContext::createGraphicsContext(traits.get());
+    m_viewer.getCamera()->setGraphicsContext(gc.get());
+
+	m_viewer.setSceneData(m_world->root());
 }
 
 Game::~Game()
@@ -48,7 +57,7 @@ void Game::start(){
     GodManipulator * eventHandler = new GodManipulator();
     // The handler gets access to the World to process game content/logic specific events.
     eventHandler->setWorld(m_world);
-    m_viewer->addEventHandler(eventHandler);
+    m_viewer.addEventHandler(eventHandler);
     
     setOsgCamera();
 
@@ -85,7 +94,7 @@ void Game::loop(t_longf delta){
 	        if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
 	        {
 		        m_world->objects_container->updateAllObjects();
-		        m_viewer->frame();
+		        m_viewer.frame();
 		        skippedFrames = 1;
 	        } else {
 	        	++skippedFrames;
@@ -103,7 +112,7 @@ void Game::loop(t_longf delta){
 }
 
 bool Game::isRunning()const{
-	return !(m_viewer->done() || m_interrupted);
+	return !(m_viewer.done() || m_interrupted);
 }
 
 void Game::end(){
@@ -118,5 +127,5 @@ void Game::setOsgCamera(){
 		osg::Vec3d(0.0, 2.0, 0.0),
 		osg::Vec3d(0.0, 1.0, 0.0));
 	navigation->home(0.0);
-	m_viewer->setCameraManipulator(navigation);
+	m_viewer.setCameraManipulator(navigation);
 }

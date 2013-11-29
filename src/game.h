@@ -20,8 +20,8 @@ class Game{
 public:
 
 	/** Explicit Constructor because Copying and Assignments are disabled. 	*/
-	explicit Game();	
-	explicit Game(osgViewer::Viewer* viewer);
+	Game() = delete;	
+	explicit Game(osgViewer::Viewer& viewer);
 
 	~Game();
 
@@ -44,7 +44,7 @@ protected:
     void generateTerrain();
 
 	
-	osgViewer::Viewer*				    m_viewer;
+	osgViewer::Viewer&				    m_viewer;
     std::shared_ptr<World>     			m_world;
     std::shared_ptr<CyclicTime>     			m_cyclicTime;
 
