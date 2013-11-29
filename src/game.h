@@ -8,6 +8,7 @@
 
 //Forward Declarations
 class World;
+class CyclicTime;
 namespace std {			class thread; }
 namespace osgViewer {	class Viewer; }
 
@@ -19,8 +20,8 @@ class Game{
 public:
 
 	/** Explicit Constructor because Copying and Assignments are disabled. 	*/
-	explicit Game();	
-	explicit Game(osgViewer::Viewer* viewer);
+	Game() = delete;	
+	explicit Game(osgViewer::Viewer& viewer);
 
 	~Game();
 
@@ -34,16 +35,19 @@ public:
 	void end();
 protected:
 
-	/** The Game's loop containing drawing and triggering physics is placed right here. */
-	void loop();
+	/** The Game's loop containing drawing and triggering physics is placed right here.
+	  * @param delta specifies the time between each logic update in seconds.*/
+	void loop(long double delta = 0.05L);
 
 	void setOsgCamera();
     void setLightSource();
     void generateTerrain();
 
 	
-	osgViewer::Viewer*				    m_viewer;
+	osgViewer::Viewer&				    m_viewer;
     std::shared_ptr<World>     			m_world;
+    std::shared_ptr<CyclicTime>     			m_cyclicTime;
+
 	bool							    m_interrupted;
 
 private:

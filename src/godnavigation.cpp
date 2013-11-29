@@ -7,6 +7,7 @@ static const double c_velocityNormal = 0.2;
 
 GodNavigation::GodNavigation( int flags )
    : inherited( flags ),
+     _velocity( c_velocityNormal ),
      _keyPressedW( false ),
      _keyPressedS( false ),
      _keyPressedA( false ),
@@ -14,10 +15,6 @@ GodNavigation::GodNavigation( int flags )
      _keyPressedQ( false ),
      _keyPressedE( false )
 {
-    // setAcceleration( 1.0, true );
-    // setMaxVelocity( 0.25, true );
-    // setWheelMovement( 0.05, true );
-    setVelocity( c_velocityNormal );
     if( _flags & SET_CENTER_ON_WHEEL_FORWARD_MOVEMENT )
         setAnimationTime( 0.2 );
 }
@@ -35,9 +32,6 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
      _keyPressedD( gn._keyPressedD ),
      _keyPressedQ( gn._keyPressedA ),
      _keyPressedE( gn._keyPressedD )//,
-     // _acceleration( gn._acceleration ),
-     // _maxVelocity( gn._maxVelocity ),
-     // _wheelMovement( gn._wheelMovement )
 {
 }
 
@@ -124,56 +118,50 @@ double GodNavigation::getVelocity() const
 }
 
 
+bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
+{
+    double current_frame_time = ea.getTime();
+
+    _delta_frame_time = current_frame_time - _last_frame_time;
+    _last_frame_time = current_frame_time;
+
+    performMovement();
+
+   return false;
+}
+
+
 bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
     switch( ea.getKey() )
     {
         case osgGA::GUIEventAdapter::KEY_Space:
             flushMouseEventStack();
-            _thrown = false;
             home(ea,us);
             return true;
 
         case osgGA::GUIEventAdapter::KEY_W:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
             _keyPressedW = true;
-            _thrown = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_S:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
             _keyPressedS = true;
-            _thrown = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_A:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
             _keyPressedA = true;
-            _thrown = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_D:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
             _keyPressedD = true;
-            _thrown = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_Q:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
             _keyPressedQ = true;
-            _thrown = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_E:
-            us.requestRedraw();
-            us.requestContinuousUpdate( true );
             _keyPressedE = true;
-            _thrown = true;
             return true;
 
         default:
@@ -184,38 +172,32 @@ bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 }
 
 
-bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
     switch( ea.getKey() )
     {
         case osgGA::GUIEventAdapter::KEY_W:
             _keyPressedW = false;
-            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_S:
             _keyPressedS = false;
-            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_A:
             _keyPressedA = false;
-            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_D:
             _keyPressedD = false;
-            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_Q:
             _keyPressedQ = false;
-            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         case osgGA::GUIEventAdapter::KEY_E:
             _keyPressedE = false;
-            disableContinuousUpdateIfNecessary( ea, us );
             return true;
 
         default:
@@ -223,16 +205,6 @@ bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     }
 
     return false;
-}
-
-
-void GodNavigation::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& us )
-{
-    if ( !_keyPressedW && !_keyPressedS && !_keyPressedA && !_keyPressedD && !_keyPressedQ && !_keyPressedE )
-    {
-        _thrown = false;
-        us.requestContinuousUpdate( false );
-    }
 }
 
 
@@ -240,7 +212,6 @@ void GodNavigation::disableContinuousUpdateIfNecessary( const osgGA::GUIEventAda
 bool GodNavigation::performMovement()
 {
     bool moved = false;
-    double movementSpeed = c_velocityNormal;
     double yaw = 0.;
     double distanceToLookAtFactor = 3.;
     
@@ -267,12 +238,12 @@ bool GodNavigation::performMovement()
 
 
     if ( movementDirection.length() != 0 ) {
-        performMovement( movementDirection, movementSpeed );
+        performMovement( movementDirection, _velocity );
         moved = true;
     }
 
     if ( yaw != 0 ) {
-        performMovement( rotateDirection, movementSpeed*distanceToLookAtFactor );
+        performMovement( rotateDirection, _velocity*distanceToLookAtFactor );
         performRotationYaw( yaw/distanceToLookAtFactor );
         moved = true;
     }
