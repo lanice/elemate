@@ -38,7 +38,9 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 
     // apply new settings viewer
     osg::ref_ptr< osg::GraphicsContext > gc = osg::GraphicsContext::createGraphicsContext(traits.get());
-    m_viewer.getCamera()->setGraphicsContext(gc.get());
+    // there is a problem with setting the graphics context and using own shaders !? so disabled for now..
+    std::cerr << "FIXME: not using configured graphics context in game.cpp." << std::endl;
+    //m_viewer.getCamera()->setGraphicsContext(gc.get());
 
 	m_viewer.setSceneData(m_world->root());
 }
