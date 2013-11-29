@@ -1,6 +1,5 @@
 #include "objectscontainer.h"
 #include "physicswrapper.h"
-#include "worlddrawable.h"
 
 #include <osg/ShapeDrawable>
 #include <osgViewer/View>
@@ -45,15 +44,4 @@ void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const p
     m_physics_wrapper->scene()->addActor(*physx_object);
 
     m_objects.push_back(DrawableAndPhysXObject(osg_object, physx_object));
-}
-
-void ObjectsContainer::makePlane(osg::ref_ptr<osg::Group> parent){
-    //OSG Object
-    osg::ref_ptr<WorldDrawable> world = new WorldDrawable;
-    osg::ref_ptr<osg::Geode> world_geode = new osg::Geode();
-    world_geode->addDrawable(world.get());
-    parent->addChild(world_geode.get());
-    //PhysXObject
-    physx::PxRigidStatic* plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0, 1, 0), 0.0F), *m_physics_wrapper->material("default"));
-    m_physics_wrapper->scene()->addActor(*plane);
 }

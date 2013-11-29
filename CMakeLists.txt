@@ -29,8 +29,6 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
-    src/worlddrawable.cpp
-    src/worlddrawable.h
     src/physicswrapper.cpp
     src/physicswrapper.h
     src/game.cpp
@@ -63,8 +61,6 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
-    shader/world.frag
-    shader/world.vert
     shader/terrain.frag
     shader/terrain.vert
     shader/phongLighting.frag
