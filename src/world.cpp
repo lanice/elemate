@@ -92,6 +92,7 @@ void World::initShader()
     m_programsByName.emplace("sphere", sphereProgram.get());
     sphereProgram->addShader(sphereVertex);
     sphereProgram->addShader(sphereFragment);
+    sphereProgram->addShader(phongLightningFragment);
 
     osg::ref_ptr<osg::StateSet> sphereSS = m_particleGroup->getOrCreateStateSet();
     sphereSS->setAttributeAndModes(sphereProgram.get());
