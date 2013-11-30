@@ -57,8 +57,9 @@ void main()
     vec3 terrainColor;
 
     switch (terrainTypeID) {
-    case 0: terrainColor = vec3(1.0, 0.0, 0.0);
-        break;
+    case 0: discard;
+        // terrainColor = vec3(1.0, 0.0, 0.0);
+        // break;
     case 1: terrainColor = vec3(0.0, 1.0, 0.0);
         break;
     case 2: terrainColor = vec3(0.0, 0.0, 1.0);

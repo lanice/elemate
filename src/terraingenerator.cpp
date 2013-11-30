@@ -62,6 +62,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 
     osg::ref_ptr<osgTerrain::Terrain> osgTerrain = new osgTerrain::Terrain();
     osgTerrain->setName("terrain root node");
+    // SharedGeometryTechnique allows us to access the terrain geometry (and add additional vertex attributes)
     osgTerrain->setTerrainTechniquePrototype(new SharedGeometryTechnique());
     m_artifact->m_osgTerrain = osgTerrain.get();
 
@@ -72,7 +73,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
       * data samples both from 0 to max. So this axis gets inverted this way. */
     osg::Matrix osgBaseTransformToPx(
         1, 0, 0, 0,
-        0, 0, 1, 0,
+        0, 0, -1, 0,
         0, 1, 0, 0,
         0, 0, 0, 1);
 
@@ -94,37 +95,39 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     {
         osgTerrain::TileID tileID(0, xID, zID);
 
-        /** create terrain data and store it in PhysX terrain object */
-
-        // move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin
-        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
-        PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
-        m_artifact->m_pxActors.emplace(tileID, actor);
+        /** 1. Create terrain heightfield data.
+            2. Create osg geometry (in osg TerrainTile) from this heightfield data. 
+            3. Add terrain type id / biome type information to osg geometry and physx heightfield samples.
+            4. Create physx actor with complete terrain information (heightfield + terrain type). */
 
         PxHeightFieldSample * pxHeightFieldSamples = createPxHeightFieldData(m_settings.rows * m_settings.columns);
         assert(pxHeightFieldSamples);
-
-        PxShape * pxShape = createPxShape(*actor, pxHeightFieldSamples, pxTerrainTransform);
-        m_artifact->m_pxShapes.emplace(tileID, pxShape);
-
 
         /** create OSG terrain object and copy PhysX terrain data into it */
 
         osg::ref_ptr<osgTerrain::TerrainTile> tile = createTile(tileID, pxHeightFieldSamples);
         assert(tile.valid());
-        tile->setTerrain(m_artifact->osgTerrain());
+        tile->setTerrain(m_artifact->osgTerrain()); // tell the tile that it's part of our terrain object
+        osgTerrain->addChild(tile.get());
 
-
-        /** assigns clones terrain technique to tile and creates geometry */
+        /** tile gets a clone of terrains SharedGeometryTechnique and creates its geometry in OpenGL objects */
         osg::ref_ptr<osgUtil::GLObjectsVisitor> geoVisitor =
             new osgUtil::GLObjectsVisitor(osgUtil::GLObjectsVisitor::ModeValues::SWITCH_ON_VERTEX_BUFFER_OBJECTS);
-
         geoVisitor->apply(*tile.get());
 
-        /** adds vertex attribute array to terrain geometry, containing terrain type ids */
+
+        /** Adds vertex attribute array to terrain geometry, containing terrain type ids.
+            Writes terrain type id to phyxs heightfield samples. */
         createBiomes(*tile.get(), pxHeightFieldSamples);
-        
-        osgTerrain->addChild(tile.get());
+
+
+        /** move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
+        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
+        PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
+        m_artifact->m_pxActors.emplace(tileID, actor);
+
+        PxShape * pxShape = createPxShape(*actor, pxHeightFieldSamples, pxTerrainTransform);
+        m_artifact->m_pxShapes.emplace(tileID, pxShape);
 
 
         //// debug the height geometries
@@ -250,9 +253,8 @@ PxHeightFieldSample * TerrainGenerator::createPxHeightFieldData(unsigned numSamp
     // physx stores values in row major order (means starting with all values (per column) for the first row)
     PxHeightFieldSample* hfSamples = new PxHeightFieldSample[numSamples];
     for (unsigned i = 0; i < numSamples; ++i) {
-        hfSamples[i].materialIndex0 = 0;
+        hfSamples[i].materialIndex0 = 0;    // this clears also the tesselation flag
         hfSamples[i].materialIndex1 = 0;
-        hfSamples[i].clearTessFlag();
         hfSamples[i].height = uniform_dist(rng);
     }
     return hfSamples;
@@ -262,7 +264,6 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
 {
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;
-    // rows/columns inverse to match physx with osg/our definition, again
     hfDesc.nbRows = m_settings.rows;
     hfDesc.nbColumns = m_settings.columns;
     hfDesc.samples.data = hfSamples;
@@ -273,9 +274,11 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     PxMaterial * mat[1];
     mat[0] = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.1f);
 
-    assert(m_settings.maxHeight > 0);
     // scale height so that we use the full range of PxI16=short
-    PxReal heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
+    PxReal heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
+    assert(m_settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(m_settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(heightScale >= PX_MIN_HEIGHTFIELD_Y_SCALE);
     // create height field geometry and set scale
     PxHeightFieldGeometry * m_pxHfGeometry = new  PxHeightFieldGeometry(pxHeightField, PxMeshGeometryFlags(),
         heightScale, m_settings.intervalX(), m_settings.intervalZ());
@@ -316,13 +319,18 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
     // invert columns <-> rows to match with physx
     heightField->allocate(m_settings.rows, m_settings.columns);
 
-    float heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
+    float heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
 
-    // generate the hight field data
-    for (unsigned c = 0; c < m_settings.columns; ++c)
-    for (unsigned r = 0; r < m_settings.rows; ++r) {
-        heightField->setHeight(r, c,
-            PxReal(pxHfSamples[c + ( r*m_settings.columns )].height) * heightScale);
+    // osg column == physx row
+    // osg row == numColumns - physx column - 1 (osg rows going to y, physx rows to z, where osgY == -physxZ)
+    for (unsigned physxRow = 0; physxRow < m_settings.rows; ++physxRow) {
+        unsigned rowOffset = physxRow * m_settings.columns;
+        for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
+            // set osg heightfield data, matching the physx rows/columns
+            // physx samples in row major order
+            heightField->setHeight(physxRow, m_settings.columns - physxColumn - 1,
+                PxReal(pxHfSamples[physxColumn + rowOffset].height) * heightScale);
+        }
     }
 
     osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
@@ -356,42 +364,46 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
 
 void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const
 {
+    /** get opengl geometry from terrain tile */
     osg::ref_ptr<SharedGeometryTechnique> technique = dynamic_cast<SharedGeometryTechnique*>(tile.getTerrainTechnique());
     assert(technique);
-
     osg::ref_ptr<osg::Geometry> geometry = technique->getGeometry();
     assert(geometry);
 
     unsigned int numVertices = geometry->getVertexArray()->getNumElements();
-
-    std::cout << "Terrain tile vertices: " << numVertices << std::endl;
-
-    osg::IntArray * terrainTypes = new osg::IntArray();
-
     assert(numVertices == m_settings.rows * m_settings.columns);
+
+    // raw data array for osg/opengl vertex attribute
+    GLint * terrainTypeData = new GLint[numVertices];
+
     unsigned biomeTypeCount = 4;
 
     // x/z axis sample points per biome
     unsigned biomeSampleRows = m_settings.rows * m_settings.biomeSize / m_settings.tileSizeX();
     unsigned biomeSampleColumns = m_settings.columns * m_settings.biomeSize / m_settings.tileSizeZ();
 
-    unsigned numBiomeRows = unsigned(std::ceil(m_settings.tileSizeX() / m_settings.biomeSize));
     unsigned numBiomeColumns = unsigned(std::ceil(m_settings.tileSizeZ() / m_settings.biomeSize));
 
-    for (unsigned r = 0; r < m_settings.rows; ++r)
-    {
-        unsigned r_biomeId = r / biomeSampleRows;
-        for (unsigned c = 0; c < m_settings.columns; ++c)
-        {
-            unsigned c_biomeId = c / biomeSampleColumns;
+    // use random biome types, 0..biomeTypeCount-1 for now
+    std::uniform_int_distribution<> rndBiomeType(0, biomeTypeCount-1);
 
-            unsigned biomeTypeId = c_biomeId + (r_biomeId * numBiomeColumns);
-            biomeTypeId %= biomeTypeCount;
-
-            terrainTypes->push_back(biomeTypeId);
+    // osg column == physx row
+    // osg row == numColumns - physx column - 1 (osg rows going to y, physx rows to z, where osgY == -physxZ)
+    for (unsigned physxRow = 0; physxRow < m_settings.rows; ++physxRow) {
+        unsigned rowOffset = physxRow * m_settings.columns;
+        for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
+            unsigned char biomeTypeId = static_cast<unsigned int>(rndBiomeType(rng));
+            // set osg heightfield data, matching the physx rows/columns but in column major order
+            terrainTypeData[physxRow + m_settings.rows * (m_settings.columns - physxColumn - 1)] = biomeTypeId;
+            // physx samples in row major order
+            // use default terrain (0), or make a hole
+            biomeTypeId = biomeTypeId ?  0 : PxHeightFieldMaterial::eHOLE;
+            pxHeightFieldSamples[physxColumn + rowOffset].materialIndex0 = biomeTypeId;
+            pxHeightFieldSamples[physxColumn + rowOffset].materialIndex1 = biomeTypeId;
         }
     }
 
+    osg::IntArray * terrainTypes = new osg::IntArray(numVertices, terrainTypeData);
     geometry->setVertexAttribArray(2, terrainTypes, osg::Array::Binding::BIND_PER_VERTEX);
 }
 

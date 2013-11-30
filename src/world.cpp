@@ -25,11 +25,11 @@ World::World()
 
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
-    terrainGen->setExtentsInWorld(100, 100);
-    terrainGen->applySamplesPerWorldCoord(0.5);
+    terrainGen->setExtentsInWorld(150, 120);
+    terrainGen->applySamplesPerWorldCoord(0.2);
     terrainGen->setTilesPerAxis(1, 1);
     terrainGen->setMaxHeight(1.0f);
-    terrainGen->setBiomeSize(10.f);
+    //terrainGen->setBiomeSize(5.f); // not supported for now
     terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 
@@ -68,14 +68,25 @@ void World::initShader()
 {
     osg::ref_ptr<osg::Shader> terrainVertex =
         osgDB::readShaderFile("shader/terrain.vert");
+    std::cout << terrainVertex->getFileName() << std::endl;
+    osg::ref_ptr<osg::Shader> terrainGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
+    terrainGeo->setFileName("shader/terrain.geo");
+    terrainGeo->loadShaderSourceFromFile(terrainGeo->getFileName());
     osg::ref_ptr<osg::Shader> terrainFragment =
         osgDB::readShaderFile("shader/terrain.frag");
     osg::ref_ptr<osg::Shader> phongLightningFragment =
         osgDB::readShaderFile("shader/phongLighting.frag");
 
+    bool result = terrainVertex.valid() && terrainGeo.valid() && terrainFragment.valid();
+    assert(result);
+
     osg::ref_ptr<osg::Program> terrainProgram = new osg::Program();
     m_programsByName.emplace("terrain", terrainProgram.get());
+    terrainProgram->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT, 3);
+    terrainProgram->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+    terrainProgram->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
     terrainProgram->addShader(terrainVertex);
+    terrainProgram->addShader(terrainGeo);
     terrainProgram->addShader(terrainFragment);
     terrainProgram->addShader(phongLightningFragment);
 
