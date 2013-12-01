@@ -6,6 +6,7 @@
 in vec3 normal;
 in vec3 viewPos;
 in vec3 worldPos;
+flat in vec2 texCoord;
 
 uniform vec3 cameraposition;
 
@@ -42,9 +43,7 @@ vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir, vec3 
 
 in vec2 screenPos;
 
-uniform vec3 tileSize;
-
-flat in float f_terrainTypeID;
+uniform sampler2D terrainType;
 
 layout(location = 0)out vec4 fragColor;
 
@@ -52,14 +51,19 @@ void main()
 {
     vec4 lightColor = phongLighting(normal, viewPos, cameraposition, lightdir, lightdir2, light, light2, lightambientglobal, material);
 
-    int terrainTypeID = int(f_terrainTypeID);
-
+    float f_terrainTypeID = texture(terrainType, texCoord, 0).r;
+    
+    fragColor = vec4(f_terrainTypeID / 3.0);
+    return;
+    
+    int terrainTypeID;
+    
     vec3 terrainColor;
 
     switch (terrainTypeID) {
-    case 0: discard;
-        // terrainColor = vec3(1.0, 0.0, 0.0);
-        // break;
+    case 0: //discard;
+        terrainColor = vec3(1.0, 0.0, 0.0);
+        break;
     case 1: terrainColor = vec3(0.0, 1.0, 0.0);
         break;
     case 2: terrainColor = vec3(0.0, 0.0, 1.0);

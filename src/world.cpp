@@ -140,5 +140,11 @@ void World::setUniforms()
     m_navigation->getTransformation(eyed, centerd, upd);
     osg::Vec3 eye(eyed);
     m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
-
+    osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
+    // texture unit 0 should be color layer 0 in all tiles
+    terrainSS->getOrCreateUniform("terrainType", osg::Uniform::Type::SAMPLER_2D)->set(0);
+    terrainSS->getOrCreateUniform("tileSize", osg::Uniform::Type::FLOAT_VEC3)->set(osg::Vec3(
+        terrain->settings().tileSizeX(),
+        terrain->settings().maxHeight,
+        terrain->settings().tileSizeZ()));
 }
