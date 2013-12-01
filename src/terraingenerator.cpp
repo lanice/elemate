@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <limits>
 #include <cmath>
+#include <ctime>
 
 #include <osg/MatrixTransform>
 #include <osg/Image>
@@ -29,7 +30,7 @@ std::mt19937 rng;
 using namespace physx;
 
 namespace {
-    uint32_t seed_val;
+    uint32_t seed_val = std::time(0);
     bool initRng() {
         rng.seed(seed_val);
         return true;
@@ -253,7 +254,7 @@ PxHeightFieldSample * TerrainGenerator::createPxHeightFieldData(unsigned numSamp
     // physx stores values in row major order (means starting with all values (per column) for the first row)
     PxHeightFieldSample* hfSamples = new PxHeightFieldSample[numSamples];
     for (unsigned i = 0; i < numSamples; ++i) {
-        hfSamples[i].materialIndex0 = 0;    // this clears also the tesselation flag
+        hfSamples[i].materialIndex0 = 0;    // this clears also the tessellation flag
         hfSamples[i].materialIndex1 = 0;
         hfSamples[i].height = uniform_dist(rng);
     }
@@ -397,7 +398,7 @@ void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHei
             terrainTypeData[physxRow + m_settings.rows * (m_settings.columns - physxColumn - 1)] = biomeTypeId;
             // physx samples in row major order
             // use default terrain (0), or make a hole
-            biomeTypeId = biomeTypeId ?  0 : PxHeightFieldMaterial::eHOLE;
+            biomeTypeId = !biomeTypeId ?  0 : PxHeightFieldMaterial::eHOLE;
             pxHeightFieldSamples[physxColumn + rowOffset].materialIndex0 = biomeTypeId;
             pxHeightFieldSamples[physxColumn + rowOffset].materialIndex1 = biomeTypeId;
         }
