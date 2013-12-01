@@ -341,9 +341,6 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
     float minX = m_settings.tileSizeX() * (tileID.x - 0.5);
     float minZ = m_settings.tileSizeZ() * (tileID.y - 0.5);
 
-    heightField->setXInterval(m_settings.intervalX());
-    heightField->setYInterval(m_settings.intervalZ());
-
     locator->setTransform(osg::Matrixd(
         m_settings.tileSizeX(), 0, 0, 0,
         0, m_settings.tileSizeZ(), 0, 0,
