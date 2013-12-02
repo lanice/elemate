@@ -40,11 +40,39 @@ World::World()
     for (const auto & actor : terrain->pxActorMap()){
         physics_wrapper->scene()->addActor(*actor.second);
     }
+
+    setUpLighting();
 }
 
 
 World::~World()
 {
+}
+
+void World::setUpLighting()
+{
+    osg::Vec4 lightambientglobal(0, 0, 0, 0);
+    osg::Vec3 lightdir1(0.0, 6.5, 7.5);
+    osg::Vec3 lightdir2(0.0, -8.0, 7.5);
+
+    // some kind of sunlight..
+    osg::Matrixf light1(0.0, 0.0, 0.0, 1.0,        //ambient
+        0.2, 0.2, 0.2, 1.0,        //diffuse
+        0.7, 0.7, 0.5, 1.0,        //specular
+        0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
+    // zero for now
+    osg::Matrixf light2(0.0, 0.0, 0.0, 1.0,        //ambient
+        0.0, 0.0, 0.0, 1.0,        //diffuse
+        0.0, 0.0, 0.0, 1.0,        //specular
+        0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
+    osg::ref_ptr<osg::StateSet> rootState = m_root->getOrCreateStateSet();
+    rootState->addUniform(new osg::Uniform("lightambientglobal", lightambientglobal));
+    rootState->addUniform(new osg::Uniform("lightdir1", lightdir1));
+    rootState->addUniform(new osg::Uniform("lightdir2", lightdir2));
+    rootState->addUniform(new osg::Uniform("light1", light1));
+    rootState->addUniform(new osg::Uniform("light2", light2));
 }
 
 

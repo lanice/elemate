@@ -20,21 +20,12 @@ uniform vec3 cameraposition;
 //uniform vec4 lightambientglobal;
 //uniform mat4 material;
 
-vec3 lightdir = vec3(0.0, 6.5, 7.5);
-vec3 lightdir2 = vec3(0.0, -8.0, 7.5);
-vec4 lightambientglobal = vec4(0);
+uniform vec4 lightambientglobal;
+uniform vec3 lightdir1;
+uniform vec3 lightdir2;
 
-// some kind of sunlight..
-mat4 light = mat4(vec4(0.0, 0.0, 0.0, 1.0),        //ambient
-                  vec4(0.2, 0.2, 0.2, 1.0),        //diffuse
-                  vec4(0.7, 0.7, 0.5, 1.0),        //specular
-                  vec4(0.002, 0.002, 0.0004, 1.4)); //attenuation1, attenuation2, attenuation3, shininess
-
-// zero for now
-mat4 light2 = mat4(vec4(0.0, 0.0, 0.0, 1.0),        //ambient
-                   vec4(0.0, 0.0, 0.0, 1.0),        //diffuse
-                   vec4(0.0, 0.0, 0.0, 1.0),        //specular
-                   vec4(0.002, 0.002, 0.0004, 1.4)); //attenuation1, attenuation2, attenuation3, shininess
+uniform mat4 light1;
+uniform mat4 light2;
 
 // simple white terrain
 mat4 material = mat4(vec4(0.0, 0.0, 0.0, 1.0),    //ambient
@@ -42,13 +33,13 @@ mat4 material = mat4(vec4(0.0, 0.0, 0.0, 1.0),    //ambient
                      vec4(1.0, 1.0, 1.0, 1.0),    //specular
                      vec4(0, 0, 0, 0));            //emission
 
-vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir, vec3 lightdir2, mat4 light, mat4 light2, vec4 lightambientglobal, mat4 material);
+vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3 lightdir2, mat4 light1, mat4 light2, vec4 lightambientglobal, mat4 material);
 
 layout(location = 0)out vec4 fragColor;
 
 void main()
 {
-    vec4 lightColor = phongLighting(normal, viewPos, cameraposition, lightdir, lightdir2, light, light2, lightambientglobal, material);
+    vec4 lightColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material);
 
     float f_terrainTypeID = texelFetch(terrainTypeIDs, texCoord, 0).r;
     int terrainTypeID = int(f_terrainTypeID * 3); // terrain ids normalized to 0..1, get corresponding integer value (currently 3 terrain types, for testing)

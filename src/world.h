@@ -35,6 +35,7 @@ public:
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
 
 protected:
+    void setUpLighting();
     osg::ref_ptr<osg::Group> m_root;
     osg::ref_ptr<osg::Group> m_particleGroup;
     void initShader();
