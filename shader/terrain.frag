@@ -1,12 +1,15 @@
 #version 330
 
-
-//partly from http://www.opengl.org/sdk/docs/tutorials/TyphoonLabs/Chapter_4.pdf
+// lightning partly from http://www.opengl.org/sdk/docs/tutorials/TyphoonLabs/Chapter_4.pdf
+//      ... and https://github.com/hpicgs/cgsee
 
 in vec3 normal;
 in vec3 viewPos;
 in vec3 worldPos;
-flat in vec2 texCoord;
+in vec2 screenPos;
+flat in ivec2 texCoord;
+
+uniform sampler2D terrainTypeIDs;
 
 uniform vec3 cameraposition;
 
@@ -41,29 +44,21 @@ mat4 material = mat4(vec4(0.0, 0.0, 0.0, 1.0),    //ambient
 
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir, vec3 lightdir2, mat4 light, mat4 light2, vec4 lightambientglobal, mat4 material);
 
-in vec2 screenPos;
-
-uniform sampler2D terrainType;
-
 layout(location = 0)out vec4 fragColor;
 
 void main()
 {
     vec4 lightColor = phongLighting(normal, viewPos, cameraposition, lightdir, lightdir2, light, light2, lightambientglobal, material);
 
-    float f_terrainTypeID = texture(terrainType, texCoord, 0).r;
-    
-    fragColor = vec4(f_terrainTypeID / 3.0);
-    return;
-    
-    int terrainTypeID;
+    float f_terrainTypeID = texelFetch(terrainTypeIDs, texCoord, 0).r;
+    int terrainTypeID = int(f_terrainTypeID * 3.0); // 3 is maximum id for testing, values scaled to 0..3
     
     vec3 terrainColor;
 
     switch (terrainTypeID) {
-    case 0: //discard;
-        terrainColor = vec3(1.0, 0.0, 0.0);
-        break;
+    case 0: discard;
+        /* terrainColor = vec3(1.0, 0.0, 0.0);
+        break; */
     case 1: terrainColor = vec3(0.0, 1.0, 0.0);
         break;
     case 2: terrainColor = vec3(0.0, 0.0, 1.0);

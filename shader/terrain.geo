@@ -8,22 +8,25 @@ in vec4 v_projPos[3];
 out vec3 normal;
 out vec3 viewPos;
 out vec3 worldPos;
-flat out vec2 texCoord;
+flat out ivec2 texCoord;
 
 uniform vec3 tileSize;
+uniform vec2 tileLeftBack;
+uniform vec2 tileRowsColumns; // does not work with ivec2 (on intel at least)
 
 layout (triangle_strip, max_vertices = 3) out;
 
 void main()
 {
     // All fragments of one quad have to use the terrain id set for their upper left vertex
-    // So in our regular xz grid, the minimum xz coordinates of all vertices and get the texCoords from them.
+    // So in our regular xz grid, use the minimum xz coordinates of all vertices and get the texCoords from them.
     // We need this to match openGL terrainIDs with physx materialIDs, which define the quad on the bottom right of a vertex.
 
     vec2 leftback = vec2(
         min(v_worldPos[0].xz, min(v_worldPos[1].xz, v_worldPos[2].xz)));
-    // assuming to work with one single terrain tile
-    vec2 _texCoord = (leftback + tileSize.xz * 0.5) / tileSize.xz;
+    vec2 normalizedTex = abs(tileLeftBack - leftback) / tileSize.xz;
+    normalizedTex.y = 1-normalizedTex.y;
+    ivec2 _texCoord = ivec2(normalizedTex * tileRowsColumns);
     
     for (int i=0; i < 3; ++i) {
         texCoord = _texCoord;

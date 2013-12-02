@@ -70,13 +70,13 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     /** transforms osg's base vectors to physx/opengl logic
       * ! matrix is inverted, in osg logic
       * osg base in px: x is x, y is -z, z is y. */
-    osg::Matrix osgBaseTransformToPx(
+    osg::Matrix terrainBaseOsgToPhysx(
         1, 0, 0, 0,
         0, 0, -1, 0,
         0, 1, 0, 0,
         0, 0, 0, 1);
 
-    m_artifact->m_osgTerrainTransform = new osg::MatrixTransform(osgBaseTransformToPx);
+    m_artifact->m_osgTerrainTransform = new osg::MatrixTransform(terrainBaseOsgToPhysx);
     m_artifact->m_osgTerrainTransform->addChild(osgTerrain.get());
 
 
@@ -115,9 +115,9 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         createBiomes(*tile.get(), pxHeightFieldSamples);
 
         /** tile gets a clone of terrains SharedGeometryTechnique and creates its geometry in OpenGL objects */
-        //osg::ref_ptr<osgUtil::GLObjectsVisitor> geoVisitor =
-        //    new osgUtil::GLObjectsVisitor(osgUtil::GLObjectsVisitor::ModeValues::SWITCH_ON_VERTEX_BUFFER_OBJECTS);
-        //geoVisitor->apply(*tile.get());
+        osg::ref_ptr<osgUtil::GLObjectsVisitor> geoVisitor =
+            new osgUtil::GLObjectsVisitor(osgUtil::GLObjectsVisitor::ModeValues::SWITCH_ON_VERTEX_BUFFER_OBJECTS);
+        geoVisitor->apply(*tile.get());
 
 
         /** move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
@@ -158,6 +158,20 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         //    std::cout << std::endl;
         //}
     }
+
+
+    /** set some uniforms for the terrain */
+    osg::ref_ptr<osg::StateSet> terrainStateSet = m_artifact->m_osgTerrain->getOrCreateStateSet();
+    // texture unit 0 should be color layer 0 in all tiles
+    osg::ref_ptr<osg::Uniform> terrainIDSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "terrainID");
+    terrainIDSampler->set(0);
+    terrainStateSet->addUniform(terrainIDSampler.get());
+    terrainStateSet->addUniform(new osg::Uniform("tileSize", osg::Vec3(
+        m_settings.tileSizeX(),
+        m_settings.maxHeight,
+        m_settings.tileSizeZ())));
+    terrainStateSet->addUniform(new osg::Uniform("tileRowsColumns", osg::Vec2(m_settings.rows, m_settings.columns))); // ivec2
+
 
     ElemateHeightFieldTerrain * completeTerrain = m_artifact;
     m_artifact = nullptr;
@@ -353,6 +367,10 @@ osgTerrain::TerrainTile * TerrainGenerator::createTile(const osgTerrain::TileID 
     tile->setElevationLayer(layer.get());
     tile->setTileID(tileID);
     tile->setRequiresNormals(true);
+    // set some tile specific uniforms
+    osg::ref_ptr<osg::StateSet> tileStateSet = tile->getOrCreateStateSet();
+    tileStateSet->addUniform(new osg::Uniform("tileID", tileID.x, tileID.y));   // ivec2
+    tileStateSet->addUniform(new osg::Uniform("tileLeftBack", osg::Vec2f(minX, minZ))); // vec2
 
     return tile;
 }
@@ -369,14 +387,14 @@ void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHei
         So use the absolute value of terrain data in shader. 
         Use material0 only, so setting one terrain type per quad, containing two triangles. */
     // we have to use floats for the sampler, int won't work :(
-    typedef float IDType;
+    typedef float IDTexType;
 
     /** Create osg image for image layer, storing the terrain id for the graphics. */
     osg::ref_ptr<osg::Image> terrainTypeData = new osg::Image();
     terrainTypeData->allocateImage(m_settings.rows, m_settings.columns, 1, GL_RED, GL_FLOAT);
     assert(terrainTypeData->isDataContiguous());
-    assert(terrainTypeData->getTotalDataSize() == m_settings.rows * m_settings.columns * sizeof(IDType));
-    IDType * dataPtr = reinterpret_cast<IDType*>(terrainTypeData->data());
+    assert(terrainTypeData->getTotalDataSize() == m_settings.rows * m_settings.columns * sizeof(IDTexType));
+    IDTexType * dataPtr = reinterpret_cast<IDTexType*>(terrainTypeData->data());
 
     // osg column == physx row
     // osg row == numColumns - physx column - 1 (osg rows going to y, physx rows to z, where osgY == -physxZ)
@@ -386,7 +404,8 @@ void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHei
         const unsigned physxRowOffset = physxRow * m_settings.columns;
         for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
             unsigned char biomeTypeId = static_cast<unsigned char>(rndBiomeType(rng));
-            IDType biomeTypeId_tex = static_cast<IDType>(biomeTypeId);
+            // scale biome id to 0..1 -> values greater than 1 seem not to work with osg::Image
+            IDTexType biomeTypeId_tex = static_cast<IDTexType>(biomeTypeId) / (biomeTypeCount-1);
             // set osg heightfield data, matching the physx rows/columns, both in row major order
             unsigned osgColumn = physxRow;
             unsigned osgRow = numOsgRows - 1 - physxColumn;
@@ -400,7 +419,7 @@ void TerrainGenerator::createBiomes(osgTerrain::TerrainTile & tile, physx::PxHei
     
 
     osg::ref_ptr<osgTerrain::ImageLayer> terrainTypeLayer = new osgTerrain::ImageLayer(terrainTypeData.get());
-    terrainTypeLayer->setName(std::string("terrainType"));
+    terrainTypeLayer->setName(std::string("terrainTypeIDs"));
 
 
     tile.setColorLayer(0, terrainTypeLayer.get());
