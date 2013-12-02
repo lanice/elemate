@@ -20,14 +20,17 @@ void ObjectsContainer::updateAllObjects(){
     physx::PxMat44 new_pos;
     for (auto& current_object : m_objects){
         new_pos = physx::PxMat44(current_object.second->getGlobalPose());
-        current_object.first->setMatrix(
-            osg::Matrix(
+        osg::Matrix newTransform(
             new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
             new_pos(0, 1), new_pos(1, 1), new_pos(2, 1), new_pos(3, 1),
             new_pos(0, 2), new_pos(1, 2), new_pos(2, 2), new_pos(3, 2),
             new_pos(0, 3), new_pos(1, 3), new_pos(2, 3), new_pos(3, 3)
-            )
-        );
+            );
+        current_object.first->setMatrix(newTransform);
+        osg::Vec3d translation; osg::Quat rotation; osg::Vec3d scale; osg::Quat scaleorientation;
+        newTransform.decompose(translation, rotation, scale, scaleorientation);
+        current_object.first->getOrCreateStateSet()->getOrCreateUniform("modelRotation",
+            osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf(rotation));
     }
 }
 

@@ -13,13 +13,6 @@ uniform sampler2D terrainTypeIDs;
 
 uniform vec3 cameraposition;
 
-//uniform vec3 lightdir;
-//uniform vec3 lightdir2;
-//uniform mat4 light;
-//uniform mat4 light2;
-//uniform vec4 lightambientglobal;
-//uniform mat4 material;
-
 uniform vec4 lightambientglobal;
 uniform vec3 lightdir1;
 uniform vec3 lightdir2;
