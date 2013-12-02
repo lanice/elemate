@@ -96,7 +96,6 @@ void World::initShader()
 {
     osg::ref_ptr<osg::Shader> terrainVertex =
         osgDB::readShaderFile("shader/terrain.vert");
-    std::cout << terrainVertex->getFileName() << std::endl;
     osg::ref_ptr<osg::Shader> terrainGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
     terrainGeo->setFileName("shader/terrain.geo");
     terrainGeo->loadShaderSourceFromFile(terrainGeo->getFileName());
@@ -105,8 +104,7 @@ void World::initShader()
     osg::ref_ptr<osg::Shader> phongLightningFragment =
         osgDB::readShaderFile("shader/phongLighting.frag");
 
-    bool result = terrainVertex.valid() && terrainGeo.valid() && terrainFragment.valid();
-    assert(result);
+    assert(terrainVertex.valid() && terrainGeo.valid() && terrainFragment.valid());
 
     osg::ref_ptr<osg::Program> terrainProgram = new osg::Program();
     m_programsByName.emplace("terrain", terrainProgram.get());
