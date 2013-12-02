@@ -14,7 +14,8 @@ ObjectsContainer::~ObjectsContainer()
     m_objects.clear();
 }
 
-void ObjectsContainer::updateAllObjects(){
+void ObjectsContainer::updateAllObjects()
+{
     m_physics_wrapper->scene()->fetchResults();
     
     physx::PxMat44 new_pos;
@@ -34,17 +35,21 @@ void ObjectsContainer::updateAllObjects(){
     }
 }
 
-void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity){
-    auto osg_object = new osg::MatrixTransform();
+void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity)
+{
+    osg::Matrix translation;
+    translation.setTrans(osg::Vec3(global_position.x, global_position.y, global_position.z));
+    osg::ref_ptr<osg::MatrixTransform> osgTransformNode = new osg::MatrixTransform(translation);
+    
     osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
     sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0,0,0), radius)));
-    osg_object->addChild(sphere_geode);
-    parent->addChild(osg_object);
+    osgTransformNode->addChild(sphere_geode);
+    parent->addChild(osgTransformNode.get());
 
     auto physx_object = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(global_position), physx::PxSphereGeometry(radius), *m_physics_wrapper->material("default"), 1.0F);
     physx_object->setLinearVelocity(linear_velocity);
     physx_object->setAngularVelocity(angular_velocity);
     m_physics_wrapper->scene()->addActor(*physx_object);
 
-    m_objects.push_back(DrawableAndPhysXObject(osg_object, physx_object));
+    m_objects.push_back(DrawableAndPhysXObject(osgTransformNode.get(), physx_object));
 }
