@@ -3,6 +3,7 @@
 #include <cassert>
 #include <map>
 #include <limits>
+#include <cstdint>
 #include <osg/ref_ptr>
 #include <foundation/PxSimpleTypes.h>
 
@@ -141,16 +142,12 @@ public:
     void setBiomeSize(float xzBiomeSize);
     /** average size of one biome/terrain type */
     float biomeSize() const;
-
 private:
-    /** contains the (incomplete) terrain during generate() */
-    mutable ElemateHeightFieldTerrain * m_artifact;
-
     TerrainSettings m_settings;
 
     /** creates a terrain tile, and sets its tileID */
     physx::PxHeightFieldSample * createPxHeightFieldData(unsigned numSamples) const;
-    physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples, const physx::PxMat44 & transform) const;
+    physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;
     osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     /** creates biome data, adds it as vertex attrib array osg tile, sets pxSample textures accordingly */
     void createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const;

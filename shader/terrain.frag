@@ -51,7 +51,7 @@ void main()
     vec4 lightColor = phongLighting(normal, viewPos, cameraposition, lightdir, lightdir2, light, light2, lightambientglobal, material);
 
     float f_terrainTypeID = texelFetch(terrainTypeIDs, texCoord, 0).r;
-    int terrainTypeID = int(f_terrainTypeID * 3.0); // 3 is maximum id for testing, values scaled to 0..3
+    int terrainTypeID = int(f_terrainTypeID * 3); // terrain ids normalized to 0..1, get corresponding integer value (currently 3 terrain types, for testing)
     
     vec3 terrainColor;
 
