@@ -99,6 +99,8 @@ private:
     /** stores terrain configuration, set up by terrain generator */
     const TerrainSettings m_settings;
 
+    ElemateHeightFieldTerrain & operator=(const ElemateHeightFieldTerrain &) = delete;
+
 friend class TerrainGenerator;
 };
 
