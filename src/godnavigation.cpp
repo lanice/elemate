@@ -13,7 +13,8 @@ GodNavigation::GodNavigation( int flags )
      _keyPressedA( false ),
      _keyPressedD( false ),
      _keyPressedQ( false ),
-     _keyPressedE( false )
+     _keyPressedE( false ),
+     _keyPressedShift_L( false )
 {
     if( _flags & SET_CENTER_ON_WHEEL_FORWARD_MOVEMENT )
         setAnimationTime( 0.2 );
@@ -30,8 +31,9 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
      _keyPressedS( gn._keyPressedS ),
      _keyPressedA( gn._keyPressedA ),
      _keyPressedD( gn._keyPressedD ),
-     _keyPressedQ( gn._keyPressedA ),
-     _keyPressedE( gn._keyPressedD )//,
+     _keyPressedQ( gn._keyPressedQ ),
+     _keyPressedE( gn._keyPressedE ),
+     _keyPressedShift_L( gn._keyPressedShift_L )
 {
 }
 
@@ -133,7 +135,7 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 
 bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
-    switch( ea.getKey() )
+    switch( ea.getUnmodifiedKey() )
     {
         case osgGA::GUIEventAdapter::KEY_Space:
             flushMouseEventStack();
@@ -164,6 +166,10 @@ bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
             _keyPressedE = true;
             return true;
 
+        case osgGA::GUIEventAdapter::KEY_Shift_L:
+            _keyPressedShift_L = true;
+            return true;
+
         default:
             return false;
     }
@@ -174,7 +180,7 @@ bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 
 bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    switch( ea.getKey() )
+    switch( ea.getUnmodifiedKey() )
     {
         case osgGA::GUIEventAdapter::KEY_W:
             _keyPressedW = false;
@@ -200,6 +206,10 @@ bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             _keyPressedE = false;
             return true;
 
+        case osgGA::GUIEventAdapter::KEY_Shift_L:
+            _keyPressedShift_L = false;
+            return true;
+
         default:
             return false;
     }
@@ -214,6 +224,7 @@ bool GodNavigation::performMovement()
     bool moved = false;
     double yaw = 0.;
     double distanceToLookAtFactor = 3.;
+    double velocity = _velocity * acceleratedFactor();
     
     osg::Vec3d movementDirection = osg::Vec3d( 0., 0., 0. );
     osg::Vec3d rotateDirection = osg::Vec3d( 0., 0., 0. );
@@ -229,21 +240,21 @@ bool GodNavigation::performMovement()
         calculateMovementDirectionKeyD( movementDirection );
     if ( _keyPressedQ ) {
         calculateMovementDirectionKeyQ( rotateDirection );
-        yaw += 0.1;
+        yaw += 0.1 * acceleratedFactor();
     }
     if ( _keyPressedE ) {
         calculateMovementDirectionKeyE( rotateDirection );
-        yaw -= 0.1;
+        yaw -= 0.1 * acceleratedFactor();
     }
 
 
     if ( movementDirection.length() != 0 ) {
-        performMovement( movementDirection, _velocity );
+        performMovement( movementDirection, velocity );
         moved = true;
     }
 
     if ( yaw != 0 ) {
-        performMovement( rotateDirection, _velocity*distanceToLookAtFactor );
+        performMovement( rotateDirection, velocity*distanceToLookAtFactor );
         performRotationYaw( yaw/distanceToLookAtFactor );
         moved = true;
     }
@@ -317,6 +328,14 @@ void GodNavigation::calculateMovementDirectionKeyE( osg::Vec3d& movementDirectio
     osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
 
     movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
+}
+
+
+double GodNavigation::acceleratedFactor()
+{
+    if ( _keyPressedShift_L ) return 5.;
+    
+    return 1.;
 }
 
 

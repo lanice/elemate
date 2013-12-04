@@ -65,6 +65,9 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual void calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection );
         /** Calculate movement direction when pressing E key and adding it to movementDirection vector.*/
         virtual void calculateMovementDirectionKeyE( osg::Vec3d& movementDirection );
+
+        /** Return the factor by which the velocity should be multiplied.*/
+        virtual double acceleratedFactor();
         
         /** Move camera forward by distance parameter.*/
         virtual void moveForward( const double distance );
@@ -84,4 +87,5 @@ class GodNavigation : public osgGA::StandardManipulator
         bool _keyPressedD;
         bool _keyPressedQ;
         bool _keyPressedE;
+        bool _keyPressedShift_L;
 };
