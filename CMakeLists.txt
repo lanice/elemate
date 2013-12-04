@@ -54,6 +54,12 @@ set(SOURCES
     src/terraingenerator.h
     src/standardparticles.cpp
     src/standardparticles.h
+    src/apex/elematerenderresourcemanager.h
+    src/apex/elematerenderresourcemanager.cpp
+    src/apex/elematerendervertexbuffer.h
+    src/apex/elematerendervertexbuffer.cpp
+    src/apex/elemateresourcecallback.h
+    src/apex/elemateresourcecallback.cpp
     src/osg/sharedgeometrytechnique.h;
     src/osg/sharedgeometrytechnique.cpp;
     src/nullobjectplaceholder.cpp

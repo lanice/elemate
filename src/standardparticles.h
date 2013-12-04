@@ -20,7 +20,7 @@ public:
     ~StandardParticles();
 
     void initialize(physx::apex::NxApexSDK* gApexSDK);
-    void createEmitter(physx::apex::NxApexSDK* gApexSDK, physx::apex::NxApexScene* gApexScene);
+    bool createEmitter(physx::apex::NxApexSDK* gApexSDK, physx::apex::NxApexScene* gApexScene);
 
     /** Should be used to render the particles. By writing a new Renderer that fits into our and the APEX Pipeline. */
     void renderVolume(physx::apex::NxUserRenderer & renderer);

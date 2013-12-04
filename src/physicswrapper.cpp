@@ -6,6 +6,8 @@
 #include <iostream>
 #include "standardparticles.h"
 #include "nullobjectplaceholder.h"
+#include "apex/elemateresourcecallback.h"
+#include "apex/elematerenderresourcemanager.h"
 
 #pragma comment(lib, "PhysX3_x64.lib")
 #pragma comment(lib, "PhysX3Common_x64.lib")
@@ -26,6 +28,7 @@ PhysicsWrapper::PhysicsWrapper():
 	initializePhysics();
 	initializeScene();
     initializeTime();
+    initializeApex();
 }
 
 PhysicsWrapper::~PhysicsWrapper(){
@@ -50,17 +53,16 @@ void PhysicsWrapper::initializePhysics(){
 	m_profile_zone_manager = &physx::PxProfileZoneManager::createProfileZoneManager(m_foundation);
 	if (!m_profile_zone_manager)
 		fatalError("PxProfileZoneManager::createProfileZoneManager failed!");
-	
+	*/
 	//	  Cooking
 	// The PhysX cooking library provides utilities for creating, converting, and serializing bulk data. 
 	// Depending on your application, you may wish to link to the cooking library in order to process such data at runtime. 
 	// Alternatively you may be able to process all such data in advance and just load it into memory as required. 
 	// Initialize the cooking library as follows: (after declaring member physx::PxCooking* m_cooking)
 
-	m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_foundation, PxCookingParams());
+	m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_foundation, physx::PxCookingParams());
 	if (!m_cooking)
 		fatalError("PxCreateCooking failed!");
-	*/
 
 	//    Extensions
 	// The extensions library contains many functions that may be useful to a large class of users, 
@@ -102,23 +104,23 @@ void PhysicsWrapper::initializeTime(){
 }
 
 void PhysicsWrapper::initializeApex(){
-    // Init Apex
     static physx::PxDefaultErrorCallback gDefaultErrorCallback;
-    physx::apex::NxResourceCallback* rcallback = new NullResourceCallback();
+    physx::apex::ElemateResourceCallback* rcallback = new physx::apex::ElemateResourceCallback();
     physx::apex::NxApexSDKDesc   apexDesc;
     apexDesc.outputStream = &gDefaultErrorCallback;
     apexDesc.resourceCallback = rcallback;
     apexDesc.physXSDK = m_physics;
     apexDesc.cooking = m_cooking;
 
-    // THIS IS STUPID IN EVERY WAY! When updated, the NullRenderRessourceManager crashes.
-    m_render_resource_manager = new NullRenderResourceManager();
+    m_render_resource_manager = new physx::apex::ElemateRenderResourceManager(*m_osgGraphicsContext.get());
     apexDesc.renderResourceManager = m_render_resource_manager;
 
     if (apexDesc.isValid())
         m_apex_sdk = NxCreateApexSDK(apexDesc);
     else
-        return ;
+        return;
+
+    rcallback->setApexSDK(m_apex_sdk);
 
     physx::apex::NxApexSceneDesc apexSceneDesc;
     apexSceneDesc.scene = m_scene;

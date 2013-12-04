@@ -4,16 +4,16 @@
 
 #include "NxApexSDK.h"
 
-#include "iofx\public\NxModuleIofx.h"
-#include "iofx\public\NxIofxAsset.h"
-#include <iofx\public\NxApexRenderVolume.h>
+#include "iofx/public/NxModuleIofx.h"
+#include "iofx/public/NxIofxAsset.h"
+#include <iofx/public/NxApexRenderVolume.h>
 
-#include "emitter\public\NxModuleEmitter.h"
-#include "emitter\public\NxApexEmitterAsset.h"
-#include "emitter\public\NxApexEmitterActor.h"
+#include "emitter/public/NxModuleEmitter.h"
+#include "emitter/public/NxApexEmitterAsset.h"
+#include "emitter/public/NxApexEmitterActor.h"
 
-#include "pxparticleios\public\NxModuleParticleIos.h"
-#include "pxparticleios\public\NxParticleIosAsset.h"
+#include "pxparticleios/public/NxModuleParticleIos.h"
+#include "pxparticleios/public/NxParticleIosAsset.h"
 
 #include "NxParamUtils.h"
 
@@ -70,11 +70,15 @@ void StandardParticles::initialize(physx::apex::NxApexSDK* gApexSDK)
 
 }
 
-void StandardParticles::createEmitter(physx::apex::NxApexSDK* gApexSDK, physx::apex::NxApexScene* gApexScene)
+bool StandardParticles::createEmitter(physx::apex::NxApexSDK* gApexSDK, physx::apex::NxApexScene* gApexScene)
 {
-    physx::apex::NxApexEmitterAsset* emitterAsset;
-    physx::apex::NxApexAsset* asset = reinterpret_cast<physx::apex::NxApexAsset*>(gApexSDK->getNamedResourceProvider()->getResource(NX_APEX_EMITTER_AUTHORING_TYPE_NAME, "testSpriteEmitter4ParticleFluidIos"));
-    emitterAsset = static_cast<physx::apex::NxApexEmitterAsset*> (asset);
+    physx::apex::NxResourceProvider * provider = gApexSDK->getNamedResourceProvider();
+    physx::apex::NxApexAsset* asset = reinterpret_cast<physx::apex::NxApexAsset*>(provider->getResource(NX_APEX_EMITTER_AUTHORING_TYPE_NAME, "testSpriteEmitter4ParticleFluidIos"));
+    if (asset == nullptr) {
+        std::cerr << "Failed to create the APEX Emitter Asset" << std::endl;
+        return false;
+    }
+    physx::apex::NxApexEmitterAsset* emitterAsset = static_cast<physx::apex::NxApexEmitterAsset*> (asset);
     //NxApexEmitterAsset* emitterAsset = static_cast<NxApexEmitterAsset*> (gApexSDK->createAsset(asParams, "testMeshEmitter4ParticleIos.apb"));
     gApexSDK->forceLoadAssets();
 
@@ -95,6 +99,8 @@ void StandardParticles::createEmitter(physx::apex::NxApexSDK* gApexSDK, physx::a
 
     m_render_volume = m_iofx_module->createRenderVolume(*gApexScene, b, 0, true );
     emitterActor->setPreferredRenderVolume( m_render_volume );
+
+    return true;
 }
 
 void StandardParticles::renderVolume(physx::apex::NxUserRenderer & renderer)
