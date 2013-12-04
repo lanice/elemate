@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <NxResourceCallback.h>
 
 namespace physx {
@@ -18,6 +20,8 @@ public:
     void releaseResource(const char* nameSpace, const char* name, void* resource);
 
 private:
+    void* loadSingleResourceRaw(const std::string & name) const;
+
     NxApexSDK*	m_apexSDK;
 };
 
