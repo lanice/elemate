@@ -1,5 +1,7 @@
 #include "standardparticles.h"
 
+#include <iostream>
+
 #include "NxApexSDK.h"
 
 #include "iofx\public\NxModuleIofx.h"
@@ -107,5 +109,20 @@ void StandardParticles::renderVolume(physx::apex::NxUserRenderer & renderer)
 
 bool StandardParticles::checkErrorCode(physx::apex::NxApexCreateError* err)
 {
-    return *err == physx::apex::APEX_CE_NO_ERROR;
+    if (*err == physx::apex::APEX_CE_NO_ERROR)
+        return true;
+
+    std::cerr << "Apex error: ";
+    switch (*err) {
+    case physx::apex::APEX_CE_NOT_FOUND:
+        std::cout << "Unable to find the libraries." << std::endl;
+        break;
+    case physx::apex::APEX_CE_WRONG_VERSION:
+        std::cout << "The application supplied a version number that does not match with the libraries." << std::endl;
+        break;
+    case physx::apex::APEX_CE_DESCRIPTOR_INVALID:
+        std::cout << "The supplied descriptor is invalid." << std::endl;
+        break;
+    }
+    return false;
 }
