@@ -1,16 +1,20 @@
 
 #include "godmanipulator.h"
 
+#include "world.h"
+
 
 GodManipulator::GodManipulator()
-   : inherited()
+   : inherited(),
+     m_world(nullptr)
 {
 }
 
 
 GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp )
    : Object(gm, copyOp),
-     inherited( gm, copyOp )
+     inherited( gm, copyOp ),
+     m_world( gm.m_world )
 {
 }
 
@@ -75,12 +79,18 @@ bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, o
 
 bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    if( ea.getKey() == osgGA::GUIEventAdapter::KEY_F )
+    switch (ea.getKey()) {
+    case osgGA::GUIEventAdapter::KEY_F:
     {
         m_world->makeStandardBall();
         return true;
     }
-
+    case osgGA::GUIEventAdapter::KEY_F5:
+    {
+        m_world->reloadShader();
+        return true;
+    }
+    }
     return false;
 }
 

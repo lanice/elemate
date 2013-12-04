@@ -29,8 +29,6 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
-    src/worlddrawable.cpp
-    src/worlddrawable.h
     src/physicswrapper.cpp
     src/physicswrapper.h
     src/game.cpp
@@ -56,6 +54,8 @@ set(SOURCES
     src/terraingenerator.h
     src/standardparticles.cpp
     src/standardparticles.h
+    src/osg/sharedgeometrytechnique.h;
+    src/osg/sharedgeometrytechnique.cpp;
     src/nullobjectplaceholder.cpp
     src/nullobjectplaceholder.h
 )
@@ -65,11 +65,15 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
-    data/world.frag
-    data/world.vert
+    shader/terrain.frag
+    shader/terrain.vert
+    shader/terrain.geo
+    shader/sphere.frag
+    shader/sphere.vert
+    shader/phongLighting.frag
 )
 
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/data "\\\\.frag$|\\\\.vert$|\\\\.geo$"
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
     
 

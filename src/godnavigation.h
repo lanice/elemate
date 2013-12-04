@@ -39,13 +39,12 @@ class GodNavigation : public osgGA::StandardManipulator
 
     protected:
 
-        /** Handles GUIEventAdapter::KEYDOWN event.*/
+        /** Handle GUIEventAdapter::FRAME event.*/
+        virtual bool handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+        /** Handle GUIEventAdapter::KEYDOWN event.*/
         virtual bool handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
-        /** Handles GUIEventAdapter::KEYUP event.*/
+        /** Handle GUIEventAdapter::KEYUP event.*/
         virtual bool handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
-
-        /** Set requestContinuousUpdate( bool ) to false if no movement key is pressed.*/
-        virtual void disableContinuousUpdateIfNecessary( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
         /** Make movement step of manipulator. Returns true if any movement was made.*/
         virtual bool performMovement();
