@@ -11,6 +11,7 @@ class ElemateHeightFieldTerrain;
 namespace osg {
     class Group;
     class Program;
+    class GraphicsContext;
 }
 
 
@@ -28,6 +29,8 @@ public:
     void setNavigation(GodNavigation * navigation);
     void reloadShader();
     void setUniforms();
+
+    void setGraphicsContext(osg::GraphicsContext * context);
     
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
@@ -35,11 +38,14 @@ public:
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
 
 protected:
-    void setUpLighting();
+    osg::ref_ptr<osg::GraphicsContext> m_graphicContext;
+
     osg::ref_ptr<osg::Group> m_root;
     osg::ref_ptr<osg::Group> m_particleGroup;
+    osg::ref_ptr<GodNavigation> m_navigation;
+
+    void setUpLighting();
     void initShader();
     osg::Program * programByName(std::string name) const;
     std::map<std::string, osg::ref_ptr<osg::Program>> m_programsByName;
-    osg::ref_ptr<GodNavigation> m_navigation;
 };

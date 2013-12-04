@@ -49,6 +49,12 @@ World::~World()
 {
 }
 
+void World::setGraphicsContext(osg::GraphicsContext * context)
+{
+    m_graphicContext = context;
+    physics_wrapper->setOsgGraphicsContext(context);
+}
+
 void World::setUpLighting()
 {
     osg::Vec4 lightambientglobal(0, 0, 0, 0);

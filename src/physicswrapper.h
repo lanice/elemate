@@ -8,6 +8,8 @@ typedef long double t_longf;
 
 #include <string>
 #include <hash_map>
+#include <osg/GraphicsContext>
+
 #include "PxPhysicsAPI.h"
 namespace physx {
     namespace apex {
@@ -51,6 +53,8 @@ public:
     physx::apex::NxApexScene*   apex_scene() const;
     physx::PxMaterial*          material(std::string material_name)const;
 
+    void setOsgGraphicsContext(osg::GraphicsContext * context);
+
 protected:
 	/** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
 	static const int	kNumberOfThreads;
@@ -91,6 +95,8 @@ protected:
     physx::apex::NxUserRenderResourceManager*	m_render_resource_manager;
     StandardParticles*                          m_standard_particles;
     physx::apex::NxUserRenderer*                m_renderer;
+
+    osg::ref_ptr<osg::GraphicsContext> m_osgGraphicsContext;
 private:
 	DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
 };

@@ -204,3 +204,8 @@ physx::NxApexScene*	PhysicsWrapper::apex_scene()const{
 physx::PxMaterial*	PhysicsWrapper::material(std::string material_name)const{
 	return m_materials.at(material_name);
 }
+
+void PhysicsWrapper::setOsgGraphicsContext(osg::GraphicsContext * context)
+{
+    m_osgGraphicsContext = context;
+}
