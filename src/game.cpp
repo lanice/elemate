@@ -4,6 +4,9 @@
 #include <thread>
 #include <chrono>
 
+// OSG Classes
+#include <osgViewer/Viewer>
+
 // Own Classes
 #include "world.h"
 #include "physicswrapper.h"
@@ -14,9 +17,6 @@
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
 
-// OSG Classes
-#include <osgViewer/Viewer>
-
 
 Game::Game(osgViewer::Viewer& viewer) :
 m_interrupted(true),
@@ -24,11 +24,6 @@ m_viewer(viewer),
 m_world(std::make_shared<World>()),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 {
-	// use modern OpenGL
-    osg::State * graphicsState = m_viewer.getCamera()->getGraphicsContext()->getState();
-    graphicsState->setUseModelViewAndProjectionUniforms(true);
-    //graphicsState->setUseVertexAttributeAliasing(true);
-    
     // create new context traits to configure vsync etc
     osg::ref_ptr< osg::GraphicsContext::Traits > traits = new osg::GraphicsContext::Traits(*m_viewer.getCamera()->getGraphicsContext()->getTraits());
 
@@ -40,12 +35,16 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     osg::ref_ptr< osg::GraphicsContext > gc = osg::GraphicsContext::createGraphicsContext(traits.get());
     m_viewer.getCamera()->setGraphicsContext(gc.get());
 
+	// use modern OpenGL
+    osg::State * graphicsState = m_viewer.getCamera()->getGraphicsContext()->getState();
+    graphicsState->setUseModelViewAndProjectionUniforms(true);
+    graphicsState->setUseVertexAttributeAliasing(true);
+
 	m_viewer.setSceneData(m_world->root());
 }
 
 Game::~Game()
 {}
-
 
 void Game::start(){
 	if (isRunning())
@@ -61,6 +60,10 @@ void Game::start(){
     
     setOsgCamera();
 
+    m_world->setNavigation(m_navigation.get());
+    m_world->reloadShader();
+    m_world->setUniforms();
+
     m_world->physics_wrapper->startSimulation();
 
 	loop();
@@ -75,7 +78,7 @@ void Game::loop(t_longf delta){
 	int maxSkippedFrames = 5;
 
 	while (isRunning())
-	{
+    {
 		// get current time
 		t_longf currTime = m_cyclicTime->getNonModf(true);
 
@@ -94,6 +97,7 @@ void Game::loop(t_longf delta){
 	        if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
 	        {
 		        m_world->objects_container->updateAllObjects();
+		        m_world->setUniforms();
 		        m_viewer.frame();
 		        skippedFrames = 1;
 	        } else {
@@ -121,11 +125,11 @@ void Game::end(){
 }
 
 void Game::setOsgCamera(){
-    osgGA::CameraManipulator * navigation = new GodNavigation();
-	navigation->setHomePosition(
+    m_navigation = new GodNavigation();
+    m_navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),
 		osg::Vec3d(0.0, 1.0, 0.0));
-	navigation->home(0.0);
-	m_viewer.setCameraManipulator(navigation);
+	m_navigation->home(0.0);
+	m_viewer.setCameraManipulator(m_navigation);
 }

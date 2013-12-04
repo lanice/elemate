@@ -5,9 +5,10 @@
 	void operator=(const TypeName&);
 
 #include <memory> //shared_ptr
+#include <osg/ref_ptr>
 
-//Forward Declarations
 class World;
+class GodNavigation;
 class CyclicTime;
 namespace std {			class thread; }
 namespace osgViewer {	class Viewer; }
@@ -49,6 +50,7 @@ protected:
     std::shared_ptr<CyclicTime>     			m_cyclicTime;
 
 	bool							    m_interrupted;
+    osg::ref_ptr<GodNavigation>         m_navigation;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(Game);
