@@ -78,6 +78,8 @@ public:
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;
     /** map of static PhysX actors */
     const std::map<osgTerrain::TileID, physx::PxRigidStatic*> pxActorMap() const;
+    /** @return height at specific world position */
+    float heightAt(float x, float z) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings & settings() const;
 
@@ -95,6 +97,11 @@ private:
 
     /** stores terrain configuration, set up by terrain generator */
     const TerrainSettings m_settings;
+
+    /** lowest tile id in x direction */
+    unsigned minTileXID;
+    /** lowest tile id in z direction */
+    unsigned minTileZID;
 
     ElemateHeightFieldTerrain & operator=(const ElemateHeightFieldTerrain &) = delete;
 

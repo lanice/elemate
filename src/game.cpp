@@ -127,6 +127,7 @@ void Game::end(){
 
 void Game::setOsgCamera(){
     m_navigation = new GodNavigation();
+    m_navigation->setWorld(m_world);
     m_navigation->setHomePosition(
 		osg::Vec3d(0.0, 10.0, 12.0),
 		osg::Vec3d(0.0, 2.0, 0.0),

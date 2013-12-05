@@ -11,6 +11,7 @@ class ElemateHeightFieldTerrain;
 namespace osg {
     class Group;
     class Program;
+    class MatrixTransform;
 }
 
 
@@ -36,8 +37,10 @@ public:
 
 protected:
     void setUpLighting();
+    void setUpCameraDebugger();
     osg::ref_ptr<osg::Group> m_root;
     osg::ref_ptr<osg::Group> m_particleGroup;
+    osg::ref_ptr<osg::MatrixTransform> m_cameraDebugger;
     void initShader();
     osg::Program * programByName(std::string name) const;
     std::map<std::string, osg::ref_ptr<osg::Program>> m_programsByName;

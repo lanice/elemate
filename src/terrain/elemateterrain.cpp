@@ -28,6 +28,23 @@ ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & set
 {
 }
 
+float ElemateHeightFieldTerrain::heightAt(float x, float z) const
+{
+    // currently for one tile only
+    assert(m_settings.tilesX == 1 && m_settings.tilesZ == 1);
+    float normalizedX = x / m_settings.sizeX + 0.5f;
+    float normalizedY = 0.5f - z / m_settings.sizeZ;
+
+    if (normalizedX < 0.0f || normalizedX > 1.0f
+        || normalizedY < 0.0f || normalizedY > 1.0f)
+        return 0.0f;
+
+    osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(0, 0, 0));
+    float height = 0;
+    tile->getElevationLayer()->getInterpolatedValue(normalizedX, normalizedY, height);
+    return height;
+}
+
 osg::MatrixTransform * ElemateHeightFieldTerrain::osgTransformedTerrain() const
 {
     assert(m_osgTerrainTransform.valid());

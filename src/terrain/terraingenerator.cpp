@@ -69,6 +69,9 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     int maxzID = m_settings.tilesZ - int((m_settings.tilesZ + 1) * 0.5);
     int minzID = maxzID - m_settings.tilesZ + 1;
 
+    terrain->minTileXID = minxID;
+    terrain->minTileZID = minzID;
+
     for (int xID = minxID; xID <= maxxID; ++xID)
     for (int zID = minzID; zID <= maxzID; ++zID)
     {
