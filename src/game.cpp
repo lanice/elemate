@@ -28,7 +28,7 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     osg::ref_ptr< osg::GraphicsContext::Traits > traits = new osg::GraphicsContext::Traits(*m_viewer.getCamera()->getGraphicsContext()->getTraits());
 
     traits->windowName = "Elemate";
-    traits->vsync = false;
+    traits->vsync = true;
     // traits->useCursor = false;
 
     // apply new settings viewer
@@ -91,12 +91,13 @@ void Game::loop(t_longf delta){
 			nextTime += delta;
 
 			// update physic
-	        m_world->physics_wrapper->step();
+            if (m_world->physics_wrapper->step())
+                // physx: each simulate() call must be followed by fetchResults()
+                m_world->objects_container->updateAllObjects();
 
 	        // update and draw objects if we have time remaining or already too many frames skipped.
 	        if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
 	        {
-		        m_world->objects_container->updateAllObjects();
 		        m_world->setUniforms();
 		        m_viewer.frame();
 		        skippedFrames = 1;

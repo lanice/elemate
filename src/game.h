@@ -38,7 +38,7 @@ protected:
 
 	/** The Game's loop containing drawing and triggering physics is placed right here.
 	  * @param delta specifies the time between each logic update in seconds.*/
-	void loop(long double delta = 0.05L);
+	void loop(long double delta = 1.0L/100.0L);
 
 	void setOsgCamera();
     void setLightSource();
