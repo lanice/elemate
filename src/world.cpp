@@ -10,7 +10,7 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "godnavigation.h"
-#include "terraingenerator.h"
+#include "terrain/terraingenerator.h"
 
 
 World::World()

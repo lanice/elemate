@@ -50,8 +50,10 @@ set(SOURCES
     src/hpicgs/ChronoTimer.h
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
-    src/terraingenerator.cpp
-    src/terraingenerator.h
+    src/terrain/terraingenerator.cpp
+    src/terrain/terraingenerator.h
+    src/terrain/elemateterrain.h
+    src/terrain/elemateterrain.cpp
     src/osg/sharedgeometrytechnique.h;
     src/osg/sharedgeometrytechnique.cpp;
 )
