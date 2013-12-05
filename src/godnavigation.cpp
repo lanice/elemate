@@ -1,6 +1,9 @@
 
 #include "godnavigation.h"
 
+#include "world.h"
+#include "terraingenerator.h"
+
 
 static const double c_velocityNormal = 0.2;
 static const double c_distanceEyeCenter = 20.;
@@ -15,7 +18,8 @@ GodNavigation::GodNavigation( int flags )
      _keyPressedD( false ),
      _keyPressedQ( false ),
      _keyPressedE( false ),
-     _keyPressedShift_L( false )
+     _keyPressedShift_L( false ),
+     m_world(nullptr)
 {
     if( _flags & SET_CENTER_ON_WHEEL_FORWARD_MOVEMENT )
         setAnimationTime( 0.2 );
@@ -34,7 +38,8 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
      _keyPressedD( gn._keyPressedD ),
      _keyPressedQ( gn._keyPressedQ ),
      _keyPressedE( gn._keyPressedE ),
-     _keyPressedShift_L( gn._keyPressedShift_L )
+     _keyPressedShift_L( gn._keyPressedShift_L ),
+     m_world( gn.m_world )
 {
 }
 
@@ -238,12 +243,10 @@ bool GodNavigation::performMovement()
         calculateMovementDirectionKeyA( movementDirection );
     if ( _keyPressedD )
         calculateMovementDirectionKeyD( movementDirection );
-    if ( _keyPressedQ ) {
+    if ( _keyPressedQ )
         yaw += rotationSpeed;
-    }
-    if ( _keyPressedE ) {
+    if ( _keyPressedE )
         yaw -= rotationSpeed;
-    }
 
 
     if ( movementDirection.length() != 0 ) {
@@ -265,6 +268,7 @@ bool GodNavigation::performMovement( const osg::Vec3d& movementDirection, const 
     osg::Vec3d direction = movementDirection;
     direction.normalize();
     _center += (direction * distance);
+    _center.y() = m_world->terrain->heightAt( _center.x(), _center.z() ) + 1.;
     return true;
 }
 

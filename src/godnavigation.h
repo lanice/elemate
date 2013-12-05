@@ -3,6 +3,10 @@
 
 #include <osgGA/StandardManipulator>
 
+#include <memory> //shared_ptr
+
+
+class World;
 
 
 class GodNavigation : public osgGA::StandardManipulator
@@ -13,6 +17,8 @@ class GodNavigation : public osgGA::StandardManipulator
 
         GodNavigation( int flags = DEFAULT_SETTINGS );
         GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
+
+        void setWorld( std::shared_ptr<World> world ) { m_world = world; };
 
         /** Set the position of the manipulator using a 4x4 matrix.*/
         virtual void setByMatrix( const osg::Matrixd& matrix );
@@ -84,4 +90,6 @@ class GodNavigation : public osgGA::StandardManipulator
         bool _keyPressedQ;
         bool _keyPressedE;
         bool _keyPressedShift_L;
+
+        std::shared_ptr<World> m_world;
 };
