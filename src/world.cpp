@@ -190,5 +190,5 @@ void World::setUniforms()
     m_cameraDebugger->setMatrix(camDebuggerTransform);
 
     m_cameraDebugger->getOrCreateStateSet()->getOrCreateUniform("modelRotation",
-        osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf::rotate(90.0, osg::Vec3f(1.0, .0, .0)));
+        osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf::rotate(3.1415926f * 0.5, osg::Vec3f(1.0, .0, .0)));
 }
