@@ -19,6 +19,7 @@ GodNavigation::GodNavigation( int flags )
      _keyPressedQ( false ),
      _keyPressedE( false ),
      _keyPressedShift_L( false ),
+     _slerping( false ),
      m_world(nullptr)
 {
     if( _flags & SET_CENTER_ON_WHEEL_FORWARD_MOVEMENT )
@@ -31,6 +32,9 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
      inherited( gn, copyOp ),
      _center( gn._center ),
      _rotation( gn._rotation ),
+     _startRotation( gn._startRotation ),
+     _stopRotation( gn._stopRotation ),
+     _stopTime( gn._stopTime ),
      _velocity( gn._velocity ),
      _keyPressedW( gn._keyPressedW ),
      _keyPressedS( gn._keyPressedS ),
@@ -39,6 +43,7 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
      _keyPressedQ( gn._keyPressedQ ),
      _keyPressedE( gn._keyPressedE ),
      _keyPressedShift_L( gn._keyPressedShift_L ),
+     _slerping( gn._slerping ),
      m_world( gn.m_world )
 {
 }
@@ -133,6 +138,14 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     _delta_frame_time = current_frame_time - _last_frame_time;
     _last_frame_time = current_frame_time;
 
+    if ( _slerping )
+    {
+        double timeFrame = 1. - (_stopTime - current_frame_time);
+        _rotation.slerp( timeFrame, _startRotation, _stopRotation );
+
+        if ( timeFrame >= 1. ) _slerping = false;
+    }
+
     performMovement();
 
    return false;
@@ -141,11 +154,14 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 
 bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
+            osg::Matrixd m( osg::Matrixd::lookAt( _homeEye, _homeCenter, _homeUp ) );
     switch( ea.getUnmodifiedKey() )
     {
         case osgGA::GUIEventAdapter::KEY_Space:
-            flushMouseEventStack();
-            home(0.);
+            _startRotation = _rotation;
+            _stopRotation = m.getRotate().inverse();
+            _stopTime = ea.getTime() + 1.;
+            _slerping = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_W:

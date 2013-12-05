@@ -85,6 +85,11 @@ class GodNavigation : public osgGA::StandardManipulator
         osg::Quat  _rotation;
         double _velocity;
 
+        osg::Quat _startRotation;
+        osg::Quat _stopRotation;
+
+        double _stopTime;
+
         bool _keyPressedW;
         bool _keyPressedS;
         bool _keyPressedA;
@@ -92,6 +97,8 @@ class GodNavigation : public osgGA::StandardManipulator
         bool _keyPressedQ;
         bool _keyPressedE;
         bool _keyPressedShift_L;
+
+        bool _slerping;
 
         std::shared_ptr<World> m_world;
 };
