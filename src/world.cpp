@@ -5,6 +5,7 @@
 #include <osgViewer/Viewer>
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
+#include <osg/ShapeDrawable>
 #include <osgDB/ReadFile>
 
 #include "physicswrapper.h"
@@ -41,12 +42,24 @@ World::World()
         physics_wrapper->scene()->addActor(*actor.second);
     }
 
+    setUpCameraDebugger();
+
     setUpLighting();
 }
 
 
 World::~World()
 {
+}
+
+void World::setUpCameraDebugger()
+{
+    m_cameraDebugger = new osg::MatrixTransform();
+
+    osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
+    sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Cone(osg::Vec3(0, 0, 0), 0.2, 1.0)));
+    m_cameraDebugger->addChild(sphere_geode);
+    m_particleGroup->addChild(m_cameraDebugger.get());
 }
 
 void World::setUpLighting()
@@ -167,4 +180,15 @@ void World::setUniforms()
     osg::Vec3f eye(eyed);
     m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
     osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
+
+    float height = terrain->heightAt(centerd.x(), centerd.z());
+    // height + cone height
+    osg::Vec3 cameraCenter(centerd.x(), height + 1, centerd.z());
+
+    osg::Matrix camDebuggerTransform = osg::Matrix::rotate(3.1415926f * 0.5, osg::Vec3(1.0, .0, .0))
+        * osg::Matrix::translate(cameraCenter);
+    m_cameraDebugger->setMatrix(camDebuggerTransform);
+
+    m_cameraDebugger->getOrCreateStateSet()->getOrCreateUniform("modelRotation",
+        osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf::rotate(90.0, osg::Vec3f(1.0, .0, .0)));
 }

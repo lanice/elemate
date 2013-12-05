@@ -81,6 +81,9 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     int maxzID = m_settings.tilesZ - int((m_settings.tilesZ + 1) * 0.5);
     int minzID = maxzID - m_settings.tilesZ + 1;
 
+    terrain->minTileXID = minxID;
+    terrain->minTileZID = minzID;
+
     for (int xID = minxID; xID <= maxxID; ++xID)
     for (int zID = minzID; zID <= maxzID; ++zID)
     {
@@ -383,6 +386,23 @@ PxRigidStatic * ElemateHeightFieldTerrain::pxActor(const osgTerrain::TileID & ti
 const std::map<osgTerrain::TileID, physx::PxRigidStatic*> ElemateHeightFieldTerrain::pxActorMap() const
 {
     return m_pxActors;
+}
+
+float ElemateHeightFieldTerrain::heightAt(float x, float z) const
+{
+    // currently for one tile only
+    assert(m_settings.tilesX == 1 && m_settings.tilesZ == 1);
+    float normalizedX = x / m_settings.sizeX + 0.5f;
+    float normalizedY = 0.5f - z / m_settings.sizeZ;
+
+    if (normalizedX < 0.0f || normalizedX > 1.0f
+        || normalizedY < 0.0f || normalizedY > 1.0f)
+        return 0.0f;
+
+    osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(0, 0, 0));
+    float height = 0;
+    tile->getElevationLayer()->getInterpolatedValue(normalizedX, normalizedY, height);
+    return height;
 }
 
 const TerrainSettings & ElemateHeightFieldTerrain::settings() const
