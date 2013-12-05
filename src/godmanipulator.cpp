@@ -1,6 +1,5 @@
 
 #include "godmanipulator.h"
-#include "soundmanager.h"
 
 
 GodManipulator::GodManipulator()
@@ -82,8 +81,33 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 			return true;
 			break;
 
-		case osgGA::GUIEventAdapter::KEY_P:
-			SoundManager::start();
+		case osgGA::GUIEventAdapter::KEY_L:
+			m_world->moveSoundRight(1);
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_J:
+			m_world->moveSoundLeft(1);
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_I:
+			m_world->moveSoundForw(1);
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_K:
+			m_world->moveSoundBackw(1);
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_U:
+			m_world->moveSoundUp(1);
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_O:
+			m_world->moveSoundDown(1);
 			return true;
 			break;
 	}

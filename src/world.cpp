@@ -3,6 +3,7 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "terraingenerator.h"
+#include "soundmanager.h"
 
 #include "PxPhysicsAPI.h"
 
@@ -15,8 +16,13 @@ World::World()
 {
 	physics_wrapper.reset(new PhysicsWrapper());
 	objects_container.reset(new ObjectsContainer(physics_wrapper));
+	soundManager.reset(new SoundManager());
 
     m_root = new osg::Group();
+
+	//Config SoundManager
+	soundManager->createNewChannel("data/sounds/birds.mp3", true, false);
+	soundManager->createNewChannel("data/sounds/spring.mp3", true, true, {0.f,0.f,0.f}, {0.f,0.f,0.f});
 
 
     // Gen Terrain
@@ -65,4 +71,28 @@ void World::makeStandardBall()
 {
 	// prototype: hard-coded physx values etc.
 	objects_container->makeStandardBall(m_root, physx::PxVec3(1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+}
+
+void World::moveSoundLeft(int channelId){
+	soundManager->moveSound(channelId, { -0.2f, 0.f, 0.f });
+}
+
+void World::moveSoundRight(int channelId){
+	soundManager->moveSound(channelId, { 0.2f, 0.f, 0.f });
+}
+
+void World::moveSoundForw(int channelId){
+	soundManager->moveSound(channelId, { 0.f, 0.2f, 0.f });
+}
+
+void World::moveSoundBackw(int channelId){
+	soundManager->moveSound(channelId, { 0.f, -0.2f, 0.f });
+}
+
+void World::moveSoundUp(int channelId){
+	soundManager->moveSound(channelId, { 0.f, 0.f, 0.2f });
+}
+
+void World::moveSoundDown(int channelId){
+	soundManager->moveSound(channelId, { 0.f, 0.f, -0.2f });
 }

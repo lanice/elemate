@@ -1,7 +1,20 @@
 #include "soundmanager.h"
 
-const int   INTERFACE_UPDATETIME = 50;      // 50ms update for interface
-const float DISTANCEFACTOR = 1.0f;          // Units per meter.  I.e feet would = 3.28.  centimeters would = 100.
+SoundManager::SoundManager(){
+	init();
+}
+
+SoundManager::~SoundManager(){
+	for (SoundMap::iterator it = m_channels.begin(); it != m_channels.end(); ++it){
+		result = it->second.sound->release();
+		ERRCHECK(result);
+	}
+
+	result = system->close();
+	ERRCHECK(result);
+	result = system->release();
+	ERRCHECK(result);
+}
 
 void SoundManager::ERRCHECK(FMOD_RESULT result)
 {
@@ -12,29 +25,171 @@ void SoundManager::ERRCHECK(FMOD_RESULT result)
 	}
 }
 
-void SoundManager::start(){
-	FMOD::System    *system;
-	FMOD::Sound     *sound1, *sound2, *sound3;
-	FMOD::Channel   *channel1 = 0, *channel2 = 0, *channel3 = 0;
-	FMOD_RESULT      result;
-	int              key, numdrivers;
-	bool             listenerflag = true;
-	FMOD_VECTOR      listenerpos = { 0.0f, 0.0f, -1.0f * DISTANCEFACTOR };
-	unsigned int     version;
-	FMOD_SPEAKERMODE speakermode;
-	FMOD_CAPS        caps;
-	char             name[256];
+int SoundManager::getNextFreeId(){
+	int i = 0;
+	while (i < m_channels.size()){
+		if (m_channels.find(i) == m_channels.end()) return i;
+		++i;
+	}
+	return i;
+}
 
-	printf("===============================================================\n");
-	printf("3d Example.  Copyright (c) Firelight Technologies 2004-2011.\n");
-	printf("===============================================================\n");
-	printf("This example plays 2 3D sounds in hardware.  Optionally you can\n");
-	printf("play a 2D hardware sound as well.\n");
-	printf("===============================================================\n\n");
+int SoundManager::createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, FMOD_VECTOR pos, FMOD_VECTOR vel){
+	FMOD::Sound *_sound;
+	FMOD::Channel *_channel = 0;
+	int _id = getNextFreeId();
+	FMOD_MODE _mode = FMOD_3D;
 
-	/*
-	Create a System object and initialize.
-	*/
+	if (!is3D)
+		_mode = FMOD_SOFTWARE | FMOD_2D;
+
+
+
+	/** set new sound **/
+	result = system->createSound(soundFilePath.c_str(), _mode, 0, &_sound);
+	ERRCHECK(result);
+	if (isLoop) result = _sound->setMode(FMOD_LOOP_NORMAL);
+	ERRCHECK(result);
+	if (is3D){
+		result = _sound->set3DMinMaxDistance(0.5f * distanceFactor, 5000.0f * distanceFactor);
+		ERRCHECK(result);
+	}
+
+		/** set new channel **/
+
+	result = system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
+	ERRCHECK(result);
+	if (is3D){
+		result = _channel->set3DAttributes(&pos, &vel);
+		ERRCHECK(result);
+	}
+	result = _channel->setPaused(false);
+	ERRCHECK(result);
+
+	m_channels[_id] = { isLoop, _channel, _sound };
+	system->update();
+	return _id;
+}
+
+int SoundManager::createNewChannel(std::string soundFilePath, bool isLoop, bool is3D){
+	FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f };
+	FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
+	return createNewChannel(soundFilePath, isLoop, is3D, pos, vel);
+}
+
+void SoundManager::deleteChannel(int id){
+	m_channels[id].sound->release();
+	ERRCHECK(result);
+	m_channels.erase(id);
+}
+
+void SoundManager::play(int id){
+	if (m_channels[id].isLoop){
+		result = m_channels[id].channel->setPaused(false);
+	}else{
+		result = system->playSound(FMOD_CHANNEL_FREE, m_channels[id].sound, false, &(m_channels[id].channel));
+	}
+	ERRCHECK(result);
+}
+
+void SoundManager::pause(int id){
+	m_channels[id].channel->setPaused(true);
+}
+
+void SoundManager::togglePause(int id){
+	bool p;
+	m_channels[id].channel->getPaused(&p);
+	m_channels[id].channel->setPaused(p);
+}
+
+
+void SoundManager::setMicroPos(FMOD_VECTOR pos){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	FMOD_VECTOR _forward;
+	FMOD_VECTOR _up;
+	result = system->get3DListenerAttributes(0, &_pos, &_vel, &_forward, &_up);
+	ERRCHECK(result);
+	result = system->set3DListenerAttributes(0, &pos, &_vel, &_forward, &_up);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::moveMicro(FMOD_VECTOR dPos){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	FMOD_VECTOR _forward;
+	FMOD_VECTOR _up;
+	result = system->get3DListenerAttributes(0, &_pos, &_vel, &_forward, &_up);
+	ERRCHECK(result);
+	_pos = {_pos.x + dPos.x, _pos.y + dPos.y, _pos.z + dPos.z};
+	result = system->set3DListenerAttributes(0, &_pos, &_vel, &_forward, &_up);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::setMicroVel(FMOD_VECTOR vel){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	FMOD_VECTOR _forward;
+	FMOD_VECTOR _up;
+	result = system->get3DListenerAttributes(0, &_pos, &_vel, &_forward, &_up);
+	ERRCHECK(result);
+	result = system->set3DListenerAttributes(0, &_pos, &vel, &_forward, &_up);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::setMicroPosAndVel(FMOD_VECTOR pos, FMOD_VECTOR vel){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	FMOD_VECTOR _forward;
+	FMOD_VECTOR _up;
+	result = system->get3DListenerAttributes(0, &_pos, &_vel, &_forward, &_up);
+	ERRCHECK(result);
+	result = system->set3DListenerAttributes(0, &pos, &vel, &_forward, &_up);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::setSoundPos(int id, FMOD_VECTOR pos){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	result = m_channels[id].channel->get3DAttributes(&_pos, &_vel);
+	ERRCHECK(result);
+	result = m_channels[id].channel->set3DAttributes(&pos, &_vel);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::moveSound(int id,  FMOD_VECTOR dPos){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	result = m_channels[id].channel->get3DAttributes(&_pos, &_vel);
+	ERRCHECK(result);
+	_pos = { _pos.x + dPos.x, _pos.y + dPos.y, _pos.z + dPos.z };
+	result = m_channels[id].channel->set3DAttributes(&_pos, &_vel);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::setSoundVel(int id, FMOD_VECTOR vel){
+	FMOD_VECTOR _pos;
+	FMOD_VECTOR _vel;
+	result = m_channels[id].channel->get3DAttributes(&_pos, &_vel);
+	ERRCHECK(result);
+	result = m_channels[id].channel->set3DAttributes(&_pos, &vel);
+	ERRCHECK(result);
+	system->update();
+}
+
+void SoundManager::setSoundPosAndVel(int id, FMOD_VECTOR pos, FMOD_VECTOR vel){
+	result = m_channels[id].channel->set3DAttributes(&pos, &vel);
+}
+
+void SoundManager::init(){
+	int              numdrivers;
+
 	result = FMOD::System_Create(&system);
 	ERRCHECK(result);
 
@@ -93,193 +248,6 @@ void SoundManager::start(){
 	/*
 	Set the distance units. (meters/feet etc).
 	*/
-	result = system->set3DSettings(1.0, DISTANCEFACTOR, 1.0f);
-	ERRCHECK(result);
-
-	/*
-	Load some sounds
-	*/
-	result = system->createSound("data/sounds/wave.mp3", FMOD_3D, 0, &sound1);
-	ERRCHECK(result);
-	result = sound1->set3DMinMaxDistance(0.5f * DISTANCEFACTOR, 5000.0f * DISTANCEFACTOR);
-	ERRCHECK(result);
-	result = sound1->setMode(FMOD_LOOP_NORMAL);
-	ERRCHECK(result);
-
-	result = system->createSound("data/sounds/Roads_Untraveled.mp3", FMOD_3D, 0, &sound2);
-	ERRCHECK(result);
-	result = sound2->set3DMinMaxDistance(0.5f * DISTANCEFACTOR, 5000.0f * DISTANCEFACTOR);
-	ERRCHECK(result);
-	result = sound2->setMode(FMOD_LOOP_NORMAL);
-	ERRCHECK(result);
-
-	result = system->createSound("data/sounds/bomb.mp3", FMOD_SOFTWARE | FMOD_2D, 0, &sound3);
-	ERRCHECK(result);
-
-	/*
-	Play sounds at certain positions
-	*/
-	{
-		FMOD_VECTOR pos = { -10.0f * DISTANCEFACTOR, 0.0f, 0.0f };
-		FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
-
-		result = system->playSound(FMOD_CHANNEL_FREE, sound1, true, &channel1);
-		ERRCHECK(result);
-		result = channel1->set3DAttributes(&pos, &vel);
-		ERRCHECK(result);
-		result = channel1->setPaused(false);
-		ERRCHECK(result);
-	}
-
-	{
-		FMOD_VECTOR pos = { 15.0f * DISTANCEFACTOR, 0.0f, 0.0f };
-		FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
-
-		result = system->playSound(FMOD_CHANNEL_FREE, sound2, true, &channel2);
-		ERRCHECK(result);
-		result = channel2->set3DAttributes(&pos, &vel);
-		ERRCHECK(result);
-		result = channel2->setPaused(false);
-		ERRCHECK(result);
-	}
-
-	/*
-	Display help
-	*/
-	{
-		int numchannels;
-
-		result = system->getHardwareChannels(&numchannels);
-		ERRCHECK(result);
-
-		printf("Hardware channels : %d\n", numchannels);
-	}
-
-	printf("=========================================================================\n");
-	printf("Press 1        Pause/Unpause 16bit 3D sound at any time\n");
-	printf("      2        Pause/Unpause 8bit 3D sound at any time\n");
-	printf("      3        Play 16bit STEREO 2D sound at any time\n");
-	printf("      <        Move listener left (in still mode)\n");
-	printf("      >        Move listener right (in still mode)\n");
-	printf("      SPACE    Stop/Start listener automatic movement\n");
-	printf("      ESC      Quit\n");
-	printf("=========================================================================\n");
-
-	/*
-	Main loop
-	*/
-	do
-	{
-		if (_kbhit())
-		{
-			key = _getch();
-
-			if (key == '1')
-			{
-				bool paused;
-				channel1->getPaused(&paused);
-				channel1->setPaused(!paused);
-			}
-
-			if (key == '2')
-			{
-				bool paused;
-				channel2->getPaused(&paused);
-				channel2->setPaused(!paused);
-			}
-
-			if (key == '3')
-			{
-				result = system->playSound(FMOD_CHANNEL_FREE, sound3, false, &channel3);
-				ERRCHECK(result);
-			}
-
-			if (key == ' ')
-			{
-				listenerflag = !listenerflag;
-			}
-
-			if (!listenerflag)
-			{
-				if (key == '<')
-				{
-					listenerpos.x -= 1.0f * DISTANCEFACTOR;
-					if (listenerpos.x < -35 * DISTANCEFACTOR)
-					{
-						listenerpos.x = -35 * DISTANCEFACTOR;
-					}
-				}
-				if (key == '>')
-				{
-					listenerpos.x += 1.0f * DISTANCEFACTOR;
-					if (listenerpos.x > 36 * DISTANCEFACTOR)
-					{
-						listenerpos.x = 36 * DISTANCEFACTOR;
-					}
-				}
-			}
-		}
-
-		// ==========================================================================================
-		// UPDATE THE LISTENER
-		// ==========================================================================================
-		{
-			static float t = 0;
-			static FMOD_VECTOR lastpos = { 0.0f, 0.0f, 0.0f };
-			FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };
-			FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };
-			FMOD_VECTOR vel;
-
-			if (listenerflag)
-			{
-				listenerpos.x = (float)sin(t * 0.05f) * 33.0f * DISTANCEFACTOR; // left right pingpong
-			}
-
-			// ********* NOTE ******* READ NEXT COMMENT!!!!!
-			// vel = how far we moved last FRAME (m/f), then time compensate it to SECONDS (m/s).
-			vel.x = (listenerpos.x - lastpos.x) * (1000 / INTERFACE_UPDATETIME);
-			vel.y = (listenerpos.y - lastpos.y) * (1000 / INTERFACE_UPDATETIME);
-			vel.z = (listenerpos.z - lastpos.z) * (1000 / INTERFACE_UPDATETIME);
-
-			// store pos for next time
-			lastpos = listenerpos;
-
-			result = system->set3DListenerAttributes(0, &listenerpos, &vel, &forward, &up);
-			ERRCHECK(result);
-
-			t += (30 * (1.0f / (float)INTERFACE_UPDATETIME));    // t is just a time value .. it increments in 30m/s steps in this example
-
-			// print out a small visual display
-			{
-				char s[80];
-
-				sprintf_s(s, "|.......................<1>......................<2>....................|");
-
-				s[(int)(listenerpos.x / DISTANCEFACTOR) + 35] = 'L';
-				printf("%s\r", s);
-			}
-		}
-
-		system->update();
-
-		Sleep(INTERFACE_UPDATETIME - 1);
-
-	} while (key != 27);
-
-	printf("\n");
-
-	/*
-	Shut down
-	*/
-	result = sound1->release();
-	ERRCHECK(result);
-	result = sound2->release();
-	ERRCHECK(result);
-	result = sound3->release();
-	ERRCHECK(result);
-
-	result = system->close();
-	ERRCHECK(result);
-	result = system->release();
+	result = system->set3DSettings(1.0, distanceFactor, 1.0f);
 	ERRCHECK(result);
 }
