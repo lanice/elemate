@@ -20,7 +20,7 @@ ObjectsContainer::~ObjectsContainer()
 
 void ObjectsContainer::updateAllObjects()
 {
-    m_physics_wrapper->scene()->fetchResults();
+    m_physics_wrapper->scene()->fetchResults(true);
     
     physx::PxMat44 new_pos;
     for (auto& current_object : m_objects){
