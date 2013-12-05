@@ -91,12 +91,13 @@ void Game::loop(t_longf delta){
 			nextTime += delta;
 
 			// update physic
-	        m_world->physics_wrapper->step();
+            if (m_world->physics_wrapper->step())
+                // physx: each simulate() call must be followed by fetchResults()
+                m_world->objects_container->updateAllObjects();
 
 	        // update and draw objects if we have time remaining or already too many frames skipped.
 	        if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
 	        {
-		        m_world->objects_container->updateAllObjects();
 		        m_world->setUniforms();
 		        m_viewer.frame();
 		        skippedFrames = 1;

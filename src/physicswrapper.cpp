@@ -2,12 +2,8 @@
 
 #include "hpicgs\CyclicTime.h"
 
-// Standard Libs
 #include <iostream>
-
-#pragma comment(lib, "PhysX3_x64.lib")
-#pragma comment(lib, "PhysX3Common_x64.lib")
-#pragma comment(lib, "PhysX3Extensions.lib")
+#include <cassert>
 
 const int	PhysicsWrapper::kNumberOfThreads = 2;
 
@@ -103,14 +99,20 @@ void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_descrip
 }
 
 bool PhysicsWrapper::step(){
-    static t_longf now = m_cyclic_time->getNonModf();
     static t_longf last_time = m_cyclic_time->getNonModf();
     
-    now = m_cyclic_time->getNonModf(true);
+    t_longf now = m_cyclic_time->getNonModf(true);
+
     m_elapsed = now - last_time;
+
+    if (m_elapsed == 0)
+        return false;
+
+    assert(m_elapsed > 0);
+    m_scene->simulate(static_cast<physx::PxReal>(m_elapsed));
+
     last_time = now;
 
-    m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
 	return true;
 }
 
