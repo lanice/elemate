@@ -26,12 +26,14 @@ void * ElemateResourceCallback::requestResource(const char* nameSpace, const cha
 {
     std::cout << "Requested ressource: " << nameSpace << "::" << name << std::endl;
 
+    if (std::string(nameSpace) == "NSCollisionGroup128")
+        return createCollisionGroup128(name);
+
     return loadSingleResourceRaw(name);
 }
 
 void * ElemateResourceCallback::loadSingleResourceRaw(const std::string & name) const
 {
-
     NxParameterized::Traits* traits = m_apexSDK->getParameterizedTraits();
     NxParameterized::Serializer* serializer = m_apexSDK->createSerializer(NxParameterized::Serializer::NST_BINARY, traits);
 
@@ -66,6 +68,23 @@ void * ElemateResourceCallback::loadSingleResourceRaw(const std::string & name) 
 void ElemateResourceCallback::releaseResource(const char* nameSpace, const char* name, void* resource)
 {
     std::cerr << "Requested release of unknown ressource: " << nameSpace << "::" << name << " (at: " << resource << ")" << std::endl;
+}
+
+void* ElemateResourceCallback::createCollisionGroup128(const std::string & name)
+{
+    physx::PxFilterData g;
+    g.word0 = 3;
+    g.word2 = ~0;
+    g.word1 = g.word3 = 0;
+    PX_ASSERT(m_apexSDK);
+    PX_ASSERT(m_FilterDatas.size() < 128);
+    // only set this one ressource for now...
+    if (m_apexSDK && m_FilterDatas.empty())
+    {
+        m_FilterDatas.push_back(g);
+        m_apexSDK->getNamedResourceProvider()->setResource(APEX_COLLISION_GROUP_128_NAME_SPACE, name.c_str(), (void*) &m_FilterDatas.back());
+    }
+    return (void*)&m_FilterDatas[0];
 }
 
 
