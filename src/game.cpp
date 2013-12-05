@@ -28,7 +28,7 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     osg::ref_ptr< osg::GraphicsContext::Traits > traits = new osg::GraphicsContext::Traits(*m_viewer.getCamera()->getGraphicsContext()->getTraits());
 
     traits->windowName = "Elemate";
-    traits->vsync = false;
+    traits->vsync = true;
     // traits->useCursor = false;
 
     // apply new settings viewer
