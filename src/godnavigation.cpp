@@ -134,13 +134,13 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 }
 
 
-bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
     switch( ea.getUnmodifiedKey() )
     {
         case osgGA::GUIEventAdapter::KEY_Space:
             flushMouseEventStack();
-            home(ea,us);
+            home(0.);
             return true;
 
         case osgGA::GUIEventAdapter::KEY_W:
@@ -224,11 +224,10 @@ bool GodNavigation::performMovement()
 {
     bool moved = false;
     double yaw = 0.;
-    double distanceToLookAtFactor = 3.;
     double velocity = _velocity * acceleratedFactor();
+    double rotationSpeed = _velocity/4. * acceleratedFactor();
     
     osg::Vec3d movementDirection = osg::Vec3d( 0., 0., 0. );
-    osg::Vec3d rotateDirection = osg::Vec3d( 0., 0., 0. );
 
     // call appropriate methods
     if ( _keyPressedW )
@@ -240,10 +239,10 @@ bool GodNavigation::performMovement()
     if ( _keyPressedD )
         calculateMovementDirectionKeyD( movementDirection );
     if ( _keyPressedQ ) {
-        yaw += 0.1 * acceleratedFactor();
+        yaw += rotationSpeed;
     }
     if ( _keyPressedE ) {
-        yaw -= 0.1 * acceleratedFactor();
+        yaw -= rotationSpeed;
     }
 
 
@@ -253,8 +252,7 @@ bool GodNavigation::performMovement()
     }
 
     if ( yaw != 0 ) {
-        performMovement( rotateDirection, velocity*distanceToLookAtFactor );
-        performRotationYaw( yaw/distanceToLookAtFactor );
+        performRotationYaw( yaw );
         moved = true;
     }
 
