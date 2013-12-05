@@ -1,140 +1,285 @@
-#include "SoundManager.h"
+#include "soundmanager.h"
 
-bool SoundManager::s_enabled = false; //Is the sound Enabled?
-bool SoundManager::s_paused = true;
-char *SoundManager::s_current_sound; //current sound to play
-//FMOD system stuff
+const int   INTERFACE_UPDATETIME = 50;      // 50ms update for interface
+const float DISTANCEFACTOR = 1.0f;          // Units per meter.  I.e feet would = 3.28.  centimeters would = 100.
 
-FMOD_RESULT SoundManager::s_result;
-FMOD_SYSTEM *SoundManager::s_fmod_system;
-FMOD_SOUND *SoundManager::s_sound;
-FMOD_CHANNEL *SoundManager::s_channel;
-
-void SoundManager::Init()
+void SoundManager::ERRCHECK(FMOD_RESULT result)
 {
-	s_enabled = true;
-	s_result = FMOD_System_Create(&s_fmod_system);
-	assert(s_result == FMOD_OK);
-	//Initializes the system with 1 channel
-	s_result = FMOD_System_Init(s_fmod_system, 1, FMOD_INIT_NORMAL, 0);
-	assert(s_result == FMOD_OK);
-	FMOD_Channel_SetVolume(s_channel, 0.0f);
-}
-void SoundManager::Update()
-{
-	FMOD_System_Update(s_fmod_system);
-}
-
-
-void SoundManager::SetVolume(float vol)
-{
-	if (s_enabled && vol >= 0.0f && vol <= 1.0f)
+	if (result != FMOD_OK)
 	{
-		FMOD_Channel_SetVolume(s_channel, vol);
+		printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
+		exit(-1);
 	}
 }
 
+void SoundManager::start(){
+	FMOD::System    *system;
+	FMOD::Sound     *sound1, *sound2, *sound3;
+	FMOD::Channel   *channel1 = 0, *channel2 = 0, *channel3 = 0;
+	FMOD_RESULT      result;
+	int              key, numdrivers;
+	bool             listenerflag = true;
+	FMOD_VECTOR      listenerpos = { 0.0f, 0.0f, -1.0f * DISTANCEFACTOR };
+	unsigned int     version;
+	FMOD_SPEAKERMODE speakermode;
+	FMOD_CAPS        caps;
+	char             name[256];
 
-//loads a soundfile
-void SoundManager::Load(const std::string filename)
-{
-	s_current_sound = (char *)filename.c_str();
-	if (s_enabled)
+	printf("===============================================================\n");
+	printf("3d Example.  Copyright (c) Firelight Technologies 2004-2011.\n");
+	printf("===============================================================\n");
+	printf("This example plays 2 3D sounds in hardware.  Optionally you can\n");
+	printf("play a 2D hardware sound as well.\n");
+	printf("===============================================================\n\n");
+
+	/*
+	Create a System object and initialize.
+	*/
+	result = FMOD::System_Create(&system);
+	ERRCHECK(result);
+
+	result = system->getVersion(&version);
+	ERRCHECK(result);
+
+	if (version < FMOD_VERSION)
 	{
-		s_result = FMOD_Sound_Release(s_sound);
-		s_result = FMOD_System_CreateStream(s_fmod_system, s_current_sound, FMOD_SOFTWARE, 0, &s_sound);
-		assert(s_result == FMOD_OK);
+		printf("Error!  You are using an old version of FMOD %08x.  This program requires %08x\n", version, FMOD_VERSION);
+		return;
 	}
-}
 
-void SoundManager::Unload(void)
-{
-	s_result = FMOD_Sound_Release(s_sound);
-	assert(s_result == FMOD_OK);
-}
+	result = system->getNumDrivers(&numdrivers);
+	ERRCHECK(result);
 
-void SoundManager::Play(bool pause = false) //No agument is needed to play by default
-{
-	if (true == s_enabled)
+	if (numdrivers == 0)
 	{
-		s_paused = pause;
-		s_result = FMOD_System_PlaySound(s_fmod_system, FMOD_CHANNEL_FREE, s_sound, pause, &s_channel);
-		assert(s_result == FMOD_OK);
-		FMOD_Channel_SetMode(s_channel, FMOD_LOOP_NORMAL);
+		result = system->setOutput(FMOD_OUTPUTTYPE_NOSOUND);
+		ERRCHECK(result);
 	}
-}
-
-
-bool SoundManager::GetSoundState()
-{
-	return s_enabled;
-}
-
-bool SoundManager::isPaused()
-{
-	return s_paused;
-}
-
-//Gets the name of the current sound
-char* SoundManager::GetCurrentSound()
-{
-	return s_current_sound;
-}
-
-FMOD_SYSTEM* SoundManager::GetSystem()
-{
-	return s_fmod_system;
-}
-
-//pause or unpause the sound
-void SoundManager::SetPause(bool pause)
-{
-	FMOD_Channel_SetPaused(s_channel, pause);
-	s_paused = pause;
-}
-
-
-//turn sound on or off
-void SoundManager::SetSound(bool s)
-{
-	s_enabled = s;
-}
-
-
-//toggles sound on and off
-void SoundManager::ToggleSound(void)
-{
-	s_enabled = !s_enabled;
-	if (s_enabled == true)
+	else
 	{
-		Load(s_current_sound);
-		Play(s_enabled);
+		result = system->getDriverCaps(0, &caps, 0, &speakermode);
+		ERRCHECK(result);
+
+		result = system->setSpeakerMode(speakermode);       /* Set the user selected speaker mode. */
+		ERRCHECK(result);
+
+		if (caps & FMOD_CAPS_HARDWARE_EMULATED)             /* The user has the 'Acceleration' slider set to off!  This is really bad for latency!. */
+		{                                                   /* You might want to warn the user about this. */
+			result = system->setDSPBufferSize(1024, 10);
+			ERRCHECK(result);
+		}
+
+		result = system->getDriverInfo(0, name, 256, 0);
+		ERRCHECK(result);
+
+		if (strstr(name, "SigmaTel"))   /* Sigmatel sound devices crackle for some reason if the format is PCM 16bit.  PCM floating point output seems to solve it. */
+		{
+			result = system->setSoftwareFormat(48000, FMOD_SOUND_FORMAT_PCMFLOAT, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
+			ERRCHECK(result);
+		}
 	}
-	if (s_enabled == false)
+
+	result = system->init(100, FMOD_INIT_NORMAL, 0);
+	if (result == FMOD_ERR_OUTPUT_CREATEBUFFER)         /* Ok, the speaker mode selected isn't supported by this soundcard.  Switch it back to stereo... */
 	{
-		Unload();
+		result = system->setSpeakerMode(FMOD_SPEAKERMODE_STEREO);
+		ERRCHECK(result);
+
+		result = system->init(100, FMOD_INIT_NORMAL, 0);/* ... and re-init. */
+		ERRCHECK(result);
 	}
-}
 
 
-//toggle pause on and off
-void SoundManager::TogglePause(void)
-{
-	FMOD_BOOL p;
-	s_paused = !s_paused;
-	FMOD_Channel_GetPaused(s_channel, &p);
-	FMOD_Channel_SetPaused(s_channel, !p);
-}
+	/*
+	Set the distance units. (meters/feet etc).
+	*/
+	result = system->set3DSettings(1.0, DISTANCEFACTOR, 1.0f);
+	ERRCHECK(result);
 
-SoundEffect::SoundEffect(std::string filename)
-{
-	b_enabled = true;
-	m_sound_name = filename;
-	m_result = FMOD_System_CreateSound(SoundManager::GetSystem(), m_sound_name.c_str(), FMOD_SOFTWARE, 0, &m_sound);
-	assert(m_result == FMOD_OK);
-}
-void SoundEffect::Play()
-{
-	m_result = FMOD_System_PlaySound(SoundManager::GetSystem(), FMOD_CHANNEL_FREE, m_sound, false, 0);
-	assert(m_result == FMOD_OK);
+	/*
+	Load some sounds
+	*/
+	result = system->createSound("data/sounds/wave.mp3", FMOD_3D, 0, &sound1);
+	ERRCHECK(result);
+	result = sound1->set3DMinMaxDistance(0.5f * DISTANCEFACTOR, 5000.0f * DISTANCEFACTOR);
+	ERRCHECK(result);
+	result = sound1->setMode(FMOD_LOOP_NORMAL);
+	ERRCHECK(result);
+
+	result = system->createSound("data/sounds/Roads_Untraveled.mp3", FMOD_3D, 0, &sound2);
+	ERRCHECK(result);
+	result = sound2->set3DMinMaxDistance(0.5f * DISTANCEFACTOR, 5000.0f * DISTANCEFACTOR);
+	ERRCHECK(result);
+	result = sound2->setMode(FMOD_LOOP_NORMAL);
+	ERRCHECK(result);
+
+	result = system->createSound("data/sounds/bomb.mp3", FMOD_SOFTWARE | FMOD_2D, 0, &sound3);
+	ERRCHECK(result);
+
+	/*
+	Play sounds at certain positions
+	*/
+	{
+		FMOD_VECTOR pos = { -10.0f * DISTANCEFACTOR, 0.0f, 0.0f };
+		FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
+
+		result = system->playSound(FMOD_CHANNEL_FREE, sound1, true, &channel1);
+		ERRCHECK(result);
+		result = channel1->set3DAttributes(&pos, &vel);
+		ERRCHECK(result);
+		result = channel1->setPaused(false);
+		ERRCHECK(result);
+	}
+
+	{
+		FMOD_VECTOR pos = { 15.0f * DISTANCEFACTOR, 0.0f, 0.0f };
+		FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
+
+		result = system->playSound(FMOD_CHANNEL_FREE, sound2, true, &channel2);
+		ERRCHECK(result);
+		result = channel2->set3DAttributes(&pos, &vel);
+		ERRCHECK(result);
+		result = channel2->setPaused(false);
+		ERRCHECK(result);
+	}
+
+	/*
+	Display help
+	*/
+	{
+		int numchannels;
+
+		result = system->getHardwareChannels(&numchannels);
+		ERRCHECK(result);
+
+		printf("Hardware channels : %d\n", numchannels);
+	}
+
+	printf("=========================================================================\n");
+	printf("Press 1        Pause/Unpause 16bit 3D sound at any time\n");
+	printf("      2        Pause/Unpause 8bit 3D sound at any time\n");
+	printf("      3        Play 16bit STEREO 2D sound at any time\n");
+	printf("      <        Move listener left (in still mode)\n");
+	printf("      >        Move listener right (in still mode)\n");
+	printf("      SPACE    Stop/Start listener automatic movement\n");
+	printf("      ESC      Quit\n");
+	printf("=========================================================================\n");
+
+	/*
+	Main loop
+	*/
+	do
+	{
+		if (_kbhit())
+		{
+			key = _getch();
+
+			if (key == '1')
+			{
+				bool paused;
+				channel1->getPaused(&paused);
+				channel1->setPaused(!paused);
+			}
+
+			if (key == '2')
+			{
+				bool paused;
+				channel2->getPaused(&paused);
+				channel2->setPaused(!paused);
+			}
+
+			if (key == '3')
+			{
+				result = system->playSound(FMOD_CHANNEL_FREE, sound3, false, &channel3);
+				ERRCHECK(result);
+			}
+
+			if (key == ' ')
+			{
+				listenerflag = !listenerflag;
+			}
+
+			if (!listenerflag)
+			{
+				if (key == '<')
+				{
+					listenerpos.x -= 1.0f * DISTANCEFACTOR;
+					if (listenerpos.x < -35 * DISTANCEFACTOR)
+					{
+						listenerpos.x = -35 * DISTANCEFACTOR;
+					}
+				}
+				if (key == '>')
+				{
+					listenerpos.x += 1.0f * DISTANCEFACTOR;
+					if (listenerpos.x > 36 * DISTANCEFACTOR)
+					{
+						listenerpos.x = 36 * DISTANCEFACTOR;
+					}
+				}
+			}
+		}
+
+		// ==========================================================================================
+		// UPDATE THE LISTENER
+		// ==========================================================================================
+		{
+			static float t = 0;
+			static FMOD_VECTOR lastpos = { 0.0f, 0.0f, 0.0f };
+			FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };
+			FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };
+			FMOD_VECTOR vel;
+
+			if (listenerflag)
+			{
+				listenerpos.x = (float)sin(t * 0.05f) * 33.0f * DISTANCEFACTOR; // left right pingpong
+			}
+
+			// ********* NOTE ******* READ NEXT COMMENT!!!!!
+			// vel = how far we moved last FRAME (m/f), then time compensate it to SECONDS (m/s).
+			vel.x = (listenerpos.x - lastpos.x) * (1000 / INTERFACE_UPDATETIME);
+			vel.y = (listenerpos.y - lastpos.y) * (1000 / INTERFACE_UPDATETIME);
+			vel.z = (listenerpos.z - lastpos.z) * (1000 / INTERFACE_UPDATETIME);
+
+			// store pos for next time
+			lastpos = listenerpos;
+
+			result = system->set3DListenerAttributes(0, &listenerpos, &vel, &forward, &up);
+			ERRCHECK(result);
+
+			t += (30 * (1.0f / (float)INTERFACE_UPDATETIME));    // t is just a time value .. it increments in 30m/s steps in this example
+
+			// print out a small visual display
+			{
+				char s[80];
+
+				sprintf_s(s, "|.......................<1>......................<2>....................|");
+
+				s[(int)(listenerpos.x / DISTANCEFACTOR) + 35] = 'L';
+				printf("%s\r", s);
+			}
+		}
+
+		system->update();
+
+		Sleep(INTERFACE_UPDATETIME - 1);
+
+	} while (key != 27);
+
+	printf("\n");
+
+	/*
+	Shut down
+	*/
+	result = sound1->release();
+	ERRCHECK(result);
+	result = sound2->release();
+	ERRCHECK(result);
+	result = sound3->release();
+	ERRCHECK(result);
+
+	result = system->close();
+	ERRCHECK(result);
+	result = system->release();
+	ERRCHECK(result);
 }

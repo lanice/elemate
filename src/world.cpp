@@ -3,7 +3,6 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "terraingenerator.h"
-#include "soundmanager.h"
 
 #include "PxPhysicsAPI.h"
 
@@ -66,22 +65,4 @@ void World::makeStandardBall()
 {
 	// prototype: hard-coded physx values etc.
 	objects_container->makeStandardBall(m_root, physx::PxVec3(1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
-}
-
-void World::playMusic(std::string fileName)
-{
-	if (!SoundManager::GetSoundState()){
-		SoundManager::Init();
-		SoundManager::Load("data\\sounds\\"+fileName);
-		SoundManager::Play(false);
-	}else
-	SoundManager::TogglePause();
-}
-
-void World::playSoundEffect(std::string fileName){
-	if (!SoundManager::GetSoundState())
-		SoundManager::Init();
-	SoundEffect *soundEffect = new SoundEffect("data\\sounds\\" + fileName);
-	soundEffect->Play();
-	delete soundEffect;
 }

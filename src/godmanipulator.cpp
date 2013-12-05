@@ -1,5 +1,6 @@
 
 #include "godmanipulator.h"
+#include "soundmanager.h"
 
 
 GodManipulator::GodManipulator()
@@ -82,12 +83,7 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 			break;
 
 		case osgGA::GUIEventAdapter::KEY_P:
-			m_world->playMusic("Roads_Untraveled.mp3");
-			return true;
-			break;
-		
-		case osgGA::GUIEventAdapter::KEY_O:
-			m_world->playSoundEffect("bomb.mp3");
+			SoundManager::start();
 			return true;
 			break;
 	}
