@@ -3,6 +3,7 @@
 
 
 static const double c_velocityNormal = 0.2;
+static const double c_distanceEyeCenter = 20.;
 
 
 GodNavigation::GodNavigation( int flags )
@@ -24,7 +25,7 @@ GodNavigation::GodNavigation( int flags )
 GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp )
    : Object(gn, copyOp),
      inherited( gn, copyOp ),
-     _eye( gn._eye ),
+     _center( gn._center ),
      _rotation( gn._rotation ),
      _velocity( gn._velocity ),
      _keyPressedW( gn._keyPressedW ),
@@ -41,12 +42,12 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
 void GodNavigation::setByMatrix( const osg::Matrixd& matrix )
 {
    // set variables
-   _eye = matrix.getTrans();
+   _center = matrix.getTrans();
    _rotation = matrix.getRotate();
 
    // fix current rotation
    if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
+      fixVerticalAxis( _center, _rotation, true );
 }
 
 
@@ -58,31 +59,31 @@ void GodNavigation::setByInverseMatrix( const osg::Matrixd& matrix )
 
 osg::Matrixd GodNavigation::getMatrix() const
 {
-   return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _eye );
+   return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _center + _rotation * osg::Vec3d( 0., 0., c_distanceEyeCenter ) );
 }
 
 
 osg::Matrixd GodNavigation::getInverseMatrix() const
 {
-   return osg::Matrixd::translate( -_eye ) * osg::Matrixd::rotate( _rotation.inverse() );
+   return osg::Matrixd::translate( -(_center + _rotation * osg::Vec3d( 0., 0., c_distanceEyeCenter )) ) * osg::Matrixd::rotate( _rotation.inverse() );
 }
 
 
 void GodNavigation::setTransformation( const osg::Vec3d& eye, const osg::Quat& rotation )
 {
    // set variables
-   _eye = eye;
+   _center = eye + rotation * osg::Vec3d( 0., 0., -c_distanceEyeCenter );
    _rotation = rotation;
 
    // fix current rotation
    if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
+      fixVerticalAxis( _center, _rotation, true );
 }
 
 
 void GodNavigation::getTransformation( osg::Vec3d& eye, osg::Quat& rotation ) const
 {
-   eye = _eye;
+   eye = _center + _rotation * osg::Vec3d( 0., 0., c_distanceEyeCenter );
    rotation = _rotation;
 }
 
@@ -91,19 +92,19 @@ void GodNavigation::setTransformation( const osg::Vec3d& eye, const osg::Vec3d& 
 {
    // set variables
    osg::Matrixd m( osg::Matrixd::lookAt( eye, center, up ) );
-   _eye = eye;
+   _center = center;
    _rotation = m.getRotate().inverse();
 
    // fix current rotation
    if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
+      fixVerticalAxis( _center, _rotation, true );
 }
 
 
 void GodNavigation::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const
 {
-   center = _eye + _rotation * osg::Vec3d( 0.,0.,-1. );
-   eye = _eye;
+   center = _center;
+   eye = _center + _rotation * osg::Vec3d( 0., 0., c_distanceEyeCenter );
    up = _rotation * osg::Vec3d( 0.,1.,0. );
 }
 
@@ -267,7 +268,7 @@ bool GodNavigation::performMovement( const osg::Vec3d& movementDirection, const 
 {
     osg::Vec3d direction = movementDirection;
     direction.normalize();
-    _eye += (direction * distance);
+    _center += (direction * distance);
     return true;
 }
 
@@ -275,7 +276,7 @@ bool GodNavigation::performMovement( const osg::Vec3d& movementDirection, const 
 bool GodNavigation::performRotationYaw( const double yaw )
 {
     // world up vector to rotate with fixed Up vector
-    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
+    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
     osg::Vec3d localUp = getUpVector( coordinateFrame );
 
     rotateYawPitch( _rotation, yaw, 0., localUp );
@@ -341,17 +342,17 @@ double GodNavigation::acceleratedFactor()
 
 void GodNavigation::moveForward( const double distance )
 {
-   _eye += _rotation * osg::Vec3d( 0., 0., -distance );
+   _center += _rotation * osg::Vec3d( 0., 0., -distance );
 }
 
 
 void GodNavigation::moveRight( const double distance )
 {
-   _eye += _rotation * osg::Vec3d( distance, 0., 0. );
+   _center += _rotation * osg::Vec3d( distance, 0., 0. );
 }
 
 
 void GodNavigation::moveUp( const double distance )
 {
-   _eye += _rotation * osg::Vec3d( 0., distance, 0. );
+   _center += _rotation * osg::Vec3d( 0., distance, 0. );
 }

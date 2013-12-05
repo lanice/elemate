@@ -77,7 +77,7 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual void moveUp( const double distance );
 
 
-        osg::Vec3d _eye;
+        osg::Vec3d _center;
         osg::Quat  _rotation;
         double _velocity;
 
