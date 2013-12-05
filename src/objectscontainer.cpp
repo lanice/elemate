@@ -1,9 +1,13 @@
 #include "objectscontainer.h"
-#include "physicswrapper.h"
+
+#include <cassert>
+#include <iostream>
 
 #include <osg/ShapeDrawable>
 #include <osgViewer/View>
 #include <osg/MatrixTransform>
+
+#include "physicswrapper.h"
 
 ObjectsContainer::ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper) :
     m_physics_wrapper(physics_wrapper)
@@ -16,10 +20,13 @@ ObjectsContainer::~ObjectsContainer()
 
 void ObjectsContainer::updateAllObjects()
 {
-    m_physics_wrapper->scene()->fetchResults();
+    m_physics_wrapper->scene()->fetchResults(true);
     
     physx::PxMat44 new_pos;
     for (auto& current_object : m_objects){
+        if (current_object.second->isSleeping())
+            continue;
+
         new_pos = physx::PxMat44(current_object.second->getGlobalPose());
         osg::Matrix newTransform(
             new_pos(0, 0), new_pos(1, 0), new_pos(2, 0), new_pos(3, 0),
