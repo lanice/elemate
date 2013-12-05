@@ -61,10 +61,6 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual void calculateMovementDirectionKeyA( osg::Vec3d& movementDirection );
         /** Calculate movement direction when pressing D key and adding it to movementDirection vector.*/
         virtual void calculateMovementDirectionKeyD( osg::Vec3d& movementDirection );
-        /** Calculate movement direction when pressing Q key and adding it to movementDirection vector.*/
-        virtual void calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection );
-        /** Calculate movement direction when pressing E key and adding it to movementDirection vector.*/
-        virtual void calculateMovementDirectionKeyE( osg::Vec3d& movementDirection );
 
         /** Return the factor by which the velocity should be multiplied.*/
         virtual double acceleratedFactor();

@@ -240,11 +240,9 @@ bool GodNavigation::performMovement()
     if ( _keyPressedD )
         calculateMovementDirectionKeyD( movementDirection );
     if ( _keyPressedQ ) {
-        calculateMovementDirectionKeyQ( rotateDirection );
         yaw += 0.1 * acceleratedFactor();
     }
     if ( _keyPressedE ) {
-        calculateMovementDirectionKeyE( rotateDirection );
         yaw -= 0.1 * acceleratedFactor();
     }
 
@@ -309,22 +307,6 @@ void GodNavigation::calculateMovementDirectionKeyA( osg::Vec3d& movementDirectio
 
 
 void GodNavigation::calculateMovementDirectionKeyD( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
-}
-
-
-void GodNavigation::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtLeft.x(), 0., lookAtLeft.z() );
-}
-
-
-void GodNavigation::calculateMovementDirectionKeyE( osg::Vec3d& movementDirection )
 {
     osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
 
