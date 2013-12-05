@@ -224,6 +224,34 @@ bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 }
 
 
+bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
+{
+    // world up vector to rotate with fixed Up vector
+    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
+    osg::Vec3d localUp = getUpVector( coordinateFrame );
+
+    osg::Vec3d vec;
+    double angle;
+
+    _rotation.getRotate( angle, vec );
+
+    switch( ea.getScrollingMotion() )
+    {
+        case osgGA::GUIEventAdapter::SCROLL_UP:
+            rotateYawPitch( _rotation, 0., -0.05, localUp );
+            return true;
+
+        case osgGA::GUIEventAdapter::SCROLL_DOWN:
+            if ( angle <= 0.05 ) return false;
+            rotateYawPitch( _rotation, 0., 0.05, localUp );
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+
 // This method is still under construction!
 bool GodNavigation::performMovement()
 {

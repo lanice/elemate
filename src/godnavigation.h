@@ -51,6 +51,8 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual bool handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
         /** Handle GUIEventAdapter::KEYUP event.*/
         virtual bool handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+        /** Handle GUIEventAdapter::SCROLL event.*/
+        virtual bool handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
         /** Make movement step of manipulator. Returns true if any movement was made.*/
         virtual bool performMovement();
