@@ -252,10 +252,7 @@ bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
     osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
     osg::Vec3d localUp = getUpVector( coordinateFrame );
 
-    osg::Vec3d vec;
-    double angle;
-
-    _rotation.getRotate( angle, vec );
+    double heightDiff = (_center + _rotation * osg::Vec3d( 0., 0., c_distanceEyeCenter )).y() - _center.y();
 
     switch( ea.getScrollingMotion() )
     {
@@ -264,7 +261,7 @@ bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
             return true;
 
         case osgGA::GUIEventAdapter::SCROLL_DOWN:
-            if ( angle <= 0.05 ) return false;
+            if ( heightDiff <= 0.5 ) return false;
             rotateYawPitch( _rotation, 0., 0.05, localUp );
             return true;
 
