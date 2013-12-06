@@ -1,5 +1,7 @@
 #include "elemateterrain.h"
 
+#include <cstdint>
+
 #include <osg/MatrixTransform>
 #include <osgTerrain/Terrain>
 
@@ -11,15 +13,14 @@ using namespace physx;
 TerrainSettings::TerrainSettings()
 : sizeX(200)
 , sizeZ(200)
+, maxHeight(2.f)
+, maxBasicHeightVariance(0.3f)
 , rows(20)
 , columns(20)
 , tilesX(1)
 , tilesZ(1)
-, maxHeight(2.f)
-, biomeSize(5.0f)
 {
 }
-
 
 ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & settings)
 : m_settings(settings)

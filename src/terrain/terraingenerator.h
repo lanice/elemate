@@ -50,19 +50,20 @@ public:
     /** maximum latitude (y value) in world coordinates
       * -maxHeight < y <= maxHeight */
     float maxHeight() const;
-    /** set average size of one biome/terrain type */
-    void setBiomeSize(float xzBiomeSize);
-    /** average size of one biome/terrain type */
-    float biomeSize() const;
+    /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure.
+      * Must be lower or equal than maxHeight, but should only be a fraction of it.*/
+    void setMaxBasicHeightVariance(float variance);
+    /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure. */
+    float maxBasicHeightVariance() const;
 private:
     TerrainSettings m_settings;
 
-    /** creates a terrain tile, and sets its tileID */
-    physx::PxHeightFieldSample * createPxHeightFieldData(unsigned numSamples) const;
+    /** creates physx and osg heightfield data with random height shift */
+    physx::PxHeightFieldSample * createBasicPxHeightField() const;
+    /** adds a river bed to the shape */
+    void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
+    osgTerrain::TerrainTile * copyToOsgTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;
-    osgTerrain::TerrainTile * createTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
-    /** creates biome data, adds it as vertex attrib array osg tile, sets pxSample textures accordingly */
-    void createBiomes(osgTerrain::TerrainTile & tile, physx::PxHeightFieldSample * pxHeightFieldSamples) const;
 
     void operator=(TerrainGenerator& ) = delete;
 };
