@@ -141,9 +141,15 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     if ( _slerping )
     {
         double timeFrame = 1. - (_stopTime - current_frame_time);
+
+        if ( timeFrame >= 1. )
+        { 
+            timeFrame = 1.;
+            _slerping = false;
+        }
+
         _rotation.slerp( timeFrame, _startRotation, _stopRotation );
 
-        if ( timeFrame >= 1. ) _slerping = false;
     }
 
     performMovement();
