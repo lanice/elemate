@@ -12,6 +12,7 @@
 #include "objectscontainer.h"
 #include "godnavigation.h"
 #include "terraingenerator.h"
+#include "hand.h"
 
 
 World::World()
@@ -19,6 +20,7 @@ World::World()
 , objects_container(new ObjectsContainer(physics_wrapper))
 , m_root(new osg::Group())
 , m_particleGroup(new osg::Group())
+, hand(new Hand())
 {
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
@@ -45,6 +47,7 @@ World::World()
     setUpCameraDebugger();
 
     setUpLighting();
+    m_root->addChild(hand->transform());
 }
 
 

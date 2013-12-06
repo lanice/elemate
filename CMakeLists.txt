@@ -35,6 +35,8 @@ set(SOURCES
     src/game.h
     src/world.cpp
     src/world.h
+    src/hand.cpp
+    src/hand.h
     src/godmanipulator.cpp
     src/godmanipulator.h
     src/godnavigation.cpp

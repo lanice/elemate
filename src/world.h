@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <memory> //shared_ptr
@@ -8,6 +9,7 @@ class PhysicsWrapper;
 class ObjectsContainer;
 class GodNavigation;
 class ElemateHeightFieldTerrain;
+class Hand;
 namespace osg {
     class Group;
     class Program;
@@ -34,6 +36,7 @@ public:
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
     std::shared_ptr<ObjectsContainer>           objects_container;
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+    std::shared_ptr<Hand>                       hand;
 
 protected:
     void setUpLighting();
