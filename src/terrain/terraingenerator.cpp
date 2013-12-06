@@ -20,6 +20,8 @@
 #include <geometry/PxHeightFieldGeometry.h>
 #include <foundation/PxMat44.h>
 
+#include <elements.h>
+
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
 
@@ -194,7 +196,7 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
     PxMaterial * mat[1];
-    mat[0] = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.1f);
+    mat[0] = Elements::pxMaterial("default");
 
     // scale height so that we use the full range of PxI16=short (abs(min) = abs(max)+1)
     PxReal heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());

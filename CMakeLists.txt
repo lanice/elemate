@@ -27,8 +27,12 @@ include(cmake/Custom.cmake)
 set(ELEMATE_SOURCE_GROUP "Source Files")
 set(ELEMATE_SHADER_GROUP "Shader Files")
 
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
 set(SOURCES
     src/main.cpp
+    src/elements.h
+    src/elements.cpp
     src/physicswrapper.cpp
     src/physicswrapper.h
     src/game.cpp
