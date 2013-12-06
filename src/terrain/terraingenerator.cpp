@@ -118,6 +118,8 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         m_settings.maxHeight,
         m_settings.tileSizeZ())));
     terrainStateSet->addUniform(new osg::Uniform("tileRowsColumns", osg::Vec2(m_settings.rows, m_settings.columns))); // ivec2
+    // add all material shading matrices
+    Elements::addAllUniforms(*terrainStateSet);
 
     return terrain;
 }
