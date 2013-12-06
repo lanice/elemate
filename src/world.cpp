@@ -22,7 +22,8 @@ World::World()
 
 	//Config SoundManager
 	soundManager->createNewChannel("data/sounds/birds.mp3", true, false);
-	soundManager->createNewChannel("data/sounds/spring.mp3", true, true, {0.f,0.f,0.f}, {0.f,0.f,0.f});
+	soundManager->createNewChannel("data/sounds/spring.mp3", true, true, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f });
+	soundManager->createNewChannel("data/sounds/bomb.wav", false, true, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f });
 
 
     // Gen Terrain
@@ -95,4 +96,8 @@ void World::moveSoundUp(int channelId){
 
 void World::moveSoundDown(int channelId){
 	soundManager->moveSound(channelId, { 0.f, 0.f, -0.2f });
+}
+
+void World::doBomb(int channelId){
+	soundManager->play(channelId);
 }

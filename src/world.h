@@ -29,6 +29,7 @@ public:
 	void moveSoundBackw(int channelId);
 	void moveSoundUp(int channelId);
 	void moveSoundDown(int channelId);
+	void doBomb(int channelId);
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
 	std::shared_ptr<ObjectsContainer>           objects_container;

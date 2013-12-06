@@ -83,31 +83,42 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 
 		case osgGA::GUIEventAdapter::KEY_L:
 			m_world->moveSoundRight(1);
+			m_world->moveSoundRight(2);
 			return true;
 			break;
 
 		case osgGA::GUIEventAdapter::KEY_J:
 			m_world->moveSoundLeft(1);
+			m_world->moveSoundLeft(2);
 			return true;
 			break;
 
 		case osgGA::GUIEventAdapter::KEY_I:
 			m_world->moveSoundForw(1);
+			m_world->moveSoundForw(2);
 			return true;
 			break;
 
 		case osgGA::GUIEventAdapter::KEY_K:
 			m_world->moveSoundBackw(1);
+			m_world->moveSoundBackw(2);
 			return true;
 			break;
 
 		case osgGA::GUIEventAdapter::KEY_U:
 			m_world->moveSoundUp(1);
+			m_world->moveSoundUp(2);
 			return true;
 			break;
 
 		case osgGA::GUIEventAdapter::KEY_O:
 			m_world->moveSoundDown(1);
+			m_world->moveSoundDown(2);
+			return true;
+			break;
+
+		case osgGA::GUIEventAdapter::KEY_M:
+			m_world->doBomb(2);
 			return true;
 			break;
 	}
