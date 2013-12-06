@@ -3,6 +3,10 @@
 
 #include <osgGA/StandardManipulator>
 
+#include <memory> //shared_ptr
+
+
+class World;
 
 
 class GodNavigation : public osgGA::StandardManipulator
@@ -13,6 +17,8 @@ class GodNavigation : public osgGA::StandardManipulator
 
         GodNavigation( int flags = DEFAULT_SETTINGS );
         GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
+
+        void setWorld( std::shared_ptr<World> world ) { m_world = world; };
 
         /** Set the position of the manipulator using a 4x4 matrix.*/
         virtual void setByMatrix( const osg::Matrixd& matrix );
@@ -45,6 +51,8 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual bool handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
         /** Handle GUIEventAdapter::KEYUP event.*/
         virtual bool handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+        /** Handle GUIEventAdapter::SCROLL event.*/
+        virtual bool handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
         /** Make movement step of manipulator. Returns true if any movement was made.*/
         virtual bool performMovement();
@@ -61,10 +69,9 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual void calculateMovementDirectionKeyA( osg::Vec3d& movementDirection );
         /** Calculate movement direction when pressing D key and adding it to movementDirection vector.*/
         virtual void calculateMovementDirectionKeyD( osg::Vec3d& movementDirection );
-        /** Calculate movement direction when pressing Q key and adding it to movementDirection vector.*/
-        virtual void calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection );
-        /** Calculate movement direction when pressing E key and adding it to movementDirection vector.*/
-        virtual void calculateMovementDirectionKeyE( osg::Vec3d& movementDirection );
+
+        /** Return the factor by which the velocity should be multiplied.*/
+        virtual double acceleratedFactor();
         
         /** Move camera forward by distance parameter.*/
         virtual void moveForward( const double distance );
@@ -74,9 +81,14 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual void moveUp( const double distance );
 
 
-        osg::Vec3d _eye;
+        osg::Vec3d _center;
         osg::Quat  _rotation;
         double _velocity;
+
+        osg::Quat _startRotation;
+        osg::Quat _stopRotation;
+
+        double _stopTime;
 
         bool _keyPressedW;
         bool _keyPressedS;
@@ -84,4 +96,9 @@ class GodNavigation : public osgGA::StandardManipulator
         bool _keyPressedD;
         bool _keyPressedQ;
         bool _keyPressedE;
+        bool _keyPressedShift_L;
+
+        bool _slerping;
+
+        std::shared_ptr<World> m_world;
 };

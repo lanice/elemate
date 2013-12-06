@@ -79,7 +79,7 @@ bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, o
 
 bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    switch (ea.getKey()) {
+    switch (ea.getUnmodifiedKey()) {
     case osgGA::GUIEventAdapter::KEY_F:
     {
         m_world->makeStandardBall();
