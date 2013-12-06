@@ -8,6 +8,7 @@
 
 
 class World;
+class Hand;
 
 /** The EventHandler for game content/logic specific events.
  *  To process an incoming event modify the according handle* class.
@@ -21,9 +22,11 @@ class GodManipulator : public osgGA::GUIEventHandler
         GodManipulator();
         GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
+        virtual ~GodManipulator();
 
-        void setWorld( std::shared_ptr<World> world ) { m_world = world; };
 
+        void setWorld( std::shared_ptr<World> world );
+        
 
         /** Handles events. Returns true if handled, false otherwise.*/
         virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
@@ -46,4 +49,6 @@ class GodManipulator : public osgGA::GUIEventHandler
     protected:
 
         std::shared_ptr<World> m_world;
+
+        Hand * m_hand;
 };

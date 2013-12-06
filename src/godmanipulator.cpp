@@ -1,12 +1,16 @@
 
 #include "godmanipulator.h"
 
+#include <osg/MatrixTransform>
+
 #include "world.h"
+#include "hand.h"
 
 
 GodManipulator::GodManipulator()
    : inherited(),
-     m_world(nullptr)
+     m_world(nullptr),
+     m_hand(new Hand())
 {
 }
 
@@ -14,8 +18,22 @@ GodManipulator::GodManipulator()
 GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp )
    : Object(gm, copyOp),
      inherited( gm, copyOp ),
-     m_world( gm.m_world )
+     m_world( gm.m_world ),
+     m_hand( gm.m_hand )
 {
+}
+
+
+GodManipulator::~GodManipulator()
+{
+    delete m_hand;
+}
+
+
+void GodManipulator::setWorld( std::shared_ptr<World> world )
+{
+    m_world = world;
+    m_world->root()->addChild( m_hand->transform() );
 }
 
 

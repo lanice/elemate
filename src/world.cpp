@@ -12,7 +12,6 @@
 #include "objectscontainer.h"
 #include "godnavigation.h"
 #include "terraingenerator.h"
-#include "hand.h"
 
 
 World::World()
@@ -20,7 +19,6 @@ World::World()
 , objects_container(new ObjectsContainer(physics_wrapper))
 , m_root(new osg::Group())
 , m_particleGroup(new osg::Group())
-, hand(new Hand())
 {
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
@@ -47,7 +45,6 @@ World::World()
     setUpCameraDebugger();
 
     setUpLighting();
-    m_root->addChild(hand->transform());
 }
 
 
@@ -187,9 +184,6 @@ void World::setUniforms()
     m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
     osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
 
-    // float height = terrain->heightAt(centerd.x(), centerd.z());
-    // height + cone height
-    // osg::Vec3 cameraCenter(centerd.x(), centerd.y(), centerd.z());
 
     osg::Matrix camDebuggerTransform = osg::Matrix::rotate(3.1415926f * 0.5, osg::Vec3(1.0, .0, .0))
         * osg::Matrix::translate( centerd );
