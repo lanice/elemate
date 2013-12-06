@@ -25,13 +25,9 @@ public:
 
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall();
-    void moveSoundLeft(int channelId);
-    void moveSoundRight(int channelId);
-    void moveSoundForw(int channelId);
-    void moveSoundBackw(int channelId);
-    void moveSoundUp(int channelId);
-    void moveSoundDown(int channelId);
-    void doBomb(int channelId);
+
+	/** plays and pauses the background sound **/
+    void toogleBackgroundSound(int id);
 
     void setNavigation(GodNavigation * navigation);
     void reloadShader();

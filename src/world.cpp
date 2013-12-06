@@ -26,6 +26,17 @@ World::World()
     m_particleGroup->setName("particle root node");
     m_root->addChild(m_particleGroup.get());
 
+    // Create two non-3D channels (paino and rain)
+    //initialise as paused
+    soundManager->createNewChannel("data/sounds/rain.mp3", true, true, true);
+    soundManager->createNewChannel("data/sounds/piano.mp3", true, true, true);
+    //set volume (make quieter)
+    soundManager->setVolume(0, 0.2f);
+    soundManager->setVolume(1, 0.5f);
+    //end pause
+    soundManager->setPaused(0, false);
+    soundManager->setPaused(1, false);
+
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
     terrainGen->setExtentsInWorld(150, 120);
@@ -43,11 +54,6 @@ World::World()
     for (const auto & actor : terrain->pxActorMap()){
         physics_wrapper->scene()->addActor(*actor.second);
     }
-
-    //Config SoundManager
-    soundManager->createNewChannel("data/sounds/birds.mp3", true, false);
-    soundManager->createNewChannel("data/sounds/spring.mp3", true, true, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f });
-    soundManager->createNewChannel("data/sounds/bomb.wav", false, true, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f });
 
     setUpCameraDebugger();
 
@@ -110,16 +116,8 @@ void World::makeStandardBall()
     objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
 }
 
-void World::moveSoundLeft(int channelId){
-	soundManager->moveSound(channelId, { -0.2f, 0.f, 0.f });
-}
-
-void World::moveSoundRight(int channelId){
-	soundManager->moveSound(channelId, { 0.2f, 0.f, 0.f });
-}
-
-void World::moveSoundForw(int channelId){
-	soundManager->moveSound(channelId, { 0.f, 0.2f, 0.f });
+void World::toogleBackgroundSound(int id){
+    soundManager->togglePause(id);
 }
 
 void World::setNavigation(GodNavigation * navigation)
@@ -213,20 +211,4 @@ void World::setUniforms()
 
     m_cameraDebugger->getOrCreateStateSet()->getOrCreateUniform("modelRotation",
         osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf::rotate(3.1415926f * 0.5, osg::Vec3f(1.0, .0, .0)));
-}
-
-void World::moveSoundBackw(int channelId){
-	soundManager->moveSound(channelId, { 0.f, -0.2f, 0.f });
-}
-
-void World::moveSoundUp(int channelId){
-	soundManager->moveSound(channelId, { 0.f, 0.f, 0.2f });
-}
-
-void World::moveSoundDown(int channelId){
-	soundManager->moveSound(channelId, { 0.f, 0.f, -0.2f });
-}
-
-void World::doBomb(int channelId){
-	soundManager->play(channelId);
 }
