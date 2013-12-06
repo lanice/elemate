@@ -27,10 +27,10 @@ World::World()
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
     terrainGen->setExtentsInWorld(150, 200);
-    terrainGen->applySamplesPerWorldCoord(1.f);
+    terrainGen->applySamplesPerWorldCoord(2.f);
     terrainGen->setTilesPerAxis(1, 1);
     terrainGen->setMaxHeight(20.0f);
-    terrainGen->setMaxBasicHeightVariance(0.5f);
+    terrainGen->setMaxBasicHeightVariance(0.05f);
     terrain = std::shared_ptr<ElemateHeightFieldTerrain>(terrainGen->generate());
     delete terrainGen;
 

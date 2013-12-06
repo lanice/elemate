@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <limits>
 #include <ctime>
+#include <functional>
 
 #include <osg/MatrixTransform>
 #include <osg/Image>
@@ -148,16 +149,36 @@ PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField() const
 
 void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const
 {
-    // use random terrainTypeCount types, 0..terrainTypeCount-1 for now
-    const unsigned terrainTypeCount = 4;
-    std::uniform_int_distribution<> rndTerrainType(0, terrainTypeCount - 1);
+    std::function<float(float, float)> riverCourse = [](float normRow, float normColumn)
+    {
+        return abs(5 * powf(normRow, 3.0) - normColumn);
+    };
 
-    unsigned int numSamples = m_settings.rows * m_settings.columns;
+    static const float riverScale = 0.15f;
+    std::uniform_int_distribution<> rndRiverHoles(0, 6);
 
-    for (unsigned i = 0; i < numSamples; ++i) {
-        int8_t terrainTypeID = static_cast<int8_t>(rndTerrainType(rng));
-        terrainTypeID = terrainTypeID ? 0 : PxHeightFieldMaterial::eHOLE;
-        pxHfSamples[i].materialIndex0 = pxHfSamples[i].materialIndex1 = terrainTypeID;
+    for (unsigned row = 0; row < m_settings.rows; ++row)
+    {
+        unsigned rowOffset = row * m_settings.columns;
+        float normalizedRow = float(row) / m_settings.rows;
+        for (unsigned column = 0; column < m_settings.columns; ++column)
+        {
+            float normalizedColumn = float(column) / m_settings.columns;
+            unsigned index = column + rowOffset;
+            PxI16 oldValue = pxHfSamples[index].height;
+            float value = riverCourse(normalizedRow, normalizedColumn);
+            if (value > riverScale)
+                value = riverScale;
+            value -= riverScale * 0.5;
+            pxHfSamples[index].height = oldValue + std::numeric_limits<PxI16>::max() * value;
+
+            int8_t terrainTypeID = 0;
+            if (value < 0) {
+                int rnd = rndRiverHoles(rng);
+                terrainTypeID = rnd ? 0 : PxHeightFieldMaterial::eHOLE;
+            }
+            pxHfSamples[index].materialIndex0 = pxHfSamples[index].materialIndex1 = terrainTypeID;
+        }
     }
 }
 
