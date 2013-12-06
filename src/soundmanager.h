@@ -38,6 +38,7 @@ private:
 	FMOD::System					*system;
 	void SoundManager::ERRCHECK(FMOD_RESULT);
 	int getNextFreeId();
+	void init();
 public:
 	SoundManager();
 	~SoundManager();
@@ -45,7 +46,6 @@ public:
 	int createNewChannel(std::string soundFilePath, bool isLoop, bool is3D);
 	int createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, FMOD_VECTOR pos, FMOD_VECTOR vel);
 	void deleteChannel(int id);
-	void init();
 	void play(int id);
 	void pause(int id);
 	void togglePause(int id);
