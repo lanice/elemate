@@ -1,16 +1,20 @@
 
 #include "godmanipulator.h"
 
+#include "world.h"
+
 
 GodManipulator::GodManipulator()
-   : inherited()
+   : inherited(),
+     m_world(nullptr)
 {
 }
 
 
 GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp )
    : Object(gm, copyOp),
-     inherited( gm, copyOp )
+     inherited( gm, copyOp ),
+     m_world( gm.m_world )
 {
 }
 
@@ -75,54 +79,66 @@ bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, o
 
 bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-	switch (ea.getKey()){
-		case osgGA::GUIEventAdapter::KEY_F:
-			m_world->makeStandardBall();
-			return true;
-			break;
-
+	switch (ea.getUnmodifiedKey()){
 		case osgGA::GUIEventAdapter::KEY_L:
+        {
 			m_world->moveSoundRight(1);
 			m_world->moveSoundRight(2);
 			return true;
 			break;
-
+        }
 		case osgGA::GUIEventAdapter::KEY_J:
+		{
 			m_world->moveSoundLeft(1);
 			m_world->moveSoundLeft(2);
 			return true;
 			break;
-
+		}
 		case osgGA::GUIEventAdapter::KEY_I:
+        {
 			m_world->moveSoundForw(1);
 			m_world->moveSoundForw(2);
 			return true;
 			break;
-
+        }
 		case osgGA::GUIEventAdapter::KEY_K:
+        {
 			m_world->moveSoundBackw(1);
 			m_world->moveSoundBackw(2);
 			return true;
 			break;
-
+        }
 		case osgGA::GUIEventAdapter::KEY_U:
+        {
 			m_world->moveSoundUp(1);
 			m_world->moveSoundUp(2);
 			return true;
 			break;
-
+        }
 		case osgGA::GUIEventAdapter::KEY_O:
+        {
 			m_world->moveSoundDown(1);
 			m_world->moveSoundDown(2);
 			return true;
 			break;
-
+        }
 		case osgGA::GUIEventAdapter::KEY_M:
+        {
 			m_world->doBomb(2);
 			return true;
 			break;
-	}
-
+        }
+        case osgGA::GUIEventAdapter::KEY_F:
+        {
+            m_world->makeStandardBall();
+            return true;
+        }
+        case osgGA::GUIEventAdapter::KEY_F5:
+        {
+            m_world->reloadShader();
+            return true;
+        }
+    }
     return false;
 }
 
