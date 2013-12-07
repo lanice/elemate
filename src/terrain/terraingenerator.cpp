@@ -8,7 +8,6 @@
 #include <ctime>
 #include <functional>
 
-#include <osg/MatrixTransform>
 #include <osg/Image>
 #include <osgTerrain/Terrain>
 
@@ -20,7 +19,7 @@
 #include <geometry/PxHeightFieldGeometry.h>
 #include <foundation/PxMat44.h>
 
-#include <elements.h>
+#include "elements.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -45,23 +44,6 @@ TerrainGenerator::TerrainGenerator()
 ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 {
     ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
-
-    osg::ref_ptr<osgTerrain::Terrain> osgTerrain = new osgTerrain::Terrain();
-    osgTerrain->setName("terrain root node");
-    terrain->m_osgTerrain = osgTerrain.get();
-
-    /** transforms osg's base vectors to physx/opengl logic
-      * ! matrix is inverted, in osg logic
-      * osg base in px: x is x, y is -z, z is y. */
-    osg::Matrix terrainBaseOsgToPhysx(
-        1, 0, 0, 0,
-        0, 0, -1, 0,
-        0, 1, 0, 0,
-        0, 0, 0, 1);
-
-    terrain->m_osgTerrainTransform = new osg::MatrixTransform(terrainBaseOsgToPhysx);
-    terrain->m_osgTerrainTransform->addChild(osgTerrain.get());
-
 
     /** The tileID determines the position of the current tile in the grid of tiles.
       * Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
@@ -102,8 +84,8 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         baseTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
         waterTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
         waterTile->setBlendingPolicy(osgTerrain::TerrainTile::BlendingPolicy::ENABLE_BLENDING);
-        osgTerrain->addChild(baseTile.get());
-        osgTerrain->addChild(waterTile.get());
+        terrain->m_osgTerrainBase->addChild(baseTile.get());
+        terrain->m_osgTerrainWater->addChild(waterTile.get());
 
         /** move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
         PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
@@ -265,8 +247,6 @@ osgTerrain::TerrainTile * TerrainGenerator::copyToOsgTile(const osgTerrain::Tile
 
     float heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
 
-    /** physx uses 8 bit for material indices, the highest bit set the orientation of the diagonal.
-    Use material0 only, so setting one terrain type per quad, containing two triangles. */
     // we have to use floats for the sampler, int won't work
     typedef float IDTexType;
 

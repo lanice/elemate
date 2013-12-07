@@ -25,9 +25,23 @@ TerrainSettings::TerrainSettings()
 
 ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & settings)
 : m_settings(settings)
-, m_osgTerrain(nullptr)
-, m_osgTerrainTransform(nullptr)
+, m_osgTerrain(new osgTerrain::Terrain())
+, m_osgTerrainBase(new osg::Group())
+, m_osgTerrainWater(new osg::Group())
+, m_osgTerrainTransform(new osg::MatrixTransform())
 {
+    /** transforms osg's base vectors to physx/opengl logic
+    * ! matrix is inverted, in osg logic
+    * osg base in px: x is x, y is -z, z is y. */
+    m_osgTerrainTransform->setMatrix(osg::Matrix(
+        1, 0, 0, 0,
+        0, 0, -1, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 1));
+
+    m_osgTerrainTransform->addChild(m_osgTerrain);
+    m_osgTerrain->addChild(m_osgTerrainBase);
+    m_osgTerrain->addChild(m_osgTerrainWater);
 }
 
 float ElemateHeightFieldTerrain::heightAt(float x, float z) const
@@ -63,6 +77,18 @@ osgTerrain::Terrain * ElemateHeightFieldTerrain::osgTerrain() const
 {
     assert(m_osgTerrain.valid());
     return m_osgTerrain.get();
+}
+
+osg::Group * ElemateHeightFieldTerrain::osgTerrainBase() const
+{
+    assert(m_osgTerrainBase.valid());
+    return m_osgTerrainBase.get();
+}
+
+osg::Group * ElemateHeightFieldTerrain::osgTerrainWater() const
+{
+    assert(m_osgTerrainWater.valid());
+    return m_osgTerrainWater.get();
 }
 
 PxShape const * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & tileID) const

@@ -129,29 +129,45 @@ void World::initShader()
 {
     osg::ref_ptr<osg::Shader> terrainVertex =
         osgDB::readShaderFile("shader/terrain.vert");
-    osg::ref_ptr<osg::Shader> terrainGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
-    terrainGeo->setFileName("shader/terrain.geo");
-    terrainGeo->loadShaderSourceFromFile(terrainGeo->getFileName());
-    osg::ref_ptr<osg::Shader> terrainFragment =
-        osgDB::readShaderFile("shader/terrain.frag");
+    osg::ref_ptr<osg::Shader> terrainBaseGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
+    terrainBaseGeo->setFileName("shader/terrain_base.geo");
+    terrainBaseGeo->loadShaderSourceFromFile(terrainBaseGeo->getFileName());
+    osg::ref_ptr<osg::Shader> terrainWaterGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
+    terrainWaterGeo->setFileName("shader/terrain_water.geo");
+    terrainWaterGeo->loadShaderSourceFromFile(terrainWaterGeo->getFileName());
+    osg::ref_ptr<osg::Shader> terrainBaseFragment =
+        osgDB::readShaderFile("shader/terrain_base.frag");
+    osg::ref_ptr<osg::Shader> terrainWaterFragment =
+        osgDB::readShaderFile("shader/terrain_water.frag");
     osg::ref_ptr<osg::Shader> phongLightningFragment =
         osgDB::readShaderFile("shader/phongLighting.frag");
 
-    assert(terrainVertex.valid() && terrainGeo.valid() && terrainFragment.valid());
+    assert(terrainVertex.valid() && terrainBaseGeo.valid() && terrainBaseFragment.valid());
+    assert(terrainWaterGeo.valid() && terrainWaterFragment.valid());
 
-    osg::ref_ptr<osg::Program> terrainProgram = new osg::Program();
-    m_programsByName.emplace("terrain", terrainProgram.get());
-    terrainProgram->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT, 3);
-    terrainProgram->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-    terrainProgram->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
-    terrainProgram->addShader(terrainVertex);
-    terrainProgram->addShader(terrainGeo);
-    terrainProgram->addShader(terrainFragment);
-    terrainProgram->addShader(phongLightningFragment);
+    osg::ref_ptr<osg::Program> terrainBaseProgram = new osg::Program();
+    m_programsByName.emplace("terrainBase", terrainBaseProgram.get());
+    terrainBaseProgram->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT, 3);
+    terrainBaseProgram->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+    terrainBaseProgram->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+    terrainBaseProgram->addShader(terrainVertex);
+    terrainBaseProgram->addShader(terrainBaseGeo);
+    terrainBaseProgram->addShader(terrainBaseFragment);
+    terrainBaseProgram->addShader(phongLightningFragment);
+
+    osg::ref_ptr<osg::Program> terrainWaterProgram = new osg::Program();
+    m_programsByName.emplace("terrainWater", terrainWaterProgram.get());
+    terrainWaterProgram->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT, 3);
+    terrainWaterProgram->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+    terrainWaterProgram->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+    terrainWaterProgram->addShader(terrainVertex);
+    terrainWaterProgram->addShader(terrainWaterGeo);
+    terrainWaterProgram->addShader(terrainWaterFragment);
+    terrainWaterProgram->addShader(phongLightningFragment);
 
 
-    osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
-    terrainSS->setAttributeAndModes(terrainProgram.get());
+    terrain->osgTerrainBase()->getOrCreateStateSet()->setAttributeAndModes(terrainBaseProgram.get());
+    terrain->osgTerrainWater()->getOrCreateStateSet()->setAttributeAndModes(terrainWaterProgram.get());
 
     osg::ref_ptr<osg::Shader> sphereVertex =
         osgDB::readShaderFile("shader/sphere.vert");

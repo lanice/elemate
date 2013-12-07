@@ -11,6 +11,7 @@
 
 namespace osg {
     class MatrixTransform;
+    class Group;
 }
 namespace osgTerrain {
     class Terrain;
@@ -79,6 +80,8 @@ public:
     osg::MatrixTransform * osgTransformedTerrain() const;
     /** osg terrain object containing terrain tiles with hight fields */
     osgTerrain::Terrain * osgTerrain() const;
+    osg::Group * osgTerrainBase() const;
+    osg::Group * osgTerrainWater() const;
     /** PhysX shape containing height field geometry for one tile
     * terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxShape const * pxShape(const osgTerrain::TileID & tileID) const;
@@ -101,6 +104,9 @@ public:
 private:
     /** osg terrain object that can consist of multiple tiles */
     osg::ref_ptr<osgTerrain::Terrain> m_osgTerrain;
+
+    osg::ref_ptr<osg::Group> m_osgTerrainBase;
+    osg::ref_ptr<osg::Group> m_osgTerrainWater;
 
     /** osg transform to bring the terrain in physx world */
     osg::ref_ptr<osg::MatrixTransform> m_osgTerrainTransform;

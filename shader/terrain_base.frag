@@ -25,7 +25,6 @@ uniform mat4 material_default;
 uniform mat4 material_bedrock;
 uniform mat4 material_dirt;
 uniform mat4 material_grassland;
-uniform mat4 material_water;
 
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3 lightdir2, mat4 light1, mat4 light2, vec4 lightambientglobal, mat4 material);
 
@@ -44,11 +43,6 @@ void main()
             phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
             material_bedrock);
         break;
-    case 1: 
-        lightColor =  
-            phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
-            material_water);
-        break;
     case 2: 
         lightColor =  
             phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
@@ -60,7 +54,5 @@ void main()
             material_grassland);
     }
     
-    if (terrainTypeID == 1)
-        lightColor.a = 0.5;
     fragColor = lightColor;
 }
