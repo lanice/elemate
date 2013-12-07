@@ -4,6 +4,7 @@
 #include <osg/MatrixTransform>
 
 #include "world.h"
+#include "terraingenerator.h"
 #include "hand.h"
 
 
@@ -71,9 +72,13 @@ bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 }
 
 
-bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    return false;
+    float x = ea.getX();
+    float z = -ea.getY();
+    float y = m_world->terrain->heightAt( x, z ) + 2.;
+    m_hand->transform()->setMatrix( m_hand->defaultTransform() * osg::Matrixd::translate( x, y, z ) );
+    return true;
 }
 
 
