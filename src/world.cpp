@@ -12,17 +12,30 @@
 #include "objectscontainer.h"
 #include "godnavigation.h"
 #include "terraingenerator.h"
+#include "soundmanager.h"
 
 
 World::World()
 : physics_wrapper(new PhysicsWrapper())
 , objects_container(new ObjectsContainer(physics_wrapper))
+, soundManager(new SoundManager())
 , m_root(new osg::Group())
 , m_particleGroup(new osg::Group())
 {
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
     m_root->addChild(m_particleGroup.get());
+
+    // Create two non-3D channels (paino and rain)
+    //initialise as paused
+    soundManager->createNewChannel("data/sounds/rain.mp3", true, true, true);
+    soundManager->createNewChannel("data/sounds/piano.mp3", true, true, true);
+    //set volume (make quieter)
+    soundManager->setVolume(0, 0.2f);
+    soundManager->setVolume(1, 0.5f);
+    //end pause
+    soundManager->setPaused(0, false);
+    soundManager->setPaused(1, false);
 
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
@@ -101,6 +114,10 @@ void World::makeStandardBall()
 
     // prototype: hard-coded physx values etc.
     objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+}
+
+void World::toogleBackgroundSound(int id){
+    soundManager->togglePause(id);
 }
 
 void World::setNavigation(GodNavigation * navigation)

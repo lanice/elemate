@@ -9,12 +9,12 @@ class PhysicsWrapper;
 class ObjectsContainer;
 class GodNavigation;
 class ElemateHeightFieldTerrain;
+class SoundManager;
 namespace osg {
     class Group;
     class Program;
     class MatrixTransform;
 }
-
 
 class World {
 public:
@@ -27,14 +27,17 @@ public:
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall();
 
+    /** plays and pauses the background sound **/
+    void toogleBackgroundSound(int id);
+
     void setNavigation(GodNavigation * navigation);
     void reloadShader();
     void setUniforms();
-    
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
     std::shared_ptr<ObjectsContainer>           objects_container;
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+    std::shared_ptr<SoundManager>  soundManager;
 
 protected:
     void setUpLighting();

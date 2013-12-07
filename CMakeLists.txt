@@ -56,6 +56,8 @@ set(SOURCES
     src/terraingenerator.h
     src/osg/sharedgeometrytechnique.h;
     src/osg/sharedgeometrytechnique.cpp;
+    src/soundmanager.cpp
+    src/soundmanager.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -82,7 +84,8 @@ find_package( osgUtil )
 find_package( osgViewer )
 find_package( osgGA )
 find_package( osgTerrain )
-find_package( PhysX REQUIRED)
+find_package( PhysX REQUIRED )
+find_package( FMOD )
 # find_package( APEX )
 
 list(APPEND SOURCES ${SHADER})
@@ -124,4 +127,5 @@ config_project( ${PROJECT_NAME} OSGVIEWER 1 )
 config_project( ${PROJECT_NAME} OSGGA 1 )
 config_project( ${PROJECT_NAME} OSGTERRAIN 1 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
+config_project( ${PROJECT_NAME} FMOD 0 )
 # config_project( ${PROJECT_NAME} APEX )

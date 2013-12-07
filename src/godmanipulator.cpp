@@ -97,17 +97,27 @@ bool GodManipulator::handleMouseRelease( const osgGA::GUIEventAdapter& /*ea*/, o
 
 bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    switch (ea.getUnmodifiedKey()) {
-    case osgGA::GUIEventAdapter::KEY_F:
-    {
-        m_world->makeStandardBall();
-        return true;
-    }
-    case osgGA::GUIEventAdapter::KEY_F5:
-    {
-        m_world->reloadShader();
-        return true;
-    }
+    switch (ea.getUnmodifiedKey()){
+        case osgGA::GUIEventAdapter::KEY_P:
+        {
+            m_world->toogleBackgroundSound(0);
+            return true;
+        }
+        case osgGA::GUIEventAdapter::KEY_O:
+        {
+            m_world->toogleBackgroundSound(1);
+            return true;
+        }
+        case osgGA::GUIEventAdapter::KEY_F:
+        {
+            m_world->makeStandardBall();
+            return true;
+        }
+        case osgGA::GUIEventAdapter::KEY_F5:
+        {
+            m_world->reloadShader();
+            return true;
+        }
     }
     return false;
 }
