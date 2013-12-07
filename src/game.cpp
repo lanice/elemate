@@ -35,19 +35,19 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     osg::ref_ptr< osg::GraphicsContext > gc = osg::GraphicsContext::createGraphicsContext(traits.get());
     m_viewer.getCamera()->setGraphicsContext(gc.get());
 
-	// use modern OpenGL
+    // use modern OpenGL
     osg::State * graphicsState = m_viewer.getCamera()->getGraphicsContext()->getState();
     graphicsState->setUseModelViewAndProjectionUniforms(true);
     graphicsState->setUseVertexAttributeAliasing(true);
 
-	m_viewer.setSceneData(m_world->root());
+    m_viewer.setSceneData(m_world->root());
 }
 
 Game::~Game()
 {}
 
 void Game::start(){
-	if (isRunning())
+    if (isRunning())
         return;
 
     // Add GodManipulator (event handler) to the Viewer that handles events
@@ -66,72 +66,72 @@ void Game::start(){
 
     m_world->physics_wrapper->startSimulation();
 
-	loop();
+    loop();
 }
 
 void Game::loop(t_longf delta){
-	m_interrupted = false;
+    m_interrupted = false;
 
-	t_longf nextTime = m_cyclicTime->getNonModf(true);
-	t_longf maxTimeDiff = 0.5L;
-	int skippedFrames = 1;
-	int maxSkippedFrames = 5;
+    t_longf nextTime = m_cyclicTime->getNonModf(true);
+    t_longf maxTimeDiff = 0.5L;
+    int skippedFrames = 1;
+    int maxSkippedFrames = 5;
 
-	while (isRunning())
+    while (isRunning())
     {
-		// get current time
-		t_longf currTime = m_cyclicTime->getNonModf(true);
+        // get current time
+        t_longf currTime = m_cyclicTime->getNonModf(true);
 
-		// are we too far far behind? then do drawing step now.
-		if ((currTime - nextTime) > maxTimeDiff)
-			nextTime = currTime;
+        // are we too far far behind? then do drawing step now.
+        if ((currTime - nextTime) > maxTimeDiff)
+            nextTime = currTime;
 
-		if (currTime >= nextTime)
-		{
-			nextTime += delta;
+        if (currTime >= nextTime)
+        {
+            nextTime += delta;
 
-			// update physic
+            // update physic
             if (m_world->physics_wrapper->step())
                 // physx: each simulate() call must be followed by fetchResults()
                 m_world->objects_container->updateAllObjects();
 
-	        // update and draw objects if we have time remaining or already too many frames skipped.
-	        if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
-	        {
-		        m_world->setUniforms();
-		        m_viewer.frame();
-		        skippedFrames = 1;
-	        } else {
-	        	++skippedFrames;
-	        }
-	    } else {
-	    	t_longf sleepTime = nextTime - currTime;
+            // update and draw objects if we have time remaining or already too many frames skipped.
+            if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
+            {
+                m_world->setUniforms();
+                m_viewer.frame();
+                skippedFrames = 1;
+            } else {
+                ++skippedFrames;
+            }
+        } else {
+            t_longf sleepTime = nextTime - currTime;
 
-	    	if (sleepTime > 0)
-	    		std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
-	    }
+            if (sleepTime > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
+        }
     }
 
-	m_interrupted = true;
+    m_interrupted = true;
     m_world->physics_wrapper->stopSimulation();
 }
 
 bool Game::isRunning()const{
-	return !(m_viewer.done() || m_interrupted);
+    return !(m_viewer.done() || m_interrupted);
 }
 
 void Game::end(){
-	if (isRunning())
-		m_interrupted = true;
+    if (isRunning())
+        m_interrupted = true;
 }
 
 void Game::setOsgCamera(){
     m_navigation = new GodNavigation();
     m_navigation->setWorld(m_world);
     m_navigation->setHomePosition(
-		osg::Vec3d(0.0, 10.0, 12.0),
-		osg::Vec3d(0.0, 2.0, 0.0),
-		osg::Vec3d(0.0, 1.0, 0.0));
-	m_navigation->home(0.0);
-	m_viewer.setCameraManipulator(m_navigation);
+        osg::Vec3d(0.0, 10.0, 12.0),
+        osg::Vec3d(0.0, 2.0, 0.0),
+        osg::Vec3d(0.0, 1.0, 0.0));
+    m_navigation->home(0.0);
+    m_viewer.setCameraManipulator(m_navigation);
 }
