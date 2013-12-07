@@ -129,12 +129,10 @@ void World::initShader()
 {
     osg::ref_ptr<osg::Shader> terrainVertex =
         osgDB::readShaderFile("shader/terrain.vert");
-    osg::ref_ptr<osg::Shader> terrainBaseGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
-    terrainBaseGeo->setFileName("shader/terrain_base.geo");
-    terrainBaseGeo->loadShaderSourceFromFile(terrainBaseGeo->getFileName());
-    osg::ref_ptr<osg::Shader> terrainWaterGeo = new osg::Shader(osg::Shader::Type::GEOMETRY);
-    terrainWaterGeo->setFileName("shader/terrain_water.geo");
-    terrainWaterGeo->loadShaderSourceFromFile(terrainWaterGeo->getFileName());
+    osg::ref_ptr<osg::Shader> terrainBaseGeo = 
+        osgDB::readShaderFile("shader/terrain_base.geom");
+    osg::ref_ptr<osg::Shader> terrainWaterGeo = 
+        osgDB::readShaderFile("shader/terrain_water.geom");
     osg::ref_ptr<osg::Shader> terrainBaseFragment =
         osgDB::readShaderFile("shader/terrain_base.frag");
     osg::ref_ptr<osg::Shader> terrainWaterFragment =
