@@ -26,7 +26,7 @@ public:
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall();
 
-	/** plays and pauses the background sound **/
+    /** plays and pauses the background sound **/
     void toogleBackgroundSound(int id);
 
     void setNavigation(GodNavigation * navigation);
@@ -34,9 +34,9 @@ public:
     void setUniforms();
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
-	std::shared_ptr<ObjectsContainer>           objects_container;
-	std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
-	std::shared_ptr<SoundManager>  soundManager;
+    std::shared_ptr<ObjectsContainer>           objects_container;
+    std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+    std::shared_ptr<SoundManager>  soundManager;
 
 protected:
     void setUpLighting();
