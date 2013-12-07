@@ -84,6 +84,7 @@ class GodNavigation : public osgGA::StandardManipulator
         osg::Vec3d _center;
         osg::Quat  _rotation;
         double _velocity;
+        double _distanceEyeCenter;
 
         osg::Quat _startRotation;
         osg::Quat _stopRotation;
