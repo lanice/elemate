@@ -1,8 +1,8 @@
 #pragma once
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)	\
-	TypeName(const TypeName&);				\
-	void operator=(const TypeName&);	
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)  \
+    TypeName(const TypeName&);              \
+    void operator=(const TypeName&);
 
 typedef long double t_longf;
 
@@ -20,11 +20,11 @@ class CyclicTime;
  */
 class PhysicsWrapper{
 public:
-	/** Explicit Constructor because Copying and Assignments are disabled. */
+    /** Explicit Constructor because Copying and Assignments are disabled. */
     explicit PhysicsWrapper();
-	~PhysicsWrapper();			
-	/** Proceeds with simulation for amount of given time and returns if enough time has passed to do another step. */
-	bool step();
+    ~PhysicsWrapper();
+    /** Proceeds with simulation for amount of given time and returns if enough time has passed to do another step. */
+    bool step();
 
     /** Starts CycleTimer and continues at last point if it was stopped before using pauseSimulation. */
     void startSimulation();
@@ -38,16 +38,16 @@ public:
     /** Gets Elapsed Time without wasting the cycle time. */
     t_longf elapsedTime()const;
 
-	/** The returned object is initialized. */
-	physx::PxScene*		scene() const;
+    /** The returned object is initialized. */
+    physx::PxScene*     scene() const;
     physx::PxMaterial*  material(std::string material_name)const;
 
 protected:
-	/** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
-	static const int	kNumberOfThreads;
+    /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
+    static const int    kNumberOfThreads;
 
-	/** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
-	void initializePhysics();
+    /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
+    void initializePhysics();
 
     /** Creation of PxDefaultCpuDispatcher and PxScene after customized SceneDescription provided by customizeSceneDescription() */
     void initializeScene();
@@ -55,23 +55,23 @@ protected:
     /** Creation of CycleTime without starting it. */
     void initializeTime();
 
-	/** Specifies special scene description.  */
-	void customizeSceneDescription(physx::PxSceneDesc&);
+    /** Specifies special scene description.  */
+    void customizeSceneDescription(physx::PxSceneDesc&);
 
-	/** Releases all members to free their instances. Automatically called in Destructor. */
-	void shutdown();
+    /** Releases all members to free their instances. Automatically called in Destructor. */
+    void shutdown();
 
-	/** Prints an error message and end the application after pressing enter. */
-	void fatalError(std::string error_message);
+    /** Prints an error message and end the application after pressing enter. */
+    void fatalError(std::string error_message);
 
-	physx::PxFoundation*							m_foundation;
-	//physx::PxProfileZoneManager*					m_profile_zone_manager; ///< currently disabled.
-	physx::PxDefaultCpuDispatcher*					m_cpu_dispatcher;
-	physx::PxPhysics*								m_physics;
-	physx::PxScene*									m_scene;
-	std::hash_map<std::string, physx::PxMaterial*>	m_materials;
-    CyclicTime*						                m_cyclic_time;
+    physx::PxFoundation*                            m_foundation;
+    //physx::PxProfileZoneManager*                  m_profile_zone_manager; ///< currently disabled.
+    physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
+    physx::PxPhysics*                               m_physics;
+    physx::PxScene*                                 m_scene;
+    std::hash_map<std::string, physx::PxMaterial*>  m_materials;
+    CyclicTime*                                     m_cyclic_time;
     t_longf                                         m_elapsed;
 private:
-	DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
+    DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
 };
