@@ -60,6 +60,8 @@ class GodNavigation : public osgGA::StandardManipulator
         virtual bool performMovement( const osg::Vec3d& movementDirection, const double distance );
         /** Rotate the camera by yaw parameter.*/
         virtual bool performRotationYaw( const double yaw );
+        /** Linear Zoom Interpolation. As time goes from 0 to 1, _distanceEyeCenter goes from "from" to "to". */
+        virtual bool performAutoZoom( const double time, const double from, const double to);
 
         /** Calculate movement direction when pressing W key and adding it to movementDirection vector.*/
         virtual void calculateMovementDirectionKeyW( osg::Vec3d& movementDirection );
@@ -84,9 +86,13 @@ class GodNavigation : public osgGA::StandardManipulator
         osg::Vec3d _center;
         osg::Quat  _rotation;
         double _velocity;
+        double _distanceEyeCenter;
 
         osg::Quat _startRotation;
         osg::Quat _stopRotation;
+
+        double _startDistanceEyeCenter;
+        double _stopDistanceEyeCenter;
 
         double _stopTime;
 
