@@ -26,15 +26,28 @@ void Elements::initialize(physx::PxPhysics & physxSdk)
         1.0f, 1.0f, 1.0f, 1.0f,    //specular
         0.0f, 0.0f, 0.0f, 0.0f));  //emission
 
+    s_shadingMatices.emplace("bedrock", osg::Matrixf(
+        0.0f, 0.0f, 0.0f, 1.0f,    //ambient
+        0.52f, 0.49f, 0.44f, 1.0f,    //diffuse
+        0.52f, 0.49f, 0.44f, 1.0f,    //specular
+        0.0f, 0.0f, 0.0f, 0.0f));  //emission
+
+    s_shadingMatices.emplace("dirt", osg::Matrixf(
+        0.0f, 0.0f, 0.0f, 1.0f,    //ambient
+        0.66f, 0.55f, 0.4f, 1.0f,    //diffuse
+        0.66f, 0.55f, 0.4f, 1.0f,    //specular
+        0.0f, 0.0f, 0.0f, 0.0f));  //emission
+
     s_shadingMatices.emplace("grassland", osg::Matrixf(
         0.0f, 0.0f, 0.0f, 1.0f,    //ambient
         0.2f, 0.7f, 0.3f, 1.0f,    //diffuse
         0.2f, 0.7f, 0.3f, 1.0f,    //specular
         0.0f, 0.0f, 0.0f, 0.0f));  //emission
+
     s_shadingMatices.emplace("water", osg::Matrixf(
         0.0f, 0.0f, 0.0f, 1.0f,    //ambient
-        0.5f, 0.8f, 1.0f, 1.0f,    //diffuse
-        0.8f, 0.8f, 1.0f, 1.0f,    //specular
+        0.3f, 0.6f, 0.9f, 1.0f,    //diffuse
+        0.3f, 0.6f, 0.9f, 1.0f,    //specular
         0.0f, 0.0f, 0.0f, 0.0f));  //emission
 
     for (const auto & pair : s_pxMaterials)

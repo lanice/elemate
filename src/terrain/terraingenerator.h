@@ -59,7 +59,7 @@ private:
     TerrainSettings m_settings;
 
     /** creates physx and osg heightfield data with random height shift */
-    physx::PxHeightFieldSample * createBasicPxHeightField() const;
+    physx::PxHeightFieldSample * createBasicPxHeightField(unsigned int defaultTerrainTypeId, float maxHeightVariance) const;
     /** adds a river bed to the shape */
     void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
     osgTerrain::TerrainTile * copyToOsgTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;

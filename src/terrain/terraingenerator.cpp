@@ -78,7 +78,8 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     for (int xID = minxID; xID <= maxxID; ++xID)
     for (int zID = minzID; zID <= maxzID; ++zID)
     {
-        osgTerrain::TileID tileID(0, xID, zID);
+        osgTerrain::TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
+        osgTerrain::TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
 
         /** 1. Create physx terrain heightfield data.
             2. Add some landscape to it (change heightfield, add material information)
@@ -86,24 +87,32 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
             4. Create physx actor and shape.
             5. Set some uniforms, valid for the whole terrain. */
         
-        PxHeightFieldSample * pxHeightFieldSamples = createBasicPxHeightField();
-        assert(pxHeightFieldSamples);
+        PxHeightFieldSample * pxBaseHeightFieldSamples = createBasicPxHeightField(0, m_settings.maxBasicHeightVariance);
+        PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
+        assert(pxBaseHeightFieldSamples);
+        assert(pxWaterHeightFieldSamples);
 
-        gougeRiverBed(pxHeightFieldSamples);
+        gougeRiverBed(pxBaseHeightFieldSamples);
 
         /** create OSG terrain object and copy PhysX terrain data into it */
-        osg::ref_ptr<osgTerrain::TerrainTile> tile = copyToOsgTile(tileID, pxHeightFieldSamples);
-        assert(tile.valid());
-        tile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
-        osgTerrain->addChild(tile.get());
+        osg::ref_ptr<osgTerrain::TerrainTile> baseTile = copyToOsgTile(tileIDBase, pxBaseHeightFieldSamples);
+        osg::ref_ptr<osgTerrain::TerrainTile> waterTile = copyToOsgTile(tileIDWater, pxWaterHeightFieldSamples);
+        assert(baseTile.valid());
+        assert(waterTile.valid());
+        baseTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
+        waterTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
+        osgTerrain->addChild(baseTile.get());
+        osgTerrain->addChild(waterTile.get());
 
         /** move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
         PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
-        terrain->m_pxActors.emplace(tileID, actor);
+        terrain->m_pxActors.emplace(tileIDBase, actor);
 
-        PxShape * pxShape = createPxShape(*actor, pxHeightFieldSamples);
-        terrain->m_pxShapes.emplace(tileID, pxShape);
+        PxShape * pxBaseShape = createPxShape(*actor, pxBaseHeightFieldSamples);
+        PxShape * pxWaterShape = createPxShape(*actor, pxWaterHeightFieldSamples);
+        terrain->m_pxShapes.emplace(tileIDBase, pxBaseShape);
+        terrain->m_pxShapes.emplace(tileIDWater, pxWaterShape);
     }
 
 
@@ -124,28 +133,33 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     return terrain;
 }
 
-PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField() const
+PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned int defaultTerrainTypeId, float maxHeightVariance) const
 {
     assert(m_settings.rows >= 2);
     assert(m_settings.columns >= 2);
     assert(m_settings.maxHeight > 0);
-    assert(m_settings.maxBasicHeightVariance >= 0);
-    assert(m_settings.maxHeight >= m_settings.maxBasicHeightVariance);
+    assert(maxHeightVariance >= 0);
+    assert(m_settings.maxHeight >= maxHeightVariance);
 
-    float partHeight = m_settings.maxBasicHeightVariance / m_settings.maxHeight;
-
+    float partHeight = maxHeightVariance / m_settings.maxHeight;
     std::uniform_int_distribution<> uniform_dist(
         std::numeric_limits<PxI16>::min() * partHeight,
         std::numeric_limits<PxI16>::max() * partHeight);
+
+    std::function<int()> getHeight;
+    if (maxHeightVariance == 0)
+        getHeight = [] () {return 0; };
+    else
+        getHeight = std::bind(uniform_dist, rng);
 
     unsigned int numSamples = m_settings.rows * m_settings.columns;
 
     // physx stores values in row major order (means starting with all values (per column) for the first row)
     PxHeightFieldSample* hfSamples = new PxHeightFieldSample[numSamples];
     for (unsigned i = 0; i < numSamples; ++i) {
-        hfSamples[i].materialIndex0 = 0;    // this clears also the tessellation flag
-        hfSamples[i].materialIndex1 = 0;
-        hfSamples[i].height = uniform_dist(rng);
+        hfSamples[i].materialIndex0 = defaultTerrainTypeId;    // this clears also the tessellation flag
+        hfSamples[i].materialIndex1 = defaultTerrainTypeId;
+        hfSamples[i].height = getHeight();
     }
 
     return hfSamples;
@@ -159,7 +173,7 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
     };
 
     static const float riverScale = 0.15f;
-    std::uniform_int_distribution<> rndRiverHoles(0, 6);
+    //std::uniform_int_distribution<> rndRiverHoles(0, 4);
 
     for (unsigned row = 0; row < m_settings.rows; ++row)
     {
@@ -174,12 +188,14 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
             if (value > riverScale)
                 value = riverScale;
             value -= riverScale * 0.5;
-            pxHfSamples[index].height = oldValue + std::numeric_limits<PxI16>::max() * value;
+            pxHfSamples[index].height = oldValue + std::numeric_limits<PxI16>::max() * (value - 0.5*maxBasicHeightVariance());
 
-            int8_t terrainTypeID = 0;
-            if (value < 0) {
-                int rnd = rndRiverHoles(rng);
-                terrainTypeID = rnd ? 0 : PxHeightFieldMaterial::eHOLE;
+            int8_t terrainTypeID;
+            if (pxHfSamples[index].height <= 0) {
+                terrainTypeID = 2;  // this is dirt
+            }
+            else {
+                terrainTypeID = 0; // this is something else.. bedrock or so
             }
             pxHfSamples[index].materialIndex0 = pxHfSamples[index].materialIndex1 = terrainTypeID;
         }
@@ -197,8 +213,12 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
 
     PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
-    PxMaterial * mat[1];
+    PxMaterial * mat[4];
+    // this is only for visuals testing: use some physx default material
     mat[0] = Elements::pxMaterial("default");
+    mat[1] = Elements::pxMaterial("default");
+    mat[2] = Elements::pxMaterial("default");
+    mat[3] = Elements::pxMaterial("default");
 
     // scale height so that we use the full range of PxI16=short (abs(min) = abs(max)+1)
     PxReal heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
@@ -276,7 +296,7 @@ osgTerrain::TerrainTile * TerrainGenerator::copyToOsgTile(const osgTerrain::Tile
             /** same with terrain type id */
             unsigned int terrainTypeID = pxHfSamples[physxColumn + physxRowOffset].materialIndex0;
             // scale terrain id to 0..1 -> values greater than 1 seem not to work with osg::Image
-            dataPtr[osgColumn + osgRow * numOsgColumns] = !(static_cast<IDTexType>(terrainTypeID) / (terrainTypeCount - 1));
+            dataPtr[osgColumn + osgRow * numOsgColumns] = static_cast<IDTexType>(terrainTypeID) / (terrainTypeCount - 1);
         }
     }
 

@@ -21,6 +21,11 @@ namespace physx {
     class PxRigidStatic;
 }
 
+enum TerrainLevel {
+    WaterLevel = 1,
+    BaseLevel = 0
+};
+
 struct TerrainSettings {
     TerrainSettings();
     float sizeX;

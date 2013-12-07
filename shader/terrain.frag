@@ -22,6 +22,8 @@ uniform mat4 light2;
 
 // simple white terrain
 uniform mat4 material_default;
+uniform mat4 material_bedrock;
+uniform mat4 material_dirt;
 uniform mat4 material_grassland;
 uniform mat4 material_water;
 
@@ -40,7 +42,17 @@ void main()
     case 0: 
         lightColor =  
             phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
+            material_bedrock);
+        break;
+    case 1: 
+        lightColor =  
+            phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
             material_water);
+        break;
+    case 2: 
+        lightColor =  
+            phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
+            material_dirt);
         break;
     default: 
         lightColor =
