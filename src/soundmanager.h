@@ -8,6 +8,31 @@
 #include "fmod_errors.h"
 
 class SoundManager{
+public:
+    SoundManager(FMOD_VECTOR startPosition = { 0.f, 0.f, 0.f });
+    ~SoundManager();
+    void setListenerPos(FMOD_VECTOR);
+    int createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
+    void deleteChannel(int id);
+    void play(int id);
+    void setPaused(int id, bool paused);
+    bool isPaused(int id);
+    void togglePause(int id);
+    void setMicroPos(FMOD_VECTOR pos);
+    void moveMicro(FMOD_VECTOR dPos);
+    void setMicroVel(FMOD_VECTOR vel);
+    void setMicroPosAndVel(FMOD_VECTOR pos, FMOD_VECTOR vel);
+    void setSoundPos(int id, FMOD_VECTOR pos);
+    void moveSound(int id, FMOD_VECTOR dPos);
+    void setSoundVel(int id, FMOD_VECTOR vel);
+    void setSoundPosAndVel(int id, FMOD_VECTOR pos, FMOD_VECTOR vel);
+    void setMute(int id, bool mute);
+    bool isMute(int id);
+    void setVolume(int id, float vol);
+    float getVolume(int id);
+    void changeVolume(int id, float dVol);
+    void update();
+    
 private:
     typedef struct SoundObject{
         bool isLoop;
@@ -34,28 +59,4 @@ private:
     void SoundManager::ERRCHECK(FMOD_RESULT);
     int getNextFreeId();
     void init(FMOD_VECTOR startPosition = {0.f,0.f,0.f});
-public:
-    SoundManager(FMOD_VECTOR startPosition = { 0.f, 0.f, 0.f });
-    ~SoundManager();
-    void setListenerPos(FMOD_VECTOR);
-    int createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
-    void deleteChannel(int id);
-    void play(int id);
-    void setPaused(int id, bool paused);
-    bool isPaused(int id);
-    void togglePause(int id);
-    void setMicroPos(FMOD_VECTOR pos);
-    void moveMicro(FMOD_VECTOR dPos);
-    void setMicroVel(FMOD_VECTOR vel);
-    void setMicroPosAndVel(FMOD_VECTOR pos, FMOD_VECTOR vel);
-    void setSoundPos(int id, FMOD_VECTOR pos);
-    void moveSound(int id, FMOD_VECTOR dPos);
-    void setSoundVel(int id, FMOD_VECTOR vel);
-    void setSoundPosAndVel(int id, FMOD_VECTOR pos, FMOD_VECTOR vel);
-    void setMute(int id, bool mute);
-    bool isMute(int id);
-    void setVolume(int id, float vol);
-    float getVolume(int id);
-    void changeVolume(int id, float dVol);
-    void update();
 };
