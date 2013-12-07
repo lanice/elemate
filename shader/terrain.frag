@@ -60,5 +60,7 @@ void main()
             material_grassland);
     }
     
+    if (terrainTypeID == 1)
+        lightColor.a = 0.5;
     fragColor = lightColor;
 }

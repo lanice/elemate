@@ -101,6 +101,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         assert(waterTile.valid());
         baseTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
         waterTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
+        waterTile->setBlendingPolicy(osgTerrain::TerrainTile::BlendingPolicy::ENABLE_BLENDING);
         osgTerrain->addChild(baseTile.get());
         osgTerrain->addChild(waterTile.get());
 
