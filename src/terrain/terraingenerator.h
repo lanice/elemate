@@ -24,8 +24,6 @@ struct TerrainSettings;
   * This is PhysX logic, OSG is kind of inverse, so don't get confused when reading the cpp =) */
 class TerrainGenerator {
 public:
-    /** creates a generator with default settings */
-    TerrainGenerator();
     /** applies all settings and creates the height field osg and physx objects */
     ElemateHeightFieldTerrain * generate() const;
 
@@ -62,7 +60,10 @@ private:
     physx::PxHeightFieldSample * createBasicPxHeightField(unsigned int defaultTerrainTypeId, float maxHeightVariance) const;
     /** adds a river bed to the shape */
     void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
-    osgTerrain::TerrainTile * copyToOsgTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    /** copies the height values to an osg heightfield layer and create a tile with it */
+    osgTerrain::TerrainTile * copyHeightFieldToOsgTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    /** adds a texture to the osg tile that the shader uses to dertermine the terrain type at each position */
+    void createOsgTerrainTypeTexture(osgTerrain::TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;
 
     void operator=(TerrainGenerator& ) = delete;

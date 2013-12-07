@@ -37,10 +37,6 @@ namespace {
     bool didRngInit = initRng();
 }
 
-TerrainGenerator::TerrainGenerator()
-{
-}
-
 ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 {
     ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
@@ -60,41 +56,45 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     for (int xID = minxID; xID <= maxxID; ++xID)
     for (int zID = minzID; zID <= maxzID; ++zID)
     {
-        osgTerrain::TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
-        osgTerrain::TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
-
         /** 1. Create physx terrain heightfield data.
             2. Add some landscape to it (change heightfield, add material information)
             3. Copy physx data to osg and create osg terrain tile.
             4. Create physx actor and shape.
             5. Set some uniforms, valid for the whole terrain. */
-        
+
+        osgTerrain::TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
         PxHeightFieldSample * pxBaseHeightFieldSamples = createBasicPxHeightField(0, m_settings.maxBasicHeightVariance);
-        PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
         assert(pxBaseHeightFieldSamples);
-        assert(pxWaterHeightFieldSamples);
 
         gougeRiverBed(pxBaseHeightFieldSamples);
 
         /** create OSG terrain object and copy PhysX terrain data into it */
-        osg::ref_ptr<osgTerrain::TerrainTile> baseTile = copyToOsgTile(tileIDBase, pxBaseHeightFieldSamples);
-        osg::ref_ptr<osgTerrain::TerrainTile> waterTile = copyToOsgTile(tileIDWater, pxWaterHeightFieldSamples);
+        osg::ref_ptr<osgTerrain::TerrainTile> baseTile = copyHeightFieldToOsgTile(tileIDBase, pxBaseHeightFieldSamples);
         assert(baseTile.valid());
-        assert(waterTile.valid());
+        createOsgTerrainTypeTexture(*baseTile.get(), pxBaseHeightFieldSamples);
         baseTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
+        terrain->m_osgTerrainBase->addChild(baseTile.get());
+
+        /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
+        osgTerrain::TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
+        PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
+        assert(pxWaterHeightFieldSamples);
+        osg::ref_ptr<osgTerrain::TerrainTile> waterTile = copyHeightFieldToOsgTile(tileIDWater, pxWaterHeightFieldSamples);
+        assert(waterTile.valid());
         waterTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
         waterTile->setBlendingPolicy(osgTerrain::TerrainTile::BlendingPolicy::ENABLE_BLENDING);
-        terrain->m_osgTerrainBase->addChild(baseTile.get());
         terrain->m_osgTerrainWater->addChild(waterTile.get());
 
-        /** move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
+
+        /** Create physx objects: an actor with its transformed shapes
+          * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
         PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
         terrain->m_pxActors.emplace(tileIDBase, actor);
 
         PxShape * pxBaseShape = createPxShape(*actor, pxBaseHeightFieldSamples);
-        PxShape * pxWaterShape = createPxShape(*actor, pxWaterHeightFieldSamples);
         terrain->m_pxShapes.emplace(tileIDBase, pxBaseShape);
+        PxShape * pxWaterShape = createPxShape(*actor, pxWaterHeightFieldSamples);
         terrain->m_pxShapes.emplace(tileIDWater, pxWaterShape);
     }
 
@@ -218,7 +218,7 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     return shape;
 }
 
-osgTerrain::TerrainTile * TerrainGenerator::copyToOsgTile(const osgTerrain::TileID & tileID, const PxHeightFieldSample * pxHfSamples) const
+osgTerrain::TerrainTile * TerrainGenerator::copyHeightFieldToOsgTile(const osgTerrain::TileID & tileID, const PxHeightFieldSample * pxHeightFieldSamples) const
 {
     /** create needed osg terrain objects */
 
@@ -247,6 +247,32 @@ osgTerrain::TerrainTile * TerrainGenerator::copyToOsgTile(const osgTerrain::Tile
 
     float heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
 
+    // osg column == physx row
+    // osg row == numColumns - physx column - 1 (osg rows going to y, physx columns to z, where osgY == -physxZ)
+    const unsigned numOsgRows = m_settings.columns;
+    for (unsigned physxRow = 0; physxRow < m_settings.rows; ++physxRow) {
+        const unsigned physxRowOffset = physxRow * m_settings.columns;
+        for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
+            // set osg heightfield data, matching the physx rows/columns, both in row major order
+            const unsigned osgColumn = physxRow;
+            const unsigned osgRow = numOsgRows - 1 - physxColumn;
+
+            /** copy height value from physx to osg */
+            heightField->setHeight(osgColumn, osgRow,
+                PxReal(pxHeightFieldSamples[physxColumn + physxRowOffset].height) * heightScale);
+        }
+    }
+
+    // set some tile specific uniforms
+    osg::ref_ptr<osg::StateSet> tileStateSet = tile->getOrCreateStateSet();
+    tileStateSet->addUniform(new osg::Uniform("tileID", tileID.x, tileID.y));   // ivec2
+    tileStateSet->addUniform(new osg::Uniform("tileLeftFront", osg::Vec2f(minX, minZ))); // vec2
+
+    return tile;
+}
+
+void TerrainGenerator::createOsgTerrainTypeTexture(osgTerrain::TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const
+{
     // we have to use floats for the sampler, int won't work
     typedef float IDTexType;
 
@@ -270,28 +296,17 @@ osgTerrain::TerrainTile * TerrainGenerator::copyToOsgTile(const osgTerrain::Tile
             const unsigned osgColumn = physxRow;
             const unsigned osgRow = numOsgRows - 1 - physxColumn;
 
-            /** copy height value from physx to osg */
-            heightField->setHeight(osgColumn, osgRow,
-                PxReal(pxHfSamples[physxColumn + physxRowOffset].height) * heightScale);
-
             /** same with terrain type id */
-            unsigned int terrainTypeID = pxHfSamples[physxColumn + physxRowOffset].materialIndex0;
+            unsigned int terrainTypeID = pxHeightFieldSamples[physxColumn + physxRowOffset].materialIndex0;
             // scale terrain id to 0..1 -> values greater than 1 seem not to work with osg::Image
             dataPtr[osgColumn + osgRow * numOsgColumns] = static_cast<IDTexType>(terrainTypeID) / (terrainTypeCount - 1);
         }
     }
 
     osg::ref_ptr<osgTerrain::ImageLayer> terrainTypeLayer = new osgTerrain::ImageLayer(terrainTypeData.get());
-    tile->setColorLayer(0, terrainTypeLayer.get());
+    tile.setColorLayer(0, terrainTypeLayer.get());
 
-    assert(tile->getNumColorLayers() == 1);
-
-    // set some tile specific uniforms
-    osg::ref_ptr<osg::StateSet> tileStateSet = tile->getOrCreateStateSet();
-    tileStateSet->addUniform(new osg::Uniform("tileID", tileID.x, tileID.y));   // ivec2
-    tileStateSet->addUniform(new osg::Uniform("tileLeftFront", osg::Vec2f(minX, minZ))); // vec2
-
-    return tile;
+    assert(tile.getNumColorLayers() == 1);
 }
 
 void TerrainGenerator::setExtentsInWorld(float x, float z)
