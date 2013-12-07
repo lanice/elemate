@@ -35,6 +35,8 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
      _rotation( gn._rotation ),
      _startRotation( gn._startRotation ),
      _stopRotation( gn._stopRotation ),
+     _startDistanceEyeCenter( gn._startDistanceEyeCenter ),
+     _stopDistanceEyeCenter( gn._stopDistanceEyeCenter ),
      _stopTime( gn._stopTime ),
      _velocity( gn._velocity ),
      _distanceEyeCenter( gn._distanceEyeCenter ),
@@ -151,6 +153,7 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         }
 
         _rotation.slerp( timeFrame, _startRotation, _stopRotation );
+        performAutoZoom( timeFrame, _startDistanceEyeCenter, _stopDistanceEyeCenter );
 
     }
 
@@ -168,6 +171,8 @@ bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
         case osgGA::GUIEventAdapter::KEY_Space:
             _startRotation = _rotation;
             _stopRotation = m.getRotate().inverse();
+            _startDistanceEyeCenter = _distanceEyeCenter;
+            _stopDistanceEyeCenter = c_distanceEyeCenterDefault;
             _stopTime = ea.getTime() + 1.;
             _slerping = true;
             return true;
@@ -347,6 +352,13 @@ bool GodNavigation::performRotationYaw( const double yaw )
     osg::Vec3d localUp = getUpVector( coordinateFrame );
 
     rotateYawPitch( _rotation, yaw, 0., localUp );
+    return true;
+}
+
+
+bool GodNavigation::performAutoZoom( const double time, const double from, const double to)
+{
+    _distanceEyeCenter = ( ( 1. - time ) * from ) + ( time * to );
     return true;
 }
 
