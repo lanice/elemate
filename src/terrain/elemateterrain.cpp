@@ -1,6 +1,7 @@
 #include "elemateterrain.h"
 
 #include <cstdint>
+#include <algorithm>
 
 #include <osg/MatrixTransform>
 #include <osgTerrain/Terrain>
@@ -40,9 +41,14 @@ float ElemateHeightFieldTerrain::heightAt(float x, float z) const
         || normalizedY < 0.0f || normalizedY > 1.0f)
         return 0.0f;
 
-    osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(0, 0, 0));
-    float height = 0;
-    tile->getElevationLayer()->getInterpolatedValue(normalizedX, normalizedY, height);
+    float height = std::numeric_limits<float>::lowest();
+    for (int i = 0; i < TerrainLevel::TerrainLevelCount; ++i) {
+        float currentValue = 0;
+        osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(i, 0, 0));
+        tile->getElevationLayer()->getInterpolatedValue(normalizedX, normalizedY, currentValue);
+        height = std::max(height, currentValue);
+    }
+
     return height;
 }
 

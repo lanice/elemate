@@ -23,7 +23,8 @@ namespace physx {
 
 enum TerrainLevel {
     WaterLevel = 1,
-    BaseLevel = 0
+    BaseLevel = 0,
+    TerrainLevelCount = 2 // this is not a valid TerrainLevel value
 };
 
 struct TerrainSettings {
