@@ -152,6 +152,11 @@ t_longf PhysicsWrapper::elapsedTime()const{
     return m_elapsed;
 }
 
+t_longf PhysicsWrapper::currentTime() const
+{
+    return m_cyclic_time->getNonModf();
+}
+
 physx::PxScene* PhysicsWrapper::scene()const{
     return m_scene;
 }

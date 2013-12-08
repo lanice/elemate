@@ -35,7 +35,10 @@ public:
     void stopSimulation();
 
     /** Gets Elapsed Time without wasting the cycle time. */
-    t_longf elapsedTime()const;
+    t_longf elapsedTime() const;
+
+    /** Get current in game time since start. */
+    t_longf currentTime() const;
 
     /** The returned object is initialized. */
     physx::PxScene*     scene() const;

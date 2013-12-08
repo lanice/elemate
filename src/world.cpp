@@ -204,7 +204,7 @@ osg::Program * World::programByName(std::string name) const
     return m_programsByName.at(name).get();
 }
 
-void World::setUniforms()
+void World::setUniforms(long double globalTime)
 {
     assert(!m_programsByName.empty()); // we don't want to set uniforms when we do not have shaders
     assert(m_navigation.valid());
@@ -212,8 +212,12 @@ void World::setUniforms()
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
     osg::Vec3f eye(eyed);
-    m_root->getOrCreateStateSet()->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
-    osg::ref_ptr<osg::StateSet> terrainSS = terrain->osgTerrain()->getOrCreateStateSet();
+    osg::ref_ptr<osg::StateSet> rootStateSet = m_root->getOrCreateStateSet();
+    rootStateSet->getOrCreateUniform("cameraposition", osg::Uniform::FLOAT_VEC3)->set(eye);
+    rootStateSet->getOrCreateUniform("globalTime", osg::Uniform::FLOAT)->set(
+        static_cast<float>(globalTime));    // cast away the high precision, as not needed in the shaders
+    rootStateSet->getOrCreateUniform("gameTime", osg::Uniform::FLOAT)->set(
+        static_cast<float>(physics_wrapper->currentTime()));    // cast away the high precision, as not needed in the shaders
 
     // float height = terrain->heightAt(centerd.x(), centerd.z());
     // height + cone height
