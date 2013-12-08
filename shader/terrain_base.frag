@@ -7,9 +7,12 @@ in vec3 normal;
 in vec3 viewPos;
 in vec3 worldPos;
 in vec2 screenPos;
-flat in ivec2 texCoord;
+flat in ivec2 terrainIdTexCoord;
+in vec2 normInTileCoord;
 
-uniform sampler2D terrainTypeIDs;
+uniform sampler2D terrainIDSampler;
+
+uniform sampler2D rockSampler;
 
 uniform vec3 cameraposition;
 
@@ -32,8 +35,10 @@ layout(location = 0)out vec4 fragColor;
 
 void main()
 {
-    float f_terrainTypeID = texelFetch(terrainTypeIDs, texCoord, 0).r;
+    float f_terrainTypeID = texelFetch(terrainIDSampler, terrainIdTexCoord, 0).r;
     int terrainTypeID = int(f_terrainTypeID * 3);
+    
+    vec4 textureColor = texture(rockSampler, normInTileCoord * 10);
     
     vec4 lightColor;
     
@@ -48,11 +53,7 @@ void main()
             phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
             material_dirt);
         break;
-    default: 
-        lightColor =
-            phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
-            material_grassland);
     }
     
-    fragColor = lightColor;
+    fragColor = mix(lightColor, textureColor, 0.7);
 }

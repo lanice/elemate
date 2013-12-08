@@ -9,7 +9,9 @@
 #include <functional>
 
 #include <osg/Image>
+#include <osg/Texture2D>
 #include <osgTerrain/Terrain>
+#include <osgDB/ReadFile>
 
 #include <PxRigidStatic.h>
 #include <PxShape.h>
@@ -98,11 +100,10 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         terrain->m_pxShapes.emplace(tileIDWater, pxWaterShape);
     }
 
-
     /** set some uniforms for the terrain */
     osg::ref_ptr<osg::StateSet> terrainStateSet = terrain->m_osgTerrain->getOrCreateStateSet();
     // texture unit 0 should be color layer 0 in all tiles
-    osg::ref_ptr<osg::Uniform> terrainIDSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "terrainID");
+    osg::ref_ptr<osg::Uniform> terrainIDSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "terrainIDSampler");
     terrainIDSampler->set(0);
     terrainStateSet->addUniform(terrainIDSampler.get());
     terrainStateSet->addUniform(new osg::Uniform("tileSize", osg::Vec3(
@@ -112,6 +113,24 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
     terrainStateSet->addUniform(new osg::Uniform("tileRowsColumns", osg::Vec2(m_settings.rows, m_settings.columns))); // ivec2
     // add all material shading matrices
     Elements::addAllUniforms(*terrainStateSet);
+
+
+    /** load terrain textures and add uniforms */
+    osg::ref_ptr<osg::Image> rockImage = osgDB::readImageFile("data/textures/rock.jpg");
+    assert(rockImage.valid());
+
+    osg::ref_ptr<osg::Texture2D> rockTexture = new osg::Texture2D(rockImage);
+    assert(rockTexture);
+    rockTexture->setNumMipmapLevels(5);
+    rockTexture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::FilterMode::LINEAR_MIPMAP_LINEAR);
+    rockTexture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::FilterMode::LINEAR_MIPMAP_LINEAR);
+    rockTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::WrapMode::REPEAT);
+    rockTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::WrapMode::REPEAT);
+
+    terrainStateSet->setTextureAttributeAndModes(1, rockTexture.get());
+    osg::ref_ptr<osg::Uniform> rockTextureSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "rockSampler");
+    rockTextureSampler->set(1);
+    terrainStateSet->addUniform(rockTextureSampler.get());
 
     return terrain;
 }
