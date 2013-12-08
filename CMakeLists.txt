@@ -69,7 +69,8 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
-    shader/terrain.vert
+    shader/terrain_base.vert
+    shader/terrain_water.vert
     shader/terrain_base.geom
     shader/terrain_base.frag
     shader/terrain_water.geom
