@@ -10,6 +10,8 @@ namespace physx{
         class NxModuleEmitter;
         class NxModuleIofx;
         class NxApexRenderVolume;
+        class NxModuleBasicIos;
+        class NxModuleFieldSampler;
     }
 }
 
@@ -33,4 +35,6 @@ private:
     physx::apex::NxModuleEmitter*       m_emitter_module;
     physx::apex::NxModuleIofx*          m_iofx_module;
     physx::apex::NxApexRenderVolume*    m_render_volume;
+    physx::apex::NxModuleBasicIos*      m_basic_ios_module;
+    physx::apex::NxModuleFieldSampler*  m_field_sampler_module;
 };

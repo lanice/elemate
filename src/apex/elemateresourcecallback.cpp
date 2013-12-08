@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include <NxApexSDK.h>
+#include <fieldsampler/public/NxModuleFieldSampler.h>
 #include <emitter/public/NxApexEmitterAsset.h>
 
 const std::string dataPath("data/");
@@ -15,6 +15,17 @@ namespace apex {
 ElemateResourceCallback::ElemateResourceCallback()
 : m_apexSDK(nullptr)
 {
+    m_group_masks.emplace("EXAMPLE_FS_GRP_MASK", physx::apex::NxGroupsMask64(1, 0));
+    m_group_masks.emplace("MESH_PARTICLE_FS_GRP_MASK", physx::apex::NxGroupsMask64(3, 0));
+
+    PxFilterData g;
+    g.word1 = g.word2 = g.word3 = 0;
+    g.word0 = 1;
+    m_simulation_filter_data.emplace("MESH_COL_GRP_MASK", g);
+    g.word0 = 1;
+    m_simulation_filter_data.emplace("SPRITE_COL_GRP_MASK",g);
+    g.word0 = 3;
+    m_simulation_filter_data.emplace("ALL_COL_GRP_MASK",g);
 }
 
 void ElemateResourceCallback::setApexSDK(NxApexSDK * sdk)
@@ -26,8 +37,8 @@ void * ElemateResourceCallback::requestResource(const char* nameSpace, const cha
 {
     std::cout << "Requested ressource: " << nameSpace << "::" << name << std::endl;
 
-    if (std::string(nameSpace) == "NSCollisionGroup128")
-        return createCollisionGroup128(name);
+    // if (std::string(nameSpace) == "NSCollisionGroup128")
+    //     return createCollisionGroup128(name);
 
     return loadSingleResourceRaw(name);
 }
@@ -69,24 +80,6 @@ void ElemateResourceCallback::releaseResource(const char* nameSpace, const char*
 {
     std::cerr << "Requested release of unknown ressource: " << nameSpace << "::" << name << " (at: " << resource << ")" << std::endl;
 }
-
-void* ElemateResourceCallback::createCollisionGroup128(const std::string & name)
-{
-    physx::PxFilterData g;
-    g.word0 = 3;
-    g.word2 = ~0;
-    g.word1 = g.word3 = 0;
-    PX_ASSERT(m_apexSDK);
-    PX_ASSERT(m_FilterDatas.size() < 128);
-    // only set this one ressource for now...
-    if (m_apexSDK && m_FilterDatas.empty())
-    {
-        m_FilterDatas.push_back(g);
-        m_apexSDK->getNamedResourceProvider()->setResource(APEX_COLLISION_GROUP_128_NAME_SPACE, name.c_str(), (void*) &m_FilterDatas.back());
-    }
-    return (void*)&m_FilterDatas[0];
-}
-
 
 }
 }

@@ -65,6 +65,8 @@ void Game::start(){
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
     m_world->setUniforms();
+    
+    //The "particles" ... 
 
     m_world->physics_wrapper->startSimulation();
 

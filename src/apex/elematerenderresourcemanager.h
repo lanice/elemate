@@ -30,8 +30,7 @@ public:
     virtual void                        releaseSpriteBuffer(NxUserRenderSpriteBuffer& buffer) override;
     virtual NxUserRenderResource*       createResource(const NxUserRenderResourceDesc& desc) override;
     virtual void                        releaseResource(NxUserRenderResource& resource) override;
-    virtual physx::PxU32                       getMaxBonesForMaterial(void* material) override;
-    virtual physx::PxU32 getSpriteTextureData(physx::PxU32 spriteCount, physx::PxU32 spriteSemanticsBitmap, NxUserRenderSpriteTextureDesc* textureDescArray) override;
+    virtual physx::PxU32                getMaxBonesForMaterial(void* material) override;
 
 private:
     osg::ref_ptr<osg::GraphicsContext> m_osgGraphicsContext;

@@ -1,6 +1,7 @@
 #include "elematerenderresourcemanager.h"
 
 #include <cassert>
+#include <NxUserRenderSpriteBuffer.h>
 
 namespace physx {
 namespace apex {
@@ -89,15 +90,6 @@ physx::PxU32 ElemateRenderResourceManager::getMaxBonesForMaterial(void* material
 
 {
     assert(false); exit(42);
-    return 0;
-}
-
-physx::PxU32 ElemateRenderResourceManager::getSpriteTextureData(physx::PxU32 spriteCount, physx::PxU32 spriteSemanticsBitmap, NxUserRenderSpriteTextureDesc* textureDescArray)
-{
-    assert(false); exit(42);
-    PX_FORCE_PARAMETER_REFERENCE(spriteCount);
-    PX_FORCE_PARAMETER_REFERENCE(spriteSemanticsBitmap);
-    PX_FORCE_PARAMETER_REFERENCE(textureDescArray);
     return 0;
 }
 

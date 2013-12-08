@@ -8,6 +8,9 @@
 #include "iofx/public/NxIofxAsset.h"
 #include <iofx/public/NxApexRenderVolume.h>
 
+#include <basicios/public/NxModuleBasicIos.h>
+#include <fieldsampler/public/NxModuleFieldSampler.h>
+
 #include "emitter/public/NxModuleEmitter.h"
 #include "emitter/public/NxApexEmitterAsset.h"
 #include "emitter/public/NxApexEmitterActor.h"
@@ -32,6 +35,11 @@ void StandardParticles::initialize(physx::apex::NxApexSDK* gApexSDK)
     PX_ASSERT(gApexSDK);
     physx::apex::NxApexCreateError errorCode;
 
+    m_basic_ios_module = static_cast<physx::apex::NxModuleBasicIos*>(gApexSDK->createModule("BasicIOS"));
+    PX_ASSERT(m_basic_ios_module);
+    NxParameterized::Interface* params = m_basic_ios_module->getDefaultModuleDesc();
+    m_basic_ios_module->init(*params);
+    m_basic_ios_module->setLODBenefitValue(10000.0f);
 
     m_particle_ios_module = static_cast<physx::apex::NxModuleParticleIos*>(gApexSDK->createModule("ParticleIOS", &errorCode));
     checkErrorCode(&errorCode);
@@ -40,16 +48,6 @@ void StandardParticles::initialize(physx::apex::NxApexSDK* gApexSDK)
     {
         NxParameterized::Interface* params = m_particle_ios_module->getDefaultModuleDesc();
         m_particle_ios_module->init(*params);
-    }
-
-    
-    m_iofx_module = static_cast<physx::apex::NxModuleIofx*>(gApexSDK->createModule("IOFX", &errorCode));
-    checkErrorCode(&errorCode);
-    PX_ASSERT(m_iofx_module);
-    if (m_iofx_module)
-    {
-        NxParameterized::Interface* params = m_iofx_module->getDefaultModuleDesc();
-        m_iofx_module->init(*params);
     }
 
     m_emitter_module = static_cast<physx::apex::NxModuleEmitter*> (gApexSDK->createModule("Emitter", &errorCode));
@@ -67,7 +65,24 @@ void StandardParticles::initialize(physx::apex::NxApexSDK* gApexSDK)
             m_emitter_module->setIntValue(i, p.range.maximum);
         }
     }
+    
+    m_iofx_module = static_cast<physx::apex::NxModuleIofx*>(gApexSDK->createModule("IOFX", &errorCode));
+    checkErrorCode(&errorCode);
+    PX_ASSERT(m_iofx_module);
+    if (m_iofx_module)
+    {
+        NxParameterized::Interface* params = m_iofx_module->getDefaultModuleDesc();
+        m_iofx_module->init(*params);
+    }
 
+    m_field_sampler_module = static_cast<physx::apex::NxModuleFieldSampler*>(gApexSDK->createModule("FieldSampler", &errorCode));
+    checkErrorCode(&errorCode);
+    PX_ASSERT(m_field_sampler_module);
+    if (m_field_sampler_module)
+    {
+        NxParameterized::Interface* params = m_field_sampler_module->getDefaultModuleDesc();
+        m_field_sampler_module->init(*params);
+    }
 }
 
 bool StandardParticles::createEmitter(physx::apex::NxApexSDK* gApexSDK, physx::apex::NxApexScene* gApexScene)

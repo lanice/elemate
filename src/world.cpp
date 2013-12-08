@@ -90,7 +90,8 @@ osg::Group* World::root()
 void World::makeStandardBall()
 {
     // prototype: hard-coded physx values etc.
-    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(1, 3, 0), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    objects_container->createParticles(m_particleGroup, 5, physx::PxVec3(1, 3, 0));
 }
 
 void World::setNavigation(GodNavigation * navigation)
