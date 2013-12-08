@@ -127,8 +127,10 @@ void World::setNavigation(GodNavigation * navigation)
 
 void World::initShader()
 {
-    osg::ref_ptr<osg::Shader> terrainVertex =
-        osgDB::readShaderFile("shader/terrain.vert");
+    osg::ref_ptr<osg::Shader> terrainBaseVertex =
+        osgDB::readShaderFile("shader/terrain_base.vert");
+    osg::ref_ptr<osg::Shader> terrainWaterVertex =
+        osgDB::readShaderFile("shader/terrain_water.vert");
     osg::ref_ptr<osg::Shader> terrainBaseGeo = 
         osgDB::readShaderFile("shader/terrain_base.geom");
     osg::ref_ptr<osg::Shader> terrainWaterGeo = 
@@ -140,15 +142,16 @@ void World::initShader()
     osg::ref_ptr<osg::Shader> phongLightningFragment =
         osgDB::readShaderFile("shader/phongLighting.frag");
 
-    assert(terrainVertex.valid() && terrainBaseGeo.valid() && terrainBaseFragment.valid());
-    assert(terrainWaterGeo.valid() && terrainWaterFragment.valid());
+    assert(terrainBaseVertex.valid() && terrainBaseGeo.valid() && terrainBaseFragment.valid());
+    assert(terrainWaterVertex.valid() && terrainWaterGeo.valid() && terrainWaterFragment.valid());
+    assert(terrainWaterFragment.valid());
 
     osg::ref_ptr<osg::Program> terrainBaseProgram = new osg::Program();
     m_programsByName.emplace("terrainBase", terrainBaseProgram.get());
     terrainBaseProgram->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT, 3);
     terrainBaseProgram->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
     terrainBaseProgram->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
-    terrainBaseProgram->addShader(terrainVertex);
+    terrainBaseProgram->addShader(terrainBaseVertex);
     terrainBaseProgram->addShader(terrainBaseGeo);
     terrainBaseProgram->addShader(terrainBaseFragment);
     terrainBaseProgram->addShader(phongLightningFragment);
@@ -158,7 +161,7 @@ void World::initShader()
     terrainWaterProgram->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT, 3);
     terrainWaterProgram->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
     terrainWaterProgram->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
-    terrainWaterProgram->addShader(terrainVertex);
+    terrainWaterProgram->addShader(terrainWaterVertex);
     terrainWaterProgram->addShader(terrainWaterGeo);
     terrainWaterProgram->addShader(terrainWaterFragment);
     terrainWaterProgram->addShader(phongLightningFragment);
