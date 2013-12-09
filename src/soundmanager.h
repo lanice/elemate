@@ -13,29 +13,31 @@ public:
     ~SoundManager();
     void setListenerPos(FMOD_VECTOR);
     int createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
-    void deleteChannel(int id);
-    void play(int id);
-    void setPaused(int id, bool paused);
-    bool isPaused(int id);
-    void togglePause(int id);
+    void deleteChannel(int channelId);
+    void play(int channelId);
+    void setPaused(int channelId, bool paused);
+    bool isPaused(int channelId);
+    void togglePause(int channelId);
     void setMicroPos(FMOD_VECTOR pos);
     void moveMicro(FMOD_VECTOR dPos);
     void setMicroVel(FMOD_VECTOR vel);
     void setMicroPosAndVel(FMOD_VECTOR pos, FMOD_VECTOR vel);
-    void setSoundPos(int id, FMOD_VECTOR pos);
-    void moveSound(int id, FMOD_VECTOR dPos);
-    void setSoundVel(int id, FMOD_VECTOR vel);
-    void setSoundPosAndVel(int id, FMOD_VECTOR pos, FMOD_VECTOR vel);
-    void setMute(int id, bool mute);
-    bool isMute(int id);
-    void setVolume(int id, float vol);
-    float getVolume(int id);
-    void changeVolume(int id, float dVol);
+    void setSoundPos(int channelId, FMOD_VECTOR pos);
+    void moveSound(int channelId, FMOD_VECTOR dPos);
+    void setSoundVel(int channelId, FMOD_VECTOR vel);
+    void setSoundPosAndVel(int channelId, FMOD_VECTOR pos, FMOD_VECTOR vel);
+    void setMute(int channelId, bool mute);
+    bool isMute(int channelId);
+    void setVolume(int channelId, float vol);
+    float getVolume(int channelId);
+    void changeVolume(int channelId, float dVol);
+    void changeFile(int channelId, std::string filePath);
     void update();
     
 private:
     typedef struct SoundObject{
         bool isLoop;
+        bool is3D;
         FMOD_VECTOR     position;
         FMOD_VECTOR     velocity;
         FMOD::Channel   *channel;
