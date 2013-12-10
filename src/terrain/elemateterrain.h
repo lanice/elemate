@@ -22,11 +22,12 @@ namespace physx {
     class PxRigidStatic;
 }
 
-enum TerrainLevel {
-    WaterLevel = 1,
-    BaseLevel = 0,
-    TerrainLevelCount = 2 // this is not a valid TerrainLevel value
+enum class TerrainLevel {
+    BaseLevel,
+    WaterLevel
 };
+
+extern std::initializer_list<TerrainLevel> TerrainLevels;
 
 struct TerrainSettings {
     TerrainSettings();
