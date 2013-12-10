@@ -28,8 +28,8 @@ World::World()
 
     // Create two non-3D channels (paino and rain)
     //initialise as paused
-    soundManager->createNewChannel("data/sounds/rain.mp3", true, true, true);
-    soundManager->createNewChannel("data/sounds/piano.mp3", true, true, true);
+    soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
+    soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
     //set volume (make quieter)
     soundManager->setVolume(0, 0.2f);
     soundManager->setVolume(1, 0.5f);
