@@ -1,19 +1,27 @@
 
 #include "godnavigation.h"
 
+#include "world.h"
+#include "terraingenerator.h"
 
-static const double c_velocityNormal = 0.2;
+
+static const double c_velocityDefault = 0.2;
+static const double c_distanceEyeCenterDefault = 20.;
 
 
 GodNavigation::GodNavigation( int flags )
    : inherited( flags ),
-     _velocity( c_velocityNormal ),
+     _velocity( c_velocityDefault ),
+     _distanceEyeCenter( c_distanceEyeCenterDefault ),
      _keyPressedW( false ),
      _keyPressedS( false ),
      _keyPressedA( false ),
      _keyPressedD( false ),
      _keyPressedQ( false ),
-     _keyPressedE( false )
+     _keyPressedE( false ),
+     _keyPressedShift_L( false ),
+     _slerping( false ),
+     m_world(nullptr)
 {
     if( _flags & SET_CENTER_ON_WHEEL_FORWARD_MOVEMENT )
         setAnimationTime( 0.2 );
@@ -23,15 +31,24 @@ GodNavigation::GodNavigation( int flags )
 GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp )
    : Object(gn, copyOp),
      inherited( gn, copyOp ),
-     _eye( gn._eye ),
+     _center( gn._center ),
      _rotation( gn._rotation ),
+     _startRotation( gn._startRotation ),
+     _stopRotation( gn._stopRotation ),
+     _startDistanceEyeCenter( gn._startDistanceEyeCenter ),
+     _stopDistanceEyeCenter( gn._stopDistanceEyeCenter ),
+     _stopTime( gn._stopTime ),
      _velocity( gn._velocity ),
+     _distanceEyeCenter( gn._distanceEyeCenter ),
      _keyPressedW( gn._keyPressedW ),
      _keyPressedS( gn._keyPressedS ),
      _keyPressedA( gn._keyPressedA ),
      _keyPressedD( gn._keyPressedD ),
-     _keyPressedQ( gn._keyPressedA ),
-     _keyPressedE( gn._keyPressedD )//,
+     _keyPressedQ( gn._keyPressedQ ),
+     _keyPressedE( gn._keyPressedE ),
+     _keyPressedShift_L( gn._keyPressedShift_L ),
+     _slerping( gn._slerping ),
+     m_world( gn.m_world )
 {
 }
 
@@ -39,12 +56,12 @@ GodNavigation::GodNavigation( const GodNavigation& gn, const osg::CopyOp& copyOp
 void GodNavigation::setByMatrix( const osg::Matrixd& matrix )
 {
    // set variables
-   _eye = matrix.getTrans();
+   _center = matrix.getTrans();
    _rotation = matrix.getRotate();
 
    // fix current rotation
    if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
+      fixVerticalAxis( _center, _rotation, true );
 }
 
 
@@ -56,31 +73,31 @@ void GodNavigation::setByInverseMatrix( const osg::Matrixd& matrix )
 
 osg::Matrixd GodNavigation::getMatrix() const
 {
-   return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _eye );
+   return osg::Matrixd::rotate( _rotation ) * osg::Matrixd::translate( _center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter ) );
 }
 
 
 osg::Matrixd GodNavigation::getInverseMatrix() const
 {
-   return osg::Matrixd::translate( -_eye ) * osg::Matrixd::rotate( _rotation.inverse() );
+   return osg::Matrixd::translate( -(_center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter )) ) * osg::Matrixd::rotate( _rotation.inverse() );
 }
 
 
 void GodNavigation::setTransformation( const osg::Vec3d& eye, const osg::Quat& rotation )
 {
    // set variables
-   _eye = eye;
+   _center = eye + rotation * osg::Vec3d( 0., 0., -_distanceEyeCenter );
    _rotation = rotation;
 
    // fix current rotation
    if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
+      fixVerticalAxis( _center, _rotation, true );
 }
 
 
 void GodNavigation::getTransformation( osg::Vec3d& eye, osg::Quat& rotation ) const
 {
-   eye = _eye;
+   eye = _center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter );
    rotation = _rotation;
 }
 
@@ -89,19 +106,19 @@ void GodNavigation::setTransformation( const osg::Vec3d& eye, const osg::Vec3d& 
 {
    // set variables
    osg::Matrixd m( osg::Matrixd::lookAt( eye, center, up ) );
-   _eye = eye;
+   _center = center;
    _rotation = m.getRotate().inverse();
 
    // fix current rotation
    if( getVerticalAxisFixed() )
-      fixVerticalAxis( _eye, _rotation, true );
+      fixVerticalAxis( _center, _rotation, true );
 }
 
 
 void GodNavigation::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const
 {
-   center = _eye + _rotation * osg::Vec3d( 0.,0.,-1. );
-   eye = _eye;
+   center = _center;
+   eye = _center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter );
    up = _rotation * osg::Vec3d( 0.,1.,0. );
 }
 
@@ -125,19 +142,39 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     _delta_frame_time = current_frame_time - _last_frame_time;
     _last_frame_time = current_frame_time;
 
+    if ( _slerping )
+    {
+        double timeFrame = 1. - (_stopTime - current_frame_time);
+
+        if ( timeFrame >= 1. )
+        { 
+            timeFrame = 1.;
+            _slerping = false;
+        }
+
+        _rotation.slerp( timeFrame, _startRotation, _stopRotation );
+        performAutoZoom( timeFrame, _startDistanceEyeCenter, _stopDistanceEyeCenter );
+
+    }
+
     performMovement();
 
    return false;
 }
 
 
-bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
+bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    switch( ea.getKey() )
+            osg::Matrixd m( osg::Matrixd::lookAt( _homeEye, _homeCenter, _homeUp ) );
+    switch( ea.getUnmodifiedKey() )
     {
         case osgGA::GUIEventAdapter::KEY_Space:
-            flushMouseEventStack();
-            home(ea,us);
+            _startRotation = _rotation;
+            _stopRotation = m.getRotate().inverse();
+            _startDistanceEyeCenter = _distanceEyeCenter;
+            _stopDistanceEyeCenter = c_distanceEyeCenterDefault;
+            _stopTime = ea.getTime() + 1.;
+            _slerping = true;
             return true;
 
         case osgGA::GUIEventAdapter::KEY_W:
@@ -164,6 +201,10 @@ bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
             _keyPressedE = true;
             return true;
 
+        case osgGA::GUIEventAdapter::KEY_Shift_L:
+            _keyPressedShift_L = true;
+            return true;
+
         default:
             return false;
     }
@@ -174,7 +215,7 @@ bool GodNavigation::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 
 bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    switch( ea.getKey() )
+    switch( ea.getUnmodifiedKey() )
     {
         case osgGA::GUIEventAdapter::KEY_W:
             _keyPressedW = false;
@@ -200,6 +241,10 @@ bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             _keyPressedE = false;
             return true;
 
+        case osgGA::GUIEventAdapter::KEY_Shift_L:
+            _keyPressedShift_L = false;
+            return true;
+
         default:
             return false;
     }
@@ -208,15 +253,58 @@ bool GodNavigation::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 }
 
 
+bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
+{
+    if ( _keyPressedShift_L )
+    {
+        switch( ea.getScrollingMotion() )
+        {
+            case osgGA::GUIEventAdapter::SCROLL_UP:
+                _distanceEyeCenter += 2.;
+                return true;
+
+            case osgGA::GUIEventAdapter::SCROLL_DOWN:
+                if ( _distanceEyeCenter <= 2. ) return false;
+                _distanceEyeCenter -= 2.;
+                return true;
+
+            default:
+                return false;
+        }
+    } else {
+        // world up vector to rotate with fixed Up vector
+        osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
+        osg::Vec3d localUp = getUpVector( coordinateFrame );
+
+        double heightDiff = (_center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter )).y() - _center.y();
+
+        switch( ea.getScrollingMotion() )
+        {
+            case osgGA::GUIEventAdapter::SCROLL_UP:
+                rotateYawPitch( _rotation, 0., -0.05, localUp );
+                return true;
+
+            case osgGA::GUIEventAdapter::SCROLL_DOWN:
+                if ( heightDiff <= 0.5 ) return false;
+                rotateYawPitch( _rotation, 0., 0.05, localUp );
+                return true;
+
+            default:
+                return false;
+        }
+    }
+}
+
+
 // This method is still under construction!
 bool GodNavigation::performMovement()
 {
     bool moved = false;
     double yaw = 0.;
-    double distanceToLookAtFactor = 3.;
+    double velocity = _velocity * acceleratedFactor();
+    double rotationSpeed = _velocity/4. * acceleratedFactor();
     
     osg::Vec3d movementDirection = osg::Vec3d( 0., 0., 0. );
-    osg::Vec3d rotateDirection = osg::Vec3d( 0., 0., 0. );
 
     // call appropriate methods
     if ( _keyPressedW )
@@ -227,24 +315,19 @@ bool GodNavigation::performMovement()
         calculateMovementDirectionKeyA( movementDirection );
     if ( _keyPressedD )
         calculateMovementDirectionKeyD( movementDirection );
-    if ( _keyPressedQ ) {
-        calculateMovementDirectionKeyQ( rotateDirection );
-        yaw += 0.1;
-    }
-    if ( _keyPressedE ) {
-        calculateMovementDirectionKeyE( rotateDirection );
-        yaw -= 0.1;
-    }
+    if ( _keyPressedQ )
+        yaw += rotationSpeed;
+    if ( _keyPressedE )
+        yaw -= rotationSpeed;
 
 
     if ( movementDirection.length() != 0 ) {
-        performMovement( movementDirection, _velocity );
+        performMovement( movementDirection, velocity );
         moved = true;
     }
 
     if ( yaw != 0 ) {
-        performMovement( rotateDirection, _velocity*distanceToLookAtFactor );
-        performRotationYaw( yaw/distanceToLookAtFactor );
+        performRotationYaw( yaw );
         moved = true;
     }
 
@@ -256,7 +339,8 @@ bool GodNavigation::performMovement( const osg::Vec3d& movementDirection, const 
 {
     osg::Vec3d direction = movementDirection;
     direction.normalize();
-    _eye += (direction * distance);
+    _center += (direction * distance);
+    _center.y() = m_world->terrain->heightAt( _center.x(), _center.z() ) + 1.;
     return true;
 }
 
@@ -264,10 +348,17 @@ bool GodNavigation::performMovement( const osg::Vec3d& movementDirection, const 
 bool GodNavigation::performRotationYaw( const double yaw )
 {
     // world up vector to rotate with fixed Up vector
-    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
+    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
     osg::Vec3d localUp = getUpVector( coordinateFrame );
 
     rotateYawPitch( _rotation, yaw, 0., localUp );
+    return true;
+}
+
+
+bool GodNavigation::performAutoZoom( const double time, const double from, const double to)
+{
+    _distanceEyeCenter = ( ( 1. - time ) * from ) + ( time * to );
     return true;
 }
 
@@ -304,35 +395,27 @@ void GodNavigation::calculateMovementDirectionKeyD( osg::Vec3d& movementDirectio
 }
 
 
-void GodNavigation::calculateMovementDirectionKeyQ( osg::Vec3d& movementDirection )
+double GodNavigation::acceleratedFactor()
 {
-    osg::Vec3d lookAtLeft = _rotation * osg::Vec3d( -1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtLeft.x(), 0., lookAtLeft.z() );
-}
-
-
-void GodNavigation::calculateMovementDirectionKeyE( osg::Vec3d& movementDirection )
-{
-    osg::Vec3d lookAtRight = _rotation * osg::Vec3d( 1., 0., 0. );
-
-    movementDirection += osg::Vec3d( lookAtRight.x(), 0., lookAtRight.z() );
+    if ( _keyPressedShift_L ) return 5.;
+    
+    return 1.;
 }
 
 
 void GodNavigation::moveForward( const double distance )
 {
-   _eye += _rotation * osg::Vec3d( 0., 0., -distance );
+   _center += _rotation * osg::Vec3d( 0., 0., -distance );
 }
 
 
 void GodNavigation::moveRight( const double distance )
 {
-   _eye += _rotation * osg::Vec3d( distance, 0., 0. );
+   _center += _rotation * osg::Vec3d( distance, 0., 0. );
 }
 
 
 void GodNavigation::moveUp( const double distance )
 {
-   _eye += _rotation * osg::Vec3d( 0., distance, 0. );
+   _center += _rotation * osg::Vec3d( 0., distance, 0. );
 }

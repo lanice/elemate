@@ -52,16 +52,10 @@ set(SOURCES
     src/simpleconfigreader.h
     src/terraingenerator.cpp
     src/terraingenerator.h
-#    src/standardparticles.cpp
-#    src/standardparticles.h
-#    src/apex/elematerenderresourcemanager.h
-#    src/apex/elematerenderresourcemanager.cpp
-#    src/apex/elematerendervertexbuffer.h
-#    src/apex/elematerendervertexbuffer.cpp
-#    src/apex/elemateresourcecallback.h
-#    src/apex/elemateresourcecallback.cpp
-    src/osg/sharedgeometrytechnique.h
-    src/osg/sharedgeometrytechnique.cpp
+    src/osg/sharedgeometrytechnique.h;
+    src/osg/sharedgeometrytechnique.cpp;
+    src/soundmanager.cpp
+    src/soundmanager.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -88,12 +82,8 @@ find_package( osgUtil )
 find_package( osgViewer )
 find_package( osgGA )
 find_package( osgTerrain )
-find_package( PhysX REQUIRED)
-# find_package( APEX REQUIRED)
-# find_package( APEX_Framework REQUIRED)
-# find_package( APEX_Framework_Physx REQUIRED)
-# find_package( APEX_Paramerterized REQUIRED)
-# find_package( APEX_Modules REQUIRED)
+find_package( PhysX REQUIRED )
+find_package( FMOD )
 
 list(APPEND SOURCES ${SHADER})
 
@@ -134,7 +124,4 @@ config_project( ${PROJECT_NAME} OSGVIEWER 1 )
 config_project( ${PROJECT_NAME} OSGGA 1 )
 config_project( ${PROJECT_NAME} OSGTERRAIN 1 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
-# include_directories( ${APEX_FRAMEWORK_INCLUDE_DIR})
-# include_directories( ${APEX_FRAMEWORK_PHYSX_INCLUDE_DIR})
-# include_directories( ${APEX_PARAMERTERIZED_INCLUDE_DIR})
-# include_directories( ${APEX_MODULES_INCLUDE_DIR})
+config_project( ${PROJECT_NAME} FMOD 0 )
