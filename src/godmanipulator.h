@@ -7,7 +7,9 @@
 #include <memory> //shared_ptr
 
 
+class GodNavigation;
 class World;
+class TerrainInteractor;
 
 /** The EventHandler for game content/logic specific events.
  *  To process an incoming event modify the according handle* class.
@@ -22,7 +24,8 @@ class GodManipulator : public osgGA::GUIEventHandler
         GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
 
-        void setWorld( std::shared_ptr<World> world ) { m_world = world; };
+        void setNavigation(GodNavigation * navigation);
+        void setWorld(std::shared_ptr<World>& world);
 
 
         /** Handles events. Returns true if handled, false otherwise.*/
@@ -45,5 +48,9 @@ class GodManipulator : public osgGA::GUIEventHandler
 
     protected:
 
+        bool _keyPressedAlt_L;
+
+        osg::ref_ptr<GodNavigation> m_navigation;
         std::shared_ptr<World> m_world;
+        std::shared_ptr<TerrainInteractor> m_terrainInteractor;
 };

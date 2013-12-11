@@ -93,14 +93,17 @@ public:
     const std::map<osgTerrain::TileID, physx::PxRigidStatic*> pxActorMap() const;
     /** @return height at specific world position */
     float heightAt(float x, float z) const;
-    /** sets the physx and osg heightfield value in a specific tile at (physx) row/column position (means in x/z direction)
-        @return false, if row/column out of range */
-    bool setHeightInTile(const osgTerrain::TileID & tileID, unsigned int physxRow, unsigned int physxColumn, float height);
-    /** sets the physx and osg heightfield value in world coordinates x/z 
-        @return false, if x or z out of range */
-    bool setHeight(unsigned int x, unsigned int z, float height);
+    /** @return height at specific world position in a specific terrain level */
+    float heightAt(float x, float z, TerrainLevel level) const;
+    /** @return height at specific normalized tile position in a specific terrain level */
+    float heightAtNormalized(float normX, float normZ, TerrainLevel level) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings & settings() const;
+    /** Converts a world x/z position into a tile id and the corresponding physx row/column positin in the tile.
+      * This uses the current terrain settings.
+      * @paragm baseTileID the tile level is always set to BaseLevel(0)
+      * @return true, if the position is in terrain extent's range. */
+    bool worldToTileRowColumn(float x, float z, osgTerrain::TileID & baseTileID, unsigned int &physxRow, unsigned int& physxColumn);
 
 private:
     /** osg terrain object that can consist of multiple tiles */

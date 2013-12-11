@@ -58,6 +58,8 @@ set(SOURCES
     src/terrain/terraingenerator.h
     src/terrain/elemateterrain.h
     src/terrain/elemateterrain.cpp
+    src/terrain/terraininteractor.h
+    src/terrain/terraininteractor.cpp
     src/osg/sharedgeometrytechnique.h;
     src/osg/sharedgeometrytechnique.cpp;
     src/soundmanager.cpp

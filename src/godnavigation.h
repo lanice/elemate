@@ -38,6 +38,9 @@ class GodNavigation : public osgGA::StandardManipulator
         /** Get manipulator's focal center, eye position, and up vector.*/
         virtual void getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const;
 
+        /** Get the manipulator's focal center */
+        osg::Vec3d getCenter() const;
+
         /** Set distance per frame the manipulator should move.*/
         virtual void setVelocity( const double& velocity );
         /** Get distance per frame the manipulator moves.*/

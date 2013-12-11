@@ -123,6 +123,12 @@ void GodNavigation::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg:
 }
 
 
+osg::Vec3d GodNavigation::getCenter() const
+{
+    return _center;
+}
+
+
 void GodNavigation::setVelocity( const double& velocity )
 {
    _velocity = velocity;

@@ -50,15 +50,16 @@ void Game::start(){
     if (isRunning())
         return;
 
+    setOsgCamera();
+
     // Add GodManipulator (event handler) to the Viewer that handles events
     // that don't belong to the navigation but to game content/logic. 
     // It is added to Viewers EventHandlerQueue to receive incoming events.
     GodManipulator * eventHandler = new GodManipulator();
     // The handler gets access to the World to process game content/logic specific events.
+    eventHandler->setNavigation(m_navigation);
     eventHandler->setWorld(m_world);
     m_viewer.addEventHandler(eventHandler);
-    
-    setOsgCamera();
 
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
