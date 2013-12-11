@@ -15,6 +15,7 @@ namespace osg {
 }
 namespace osgTerrain {
     class Terrain;
+    class TerrainTile;
     class TileID;
 }
 namespace physx {
@@ -91,19 +92,12 @@ public:
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;
     /** map of static PhysX actors */
     const std::map<osgTerrain::TileID, physx::PxRigidStatic*> pxActorMap() const;
-    /** @return height at specific world position */
+    /** @return interpolated height at specific world position */
     float heightAt(float x, float z) const;
-    /** @return height at specific world position in a specific terrain level */
+    /** @return interpolated height at specific world position in a specific terrain level */
     float heightAt(float x, float z, TerrainLevel level) const;
-    /** @return height at specific normalized tile position in a specific terrain level */
-    float heightAtNormalized(float normX, float normZ, TerrainLevel level) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings & settings() const;
-    /** Converts a world x/z position into a tile id and the corresponding physx row/column positin in the tile.
-      * This uses the current terrain settings.
-      * @paragm baseTileID the tile level is always set to BaseLevel(0)
-      * @return true, if the position is in terrain extent's range. */
-    bool worldToTileRowColumn(float x, float z, osgTerrain::TileID & baseTileID, unsigned int &physxRow, unsigned int& physxColumn);
 
 private:
     /** osg terrain object that can consist of multiple tiles */
@@ -120,15 +114,19 @@ private:
     /** physx static actor per terrain tile */
     std::map<osgTerrain::TileID, physx::PxRigidStatic*> m_pxActors;
 
-    /** Sets the physx and osg heightfield value at equivalent positions to the data arrays.
-        Doesn't perfome any range checks, so make sure to pass valid row/column and height value!
-        Height scaling depends on heightScaleToPhysx, row/column conversion on current terrain settings. */
-    inline void setHeight(physx::PxHeightFieldSample * pxHeightField, osg::HeightField * osgHeightField, unsigned int physxRow, unsigned int physxColumn, float worldHeight)
-    {
-        assert(physxRow >= 0 && physxRow < m_settings.rows); assert(physxColumn >= 0 && physxColumn < m_settings.columns);
-        osgHeightField->setHeight(physxRow, m_settings.columns - physxColumn - 1, worldHeight);
-        pxHeightField[physxColumn + m_settings.columns*physxRow].height = static_cast<physx::PxI16>(worldHeight * heightScaleToPhysx);
-    }
+    /** @return interpolated height at specific normalized tile position in a specific terrain level */
+    float ElemateHeightFieldTerrain::interpolatedHeightAt(osgTerrain::TileID tileID, float normalizedX, float normalizedZ) const;
+
+    /** Fetch the tile corresponding to the xz world coordinates and the terrain level and sets the row/column position in this tile.
+    * @param terrainTile if world x/z position are in range, this pointer will be set to a valid terrain tile.
+    * @return true, if the position is in terrain extent's range. */
+    bool worldToTileRowColumn(float x, float z, TerrainLevel level, osg::ref_ptr<osgTerrain::TerrainTile> & terrainTile, unsigned int & physxRow, unsigned int & physxColumn) const;
+
+    bool normalizePosition(float x, float z, osgTerrain::TileID & tileID, float & normX, float & normZ) const;
+
+    /** fetch the tile's height value at a specific physx row/column position and layer, without any range checks. 
+      * @return height value */
+    float heightAt(osgTerrain::TerrainTile & tile, unsigned int physxRow, unsigned int physxColumn, TerrainLevel level) const;
 
     /** stores terrain configuration, set up by terrain generator */
     const TerrainSettings m_settings;
@@ -143,4 +141,5 @@ private:
     ElemateHeightFieldTerrain & operator=(const ElemateHeightFieldTerrain &) = delete;
 
     friend class TerrainGenerator;
+    friend class TerrainInteractor;
 };

@@ -27,7 +27,8 @@ float TerrainInteractor::setHeight(float worldX, float worldZ, TerrainLevel leve
     unsigned int physxRow;
     unsigned int physxColumn;
     osgTerrain::TileID tileID;
-    if (!m_terrain->worldToTileRowColumn(worldX, worldZ, tileID, physxRow, physxColumn))
+    assert(false);
+    /*if (!m_terrain->worldToTileRowColumn(worldX, worldZ, tileID, physxRow, physxColumn))
         return 0.0f;
 
     tileID.level = static_cast<int>(level);
@@ -46,7 +47,7 @@ float TerrainInteractor::setHeight(float worldX, float worldZ, TerrainLevel leve
 
     hfLayer->getHeightField()->setHeight(osgColumn, osgRow, value_inRange);
 
-    hfLayer->dirty();
+    hfLayer->dirty();*/
 
     return value_inRange;
 }
