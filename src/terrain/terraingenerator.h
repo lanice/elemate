@@ -2,10 +2,6 @@
 
 #include "elemateterrain.h"
 
-namespace osgTerrain {
-    class TileID;
-    class TerrainTile;
-}
 namespace physx {
     class PxShape;
     class PxRigidStatic;

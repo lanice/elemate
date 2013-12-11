@@ -121,12 +121,15 @@ private:
     * @param terrainTile if world x/z position are in range, this pointer will be set to a valid terrain tile.
     * @return true, if the position is in terrain extent's range. */
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, osg::ref_ptr<osgTerrain::TerrainTile> & terrainTile, unsigned int & physxRow, unsigned int & physxColumn) const;
-
+    /** transform world position into tileID and normalized coordinates in this tile. 
+      * @param tileID this will set the x, y values of the id, but will not change the level
+      * @param normX normZ these parameter will be set the normalized position in the tile, referenced with tileID
+      * @return whether the world position is in range of the terrain. The tileID does only reference a valid tile if the function returns true. */
     bool normalizePosition(float x, float z, osgTerrain::TileID & tileID, float & normX, float & normZ) const;
 
     /** fetch the tile's height value at a specific physx row/column position and layer, without any range checks. 
       * @return height value */
-    float heightAt(osgTerrain::TerrainTile & tile, unsigned int physxRow, unsigned int physxColumn, TerrainLevel level) const;
+    float heightAt(osgTerrain::TerrainTile & tile, unsigned int physxRow, unsigned int physxColumn) const;
 
     /** stores terrain configuration, set up by terrain generator */
     const TerrainSettings m_settings;

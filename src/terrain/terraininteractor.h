@@ -5,9 +5,6 @@
 #include "elemateterrain.h"
 
 class ElemateHeightFieldTerrain;
-namespace osg {
-    class TileID;
-};
 
 class TerrainInteractor {
 public:
@@ -27,4 +24,6 @@ public:
 
 private:
     std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
+
+    float setHeight(osgTerrain::TerrainTile & tile, float physxRow, float physxColumn, float value);
 };

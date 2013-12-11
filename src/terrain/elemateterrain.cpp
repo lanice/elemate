@@ -77,28 +77,6 @@ float ElemateHeightFieldTerrain::heightAt(float x, float z, TerrainLevel level) 
     return interpolatedHeightAt(tileID, normalizedX, normalizedZ);
 }
 
-//float ElemateHeightFieldTerrain::heightAt(float x, float z, TerrainLevel level) const
-//{
-//    unsigned int physxRow, physxColumn;
-//    osg::ref_ptr<osgTerrain::TerrainTile> tile;
-//    if (!worldToTileRowColumn(x, z, tile, physxRow, physxColumn))
-//        return 0.0f;
-//
-//    assert(tile.valid());
-//
-//    float height;
-//
-//    return heightAt(*tile.get(), physxRow, physxColumn, level);
-//}
-//
-//float ElemateHeightFieldTerrain::heightAt(osgTerrain::TerrainTile & tile, unsigned int physxRow, unsigned int physxColumn, TerrainLevel level) const
-//{
-//    osgTerrain::HeightFieldLayer * heightFieldLayer = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile.getElevationLayer());
-//    assert(heightFieldLayer);
-//
-//    return heightFieldLayer->getHeightField()->getHeight(physxRow, m_settings.columns - physxColumn - 1);
-//}
-
 bool ElemateHeightFieldTerrain::normalizePosition(float x, float z, osgTerrain::TileID & tileID, float & normX, float & normZ) const
 {
     // currently for one tile only
@@ -131,6 +109,17 @@ float ElemateHeightFieldTerrain::interpolatedHeightAt(osgTerrain::TileID tileID,
     return height;
 }
 
+float ElemateHeightFieldTerrain::heightAt(osgTerrain::TerrainTile & tile, unsigned int physxRow, unsigned int physxColumn) const
+{
+    osg::ref_ptr<osgTerrain::HeightFieldLayer> hfLayer = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile.getElevationLayer());
+    assert(hfLayer.valid());
+
+    unsigned int osgColumn = physxRow;
+    unsigned int osgRow = m_settings.columns - physxColumn - 1;
+
+    return hfLayer->getHeightField()->getHeight(osgColumn, osgRow);
+}
+
 bool ElemateHeightFieldTerrain::worldToTileRowColumn(float x, float z, TerrainLevel level, osg::ref_ptr<osgTerrain::TerrainTile> & terrainTile, unsigned int & physxRow, unsigned int & physxColumn) const
 {
     // only implemented for 1 tile
@@ -142,8 +131,8 @@ bool ElemateHeightFieldTerrain::worldToTileRowColumn(float x, float z, TerrainLe
     physxRow = static_cast<int>(normX * m_settings.rows) % m_settings.rows;
     physxColumn = static_cast<int>(normZ * m_settings.columns) % m_settings.columns;
 
-    terrainTile = m_osgTerrain->getTile(osgTerrain::TileID(static_cast<int>(level), 1, 1));
-    
+    terrainTile = m_osgTerrain->getTile(osgTerrain::TileID(static_cast<int>(level), 0, 0));
+
     assert(terrainTile.valid());
 
     return valid;
