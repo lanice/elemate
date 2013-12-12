@@ -25,14 +25,8 @@ public:
     bool isPaused(int channelId);
     /** toggles the pause status of channel */
     void togglePause(int channelId);
-    /** sets the position of the listener (microphone) */
-    void setMicroPos(FMOD_VECTOR pos);
-    /** changes the position of the listener (microphone) by dPos */
-    void moveMicro(FMOD_VECTOR dPos);
-    /** sets the velocity of the listener (microphone) */
-    void setMicroVel(FMOD_VECTOR vel);
-    /** sets position and velocity of the listener (microphone) */
-    void setMicroPosAndVel(FMOD_VECTOR pos, FMOD_VECTOR vel);
+    /** sets general Listener attributes */
+    void setListenerAttributes(FMOD_VECTOR pos, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity = { 0.f, 0.f, 0.f });
     /** sets position of a channel in the world */
     void setSoundPos(int channelId, FMOD_VECTOR pos);
     /** changes position of a channel by dPos */
@@ -67,23 +61,19 @@ private:
     }SoundObject;
     typedef std::map<int, SoundObject> SoundMap;
 
-    FMOD_VECTOR         position;
-    FMOD_VECTOR         velocity;
-    FMOD_VECTOR         up;
-    FMOD_VECTOR         forward;
-    unsigned int        version;
-    int                 numdrivers;
-    FMOD_SPEAKERMODE    speakermode;
-    FMOD_CAPS           caps;
-    char                name[256];
-    float               distanceFactor = 10.f; // units per meter (centimeters = 100)
-    SoundMap            m_channels;
-    FMOD_RESULT         result;
-    FMOD::System        *system;
+    unsigned int        _version;
+    int                 _numdrivers;
+    FMOD_SPEAKERMODE    _speakermode;
+    FMOD_CAPS           _caps;
+    char                _name[256];
+    float               _distanceFactor = 5.f; // units per meter (centimeters = 100)
+    SoundMap            _channels;
+    FMOD_RESULT         _result;
+    FMOD::System        *_system;
     /** checks errors */
     void SoundManager::ERRCHECK(FMOD_RESULT);
     /** returns the next free channelId */
     int getNextFreeId();
     /** inits the SoundManager with optional start position */
-    void init(FMOD_VECTOR startPosition = {0.f,0.f,0.f});
+    void init(FMOD_VECTOR position = { 0.f, 0.f, 0.f }, FMOD_VECTOR forward = { 0.f, 0.f, 1.f }, FMOD_VECTOR up = { 0.f, 1.f, 0.f }, FMOD_VECTOR velocity = { 0.f, 0.f, 0.f });
 };
