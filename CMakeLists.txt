@@ -17,13 +17,6 @@ option(OPTION_LIMIT_CONFIGS "Generate limited configs (Release; Debug)" ON)
 option(OPTION_LOCAL_INSTALL "Install to local directory instead of system" OFF)
 
 
-set (ELEMATE_DATA_DIR $ENV{ELEMATE_DATA_DIR})
-if (NOT ELEMATE_DATA_DIR)
-    set (ELEMATE_DATA_DIR "../elemateData")
-endif()
-option(ELEMATE_DATA_DIR "Path to elemate data like sound and textures" ${ELEMATE_DATA_DIR})
-
-
 if(OPTION_LIMIT_CONFIGS)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited Configs" FORCE)
 endif()
