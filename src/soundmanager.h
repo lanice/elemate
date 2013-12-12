@@ -29,8 +29,6 @@ public:
     void setListenerAttributes(FMOD_VECTOR pos, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity = { 0.f, 0.f, 0.f });
     /** sets position of a channel in the world */
     void setSoundPos(int channelId, FMOD_VECTOR pos);
-    /** changes position of a channel by dPos */
-    void moveSound(int channelId, FMOD_VECTOR dPos);
     /** sets the velocity of a channel */
     void setSoundVel(int channelId, FMOD_VECTOR vel);
     /** sets positions and velocity of a channel in the world */

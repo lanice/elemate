@@ -429,6 +429,9 @@ void GodNavigation::updateListener(){
     forward.normalize();
     up.normalize();
 
-    m_world->soundManager->setListenerAttributes({ eye.x(), eye.y(), eye.z() }, { forward.x(), forward.y(), forward.z() }, { up.x(), up.y(), up.z() });
-    m_world->soundManager->update();
+    m_world->soundManager->setListenerAttributes(
+        { eye.x(), eye.y(), eye.z() },
+        { forward.x(), forward.y(), forward.z() },
+        { up.x(), up.y(), up.z() }
+    );
 }

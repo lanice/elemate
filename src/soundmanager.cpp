@@ -1,4 +1,5 @@
 #include "soundmanager.h"
+#include <iostream>
 
 SoundManager::SoundManager(FMOD_VECTOR startPosition){
     init(startPosition);
@@ -20,7 +21,7 @@ void SoundManager::ERRCHECK(FMOD_RESULT _result)
 {
     if (_result != FMOD_OK)
     {
-        printf("FMOD error! (%d) %s\n", _result, FMOD_ErrorString(_result));
+        std::cerr << "FMOD error! (" << _result << ") " << FMOD_ErrorString(_result) << std::endl;
         exit(-1);
     }
 }
@@ -110,6 +111,7 @@ int SoundManager::createNewChannel(std::string soundFilePath, bool isLoop, bool 
     }
 
     // create the sound
+
     _result = _system->createSound(soundFilePath.c_str(), _mode, 0, &_sound);
     ERRCHECK(_result);
 
@@ -161,7 +163,7 @@ void SoundManager::play(int channelId){
         _result = _channels[channelId].channel->stop();
         ERRCHECK(_result);
         if (_channels[channelId].is3D){
-            _result = _system->playSound(FMOD_CHANNEL_REUSE, _channels[channelId].sound, true, &(_channels[channelId].channel));
+            _result = _system->playSound(FMOD_CHANNEL_FREE, _channels[channelId].sound, true, &(_channels[channelId].channel));
             ERRCHECK(_result);
             _result = _channels[channelId].channel->set3DAttributes(&_channels[channelId].position, &_channels[channelId].velocity);
             ERRCHECK(_result);
@@ -169,7 +171,7 @@ void SoundManager::play(int channelId){
             ERRCHECK(_result);
         _result = _channels[channelId].channel->setPaused(false);
         }else{
-            _result = _system->playSound(FMOD_CHANNEL_REUSE, _channels[channelId].sound, false, &(_channels[channelId].channel));
+            _result = _system->playSound(FMOD_CHANNEL_FREE, _channels[channelId].sound, false, &(_channels[channelId].channel));
         }
     }
     ERRCHECK(_result);
@@ -206,21 +208,6 @@ void SoundManager::setSoundPos(int channelId, FMOD_VECTOR pos){
     }
     ERRCHECK(_result);
     _channels[channelId].position = pos;
-}
-
-void SoundManager::moveSound(int channelId, FMOD_VECTOR dPos){
-    FMOD_VECTOR _pos = _channels[channelId].position;
-    FMOD_VECTOR _vel = _channels[channelId].velocity;
-
-    _pos = { _pos.x + dPos.x, _pos.y + dPos.y, _pos.z + dPos.z };
-
-    bool p;
-    _channels[channelId].channel->isPlaying(&p);
-    if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&_pos, &_vel);
-        ERRCHECK(_result);
-    }
-    _channels[channelId].position = _pos;
 }
 
 void SoundManager::setSoundVel(int channelId, FMOD_VECTOR vel){

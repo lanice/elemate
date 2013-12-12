@@ -4,6 +4,7 @@ build*/
 codeblocks/
 3rdparty/
 documentation/
+data/
 
 
 *.sublime-project
