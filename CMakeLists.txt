@@ -27,8 +27,12 @@ include(cmake/Custom.cmake)
 set(ELEMATE_SOURCE_GROUP "Source Files")
 set(ELEMATE_SHADER_GROUP "Shader Files")
 
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
 set(SOURCES
     src/main.cpp
+    src/elements.h
+    src/elements.cpp
     src/physicswrapper.cpp
     src/physicswrapper.h
     src/game.cpp
@@ -50,8 +54,10 @@ set(SOURCES
     src/hpicgs/ChronoTimer.h
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
-    src/terraingenerator.cpp
-    src/terraingenerator.h
+    src/terrain/terraingenerator.cpp
+    src/terrain/terraingenerator.h
+    src/terrain/elemateterrain.h
+    src/terrain/elemateterrain.cpp
     src/osg/sharedgeometrytechnique.h;
     src/osg/sharedgeometrytechnique.cpp;
     src/soundmanager.cpp
@@ -63,15 +69,18 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
-    shader/terrain.frag
-    shader/terrain.vert
-    shader/terrain.geo
+    shader/terrain_base.vert
+    shader/terrain_water.vert
+    shader/terrain_base.geom
+    shader/terrain_base.frag
+    shader/terrain_water.geom
+    shader/terrain_water.frag
     shader/sphere.frag
     shader/sphere.vert
     shader/phongLighting.frag
 )
 
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geom$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
     
 

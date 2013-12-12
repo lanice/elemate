@@ -32,7 +32,7 @@ public:
 
     void setNavigation(GodNavigation * navigation);
     void reloadShader();
-    void setUniforms();
+    void setUniforms(long double globalTime);
 
     void setGraphicsContext(osg::GraphicsContext * context);
 

@@ -7,7 +7,6 @@
 typedef long double t_longf;
 
 #include <string>
-#include <hash_map>
 #include <osg/GraphicsContext>
 
 #include "PxPhysicsAPI.h"
@@ -38,11 +37,13 @@ public:
     void stopSimulation();
 
     /** Gets Elapsed Time without wasting the cycle time. */
-    t_longf elapsedTime()const;
+    t_longf elapsedTime() const;
+
+    /** Get current in game time since start. */
+    t_longf currentTime() const;
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
-    physx::PxMaterial*          material(std::string material_name)const;
 
     void setOsgGraphicsContext(osg::GraphicsContext * context);
 
@@ -58,7 +59,7 @@ protected:
 
     /** Creation of CycleTime without starting it. */
     void initializeTime();
-    
+
     /** Specifies special scene description.  */
     void customizeSceneDescription(physx::PxSceneDesc&);
 
@@ -73,9 +74,8 @@ protected:
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
-    std::hash_map<std::string, physx::PxMaterial*>  m_materials;
-    CyclicTime*                                     m_cyclic_time;
     t_longf                                         m_elapsed;
+    CyclicTime*                                     m_cyclic_time;
     physx::PxCooking*                               m_cooking;
 
     osg::ref_ptr<osg::GraphicsContext> m_osgGraphicsContext;

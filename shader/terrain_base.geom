@@ -8,7 +8,8 @@ in vec4 v_projPos[3];
 out vec3 normal;
 out vec3 viewPos;
 out vec3 worldPos;
-flat out ivec2 texCoord;
+flat out ivec2 terrainIdTexCoord;
+out vec2 normInTileCoord;
 
 uniform vec3 tileSize;
 uniform vec2 tileLeftFront;
@@ -29,7 +30,9 @@ void main()
     _texCoord.y = int(tileRowsColumns.y) - _texCoord.y - 1;
     
     for (int i=0; i < 3; ++i) {
-        texCoord = _texCoord;
+        terrainIdTexCoord = _texCoord;
+        
+        normInTileCoord = abs(tileLeftFront - v_worldPos[i].xz) / tileSize.xz;
     
         normal = v_normal[i];
         viewPos = v_viewPos[i];

@@ -6,6 +6,7 @@
 #include <osg/ShapeDrawable>
 #include <osgViewer/View>
 #include <osg/MatrixTransform>
+#include "elements.h"
 #include "physicswrapper.h"
 
 ObjectsContainer::ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper) :
@@ -87,7 +88,7 @@ void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const p
     osgTransformNode->addChild(sphere_geode);
     parent->addChild(osgTransformNode.get());
 
-    auto physx_object = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(global_position), physx::PxSphereGeometry(radius), *m_physics_wrapper->material("default"), 1.0F);
+    auto physx_object = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(global_position), physx::PxSphereGeometry(radius), *Elements::pxMaterial("default"), 1.0F);
     physx_object->setLinearVelocity(linear_velocity);
     physx_object->setAngularVelocity(angular_velocity);
     m_physics_wrapper->scene()->addActor(*physx_object);
@@ -101,8 +102,8 @@ void ObjectsContainer::initializeParticles(){
     if (m_particle_system)
         m_physics_wrapper->scene()->addActor(*m_particle_system);
     
-    auto drain_plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0.0F, 1.0F, 0.0F), 0.0F), *m_physics_wrapper->material("default"));
-    physx::PxShape* shape = drain_plane->createShape(physx::PxPlaneGeometry(), *m_physics_wrapper->material("default"));
+    auto drain_plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0.0F, 1.0F, 0.0F), 0.0F), *Elements::pxMaterial("default"));
+    physx::PxShape* shape = drain_plane->createShape(physx::PxPlaneGeometry(), *Elements::pxMaterial("default"));
     shape->setFlag(physx::PxShapeFlag::ePARTICLE_DRAIN, true);
     m_physics_wrapper->scene()->addActor(*drain_plane);
 }
