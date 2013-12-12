@@ -2,7 +2,7 @@
 #include "godnavigation.h"
 
 #include "world.h"
-#include "terraingenerator.h"
+#include "terrain/elemateterrain.h"
 
 
 static const double c_velocityDefault = 0.2;

@@ -1,9 +1,11 @@
 #include "physicswrapper.h"
 
-#include "hpicgs\CyclicTime.h"
-
 #include <iostream>
 #include <cassert>
+
+#include "hpicgs/CyclicTime.h"
+#include "elements.h"
+
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
 
@@ -19,6 +21,7 @@ PhysicsWrapper::PhysicsWrapper():
     initializePhysics();
     initializeScene();
     initializeTime();
+    Elements::initialize(*m_physics);
 }
 
 PhysicsWrapper::~PhysicsWrapper(){
@@ -82,10 +85,6 @@ void PhysicsWrapper::initializeScene(){
     m_scene = m_physics->createScene(sceneDesc);
     if (!m_scene)
         fatalError("createScene failed!");
-
-    m_materials["default"] = m_physics->createMaterial(0.5f, 0.5f, 0.1f);
-    if (!m_materials["default"])
-        fatalError("createMaterial failed!");
 }
 
 void PhysicsWrapper::initializeTime(){
@@ -153,10 +152,11 @@ t_longf PhysicsWrapper::elapsedTime()const{
     return m_elapsed;
 }
 
-physx::PxScene* PhysicsWrapper::scene()const{
-    return m_scene;
+t_longf PhysicsWrapper::currentTime() const
+{
+    return m_cyclic_time->getNonModf();
 }
 
-physx::PxMaterial* PhysicsWrapper::material(std::string material_name)const{
-    return m_materials.at(material_name);
+physx::PxScene* PhysicsWrapper::scene()const{
+    return m_scene;
 }

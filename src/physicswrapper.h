@@ -7,7 +7,6 @@
 typedef long double t_longf;
 
 #include <string>
-#include <hash_map>
 #include "PxPhysicsAPI.h"
 
 class CyclicTime;
@@ -36,11 +35,13 @@ public:
     void stopSimulation();
 
     /** Gets Elapsed Time without wasting the cycle time. */
-    t_longf elapsedTime()const;
+    t_longf elapsedTime() const;
+
+    /** Get current in game time since start. */
+    t_longf currentTime() const;
 
     /** The returned object is initialized. */
     physx::PxScene*     scene() const;
-    physx::PxMaterial*  material(std::string material_name)const;
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
@@ -69,9 +70,8 @@ protected:
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
-    std::hash_map<std::string, physx::PxMaterial*>  m_materials;
-    CyclicTime*                                     m_cyclic_time;
     t_longf                                         m_elapsed;
+    CyclicTime*                                     m_cyclic_time;
 private:
     DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
 };
