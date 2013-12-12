@@ -109,10 +109,10 @@ void World::makeStandardBall()
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
 
-    soundManager->createNewChannel("data/sounds/plop.wav", false, true, false, {0.f,0.f,0.f});
+    // set channel position of plop sound when spawning the ball
+    soundManager->createNewChannel("data/sounds/plop.wav", false, true, false, { centerd.x(), centerd.y() + 0.5, centerd.z() });
     // prototype: hard-coded physx values etc.
-    //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3( centerd.x(), centerd.y() + 0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
-    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(0.f, 0.f, 0.f), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3( centerd.x(), centerd.y() + 0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
 }
 
 void World::toogleBackgroundSound(int id){
