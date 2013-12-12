@@ -60,6 +60,8 @@ void Game::start(){
     
     setOsgCamera();
 
+    eventHandler->setCamera(m_viewer.getCamera());
+
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
     m_world->setUniforms();

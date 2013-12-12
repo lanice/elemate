@@ -14,6 +14,7 @@ namespace osg {
     class Group;
     class Program;
     class MatrixTransform;
+    class Matrixd;
 }
 
 class World {
@@ -23,6 +24,7 @@ public:
     ~World();
 
     osg::Group* root();
+    osg::Matrixd getCameraTransform();
 
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall();

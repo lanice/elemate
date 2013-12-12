@@ -7,6 +7,7 @@
 #include <osg/MatrixTransform>
 #include <osg/ShapeDrawable>
 #include <osgDB/ReadFile>
+#include <osg/Matrix>
 
 #include "physicswrapper.h"
 #include "objectscontainer.h"
@@ -105,6 +106,11 @@ void World::setUpLighting()
 osg::Group* World::root()
 {
     return m_root.get();
+}
+
+osg::Matrixd World::getCameraTransform()
+{
+    return m_navigation->getMatrix();
 }
 
 void World::makeStandardBall()

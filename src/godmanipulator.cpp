@@ -2,6 +2,7 @@
 #include "godmanipulator.h"
 
 #include <osg/MatrixTransform>
+#include <osg/Camera>
 
 #include "world.h"
 #include "terraingenerator.h"
@@ -11,6 +12,7 @@
 GodManipulator::GodManipulator()
    : inherited(),
      m_world(nullptr),
+     m_camera(nullptr),
      m_hand(new Hand())
 {
 }
@@ -20,6 +22,7 @@ GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& cop
    : Object(gm, copyOp),
      inherited( gm, copyOp ),
      m_world( gm.m_world ),
+     m_camera( gm.m_camera ),
      m_hand( gm.m_hand )
 {
 }
@@ -35,6 +38,12 @@ void GodManipulator::setWorld( std::shared_ptr<World> world )
 {
     m_world = world;
     m_world->root()->addChild( m_hand->transform() );
+}
+
+
+void GodManipulator::setCamera( osg::Camera * camera )
+{
+    m_camera = camera;
 }
 
 
@@ -74,10 +83,11 @@ bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 
 bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    float x = ea.getX();
-    float z = -ea.getY();
-    float y = m_world->terrain->heightAt( x, z ) + 2.;
-    m_hand->transform()->setMatrix( m_hand->defaultTransform() * osg::Matrixd::translate( x, y, z ) );
+    osg::Matrixd matrix = (m_camera->getProjectionMatrix() * m_world->getCameraTransform() * m_camera->getViewMatrix());
+    osg::Matrixd::inverse(matrix);
+
+    osg::Vec3 pos = osg::Vec3( (ea.getX() / ea.getWindowWidth() - 0.5) * 2., (ea.getY() / ea.getWindowHeight() - 0.5) * 2., -1. ) * matrix;
+    m_hand->transform()->setMatrix( m_hand->defaultTransform() * osg::Matrixd::translate( pos ) );
     return true;
 }
 
