@@ -4,6 +4,7 @@ build*/
 codeblocks/
 3rdparty/
 documentation/
+data/
 
 
 *.sublime-project
@@ -16,6 +17,7 @@ documentation/
 *.toc
 *.vcproj.*.user
 *.vcxproj.user
+Thumbs.db
 
 _configure.bat
 _open-project.bat
