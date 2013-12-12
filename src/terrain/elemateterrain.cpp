@@ -10,6 +10,11 @@
 
 using namespace physx;
 
+std::initializer_list<TerrainLevel> TerrainLevels = {
+    TerrainLevel::BaseLevel,
+    TerrainLevel::WaterLevel
+};
+
 
 TerrainSettings::TerrainSettings()
 : sizeX(200)
@@ -56,9 +61,9 @@ float ElemateHeightFieldTerrain::heightAt(float x, float z) const
         return 0.0f;
 
     float height = std::numeric_limits<float>::lowest();
-    for (int i = 0; i < TerrainLevel::TerrainLevelCount; ++i) {
+    for (TerrainLevel level : TerrainLevels) {
         float currentValue = 0;
-        osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(i, 0, 0));
+        osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(static_cast<int>(level), 0, 0));
         tile->getElevationLayer()->getInterpolatedValue(normalizedX, normalizedY, currentValue);
         height = std::max(height, currentValue);
     }

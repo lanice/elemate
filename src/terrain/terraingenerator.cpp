@@ -64,7 +64,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
             4. Create physx actor and shape.
             5. Set some uniforms, valid for the whole terrain. */
 
-        osgTerrain::TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
+        osgTerrain::TileID tileIDBase(static_cast<int>(TerrainLevel::BaseLevel), xID, zID);
         PxHeightFieldSample * pxBaseHeightFieldSamples = createBasicPxHeightField(0, m_settings.maxBasicHeightVariance);
         assert(pxBaseHeightFieldSamples);
 
@@ -78,7 +78,7 @@ ElemateHeightFieldTerrain * TerrainGenerator::generate() const
         terrain->m_osgTerrainBase->addChild(baseTile.get());
 
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
-        osgTerrain::TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
+        osgTerrain::TileID tileIDWater(static_cast<int>(TerrainLevel::WaterLevel), xID, zID);
         PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
         assert(pxWaterHeightFieldSamples);
         osg::ref_ptr<osgTerrain::TerrainTile> waterTile = copyHeightFieldToOsgTile(tileIDWater, pxWaterHeightFieldSamples);
