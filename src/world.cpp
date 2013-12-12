@@ -120,7 +120,7 @@ void World::makeStandardBall()
 
     // prototype: hard-coded physx values etc.
     //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
-    objects_container->createParticles(m_particleGroup, 5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
+    objects_container->makeParticleEmitter(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
     
 }
 

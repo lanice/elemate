@@ -39,15 +39,15 @@ public:
 
     /** Creates a ball. */
     void makeStandardBall(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
+    
+    /** Creates a particle emitter */
+    void makeParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
+
     void createParticles(osg::ref_ptr<osg::Group> parent, int number_of_particles, const physx::PxVec3& position);
 
+
 protected:
-    struct SingleParticle{
-        physx::PxU32    index;
-        physx::PxVec3   position;
-        physx::PxVec3   velocity;
-    };
-    
+  
     std::shared_ptr<PhysicsWrapper>     m_physics_wrapper;
     std::list<DrawableAndPhysXObject>   m_objects;
 

@@ -98,9 +98,12 @@ void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const p
 void ObjectsContainer::initializeParticles(){
     m_particle_system = PxGetPhysics().createParticleSystem(kMaxParticleCount, false);
 
-    if (m_particle_system)
-        m_physics_wrapper->scene()->addActor(*m_particle_system);
-    
+    if (m_particle_system){
+        physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
+        PxGetPhysics().getScenes(&scene_buffer,1);
+        scene_buffer->addActor(*m_particle_system);
+    }
+        
     auto drain_plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0.0F, 1.0F, 0.0F), 0.0F), *m_physics_wrapper->material("default"));
     physx::PxShape* shape = drain_plane->createShape(physx::PxPlaneGeometry(), *m_physics_wrapper->material("default"));
     shape->setFlag(physx::PxShapeFlag::ePARTICLE_DRAIN, true);
@@ -164,4 +167,8 @@ void ObjectsContainer::createParticles(osg::ref_ptr<osg::Group> parent, int numb
     particleCreationData.velocityBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_velocity_buffer);
 
     m_particle_system->createParticles(particleCreationData);
+}
+
+void ObjectsContainer::makeParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position){
+    createParticles(parent, 5, position);
 }
