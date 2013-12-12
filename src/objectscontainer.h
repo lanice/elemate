@@ -28,7 +28,7 @@ class ObjectsContainer{
 public:
     typedef std::pair<osg::MatrixTransform*, physx::PxRigidDynamic*> DrawableAndPhysXObject;
     /** Maximal number of particles before they begin to get destroyed. */
-    static const physx::PxU32	kMaxParticleCount = 10000;
+    static const physx::PxU32	kMaxParticleCount = 800;
 
     /** Explicit Constructor because Copying and Assignments are disabled. The wrapper is necessary to receive an initialited scene and initialized physics.*/
     explicit ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper);
