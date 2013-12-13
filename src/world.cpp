@@ -64,12 +64,6 @@ World::~World()
 {
 }
 
-void World::setGraphicsContext(osg::GraphicsContext * context)
-{
-    m_graphicContext = context;
-    physics_wrapper->setOsgGraphicsContext(context);
-}
-
 void World::setUpCameraDebugger()
 {
     m_cameraDebugger = new osg::MatrixTransform();
