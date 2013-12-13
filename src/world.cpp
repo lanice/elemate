@@ -6,6 +6,7 @@
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
 #include <osg/ShapeDrawable>
+#include <osg/Point>
 #include <osgDB/ReadFile>
 
 #include "physicswrapper.h"
@@ -24,6 +25,7 @@ World::World()
 {
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
+    m_particleGroup->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f), osg::StateAttribute::ON);
     m_root->addChild(m_particleGroup.get());
 
     objects_container->initializeParticles(m_particleGroup.get());
@@ -80,7 +82,7 @@ void World::setUpCameraDebugger()
     osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
     sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Cone(osg::Vec3(0, 0, 0), 0.2, 1.0)));
     m_cameraDebugger->addChild(sphere_geode);
-    m_particleGroup->addChild(m_cameraDebugger.get());
+    m_root->addChild(m_cameraDebugger.get());
 }
 
 void World::setUpLighting()
@@ -180,19 +182,19 @@ void World::initShader()
     terrain->osgTerrainBase()->getOrCreateStateSet()->setAttributeAndModes(terrainBaseProgram.get());
     terrain->osgTerrainWater()->getOrCreateStateSet()->setAttributeAndModes(terrainWaterProgram.get());
 
-    osg::ref_ptr<osg::Shader> sphereVertex =
-        osgDB::readShaderFile("shader/sphere.vert");
-    osg::ref_ptr<osg::Shader> sphereFragment =
-        osgDB::readShaderFile("shader/sphere.frag");
+    osg::ref_ptr<osg::Shader> particleWaterVertex =
+        osgDB::readShaderFile("shader/particle_water.vert");
+    osg::ref_ptr<osg::Shader> particleWaterFragment =
+        osgDB::readShaderFile("shader/particle_water.frag");
+    assert(particleWaterVertex.valid() && particleWaterFragment.valid());
 
-    osg::ref_ptr<osg::Program> sphereProgram = new osg::Program();
-    m_programsByName.emplace("sphere", sphereProgram.get());
-    sphereProgram->addShader(sphereVertex);
-    sphereProgram->addShader(sphereFragment);
-    sphereProgram->addShader(phongLightningFragment);
+    osg::ref_ptr<osg::Program> particleWaterProgram = new osg::Program();
+    m_programsByName.emplace("particle_water", particleWaterProgram.get());
+    particleWaterProgram->addShader(particleWaterVertex);
+    particleWaterProgram->addShader(particleWaterFragment);
 
     osg::ref_ptr<osg::StateSet> sphereSS = m_particleGroup->getOrCreateStateSet();
-    sphereSS->setAttributeAndModes(sphereProgram.get());
+    sphereSS->setAttributeAndModes(particleWaterProgram.get());
 }
 
 void World::reloadShader()
