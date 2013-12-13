@@ -262,12 +262,12 @@ bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
         switch( ea.getScrollingMotion() )
         {
             case osgGA::GUIEventAdapter::SCROLL_UP:
-                _distanceEyeCenter += 2.;
+                if ( _distanceEyeCenter <= 2. ) return false;
+                _distanceEyeCenter -= 2.;
                 return true;
 
             case osgGA::GUIEventAdapter::SCROLL_DOWN:
-                if ( _distanceEyeCenter <= 2. ) return false;
-                _distanceEyeCenter -= 2.;
+                _distanceEyeCenter += 2.;
                 return true;
 
             default:
