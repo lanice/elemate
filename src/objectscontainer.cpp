@@ -7,6 +7,7 @@
 #include <osgViewer/View>
 #include <osg/MatrixTransform>
 
+#include "elements.h"
 #include "physicswrapper.h"
 
 ObjectsContainer::ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper) :
@@ -53,7 +54,7 @@ void ObjectsContainer::makeStandardBall(osg::ref_ptr<osg::Group> parent, const p
     osgTransformNode->addChild(sphere_geode);
     parent->addChild(osgTransformNode.get());
 
-    auto physx_object = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(global_position), physx::PxSphereGeometry(radius), *m_physics_wrapper->material("default"), 1.0F);
+    auto physx_object = PxCreateDynamic(PxGetPhysics(), physx::PxTransform(global_position), physx::PxSphereGeometry(radius), *Elements::pxMaterial("default"), 1.0F);
     physx_object->setLinearVelocity(linear_velocity);
     physx_object->setAngularVelocity(angular_velocity);
     m_physics_wrapper->scene()->addActor(*physx_object);

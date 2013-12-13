@@ -64,7 +64,6 @@ void Game::start(){
 
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
-    m_world->setUniforms();
 
     m_world->physics_wrapper->startSimulation();
 
@@ -100,7 +99,7 @@ void Game::loop(t_longf delta){
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
-                m_world->setUniforms();
+                m_world->setUniforms(currTime);
                 m_viewer.frame();
                 skippedFrames = 1;
             } else {

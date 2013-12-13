@@ -34,7 +34,7 @@ public:
 
     void setNavigation(GodNavigation * navigation);
     void reloadShader();
-    void setUniforms();
+    void setUniforms(long double globalTime);
 
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
     std::shared_ptr<ObjectsContainer>           objects_container;
