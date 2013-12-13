@@ -7,6 +7,7 @@
 
 
 #include <list>
+#include <unordered_map>
 #include <memory>
 #include "PxPhysicsAPI.h"
 #include <osg/GraphicsContext> // ref_ptr
@@ -14,6 +15,8 @@
 namespace osg {   
     class MatrixTransform;
     class Group; 
+    class Geometry;
+    class DrawArrays;
 }
 
 class PhysicsWrapper;
@@ -34,6 +37,8 @@ public:
     explicit ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper);
     ~ObjectsContainer();
 
+    void initializeParticles(osg::Group * particleGroup);
+
     /** Sets and rotates every OSG object according to its representation in PhysX. */
     void updateAllObjects();
 
@@ -43,7 +48,7 @@ public:
     /** Creates a particle emitter */
     void makeParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
 
-    void createParticles(osg::ref_ptr<osg::Group> parent, int number_of_particles, const physx::PxVec3& position);
+    void createParticles(unsigned int number_of_particles, const physx::PxVec3& position);
 
 
 protected:
@@ -51,10 +56,11 @@ protected:
     std::shared_ptr<PhysicsWrapper>     m_physics_wrapper;
     std::list<DrawableAndPhysXObject>   m_objects;
 
-    physx::PxParticleSystem*            m_particle_system;
-    std::list<osg::MatrixTransform*>    m_particle_objects;
 
-    void initializeParticles();
+    physx::PxParticleSystem*            m_particle_system;
+    std::unordered_map<std::string, osg::ref_ptr<osg::Geometry>> m_particle_geometries;
+    osg::ref_ptr<osg::Group>            m_particle_group;
+
     void createParticleObject(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
 private:
     DISALLOW_COPY_AND_ASSIGN(ObjectsContainer);
