@@ -20,6 +20,7 @@ namespace osg {
 }
 
 class PhysicsWrapper;
+class ParticleDrawable;
 
 
 /** This Class contains all (primitive) OSG objects and their PhysX representation.
@@ -58,7 +59,7 @@ protected:
 
 
     physx::PxParticleSystem*            m_particle_system;
-    std::unordered_map<std::string, osg::ref_ptr<osg::Geometry>> m_particle_geometries;
+    std::unordered_map<std::string, osg::ref_ptr<ParticleDrawable>> m_particle_drawables;
     osg::ref_ptr<osg::Group>            m_particle_group;
 
     void createParticleObject(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);

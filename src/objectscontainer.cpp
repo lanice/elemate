@@ -10,6 +10,7 @@
 
 #include "elements.h"
 #include "physicswrapper.h"
+#include "particledrawable.h"
 
 ObjectsContainer::ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper) :
     m_physics_wrapper(physics_wrapper)
@@ -51,22 +52,8 @@ void ObjectsContainer::updateAllObjects()
     physx::PxParticleReadData * read_data = m_particle_system->lockParticleReadData();
     assert(read_data);
 
-    auto physx_pos_iter = read_data->positionBuffer;
-    osg::ref_ptr<osg::Geometry> waterGeometry = m_particle_geometries.at("water");
-
-    osg::ref_ptr<osg::Vec3Array> waterVertices = dynamic_cast<osg::Vec3Array*>(waterGeometry->getVertexArray());
-
-    assert(waterVertices.valid());
-    assert(kMaxParticleCount == waterVertices->size());
-    auto osg_pos_iter = waterVertices->begin();
-
-    for (; osg_pos_iter != waterVertices->end() && physx_pos_iter.ptr(); ++physx_pos_iter, ++osg_pos_iter)
-    {
-        assert(physx_pos_iter.ptr());
-        const physx::PxVec3 & px_pos = *physx_pos_iter.ptr();
-        
-        osg_pos_iter->set(px_pos.x, px_pos.y, px_pos.z);
-    }
+    //auto physx_pos_iter = read_data->positionBuffer;
+    m_particle_drawables.at("water")->updateParticles(read_data);
 
     read_data->unlock();
 }
@@ -99,19 +86,15 @@ void ObjectsContainer::initializeParticles(osg::Group * particleGroup){
     physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
     PxGetPhysics().getScenes(&scene_buffer,1);
     scene_buffer->addActor(*m_particle_system);
+    
+    osg::ref_ptr<ParticleDrawable> waterDrawable = new ParticleDrawable(kMaxParticleCount);
+    osg::ref_ptr<osg::Geode> waterGeode = new osg::Geode;
+    waterGeode->addDrawable(waterDrawable);
 
-
-    osg::ref_ptr<osg::Geometry> waterGeometry = new osg::Geometry();
-    waterGeometry->setVertexArray(new osg::Vec3Array(kMaxParticleCount));
-    waterGeometry->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, 0));
-    waterGeometry->setUseVertexBufferObjects(true);
-    m_particle_geometries.emplace("water", waterGeometry.get());
-
-    osg::ref_ptr<osg::Geode> particleGeode = new osg::Geode;
-    particleGeode->addDrawable(waterGeometry.get());
+    m_particle_drawables.emplace("water", waterDrawable.get());
 
     assert(m_particle_group.valid());
-    m_particle_group->addChild(particleGeode.get());
+    m_particle_group->addChild(waterGeode.get());
 
     
         
@@ -149,44 +132,10 @@ void ObjectsContainer::createParticles(unsigned int number_of_particles, const p
 
     assert(m_particle_system->createParticles(particleCreationData));
 
-
-
-    // create associated osg/opengl buffers
-    osg::ref_ptr<osg::Geometry> waterGeometry = m_particle_geometries.at("water").get();
-    waterGeometry->releaseGLObjects();
-    osg::ref_ptr<osg::Vec3Array> waterVertices = dynamic_cast<osg::Vec3Array*>(waterGeometry->getVertexArray());
-    assert(waterVertices);
-    assert(waterGeometry->getPrimitiveSetList().size() == 1);
-    osg::ref_ptr<osg::DrawArrays> waterArrayDefs = dynamic_cast<osg::DrawArrays*>(waterGeometry->getPrimitiveSet(0));
-    assert(waterArrayDefs.valid());
-
-    // copy vertex data to osg
-    for (unsigned int i = 0; i < kMaxParticleCount; ++i) {
-        physx::PxVec3 & vertex = m_particle_position_buffer[i];
-        waterVertices->at(i) = osg::Vec3(vertex.x, vertex.y, vertex.z);
-    }
-
-    unsigned newCount = waterArrayDefs->getCount() + number_of_particles;
-    if (newCount >= kMaxParticleCount)
-        newCount = kMaxParticleCount;
-    waterArrayDefs->setCount(newCount);
-
-    /*for (unsigned int i = 0; i < number_of_particles; ++i) {
-        waterIndices->at(i) = (youngest_particle_index + i) % kMaxParticleCount;
-    }*/
+    osg::ref_ptr<ParticleDrawable> waterDrawable = m_particle_drawables.at("water").get();
+    waterDrawable->addParticles(number_of_particles, m_particle_position_buffer);
 
     youngest_particle_index = (youngest_particle_index + number_of_particles) % kMaxParticleCount;
-
-    //osg::Geometry * geo = new osg::Geometry();
-    //osg::Vec3Array * vec = new osg::Vec3Array();
-    //vec->push_back(osg::Vec3(1, 3, 4));
-    //vec->push_back(osg::Vec3(1, 6, 4));
-    //vec->push_back(osg::Vec3(3, 3, 4));
-    //geo->setVertexArray(vec);
-    //geo->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 1, 2));
-    //auto * geod = new osg::Geode();
-    //geod->addDrawable(geo);
-    //m_particle_group->addChild(geod);
 }
 
 void ObjectsContainer::makeParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position){
