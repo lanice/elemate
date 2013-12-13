@@ -283,6 +283,7 @@ bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
         switch( ea.getScrollingMotion() )
         {
             case osgGA::GUIEventAdapter::SCROLL_UP:
+                if ( (eye - _center).y() >= _distanceEyeCenter - ( _distanceEyeCenter/c_distanceEyeCenterDefault ) ) return false;
                 rotateYawPitch( _rotation, 0., -0.05, localUp );
                 return true;
 
