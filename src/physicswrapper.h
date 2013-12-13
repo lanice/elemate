@@ -7,7 +7,7 @@
 typedef long double t_longf;
 
 #include <string>
-#include <osg/GraphicsContext>
+#include <osg/ref_ptr>
 
 #include "PxPhysicsAPI.h"
 
@@ -45,8 +45,6 @@ public:
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
 
-    void setOsgGraphicsContext(osg::GraphicsContext * context);
-
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
     static const int            kNumberOfThreads;
@@ -78,7 +76,6 @@ protected:
     CyclicTime*                                     m_cyclic_time;
     physx::PxCooking*                               m_cooking;
 
-    osg::ref_ptr<osg::GraphicsContext> m_osgGraphicsContext;
 private:
     DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
 };
