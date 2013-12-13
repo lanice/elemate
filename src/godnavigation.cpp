@@ -3,6 +3,7 @@
 
 #include "world.h"
 #include "terrain/elemateterrain.h"
+#include "soundmanager.h"
 
 
 static const double c_velocityDefault = 0.2;
@@ -164,6 +165,7 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     }
 
     performMovement();
+    updateListener();
 
    return false;
 }
@@ -424,4 +426,18 @@ void GodNavigation::moveRight( const double distance )
 void GodNavigation::moveUp( const double distance )
 {
    _center += _rotation * osg::Vec3d( 0., distance, 0. );
+}
+
+void GodNavigation::updateListener(){
+    osg::Vec3d eye, center, up;
+    getTransformation(eye, center, up);
+    osg::Vec3d forward = eye - center;
+    forward.normalize();
+    up.normalize();
+
+    m_world->soundManager->setListenerAttributes(
+        { eye.x(), eye.y(), eye.z() },
+        { forward.x(), forward.y(), forward.z() },
+        { up.x(), up.y(), up.z() }
+    );
 }

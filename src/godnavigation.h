@@ -85,6 +85,9 @@ class GodNavigation : public osgGA::StandardManipulator
         /** Move camera up by distance parameter.*/
         virtual void moveUp( const double distance );
 
+        /** Set listener attributes for the soundmanager */
+        void updateListener();
+
 
         osg::Vec3d _center;
         osg::Quat  _rotation;
