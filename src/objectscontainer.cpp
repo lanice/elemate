@@ -6,6 +6,8 @@
 #include <osg/ShapeDrawable>
 #include <osgViewer/View>
 #include <osg/MatrixTransform>
+#include <osgUtil/GLObjectsVisitor>
+
 #include "elements.h"
 #include "physicswrapper.h"
 
@@ -50,7 +52,10 @@ void ObjectsContainer::updateAllObjects()
     assert(read_data);
 
     auto physx_pos_iter = read_data->positionBuffer;
-    osg::ref_ptr<osg::Vec3Array> waterVertices = dynamic_cast<osg::Vec3Array*>(m_particle_geometries.at("water")->getVertexArray());
+    osg::ref_ptr<osg::Geometry> waterGeometry = m_particle_geometries.at("water");
+
+    osg::ref_ptr<osg::Vec3Array> waterVertices = dynamic_cast<osg::Vec3Array*>(waterGeometry->getVertexArray());
+
     assert(waterVertices.valid());
     assert(kMaxParticleCount == waterVertices->size());
     auto osg_pos_iter = waterVertices->begin();
@@ -62,6 +67,7 @@ void ObjectsContainer::updateAllObjects()
         
         osg_pos_iter->set(px_pos.x, px_pos.y, px_pos.z);
     }
+
     read_data->unlock();
 }
 
@@ -97,6 +103,7 @@ void ObjectsContainer::initializeParticles(osg::Group * particleGroup){
 
     osg::ref_ptr<osg::Geometry> waterGeometry = new osg::Geometry();
     waterGeometry->setVertexArray(new osg::Vec3Array(kMaxParticleCount));
+    waterGeometry->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, 0));
     waterGeometry->setUseVertexBufferObjects(true);
     m_particle_geometries.emplace("water", waterGeometry.get());
 
@@ -140,28 +147,46 @@ void ObjectsContainer::createParticles(unsigned int number_of_particles, const p
     particleCreationData.positionBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_position_buffer);
     particleCreationData.velocityBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_velocity_buffer);
 
-    m_particle_system->createParticles(particleCreationData);
+    assert(m_particle_system->createParticles(particleCreationData));
 
 
 
     // create associated osg/opengl buffers
     osg::ref_ptr<osg::Geometry> waterGeometry = m_particle_geometries.at("water").get();
+    waterGeometry->releaseGLObjects();
     osg::ref_ptr<osg::Vec3Array> waterVertices = dynamic_cast<osg::Vec3Array*>(waterGeometry->getVertexArray());
     assert(waterVertices);
-    waterGeometry->getPrimitiveSetList().clear();
-    osg::ref_ptr<osg::DrawElementsUShort> waterIndices = new osg::DrawElementsUShort(GL_POINTS, number_of_particles);
-    waterGeometry->addPrimitiveSet(waterIndices.get());
+    assert(waterGeometry->getPrimitiveSetList().size() == 1);
+    osg::ref_ptr<osg::DrawArrays> waterArrayDefs = dynamic_cast<osg::DrawArrays*>(waterGeometry->getPrimitiveSet(0));
+    assert(waterArrayDefs.valid());
 
     // copy vertex data to osg
     for (unsigned int i = 0; i < kMaxParticleCount; ++i) {
         physx::PxVec3 & vertex = m_particle_position_buffer[i];
         waterVertices->at(i) = osg::Vec3(vertex.x, vertex.y, vertex.z);
     }
-    for (unsigned int i = 0; i < number_of_particles; ++i) {
+
+    unsigned newCount = waterArrayDefs->getCount() + number_of_particles;
+    if (newCount >= kMaxParticleCount)
+        newCount = kMaxParticleCount;
+    waterArrayDefs->setCount(newCount);
+
+    /*for (unsigned int i = 0; i < number_of_particles; ++i) {
         waterIndices->at(i) = (youngest_particle_index + i) % kMaxParticleCount;
-    }
+    }*/
 
     youngest_particle_index = (youngest_particle_index + number_of_particles) % kMaxParticleCount;
+
+    //osg::Geometry * geo = new osg::Geometry();
+    //osg::Vec3Array * vec = new osg::Vec3Array();
+    //vec->push_back(osg::Vec3(1, 3, 4));
+    //vec->push_back(osg::Vec3(1, 6, 4));
+    //vec->push_back(osg::Vec3(3, 3, 4));
+    //geo->setVertexArray(vec);
+    //geo->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 1, 2));
+    //auto * geod = new osg::Geode();
+    //geod->addDrawable(geo);
+    //m_particle_group->addChild(geod);
 }
 
 void ObjectsContainer::makeParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position){
