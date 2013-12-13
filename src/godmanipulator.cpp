@@ -5,7 +5,7 @@
 #include <osg/Camera>
 
 #include "world.h"
-#include "terraingenerator.h"
+// #include "terraingenerator.h"
 #include "hand.h"
 
 
