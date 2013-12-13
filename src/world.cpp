@@ -31,11 +31,8 @@ World::World()
     soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
     soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
     //set volume (make quieter)
-    soundManager->setVolume(0, 0.2f);
-    soundManager->setVolume(1, 0.5f);
-    //end pause
-    soundManager->setPaused(0, false);
-    soundManager->setPaused(1, false);
+    soundManager->setVolume(0, 0.14f);
+    soundManager->setVolume(1, 0.3f);
 
     // Gen Terrain
     TerrainGenerator * terrainGen = new TerrainGenerator();
@@ -112,8 +109,10 @@ void World::makeStandardBall()
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
 
+    // set channel position of plop sound when spawning the ball
+    soundManager->createNewChannel("data/sounds/plop.wav", false, true, false, { centerd.x(), centerd.y() + 0.5, centerd.z() });
     // prototype: hard-coded physx values etc.
-    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3( centerd.x(), centerd.y() + 0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
 }
 
 void World::toogleBackgroundSound(int id){
