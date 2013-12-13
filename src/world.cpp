@@ -6,7 +6,6 @@
 #include <osgTerrain/Terrain>
 #include <osg/MatrixTransform>
 #include <osg/ShapeDrawable>
-#include <osg/Point>
 #include <osgDB/ReadFile>
 
 #include "physicswrapper.h"
@@ -25,7 +24,6 @@ World::World()
 {
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
-    m_particleGroup->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f), osg::StateAttribute::ON);
     m_root->addChild(m_particleGroup.get());
 
     objects_container->initializeParticles(m_particleGroup.get());

@@ -6,7 +6,7 @@
 #include <osg/ShapeDrawable>
 #include <osgViewer/View>
 #include <osg/MatrixTransform>
-#include <osgUtil/GLObjectsVisitor>
+#include <osg/Point>
 
 #include "elements.h"
 #include "physicswrapper.h"
@@ -49,10 +49,10 @@ void ObjectsContainer::updateAllObjects()
         current_object.first->getOrCreateStateSet()->getOrCreateUniform("modelRotation",
             osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf(rotation));
     }
+
     physx::PxParticleReadData * read_data = m_particle_system->lockParticleReadData();
     assert(read_data);
 
-    //auto physx_pos_iter = read_data->positionBuffer;
     m_particle_drawables.at("water")->updateParticles(read_data);
 
     read_data->unlock();
@@ -96,6 +96,7 @@ void ObjectsContainer::initializeParticles(osg::Group * particleGroup){
     assert(m_particle_group.valid());
     m_particle_group->addChild(waterGeode.get());
 
+    m_particle_group->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f), osg::StateAttribute::ON);
     
         
     /*auto drain_plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0.0F, 1.0F, 0.0F), 15.0F), *Elements::pxMaterial("default"));

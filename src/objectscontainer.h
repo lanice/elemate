@@ -14,9 +14,7 @@
 
 namespace osg {   
     class MatrixTransform;
-    class Group; 
-    class Geometry;
-    class DrawArrays;
+    class Group;
 }
 
 class PhysicsWrapper;
