@@ -22,6 +22,21 @@
 #include "HPICGS/CyclicTime.h"
 
 
+struct GameResizeCallback : public osg::GraphicsContext::ResizedCallback {
+    GameResizeCallback(Game & game) : game(game) { }
+    void resizedImplementation(osg::GraphicsContext* gc, int x, int y, int width, int height)
+    {
+        game.m_mainCamera->getViewport()->setViewport(0, 0, width, height);
+        for (auto & buffer : game.m_renderBuffers) {
+            // this does not really work ?!
+            buffer.second->setTextureSize(width, height);
+        }
+    }
+
+    Game & game;
+};
+
+
 Game::Game(osgViewer::Viewer& viewer) :
 m_interrupted(true),
 m_viewer(viewer),
@@ -35,8 +50,9 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     traits->vsync = true;
     // traits->useCursor = false;
 
-    // apply new settings viewer
+    // apply new settings viewer and set callbacks
     osg::ref_ptr< osg::GraphicsContext > gc = osg::GraphicsContext::createGraphicsContext(traits.get());
+    gc->setResizedCallback(new GameResizeCallback(*this));
     m_viewer.getCamera()->setGraphicsContext(gc.get());
 
     // use modern OpenGL
@@ -130,7 +146,7 @@ void Game::end(){
 
 void Game::initRendering()
 {
-    const osg::Viewport * viewport = m_viewer.getCamera()->getViewport();
+    osg::Viewport * viewport = m_viewer.getCamera()->getViewport();
     assert(viewport);
 
     osg::ref_ptr<osg::Texture2D> colorBuffer = new osg::Texture2D;
@@ -140,16 +156,16 @@ void Game::initRendering()
     colorBuffer->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR);
     osg::ref_ptr<osg::Texture2D> depthBuffer = new osg::Texture2D;
     depthBuffer->setTextureSize(viewport->width(), viewport->height());
-    /*depthBuffer->setInternalFormat(GL_DEPTH_COMPONENT32F);
-    depthBuffer->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR);
-    depthBuffer->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR);*/
     depthBuffer->setSourceFormat(GL_DEPTH_COMPONENT);
     depthBuffer->setSourceType(GL_FLOAT);
-    depthBuffer->setInternalFormat(GL_DEPTH_COMPONENT24);
+    depthBuffer->setInternalFormat(GL_DEPTH_COMPONENT32F);
     depthBuffer->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::NEAREST);
     depthBuffer->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::NEAREST);
     depthBuffer->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
     depthBuffer->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+
+    m_renderBuffers.emplace("color", colorBuffer.get());
+    m_renderBuffers.emplace("depth", depthBuffer.get());
 
     m_mainCamera = new osg::Camera();
     m_mainCamera->setReferenceFrame(osg::Camera::ReferenceFrame::RELATIVE_RF);
@@ -160,11 +176,11 @@ void Game::initRendering()
     m_mainCamera->setDrawBuffer(GL_FRONT);
     m_mainCamera->setReadBuffer(GL_FRONT);
     m_mainCamera->setComputeNearFarMode(osg::CullSettings::ComputeNearFarMode::DO_NOT_COMPUTE_NEAR_FAR);
-    //m_mainCamera->setNearFarRatio(...);
     m_mainCamera->setClearDepth(1.0f);
     m_mainCamera->setRenderTargetImplementation(osg::Camera::FRAME_BUFFER_OBJECT);
     m_mainCamera->getOrCreateStateSet()->setAttribute(new osg::Depth(osg::Depth::LESS, 0.0, 1.0));
     m_mainCamera->addChild(m_world->root());
+    m_mainCamera->setViewport(viewport);
 
     m_flushCamera = new osg::Camera();
     m_flushCamera->setReferenceFrame(osg::Camera::ReferenceFrame::ABSOLUTE_RF);
