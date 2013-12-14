@@ -6,9 +6,11 @@
 
 // OSG Classes
 #include <osgViewer/Viewer>
+#include <osg/Texture2D>
 
 // Own Classes
 #include "world.h"
+#include "screenquad.h"
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "godnavigation.h"
@@ -39,8 +41,6 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     osg::State * graphicsState = m_viewer.getCamera()->getGraphicsContext()->getState();
     graphicsState->setUseModelViewAndProjectionUniforms(true);
     graphicsState->setUseVertexAttributeAliasing(true);
-
-    m_viewer.setSceneData(m_world->root());
 }
 
 Game::~Game()
@@ -58,10 +58,12 @@ void Game::start(){
     eventHandler->setWorld(m_world);
     m_viewer.addEventHandler(eventHandler);
     
-    setOsgCamera();
+    setupNavigation();
 
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
+
+    initRendering();
 
     m_world->physics_wrapper->startSimulation();
 
@@ -124,7 +126,35 @@ void Game::end(){
         m_interrupted = true;
 }
 
-void Game::setOsgCamera(){
+void Game::initRendering()
+{
+    osg::ref_ptr<osg::Texture2D> colorBuffer = new osg::Texture2D;
+    osg::ref_ptr<osg::Texture2D> depthBuffer = new osg::Texture2D;
+    //colorBuffer->setTextureSize()
+
+    m_mainCamera = new osg::Camera();
+    m_mainCamera->setReferenceFrame(osg::Camera::ReferenceFrame::RELATIVE_RF);
+    m_mainCamera->setRenderOrder(osg::Camera::RenderOrder::PRE_RENDER);
+    m_mainCamera->attach(osg::Camera::COLOR_BUFFER, colorBuffer.get());
+    m_mainCamera->attach(osg::Camera::DEPTH_BUFFER, depthBuffer.get());
+    m_mainCamera->addChild(m_world->root());
+    //m_mainCamera->setRenderTargetImplementation(osg::Camera::RenderTargetImplementation::FRAME_BUFFER_OBJECT)
+
+    m_flushCamera = new osg::Camera();
+    m_flushCamera->setReferenceFrame(osg::Camera::ReferenceFrame::ABSOLUTE_RF);
+    m_flushCamera->setRenderOrder(osg::Camera::RenderOrder::POST_RENDER);
+    m_flushCamera->setClearColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    m_flushCamera->addChild(ScreenQuad::createFlushNode(*colorBuffer.get(), *m_world->programByName("flush")));
+    m_flushCamera->setCullingMode(osg::CullSettings::CullingModeValues::NO_CULLING);
+
+    osg::ref_ptr<osg::Group> cameraGroup = new osg::Group;
+    cameraGroup->addChild(m_flushCamera);
+    cameraGroup->addChild(m_mainCamera);
+
+    m_viewer.setSceneData(cameraGroup.get());
+}
+
+void Game::setupNavigation(){
     m_navigation = new GodNavigation();
     m_navigation->setWorld(m_world);
     m_navigation->setHomePosition(

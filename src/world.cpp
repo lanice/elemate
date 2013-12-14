@@ -126,6 +126,17 @@ void World::setNavigation(GodNavigation * navigation)
 
 void World::initShader()
 {
+    osg::ref_ptr<osg::Shader> flushVertex =
+        osgDB::readShaderFile("shader/flush.vert");
+    osg::ref_ptr<osg::Shader> flushFragment =
+        osgDB::readShaderFile("shader/flush.frag");
+    assert(flushVertex.valid() && flushFragment.valid());
+    osg::ref_ptr<osg::Program> flushProgram = new osg::Program();
+    flushProgram->addShader(flushVertex);
+    flushProgram->addShader(flushFragment);
+    m_programsByName.emplace("flush", flushProgram.get());
+
+
     osg::ref_ptr<osg::Shader> terrainBaseVertex =
         osgDB::readShaderFile("shader/terrain_base.vert");
     osg::ref_ptr<osg::Shader> terrainWaterVertex =
@@ -200,7 +211,7 @@ void World::reloadShader()
     }
 }
 
-osg::Program * World::programByName(std::string name) const
+osg::Program * World::programByName(const std::string & name) const
 {
     assert(m_programsByName.find(name) != m_programsByName.end());
     return m_programsByName.at(name).get();

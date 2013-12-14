@@ -45,6 +45,8 @@ set(SOURCES
     src/godnavigation.h
     src/objectscontainer.cpp
     src/objectscontainer.h
+    src/screenquad.cpp
+    src/screenquad.h
     src/hpicgs/CyclicTime.cpp
     src/hpicgs/CyclicTime.h
     src/hpicgs/Timer.cpp
