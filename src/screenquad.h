@@ -13,7 +13,7 @@ class ScreenQuad : public osg::Drawable
 public:
     /** creates a screen quad drawable, adds it to a geode and applies the flush shader.
       * @return pointer to the geode */
-    static osg::Geode * createFlushNode(osg::Texture2D & colorBuffer, osg::Program & flushProgram);
+    static osg::Geode * createFlushNode(osg::Texture2D & colorBuffer, osg::Texture2D & depthBuffer, osg::Program & flushProgram);
 
     ScreenQuad();
     virtual ~ScreenQuad() override;

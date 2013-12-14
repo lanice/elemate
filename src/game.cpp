@@ -3,10 +3,12 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <cassert>
 
 // OSG Classes
 #include <osgViewer/Viewer>
 #include <osg/Texture2D>
+#include <osg/Depth>
 
 // Own Classes
 #include "world.h"
@@ -128,21 +130,47 @@ void Game::end(){
 
 void Game::initRendering()
 {
+    const osg::Viewport * viewport = m_viewer.getCamera()->getViewport();
+    assert(viewport);
+
     osg::ref_ptr<osg::Texture2D> colorBuffer = new osg::Texture2D;
+    colorBuffer->setTextureSize(viewport->width(), viewport->height());
+    colorBuffer->setInternalFormat(GL_RGBA);
+    colorBuffer->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR);
+    colorBuffer->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR);
     osg::ref_ptr<osg::Texture2D> depthBuffer = new osg::Texture2D;
+    depthBuffer->setTextureSize(viewport->width(), viewport->height());
+    /*depthBuffer->setInternalFormat(GL_DEPTH_COMPONENT32F);
+    depthBuffer->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR);
+    depthBuffer->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR);*/
+    depthBuffer->setSourceFormat(GL_DEPTH_COMPONENT);
+    depthBuffer->setSourceType(GL_FLOAT);
+    depthBuffer->setInternalFormat(GL_DEPTH_COMPONENT24);
+    depthBuffer->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::NEAREST);
+    depthBuffer->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::NEAREST);
+    depthBuffer->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+    depthBuffer->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
 
     m_mainCamera = new osg::Camera();
     m_mainCamera->setReferenceFrame(osg::Camera::ReferenceFrame::RELATIVE_RF);
     m_mainCamera->setRenderOrder(osg::Camera::RenderOrder::PRE_RENDER);
-    m_mainCamera->attach(osg::Camera::COLOR_BUFFER, colorBuffer.get());
+    m_mainCamera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    m_mainCamera->attach(osg::Camera::COLOR_BUFFER0, colorBuffer.get());
     m_mainCamera->attach(osg::Camera::DEPTH_BUFFER, depthBuffer.get());
+    m_mainCamera->setDrawBuffer(GL_FRONT);
+    m_mainCamera->setReadBuffer(GL_FRONT);
+    m_mainCamera->setComputeNearFarMode(osg::CullSettings::ComputeNearFarMode::DO_NOT_COMPUTE_NEAR_FAR);
+    //m_mainCamera->setNearFarRatio(...);
+    m_mainCamera->setClearDepth(1.0f);
+    m_mainCamera->setRenderTargetImplementation(osg::Camera::FRAME_BUFFER_OBJECT);
+    m_mainCamera->getOrCreateStateSet()->setAttribute(new osg::Depth(osg::Depth::LESS, 0.0, 1.0));
     m_mainCamera->addChild(m_world->root());
 
     m_flushCamera = new osg::Camera();
     m_flushCamera->setReferenceFrame(osg::Camera::ReferenceFrame::ABSOLUTE_RF);
     m_flushCamera->setRenderOrder(osg::Camera::RenderOrder::POST_RENDER);
     m_flushCamera->setClearColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    m_flushCamera->addChild(ScreenQuad::createFlushNode(*colorBuffer.get(), *m_world->programByName("flush")));
+    m_flushCamera->addChild(ScreenQuad::createFlushNode(*colorBuffer.get(), *depthBuffer.get(), *m_world->programByName("flush")));
     m_flushCamera->setCullingMode(osg::CullSettings::CullingModeValues::NO_CULLING);
 
     osg::ref_ptr<osg::Group> cameraGroup = new osg::Group;

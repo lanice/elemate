@@ -3,7 +3,7 @@
 #include <osg/Geode>
 #include <osg/Texture2D>
 
-osg::Geode * ScreenQuad::createFlushNode(osg::Texture2D & colorBuffer, osg::Program & flushProgram)
+osg::Geode * ScreenQuad::createFlushNode(osg::Texture2D & colorBuffer, osg::Texture2D & depthBuffer, osg::Program & flushProgram)
 {
     ScreenQuad * quad = new ScreenQuad();
     osg::Geode * geode = new osg::Geode();
@@ -11,9 +11,13 @@ osg::Geode * ScreenQuad::createFlushNode(osg::Texture2D & colorBuffer, osg::Prog
     osg::StateSet * geodeStateSet = new osg::StateSet;
     geodeStateSet->setAttributeAndModes(&flushProgram, osg::StateAttribute::ON);
     geodeStateSet->setTextureAttributeAndModes(0, &colorBuffer, osg::StateAttribute::ON);
+    geodeStateSet->setTextureAttributeAndModes(1, &depthBuffer, osg::StateAttribute::ON);
     osg::Uniform * colorBufferUniform = new osg::Uniform("colorBuffer", osg::Uniform::SAMPLER_2D);
     colorBufferUniform->set(0);
+    osg::Uniform * depthBufferUniform = new osg::Uniform("depthBuffer", osg::Uniform::SAMPLER_2D);
+    depthBufferUniform->set(1);
     geodeStateSet->addUniform(colorBufferUniform);
+    geodeStateSet->addUniform(depthBufferUniform);
     geode->setStateSet(geodeStateSet);
 
     return geode;
