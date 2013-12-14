@@ -8,8 +8,13 @@ osg::Geode * ScreenQuad::createFlushNode(osg::Texture2D & colorBuffer, osg::Prog
     ScreenQuad * quad = new ScreenQuad();
     osg::Geode * geode = new osg::Geode();
     geode->addDrawable(quad);
-    geode->getOrCreateStateSet()->setAttributeAndModes(&flushProgram, osg::StateAttribute::ON);
-    geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, &colorBuffer, osg::StateAttribute::ON);
+    osg::StateSet * geodeStateSet = new osg::StateSet;
+    geodeStateSet->setAttributeAndModes(&flushProgram, osg::StateAttribute::ON);
+    geodeStateSet->setTextureAttributeAndModes(0, &colorBuffer, osg::StateAttribute::ON);
+    osg::Uniform * colorBufferUniform = new osg::Uniform("colorBuffer", osg::Uniform::SAMPLER_2D);
+    colorBufferUniform->set(0);
+    geodeStateSet->addUniform(colorBufferUniform);
+    geode->setStateSet(geodeStateSet);
 
     return geode;
 }
@@ -17,6 +22,7 @@ osg::Geode * ScreenQuad::createFlushNode(osg::Texture2D & colorBuffer, osg::Prog
 ScreenQuad::ScreenQuad()
 : m_vbo(UINT_MAX)
 {
+    setUseDisplayList(false);
 }
 
 ScreenQuad::~ScreenQuad()
@@ -59,7 +65,7 @@ void ScreenQuad::updateGLObjects(osg::RenderInfo& renderInfo) const
 
     // copy vertex data to the gpu
     ext.glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo);
-    ext.glBufferData(GL_ARRAY_BUFFER_ARB, 8, vertices, GL_STATIC_DRAW);
+    ext.glBufferData(GL_ARRAY_BUFFER_ARB, 8 * sizeof(float), vertices, GL_STATIC_DRAW);
     ext.glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
     m_needGLUpdate = false;

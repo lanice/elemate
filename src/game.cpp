@@ -130,7 +130,6 @@ void Game::initRendering()
 {
     osg::ref_ptr<osg::Texture2D> colorBuffer = new osg::Texture2D;
     osg::ref_ptr<osg::Texture2D> depthBuffer = new osg::Texture2D;
-    //colorBuffer->setTextureSize()
 
     m_mainCamera = new osg::Camera();
     m_mainCamera->setReferenceFrame(osg::Camera::ReferenceFrame::RELATIVE_RF);
@@ -138,7 +137,6 @@ void Game::initRendering()
     m_mainCamera->attach(osg::Camera::COLOR_BUFFER, colorBuffer.get());
     m_mainCamera->attach(osg::Camera::DEPTH_BUFFER, depthBuffer.get());
     m_mainCamera->addChild(m_world->root());
-    //m_mainCamera->setRenderTargetImplementation(osg::Camera::RenderTargetImplementation::FRAME_BUFFER_OBJECT)
 
     m_flushCamera = new osg::Camera();
     m_flushCamera->setReferenceFrame(osg::Camera::ReferenceFrame::ABSOLUTE_RF);
