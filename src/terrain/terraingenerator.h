@@ -39,10 +39,10 @@ public:
     /** generation time specific settings */
 
     /** maximum latitude (y value) in world coordinates
-      *  -maxHeight < y <= maxHeight */
+      *  -maxHeight <= y <= maxHeight */
     void setMaxHeight(float height);
     /** maximum latitude (y value) in world coordinates
-      * -maxHeight < y <= maxHeight */
+      * -maxHeight <= y <= maxHeight */
     float maxHeight() const;
     /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure.
       * Must be lower or equal than maxHeight, but should only be a fraction of it.*/

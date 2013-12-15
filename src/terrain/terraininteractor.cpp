@@ -40,7 +40,7 @@ float TerrainInteractor::changeHeight(float worldX, float worldZ, TerrainLevel l
     return setHeight(*tile.get(), physxRow, physxColumn, height + delta);
 }
 
-float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, float physxRow, float physxColumn, float value)
+float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, unsigned physxRow, unsigned physxColumn, float value)
 {
     const TerrainSettings & settings = m_terrain->settings();
     unsigned int osgColumn = physxRow;
@@ -50,7 +50,7 @@ float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, float physxRo
     assert(hfLayer.valid());
     
     float value_inRange = value; /** clamp height value */
-    if (value_inRange <= -settings.maxHeight) value_inRange = -settings.maxHeight;
+    if (value_inRange < -settings.maxHeight) value_inRange = -settings.maxHeight;
     if (value_inRange > settings.maxHeight) value_inRange = settings.maxHeight;
 
     hfLayer->getHeightField()->setHeight(osgColumn, osgRow, value_inRange);
