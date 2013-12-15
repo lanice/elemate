@@ -24,8 +24,13 @@
 
 struct GameResizeCallback : public osg::GraphicsContext::ResizedCallback {
     GameResizeCallback(Game & game) : game(game) { }
-    void resizedImplementation(osg::GraphicsContext* /*gc*/, int /*x*/, int /*y*/, int /*width*/, int /*height*/)
+    void resizedImplementation(osg::GraphicsContext* /*gc*/, int /*x*/, int /*y*/, int width, int height)
     {
+        osg::Viewport * oldViewport = game.m_mainCamera->getViewport();
+        assert(oldViewport);
+        if (oldViewport->width() == width && oldViewport->height() == height)
+            return;
+
         std::cerr << "Render texture resizing not implemented yet." << std::endl;
         //game.m_mainCamera->getViewport()->setViewport(0, 0, width, height);
         //for (auto & buffer : game.m_renderBuffers) {
