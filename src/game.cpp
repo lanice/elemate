@@ -189,6 +189,7 @@ void Game::initRendering()
     m_mainCamera->getOrCreateStateSet()->setAttribute(new osg::Depth(osg::Depth::LESS, 0.0, 1.0));
     m_mainCamera->addChild(m_world->root());
     m_mainCamera->setViewport(viewport);
+    m_mainCamera->setGraphicsContext(m_viewer.getCamera()->getGraphicsContext());
 
     m_flushCamera = new osg::Camera();
     m_flushCamera->setReferenceFrame(osg::Camera::ReferenceFrame::ABSOLUTE_RF);
@@ -196,6 +197,7 @@ void Game::initRendering()
     m_flushCamera->setClearColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
     m_flushCamera->addChild(ScreenQuad::createFlushNode(*colorBuffer.get(), *depthBuffer.get(), *m_world->programByName("flush")));
     m_flushCamera->setCullingMode(osg::CullSettings::CullingModeValues::NO_CULLING);
+    m_flushCamera->setGraphicsContext(m_viewer.getCamera()->getGraphicsContext());
 
     osg::ref_ptr<osg::Group> cameraGroup = new osg::Group;
     cameraGroup->addChild(m_flushCamera);
