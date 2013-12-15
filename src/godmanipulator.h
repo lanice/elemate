@@ -46,4 +46,5 @@ class GodManipulator : public osgGA::GUIEventHandler
     protected:
 
         std::shared_ptr<World> m_world;
+        bool isFountainOn = false;
 };
