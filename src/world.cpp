@@ -26,6 +26,8 @@ World::World()
     m_particleGroup->setName("particle root node");
     m_root->addChild(m_particleGroup.get());
 
+    objects_container->initializeParticles(m_particleGroup.get());
+
     // Create two non-3D channels (paino and rain)
     //initialise as paused
     soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
@@ -69,7 +71,7 @@ void World::setUpCameraDebugger()
     osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
     sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Cone(osg::Vec3(0, 0, 0), 0.2, 1.0)));
     m_cameraDebugger->addChild(sphere_geode);
-    m_particleGroup->addChild(m_cameraDebugger.get());
+    m_root->addChild(m_cameraDebugger.get());
 }
 
 void World::setUpLighting()
@@ -109,10 +111,31 @@ void World::makeStandardBall()
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
 
-    // set channel position of plop sound when spawning the ball
-    soundManager->createNewChannel("data/sounds/plop.wav", false, true, false, { centerd.x(), centerd.y() + 0.5, centerd.z() });
     // prototype: hard-coded physx values etc.
-    objects_container->makeStandardBall(m_particleGroup, physx::PxVec3( centerd.x(), centerd.y() + 0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
+    objects_container->createParticles(5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
+
+}
+
+void World::startFountainSound()
+{
+    osg::Vec3d eyed, upd, centerd;
+    m_navigation->getTransformation(eyed, centerd, upd);
+    soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { centerd.x(), centerd.y() + 0.5, centerd.z() });
+}
+
+void World::updateFountainPosition()
+{
+    osg::Vec3d eyed, upd, centerd;
+    m_navigation->getTransformation(eyed, centerd, upd);
+    soundManager->setSoundPos(2, { centerd.x(), centerd.y() + 0.5, centerd.z() });
+    soundManager->update();
+}
+
+void World::endFountainSound()
+{
+    soundManager->deleteChannel(2);
+
 }
 
 void World::toogleBackgroundSound(int id){
@@ -126,6 +149,17 @@ void World::setNavigation(GodNavigation * navigation)
 
 void World::initShader()
 {
+    osg::ref_ptr<osg::Shader> flushVertex =
+        osgDB::readShaderFile("shader/flush.vert");
+    osg::ref_ptr<osg::Shader> flushFragment =
+        osgDB::readShaderFile("shader/flush.frag");
+    assert(flushVertex.valid() && flushFragment.valid());
+    osg::ref_ptr<osg::Program> flushProgram = new osg::Program();
+    flushProgram->addShader(flushVertex);
+    flushProgram->addShader(flushFragment);
+    m_programsByName.emplace("flush", flushProgram.get());
+
+
     osg::ref_ptr<osg::Shader> terrainBaseVertex =
         osgDB::readShaderFile("shader/terrain_base.vert");
     osg::ref_ptr<osg::Shader> terrainWaterVertex =
@@ -169,19 +203,19 @@ void World::initShader()
     terrain->osgTerrainBase()->getOrCreateStateSet()->setAttributeAndModes(terrainBaseProgram.get());
     terrain->osgTerrainWater()->getOrCreateStateSet()->setAttributeAndModes(terrainWaterProgram.get());
 
-    osg::ref_ptr<osg::Shader> sphereVertex =
-        osgDB::readShaderFile("shader/sphere.vert");
-    osg::ref_ptr<osg::Shader> sphereFragment =
-        osgDB::readShaderFile("shader/sphere.frag");
+    osg::ref_ptr<osg::Shader> particleWaterVertex =
+        osgDB::readShaderFile("shader/particle_water.vert");
+    osg::ref_ptr<osg::Shader> particleWaterFragment =
+        osgDB::readShaderFile("shader/particle_water.frag");
+    assert(particleWaterVertex.valid() && particleWaterFragment.valid());
 
-    osg::ref_ptr<osg::Program> sphereProgram = new osg::Program();
-    m_programsByName.emplace("sphere", sphereProgram.get());
-    sphereProgram->addShader(sphereVertex);
-    sphereProgram->addShader(sphereFragment);
-    sphereProgram->addShader(phongLightningFragment);
+    osg::ref_ptr<osg::Program> particleWaterProgram = new osg::Program();
+    m_programsByName.emplace("particle_water", particleWaterProgram.get());
+    particleWaterProgram->addShader(particleWaterVertex);
+    particleWaterProgram->addShader(particleWaterFragment);
 
     osg::ref_ptr<osg::StateSet> sphereSS = m_particleGroup->getOrCreateStateSet();
-    sphereSS->setAttributeAndModes(sphereProgram.get());
+    sphereSS->setAttributeAndModes(particleWaterProgram.get());
 }
 
 void World::reloadShader()
@@ -200,7 +234,7 @@ void World::reloadShader()
     }
 }
 
-osg::Program * World::programByName(std::string name) const
+osg::Program * World::programByName(const std::string & name) const
 {
     assert(m_programsByName.find(name) != m_programsByName.end());
     return m_programsByName.at(name).get();

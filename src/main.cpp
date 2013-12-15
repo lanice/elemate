@@ -1,18 +1,18 @@
 #include <iostream>
-#include <thread>
 
 #include "game.h"
 
 #include <osgViewer/Viewer>
 int main()
 {
-    osgViewer::Viewer* viewer = new osgViewer::Viewer();
-    viewer->setUpViewInWindow(50, 50, 500, 500);
+    osgViewer::Viewer viewer;
+    // setup view and graphics context
+    viewer.setUpViewInWindow(50, 50, 500, 500);
+    //viewer.setUpViewOnSingleScreen();
 
-    Game game(*viewer);
+    Game game(viewer);
 
     game.start();
-    game.end();
 
     return 0;
 }

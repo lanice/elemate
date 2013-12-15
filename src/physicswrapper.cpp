@@ -65,7 +65,6 @@ void PhysicsWrapper::initializePhysics(){
     // Initializing the extensions library requires the PxPhysics object:
     if (!PxInitExtensions(*m_physics))
         fatalError("PxInitExtensions failed!");
-    
 }
 
 void PhysicsWrapper::initializeScene(){
@@ -106,12 +105,11 @@ bool PhysicsWrapper::step(){
 
     if (m_elapsed == 0)
         return false;
-
-    assert(m_elapsed > 0);
-    m_scene->simulate(static_cast<physx::PxReal>(m_elapsed));
-
+    
     last_time = now;
 
+    m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
+    m_scene->fetchResults();
     return true;
 }
 
