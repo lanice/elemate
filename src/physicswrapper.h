@@ -7,6 +7,7 @@
 typedef long double t_longf;
 
 #include <string>
+
 #include "PxPhysicsAPI.h"
 
 class CyclicTime;
@@ -41,11 +42,11 @@ public:
     t_longf currentTime() const;
 
     /** The returned object is initialized. */
-    physx::PxScene*     scene() const;
+    physx::PxScene*             scene() const;
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
-    static const int    kNumberOfThreads;
+    static const int            kNumberOfThreads;
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();
@@ -72,6 +73,8 @@ protected:
     physx::PxScene*                                 m_scene;
     t_longf                                         m_elapsed;
     CyclicTime*                                     m_cyclic_time;
+    physx::PxCooking*                               m_cooking;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
 };
