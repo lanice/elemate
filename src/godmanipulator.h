@@ -11,7 +11,10 @@
 
 class World;
 class Hand;
-namespace osg { class Camera; }
+namespace osg {
+    class Camera;
+    class Texture2D;
+}
 
 /** The EventHandler for game content/logic specific events.
  *  To process an incoming event modify the according handle* class.
@@ -30,6 +33,7 @@ class GodManipulator : public osgGA::GUIEventHandler
 
         void setWorld( std::shared_ptr<World> world );
         void setCamera( osg::Camera * camera );
+        void setDepthBuffer( osg::Texture2D * buffer);
         
 
         /** Handles events. Returns true if handled, false otherwise.*/
@@ -55,6 +59,7 @@ class GodManipulator : public osgGA::GUIEventHandler
         std::shared_ptr<World> m_world;
 
         osg::ref_ptr<osg::Camera> m_camera;
+        osg::ref_ptr<osg::Texture2D> m_depth;
 
         Hand * m_hand;
 };

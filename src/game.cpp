@@ -88,6 +88,8 @@ void Game::start(){
 
     initRendering();
 
+    eventHandler->setDepthBuffer(m_renderBuffers["depth"].get());
+
     m_world->physics_wrapper->startSimulation();
 
     loop();
