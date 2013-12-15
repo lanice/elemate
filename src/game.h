@@ -24,7 +24,6 @@ namespace osg {
  */
 class Game{
 public:
-
     /** Explicit Constructor because Copying and Assignments are disabled. */
     Game() = delete;
     explicit Game(osgViewer::Viewer& viewer);
@@ -51,7 +50,6 @@ protected:
     void setLightSource();
     void generateTerrain();
 
-    
     osgViewer::Viewer&          m_viewer;
     osg::ref_ptr<osg::Camera>   m_mainCamera;
     osg::ref_ptr<osg::Camera>   m_flushCamera;

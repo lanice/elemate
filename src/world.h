@@ -41,12 +41,13 @@ public:
     std::shared_ptr<SoundManager>  soundManager;
 
 protected:
+    osg::ref_ptr<GodNavigation>                         m_navigation;
+    osg::ref_ptr<osg::Group>                            m_root;
+    osg::ref_ptr<osg::Group>                            m_particleGroup;
+    osg::ref_ptr<osg::MatrixTransform>                  m_cameraDebugger;
+    std::map<std::string, osg::ref_ptr<osg::Program>>   m_programsByName;
+
     void setUpLighting();
     void setUpCameraDebugger();
-    osg::ref_ptr<osg::Group> m_root;
-    osg::ref_ptr<osg::Group> m_particleGroup;
-    osg::ref_ptr<osg::MatrixTransform> m_cameraDebugger;
     void initShader();
-    std::map<std::string, osg::ref_ptr<osg::Program>> m_programsByName;
-    osg::ref_ptr<GodNavigation> m_navigation;
 };

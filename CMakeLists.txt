@@ -47,6 +47,10 @@ set(SOURCES
     src/objectscontainer.h
     src/screenquad.cpp
     src/screenquad.h
+    src/particleemitter.cpp
+    src/particleemitter.h
+    src/particledrawable.h
+    src/particledrawable.cpp
     src/hpicgs/CyclicTime.cpp
     src/hpicgs/CyclicTime.h
     src/hpicgs/Timer.cpp
@@ -95,7 +99,6 @@ find_package( osgGA )
 find_package( osgTerrain )
 find_package( PhysX REQUIRED )
 find_package( FMOD )
-# find_package( APEX )
 
 list(APPEND SOURCES ${SHADER})
 
@@ -137,4 +140,3 @@ config_project( ${PROJECT_NAME} OSGGA 1 )
 config_project( ${PROJECT_NAME} OSGTERRAIN 1 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
-# config_project( ${PROJECT_NAME} APEX )

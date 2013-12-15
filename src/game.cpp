@@ -80,6 +80,8 @@ void Game::start(){
 
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
+    
+    //The "particles" ... 
 
     initRendering();
 
