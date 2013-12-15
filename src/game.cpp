@@ -24,8 +24,13 @@
 
 struct GameResizeCallback : public osg::GraphicsContext::ResizedCallback {
     GameResizeCallback(Game & game) : game(game) { }
-    void resizedImplementation(osg::GraphicsContext* /*gc*/, int /*x*/, int /*y*/, int /*width*/, int /*height*/)
+    void resizedImplementation(osg::GraphicsContext* /*gc*/, int /*x*/, int /*y*/, int width, int height)
     {
+        osg::Viewport * oldViewport = game.m_mainCamera->getViewport();
+        assert(oldViewport);
+        if (oldViewport->width() == width && oldViewport->height() == height)
+            return;
+
         std::cerr << "Render texture resizing not implemented yet." << std::endl;
         //game.m_mainCamera->getViewport()->setViewport(0, 0, width, height);
         //for (auto & buffer : game.m_renderBuffers) {
@@ -188,6 +193,7 @@ void Game::initRendering()
     m_mainCamera->getOrCreateStateSet()->setAttribute(new osg::Depth(osg::Depth::LESS, 0.0, 1.0));
     m_mainCamera->addChild(m_world->root());
     m_mainCamera->setViewport(viewport);
+    m_mainCamera->setGraphicsContext(m_viewer.getCamera()->getGraphicsContext());
 
     m_flushCamera = new osg::Camera();
     m_flushCamera->setReferenceFrame(osg::Camera::ReferenceFrame::ABSOLUTE_RF);
@@ -195,6 +201,7 @@ void Game::initRendering()
     m_flushCamera->setClearColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
     m_flushCamera->addChild(ScreenQuad::createFlushNode(*colorBuffer.get(), *depthBuffer.get(), *m_world->programByName("flush")));
     m_flushCamera->setCullingMode(osg::CullSettings::CullingModeValues::NO_CULLING);
+    m_flushCamera->setGraphicsContext(m_viewer.getCamera()->getGraphicsContext());
 
     osg::ref_ptr<osg::Group> cameraGroup = new osg::Group;
     cameraGroup->addChild(m_flushCamera);

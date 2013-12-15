@@ -142,6 +142,11 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
         case osgGA::GUIEventAdapter::KEY_F:
         {
             m_world->makeStandardBall();
+            if (!isFountainOn){
+                m_world->startFountainSound();
+                isFountainOn = true;
+            }
+            m_world->updateFountainPosition();
             return true;
         }
         case osgGA::GUIEventAdapter::KEY_F5:
@@ -154,8 +159,16 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 }
 
 
-bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
+    switch (ea.getUnmodifiedKey()){
+    case osgGA::GUIEventAdapter::KEY_F:
+    {
+        m_world->endFountainSound();
+        isFountainOn = false;
+        return true;
+    }
+    }
     return false;
 }
 

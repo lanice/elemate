@@ -28,6 +28,9 @@ public:
 
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall();
+    void startFountainSound();
+    void endFountainSound();
+    void updateFountainPosition();
 
     /** plays and pauses the background sound **/
     void toogleBackgroundSound(int id);

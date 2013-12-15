@@ -62,4 +62,5 @@ class GodManipulator : public osgGA::GUIEventHandler
         osg::ref_ptr<osg::Texture2D> m_depth;
 
         Hand * m_hand;
+        bool isFountainOn = false;
 };
