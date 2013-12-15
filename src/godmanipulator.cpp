@@ -146,26 +146,22 @@ bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::
 
         osg::Vec3d position = m_navigation->getCenter();
 
-        float newHeight;
-
         switch (ea.getScrollingMotion())
         {
         case osgGA::GUIEventAdapter::SCROLL_UP:
-            newHeight = m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, 1);
-            break;
+            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, 1);
+            m_navigation->updateHeight();
+            return true;
 
         case osgGA::GUIEventAdapter::SCROLL_DOWN:
-            newHeight = m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, -1);
-            break;
+            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, -1);
+            m_navigation->updateHeight();
+            return true;
 
         default:
             return false;
         }
 
-        osg::Vec3d eye, center, up;
-        m_navigation->getTransformation(eye, center, up);
-        center[1] = newHeight;  // set y according the new height value at camera focus position
-        m_navigation->setTransformation(eye, center, up);
     }
     return false;
 }

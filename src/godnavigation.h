@@ -38,6 +38,9 @@ class GodNavigation : public osgGA::StandardManipulator
         /** Get manipulator's focal center, eye position, and up vector.*/
         virtual void getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg::Vec3d& up ) const;
 
+        /** Read the terrain height value and set the height of the camera center accordingly. */
+        void updateHeight();
+
         /** Get the manipulator's focal center */
         osg::Vec3d getCenter() const;
 
