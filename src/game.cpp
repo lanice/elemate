@@ -85,6 +85,7 @@ void Game::start(){
     setupNavigation();
 
     eventHandler->setCamera(m_viewer.getCamera());
+    eventHandler->setNavigation(m_navigation.get());
 
     m_world->setNavigation(m_navigation.get());
     m_world->reloadShader();
@@ -92,8 +93,6 @@ void Game::start(){
     //The "particles" ... 
 
     initRendering();
-
-    eventHandler->setDepthBuffer(m_renderBuffers["depth"].get());
 
     m_world->physics_wrapper->startSimulation();
 

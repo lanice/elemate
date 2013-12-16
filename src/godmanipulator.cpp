@@ -9,14 +9,16 @@
 #include <osg/Image>
 
 #include "world.h"
+#include "godnavigation.h"
+#include "terrain/elemateterrain.h"
 #include "hand.h"
 
 
 GodManipulator::GodManipulator()
    : inherited(),
      m_world(nullptr),
+     m_navigation(nullptr),
      m_camera(nullptr),
-     m_depth(nullptr),
      m_hand(new Hand())
 {
 }
@@ -26,8 +28,8 @@ GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& cop
    : Object(gm, copyOp),
      inherited( gm, copyOp ),
      m_world( gm.m_world ),
+     m_navigation( gm.m_navigation ),
      m_camera( gm.m_camera ),
-     m_depth( gm.m_depth ),
      m_hand( gm.m_hand )
 {
 }
@@ -46,15 +48,15 @@ void GodManipulator::setWorld( std::shared_ptr<World> world )
 }
 
 
-void GodManipulator::setCamera( osg::Camera * camera )
+void GodManipulator::setNavigation( GodNavigation * navigation )
 {
-    m_camera = camera;
+    m_navigation = navigation;
 }
 
 
-void GodManipulator::setDepthBuffer( osg::Texture2D * buffer )
+void GodManipulator::setCamera( osg::Camera * camera )
 {
-    m_depth = buffer;
+    m_camera = camera;
 }
 
 
@@ -94,16 +96,28 @@ bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 
 bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    assert(m_depth);
-    // osg::Vec4 color = m_depth->getImage()->getColor( osg::Vec2d(ea.getX(), ea.getY()) );
-    osg::Image * image = m_depth->getImage();
-    assert(image);
+    osg::Vec3d eye, center, up;
+    m_navigation->getTransformation( eye, center, up );
 
-    osg::Matrixd matrix = (m_camera->getProjectionMatrix() * m_world->getCameraTransform() * m_camera->getViewMatrix());
-    osg::Matrixd::inverse(matrix);
+    osg::Matrixd matrix = osg::Matrixd::inverse( m_camera->getViewMatrix() * m_camera->getProjectionMatrix() );
 
-    osg::Vec3 pos = osg::Vec3( (ea.getX() / ea.getWindowWidth() - 0.5) * 2., (ea.getY() / ea.getWindowHeight() - 0.5) * 2., -1. ) * matrix;
-    m_hand->transform()->setMatrix( m_hand->defaultTransform() * osg::Matrixd::translate( pos ) );
+    float x = ( ea.getX() / ea.getWindowWidth() - 0.5 ) * 2.;
+    float y = ( ea.getY() / ea.getWindowHeight() - 0.5 ) * 2.;
+
+    osg::Vec3 lookAtView = osg::Vec3( x, y, 1. ) * matrix;
+
+    osg::Vec3 pos = eye - ( lookAtView * eye.y()/lookAtView.y() );
+    pos.y() = m_world->terrain->heightAt( pos.x(), pos.z() ) + 1.;
+
+    osg::Vec3d homeEye, homeCenter, homeUp;
+    m_navigation->getHomePosition( homeEye, homeCenter, homeUp );
+
+    osg::Vec3 from = homeEye-homeCenter; from.y() = 0.;
+    osg::Vec3 to = eye-center; to.y() = 0.;
+
+    osg::Matrixd handMatrix = osg::Matrixd::rotate( from, to );
+
+    m_hand->transform()->setMatrix( m_hand->defaultTransform() * handMatrix * osg::Matrixd::translate( pos ) );
     return true;
 }
 
