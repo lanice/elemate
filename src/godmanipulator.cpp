@@ -94,7 +94,6 @@ bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 }
 
 
-#include <iostream>
 bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
     osg::Vec3d eye, center, up;
@@ -119,8 +118,7 @@ bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::G
     osg::Matrixd handMatrix = osg::Matrixd::rotate( from, to );
 
     m_hand->transform()->setMatrix( m_hand->defaultTransform() * handMatrix * osg::Matrixd::translate( pos ) );
-
-    std::cerr << m_hand->position().x() << " : " << m_hand->position().y() << " : " << m_hand->position().z() << std::endl;
+    
     return true;
 }
 
