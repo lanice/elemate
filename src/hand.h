@@ -3,6 +3,7 @@
 
 #include <osg/ref_ptr>
 #include <osg/Matrixd>
+#include <osg/Vec3>
 
 
 namespace osg {
@@ -20,6 +21,8 @@ public:
 
     osg::MatrixTransform * transform();
     osg::Matrixd defaultTransform();
+
+    osg::Vec3 position();
 
 protected:
 

@@ -35,3 +35,10 @@ osg::Matrixd Hand::defaultTransform()
 {
     return _defaultTransform;
 }
+
+
+osg::Vec3 Hand::position()
+{
+    osg::Matrix matrix = m_transform.get()->getMatrix();
+    return osg::Vec3( matrix(3, 0), matrix(3, 1), -matrix(3, 2) );
+}
