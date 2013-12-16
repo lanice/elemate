@@ -8,6 +8,8 @@
 
 #include <PxShape.h>
 
+#include "osg/sharedgeometrytechnique.h"
+
 using namespace physx;
 
 std::initializer_list<TerrainLevel> TerrainLevels = {
@@ -47,6 +49,8 @@ ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & set
     m_osgTerrainTransform->addChild(m_osgTerrain);
     m_osgTerrain->addChild(m_osgTerrainBase);
     m_osgTerrain->addChild(m_osgTerrainWater);
+
+    m_osgTerrain->setTerrainTechniquePrototype(new SharedGeometryTechnique());
 }
 
 float ElemateHeightFieldTerrain::heightAt(float x, float z) const

@@ -60,8 +60,10 @@ set(SOURCES
     src/terrain/elemateterrain.cpp
     src/terrain/terraininteractor.h
     src/terrain/terraininteractor.cpp
-    src/osg/sharedgeometrytechnique.h;
-    src/osg/sharedgeometrytechnique.cpp;
+    src/osg/sharedgeometrytechnique.h
+    src/osg/sharedgeometrytechnique.cpp
+    src/osg/dynamicterraintile.h
+    src/osg/dynamicterraintile.cpp
     src/soundmanager.cpp
     src/soundmanager.h
 )

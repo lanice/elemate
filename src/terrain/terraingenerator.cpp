@@ -22,6 +22,7 @@
 #include <foundation/PxMat44.h>
 
 #include "elements.h"
+#include "osg/dynamicterraintile.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -259,7 +260,7 @@ osgTerrain::TerrainTile * TerrainGenerator::copyHeightFieldToOsgTile(const osgTe
     osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
     layer->setLocator(locator.get());
 
-    osgTerrain::TerrainTile * tile = new osgTerrain::TerrainTile();
+    osgTerrain::TerrainTile * tile = new DynamicTerrainTile();
     tile->setElevationLayer(layer.get());
     tile->setTileID(tileID);
     tile->setRequiresNormals(true);

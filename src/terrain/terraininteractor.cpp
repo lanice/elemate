@@ -16,6 +16,7 @@
 #include <geometry/PxHeightFieldGeometry.h>
 
 #include "terrain/elemateterrain.h"
+#include "osg/dynamicterraintile.h"
 
 using namespace physx;
 
@@ -61,21 +62,19 @@ float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, unsigned phys
 
     unsigned int osgColumn = physxRow;
     unsigned int osgRow = settings.columns - physxColumn - 1;
-
-    osg::ref_ptr<osgTerrain::HeightFieldLayer> hfLayer = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile.getElevationLayer());
-    assert(hfLayer.valid());
     
     float value_inRange = value; /** clamp height value */
     if (value_inRange < -settings.maxHeight) value_inRange = -settings.maxHeight;
     if (value_inRange > settings.maxHeight) value_inRange = settings.maxHeight;
 
+    DynamicTerrainTile * dynamicTile = dynamic_cast<DynamicTerrainTile*>(&tile);
+    assert(dynamicTile);
+
     for (int u = -1; u <= 1; ++u)
     for (int v = -1; v <= 1; ++v)
-        hfLayer->getHeightField()->setHeight(osgColumn+u, osgRow+v, value_inRange);
+        dynamicTile->setHeightInGeometry(osgColumn + u, osgRow + v, value_inRange);
 
-    tile.setDirty(true);
-    osgUtil::UpdateVisitor uv;
-    uv.apply(tile);
+    dynamicTile->updateVBO();
 
     setPxHeight(tile.getTileID(), physxRow, physxColumn, value_inRange);
 
