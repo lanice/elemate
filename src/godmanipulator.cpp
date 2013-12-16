@@ -209,17 +209,17 @@ bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::
         assert(m_navigation.valid());
         assert(m_terrainInteractor);
 
-        osg::Vec3d position = m_navigation->getCenter();
+        osg::Vec3d position = m_hand->position();
 
         switch (ea.getScrollingMotion())
         {
         case osgGA::GUIEventAdapter::SCROLL_UP:
-            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, 1);
+            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, 0.1);
             m_navigation->updateHeight();
             return true;
 
         case osgGA::GUIEventAdapter::SCROLL_DOWN:
-            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, -1);
+            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, -0.1);
             m_navigation->updateHeight();
             return true;
 
