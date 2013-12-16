@@ -54,6 +54,11 @@ float TerrainInteractor::changeHeight(float worldX, float worldZ, TerrainLevel l
 float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, unsigned physxRow, unsigned physxColumn, float value)
 {
     const TerrainSettings & settings = m_terrain->settings();
+
+    // abort, if we are at the bounderies (because we set 3x3 values)
+    if (physxRow == 0 || physxColumn == 0 || physxRow == settings.rows - 1 || physxColumn == settings.columns - 1)
+        return 0.0f;
+
     unsigned int osgColumn = physxRow;
     unsigned int osgRow = settings.columns - physxColumn - 1;
 
@@ -64,7 +69,9 @@ float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, unsigned phys
     if (value_inRange < -settings.maxHeight) value_inRange = -settings.maxHeight;
     if (value_inRange > settings.maxHeight) value_inRange = settings.maxHeight;
 
-    hfLayer->getHeightField()->setHeight(osgColumn, osgRow, value_inRange);
+    for (int u = -1; u <= 1; ++u)
+    for (int v = -1; v <= 1; ++v)
+        hfLayer->getHeightField()->setHeight(osgColumn+u, osgRow+v, value_inRange);
 
     tile.setDirty(true);
     osgUtil::UpdateVisitor uv;
@@ -81,16 +88,16 @@ void TerrainInteractor::setPxHeight(const osgTerrain::TileID & tileID, unsigned 
     assert(m_terrain->pxShape(tileID)->getHeightFieldGeometry(geometry));
     PxHeightField * hf = geometry.heightField;
 
-    PxHeightFieldSample samplesM[1];
-    for (PxU32 i = 0; i < 1; i++)
+    PxHeightFieldSample samplesM[9];
+    for (PxU32 i = 0; i < 9; i++)
     {
         samplesM[i].height = value / geometry.heightScale;
         samplesM[i].materialIndex0 = samplesM[i].materialIndex1 = 0;
     }
 
     PxHeightFieldDesc descM;
-    descM.nbColumns = 1;
-    descM.nbRows = 1;
+    descM.nbColumns = 3;
+    descM.nbRows = 3;
     descM.samples.data = samplesM;
     descM.format = hf->getFormat();
     descM.samples.stride = hf->getSampleStride();
@@ -98,7 +105,7 @@ void TerrainInteractor::setPxHeight(const osgTerrain::TileID & tileID, unsigned 
     descM.convexEdgeThreshold = hf->getConvexEdgeThreshold();
     descM.flags = hf->getFlags();
 
-    assert(hf->modifySamples(physxColumn, physxRow, descM)); // modify row 1 with new sample data
+    assert(hf->modifySamples(physxColumn-1, physxRow-1, descM)); // modify row 1 with new sample data
 
     PxHeightFieldGeometry newGeometry(hf, PxMeshGeometryFlags(), geometry.heightScale, geometry.rowScale, geometry.columnScale);
     assert(PxGetPhysics().getNbScenes() == 1);
