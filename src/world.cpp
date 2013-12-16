@@ -220,8 +220,22 @@ void World::initShader()
     particleWaterProgram->addShader(particleWaterVertex);
     particleWaterProgram->addShader(particleWaterFragment);
 
-    osg::ref_ptr<osg::StateSet> sphereSS = m_particleGroup->getOrCreateStateSet();
-    sphereSS->setAttributeAndModes(particleWaterProgram.get());
+    osg::ref_ptr<osg::StateSet> particleStateSet = m_particleGroup->getOrCreateStateSet();
+    particleStateSet->setAttributeAndModes(particleWaterProgram.get());
+
+
+
+    osg::ref_ptr<osg::Shader> handVertexShader =
+        osgDB::readShaderFile("shader/hand.vert");
+    osg::ref_ptr<osg::Shader> handFragmentShader =
+        osgDB::readShaderFile("shader/hand.frag");
+    assert(handVertexShader.valid() && handFragmentShader.valid());
+
+    osg::ref_ptr<osg::Program> handProgram = new osg::Program();
+    m_programsByName.emplace("hand", handProgram.get());
+    handProgram->addShader(handVertexShader);
+    handProgram->addShader(handFragmentShader);
+    handProgram->addShader(phongLightningFragment);
 }
 
 void World::reloadShader()

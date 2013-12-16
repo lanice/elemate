@@ -44,6 +44,7 @@ GodManipulator::~GodManipulator()
 void GodManipulator::setWorld( std::shared_ptr<World> world )
 {
     m_world = world;
+    m_hand->transform()->getOrCreateStateSet()->setAttribute(m_world->programByName("hand"));
     m_world->root()->addChild( m_hand->transform() );
 }
 

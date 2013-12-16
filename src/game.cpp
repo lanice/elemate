@@ -74,6 +74,8 @@ void Game::start(){
     if (isRunning())
         return;
 
+    m_world->reloadShader();
+
     // Add GodManipulator (event handler) to the Viewer that handles events
     // that don't belong to the navigation but to game content/logic. 
     // It is added to Viewers EventHandlerQueue to receive incoming events.
@@ -88,7 +90,6 @@ void Game::start(){
     eventHandler->setNavigation(m_navigation.get());
 
     m_world->setNavigation(m_navigation.get());
-    m_world->reloadShader();
     
     //The "particles" ... 
 
