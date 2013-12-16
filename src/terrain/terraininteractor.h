@@ -26,4 +26,5 @@ private:
     std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
 
     float setHeight(osgTerrain::TerrainTile & tile, unsigned physxRow, unsigned physxColumn, float value);
+    void setPxHeight(const osgTerrain::TileID & tileID, unsigned physxRow, unsigned physxColumn, float value);
 };

@@ -86,7 +86,7 @@ public:
     osg::Group * osgTerrainWater() const;
     /** PhysX shape containing height field geometry for one tile
     * terrain tile in origin is identified by TileId(0, 0, 0) */
-    physx::PxShape const * pxShape(const osgTerrain::TileID & tileID) const;
+    physx::PxShape * pxShape(const osgTerrain::TileID & tileID) const;
     /** static PhysX actor for specified terrain tile
     * terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxRigidStatic * pxActor(const osgTerrain::TileID & tileID) const;

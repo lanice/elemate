@@ -163,7 +163,7 @@ osg::Group * ElemateHeightFieldTerrain::osgTerrainWater() const
     return m_osgTerrainWater.get();
 }
 
-PxShape const * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & tileID) const
+PxShape * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & tileID) const
 {
     return m_pxShapes.at(tileID);
 }

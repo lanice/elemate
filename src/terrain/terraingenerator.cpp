@@ -228,9 +228,9 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     assert(m_settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     assert(heightScale >= PX_MIN_HEIGHTFIELD_Y_SCALE);
     // create height field geometry and set scale
-    PxHeightFieldGeometry * m_pxHfGeometry = new  PxHeightFieldGeometry(pxHeightField, PxMeshGeometryFlags(),
+    PxHeightFieldGeometry m_pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
         heightScale, m_settings.intervalX(), m_settings.intervalZ());
-    PxShape * shape = pxActor.createShape(*m_pxHfGeometry, mat, 1);
+    PxShape * shape = pxActor.createShape(m_pxHfGeometry, mat, 1);
 
     assert(shape);
 
