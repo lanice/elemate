@@ -4,12 +4,20 @@
 
 #include <osgGA/GUIEventHandler>
 
-#include <memory> //shared_ptr
+#include <osg/ref_ptr>
+
+#include <memory>
 
 
 class GodNavigation;
 class World;
+class GodNavigation;
 class TerrainInteractor;
+class Hand;
+namespace osg {
+    class Camera;
+    class Texture2D;
+}
 
 /** The EventHandler for game content/logic specific events.
  *  To process an incoming event modify the according handle* class.
@@ -23,10 +31,13 @@ class GodManipulator : public osgGA::GUIEventHandler
         GodManipulator();
         GodManipulator( const GodManipulator& gm, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
 
+        virtual ~GodManipulator();
 
-        void setNavigation(GodNavigation * navigation);
-        void setWorld(std::shared_ptr<World>& world);
 
+        void setNavigation( GodNavigation * navigation );
+        void setWorld( std::shared_ptr<World> world );
+        void setCamera( osg::Camera * camera );
+        
 
         /** Handles events. Returns true if handled, false otherwise.*/
         virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
@@ -48,9 +59,13 @@ class GodManipulator : public osgGA::GUIEventHandler
 
     protected:
 
+        std::shared_ptr<World> m_world;
+        osg::ref_ptr<GodNavigation> m_navigation;
+        std::shared_ptr<TerrainInteractor> m_terrainInteractor;
+        osg::ref_ptr<osg::Camera> m_camera;
+
         bool _keyPressedAlt_L;
 
-        osg::ref_ptr<GodNavigation> m_navigation;
-        std::shared_ptr<World> m_world;
-        std::shared_ptr<TerrainInteractor> m_terrainInteractor;
+        Hand * m_hand;
+        bool m_isFountainOn;
 };

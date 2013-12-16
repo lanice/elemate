@@ -42,7 +42,7 @@ void DynamicTerrainTile::updateVBO()
 {
     m_currentVertices->dirty();
 
-    m_currentVertices == nullptr;
+    m_currentVertices = nullptr;
 }
 
 void DynamicTerrainTile::retriangulate()

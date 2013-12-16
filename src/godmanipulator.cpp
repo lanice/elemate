@@ -3,15 +3,27 @@
 
 #include <cassert>
 
+#include <osg/MatrixTransform>
+#include <osg/Camera>
+#include <osg/Texture2D>
+#include <osg/Image>
+
 #include "world.h"
 #include "godnavigation.h"
 #include "terrain/terraininteractor.h"
+#include "terrain/elemateterrain.h"
+#include "hand.h"
 
 
 GodManipulator::GodManipulator()
    : inherited(),
      m_world( nullptr ),
-     _keyPressedAlt_L(false)
+     m_navigation( nullptr ),
+     m_terrainInteractor( nullptr ),
+     m_camera( nullptr ),
+     _keyPressedAlt_L( false ),
+     m_hand(new Hand()),
+     m_isFountainOn( false )
 {
 }
 
@@ -20,19 +32,40 @@ GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& cop
    : Object(gm, copyOp),
      inherited( gm, copyOp ),
      m_world( gm.m_world ),
-     _keyPressedAlt_L(gm._keyPressedAlt_L)
+     m_navigation( gm.m_navigation ),
+     m_terrainInteractor( gm.m_terrainInteractor ),
+     m_camera( gm.m_camera ),
+     _keyPressedAlt_L(gm._keyPressedAlt_L),
+     m_hand( gm.m_hand ),
+     m_isFountainOn( gm.m_isFountainOn)
 {
 }
 
-void GodManipulator::setNavigation( GodNavigation * navigation)
+
+GodManipulator::~GodManipulator()
+{
+    delete m_hand;
+}
+
+
+void GodManipulator::setWorld( std::shared_ptr<World> world )
+{
+    m_world = world;
+    m_hand->transform()->getOrCreateStateSet()->setAttribute(m_world->programByName("hand"));
+    m_world->root()->addChild(m_hand->transform());
+    m_terrainInteractor = std::make_shared<TerrainInteractor>(world->terrain);
+}
+
+
+void GodManipulator::setNavigation( GodNavigation * navigation )
 {
     m_navigation = navigation;
 }
 
-void GodManipulator::setWorld(std::shared_ptr<World>& world)
+
+void GodManipulator::setCamera( osg::Camera * camera )
 {
-    m_world = world;
-    m_terrainInteractor = std::make_shared<TerrainInteractor>(world->terrain);
+    m_camera = camera;
 }
 
 
@@ -70,9 +103,32 @@ bool GodManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 }
 
 
-bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
-    return false;
+    osg::Vec3d eye, center, up;
+    m_navigation->getTransformation( eye, center, up );
+
+    osg::Matrixd matrix = osg::Matrixd::inverse( m_camera->getViewMatrix() * m_camera->getProjectionMatrix() );
+
+    float x = ( ea.getX() / ea.getWindowWidth() - 0.5 ) * 2.;
+    float y = ( ea.getY() / ea.getWindowHeight() - 0.5 ) * 2.;
+
+    osg::Vec3 lookAtView = osg::Vec3( x, y, 1. ) * matrix;
+
+    osg::Vec3 pos = eye - ( lookAtView * eye.y()/lookAtView.y() );
+    pos.y() = m_world->terrain->heightAt( pos.x(), pos.z() ) + 1.;
+
+    osg::Vec3d homeEye, homeCenter, homeUp;
+    m_navigation->getHomePosition( homeEye, homeCenter, homeUp );
+
+    osg::Vec3 from = homeEye-homeCenter; from.y() = 0.;
+    osg::Vec3 to = eye-center; to.y() = 0.;
+
+    osg::Matrixd handMatrix = osg::Matrixd::rotate( from, to );
+
+    m_hand->transform()->setMatrix( m_hand->defaultTransform() * handMatrix * osg::Matrixd::translate( pos ) );
+    
+    return true;
 }
 
 
@@ -110,6 +166,11 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
         case osgGA::GUIEventAdapter::KEY_F:
         {
             m_world->makeStandardBall();
+            if (!m_isFountainOn){
+                m_world->startFountainSound();
+                m_isFountainOn = true;
+            }
+            m_world->updateFountainPosition();
             return true;
         }
         case osgGA::GUIEventAdapter::KEY_F5:
@@ -130,6 +191,10 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
     switch (ea.getUnmodifiedKey()){
+    case osgGA::GUIEventAdapter::KEY_F:
+        m_world->endFountainSound();
+        m_isFountainOn = false;
+        return true;
     case osgGA::GUIEventAdapter::KEY_Alt_L:
         _keyPressedAlt_L = false;
         return true;

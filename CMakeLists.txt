@@ -39,12 +39,20 @@ set(SOURCES
     src/game.h
     src/world.cpp
     src/world.h
+    src/hand.cpp
+    src/hand.h
     src/godmanipulator.cpp
     src/godmanipulator.h
     src/godnavigation.cpp
     src/godnavigation.h
     src/objectscontainer.cpp
     src/objectscontainer.h
+    src/screenquad.cpp
+    src/screenquad.h
+    src/particleemitter.cpp
+    src/particleemitter.h
+    src/particledrawable.h
+    src/particledrawable.cpp
     src/hpicgs/CyclicTime.cpp
     src/hpicgs/CyclicTime.h
     src/hpicgs/Timer.cpp
@@ -73,14 +81,18 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
+    shader/flush.vert
+    shader/flush.frag
     shader/terrain_base.vert
-    shader/terrain_water.vert
     shader/terrain_base.geom
     shader/terrain_base.frag
+    shader/terrain_water.vert
     shader/terrain_water.geom
     shader/terrain_water.frag
-    shader/sphere.frag
-    shader/sphere.vert
+    shader/particle_water.vert
+    shader/particle_water.frag
+    shader/hand.frag
+    shader/hand.vert
     shader/phongLighting.frag
 )
 
@@ -97,7 +109,6 @@ find_package( osgGA )
 find_package( osgTerrain )
 find_package( PhysX REQUIRED )
 find_package( FMOD )
-# find_package( APEX )
 
 list(APPEND SOURCES ${SHADER})
 
@@ -139,4 +150,3 @@ config_project( ${PROJECT_NAME} OSGGA 1 )
 config_project( ${PROJECT_NAME} OSGTERRAIN 1 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
-# config_project( ${PROJECT_NAME} APEX )
