@@ -5,13 +5,13 @@
     void operator=(const TypeName&);
 
 #include "PxPhysicsAPI.h"
-#include <list>
-#include <osg/GraphicsContext> // ref_ptr
+#include <osg/ref_ptr> // ref_ptr
 
 namespace osg {
     class MatrixTransform;
     class Group;
 }
+class ParticleDrawable;
 
 typedef long double t_longf;
 
@@ -35,15 +35,18 @@ protected:
     static const physx::PxU32   kDefaultEmittedParticles = 1;
 
     osg::ref_ptr<osg::Group> m_parent;
+    osg::ref_ptr<osg::Group> m_particle_group;
+    osg::ref_ptr<ParticleDrawable> m_particle_drawable;
+
     physx::PxVec3            m_position;
     bool                     m_emitting;
     int                      m_particles_per_second;
 
+    t_longf                  akkumulator;
+    size_t                   youngest_particle_index;
+
 
     physx::PxParticleSystem*            m_particle_system; // or fluid?
-    std::list<osg::MatrixTransform*>    m_particle_objects;
-
-    void createParticleObjects();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticleEmitter);
