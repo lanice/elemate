@@ -26,9 +26,7 @@ World::World()
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
     m_root->addChild(m_particleGroup.get());
-
-    objects_container->initializeParticles(m_particleGroup.get());
-
+    
     // Create two non-3D channels (paino and rain)
     //initialise as paused
     soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
@@ -55,8 +53,6 @@ World::World()
         physics_wrapper->scene()->addActor(*actor.second);
     }
 
-    setUpCameraDebugger();
-
     setUpLighting();
 }
 
@@ -65,15 +61,6 @@ World::~World()
 {
 }
 
-void World::setUpCameraDebugger()
-{
-    m_cameraDebugger = new osg::MatrixTransform();
-
-    osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode();
-    sphere_geode->addDrawable(new osg::ShapeDrawable(new osg::Cone(osg::Vec3(0, 0, 0), 0.2, 1.0)));
-    m_cameraDebugger->addChild(sphere_geode);
-    m_root->addChild(m_cameraDebugger.get());
-}
 
 void World::setUpLighting()
 {
@@ -112,15 +99,15 @@ osg::Matrixd World::getCameraTransform()
     return m_navigation->getMatrix();
 }
 
-void World::makeStandardBall()
+void World::makeStandardBall(const osg::Vec3d& position)
 {
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
 
     // prototype: hard-coded physx values etc.
     //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
-    objects_container->createParticles(5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
-
+    //objects_container->createParticles(5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
+    objects_container->makeParticleEmitter(m_particleGroup, physx::PxVec3(position.x(), position.y(), position.z()));
 }
 
 void World::startFountainSound()
@@ -274,12 +261,4 @@ void World::setUniforms(long double globalTime)
         static_cast<float>(globalTime));    // cast away the high precision, as not needed in the shaders
     rootStateSet->getOrCreateUniform("gameTime", osg::Uniform::FLOAT)->set(
         static_cast<float>(physics_wrapper->currentTime()));    // cast away the high precision, as not needed in the shaders
-
-
-    osg::Matrix camDebuggerTransform = osg::Matrix::rotate(3.1415926f * 0.5, osg::Vec3(1.0, .0, .0))
-        * osg::Matrix::translate( centerd );
-    m_cameraDebugger->setMatrix(camDebuggerTransform);
-
-    m_cameraDebugger->getOrCreateStateSet()->getOrCreateUniform("modelRotation",
-        osg::Uniform::Type::FLOAT_MAT4)->set(osg::Matrixf::rotate(3.1415926f * 0.5, osg::Vec3f(1.0, .0, .0)));
 }
