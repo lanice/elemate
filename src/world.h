@@ -50,10 +50,8 @@ protected:
     osg::ref_ptr<GodNavigation>                         m_navigation;
     osg::ref_ptr<osg::Group>                            m_root;
     osg::ref_ptr<osg::Group>                            m_particleGroup;
-    osg::ref_ptr<osg::MatrixTransform>                  m_cameraDebugger;
     std::map<std::string, osg::ref_ptr<osg::Program>>   m_programsByName;
 
     void setUpLighting();
-    void setUpCameraDebugger();
     void initShader();
 };
