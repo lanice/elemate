@@ -6,6 +6,8 @@
 #include <osg/ShapeDrawable>
 #include <osgViewer/View>
 #include <osg/MatrixTransform>
+
+#include "particleemitter.h"
 #include "elements.h"
 #include "physicswrapper.h"
 
@@ -33,6 +35,11 @@ inline osg::Matrix convertPxMat44ToOsgMatrix(const physx::PxMat44 px_mat){
 void ObjectsContainer::updateAllObjects()
 {
     m_physics_wrapper->scene()->fetchResults(true);
+
+    for (auto& emitter : m_emitters){
+        emitter->update(m_physics_wrapper->elapsedTime());
+    }
+
     physx::PxMat44 new_pos;
     for (auto& current_object : m_objects){
         if (current_object.second->isSleeping())
@@ -113,6 +120,10 @@ void ObjectsContainer::initializeParticles(){
 }
 
 void ObjectsContainer::createParticleObject(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position){
+    m_emitters.push_back(new ParticleEmitter(parent, position));
+    m_emitters.back()->initializeParticleSystem();
+    m_emitters.back()->startEmit();
+    
     if (m_particle_objects.size() >= kMaxParticleCount)
         return;
     osg::Matrix translation;

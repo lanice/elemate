@@ -17,6 +17,7 @@ namespace osg {
 }
 
 class PhysicsWrapper;
+class ParticleEmitter;
 
 
 /** This Class contains all (primitive) OSG objects and their PhysX representation.
@@ -50,6 +51,7 @@ protected:
   
     std::shared_ptr<PhysicsWrapper>     m_physics_wrapper;
     std::list<DrawableAndPhysXObject>   m_objects;
+    std::list<ParticleEmitter*>          m_emitters;
 
     physx::PxParticleSystem*            m_particle_system;
     std::list<osg::MatrixTransform*>    m_particle_objects;
