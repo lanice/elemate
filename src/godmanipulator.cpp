@@ -132,6 +132,10 @@ bool GodManipulator::handleResize( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 
 bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
 {
+    if (_keyPressedAlt_L) {
+        osg::Vec3f position = m_hand->position();
+        m_terrainInteractor->heightPull(position.x(), position.z());
+    }
     return false;
 }
 
@@ -183,10 +187,12 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
             return true;
         }
         case osgGA::GUIEventAdapter::KEY_Alt_L:
-        {
+            if (!_keyPressedAlt_L) {
+                osg::Vec3f position = m_hand->position();
+                m_terrainInteractor->heightGrab(position.x(), position.z(), TerrainLevel::BaseLevel);
+            }
             _keyPressedAlt_L = true;
             return true;
-        }
     }
     return false;
 }
@@ -213,7 +219,9 @@ bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::
         assert(m_navigation.valid());
         assert(m_terrainInteractor);
 
-        osg::Vec3d position = m_hand->position();
+        osg::Vec3f position = m_hand->position();
+
+        m_terrainInteractor->heightGrab(position.x(), position.z(), TerrainLevel::BaseLevel);
 
         switch (ea.getScrollingMotion())
         {

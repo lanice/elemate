@@ -115,6 +115,17 @@ void TerrainInteractor::setPxHeight(const osgTerrain::TileID & tileID, unsigned 
     pxScene->unlockWrite();
 }
 
+float TerrainInteractor::heightGrab(float worldX, float worldZ, TerrainLevel level)
+{
+    m_grabbedLevel = level;
+    return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, level);
+}
+
+void TerrainInteractor::heightPull(float worldX, float worldZ)
+{
+    setHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight);
+}
+
 std::shared_ptr<ElemateHeightFieldTerrain> TerrainInteractor::terrain() const
 {
     return m_terrain;
