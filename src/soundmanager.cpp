@@ -1,5 +1,8 @@
 #include "soundmanager.h"
+
 #include <iostream>
+
+#include "fmod_errors.h"
 
 SoundManager::SoundManager(FMOD_VECTOR startPosition){
     init(startPosition);
