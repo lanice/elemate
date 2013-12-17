@@ -41,6 +41,10 @@ class GodManipulator : public osgGA::GUIEventHandler
 
         /** Handles events. Returns true if handled, false otherwise.*/
         virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+        /** Handles GUIEventAdapter::FRAME event.*/
+        virtual bool handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
+        /** Handles GUIEventAdapter::RESIZE event.*/
+        virtual bool handleResize( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
         /** Handles GUIEventAdapter::MOVE event.*/
         virtual bool handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
         /** Handles GUIEventAdapter::DRAG event.*/
@@ -56,6 +60,8 @@ class GodManipulator : public osgGA::GUIEventHandler
         /** Handles GUIEventAdapter::SCROLL event.*/
         virtual bool handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
+        void updateHandPosition( const osgGA::GUIEventAdapter& ea );
+
 
     protected:
 
@@ -68,4 +74,7 @@ class GodManipulator : public osgGA::GUIEventHandler
 
         Hand * m_hand;
         bool m_isFountainOn;
+
+        int _windowX;
+        int _windowY;
 };
