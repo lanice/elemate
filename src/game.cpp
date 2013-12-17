@@ -54,7 +54,7 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 
     traits->windowName = "Elemate";
     traits->vsync = true;
-    // traits->useCursor = false;
+    traits->useCursor = false;
 
     // apply new settings viewer and set callbacks
     osg::ref_ptr< osg::GraphicsContext > gc = osg::GraphicsContext::createGraphicsContext(traits.get());
