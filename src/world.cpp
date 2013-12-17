@@ -110,25 +110,11 @@ void World::makeStandardBall(const osg::Vec3d& position)
     objects_container->makeParticleEmitter(m_particleGroup, physx::PxVec3(position.x(), position.y(), position.z()));
 }
 
-void World::startFountainSound()
+void World::createFountainSound()
 {
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
     soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { centerd.x(), centerd.y() + 0.5, centerd.z() });
-}
-
-void World::updateFountainPosition()
-{
-    osg::Vec3d eyed, upd, centerd;
-    m_navigation->getTransformation(eyed, centerd, upd);
-    soundManager->setSoundPos(2, { centerd.x(), centerd.y() + 0.5, centerd.z() });
-    soundManager->update();
-}
-
-void World::endFountainSound()
-{
-    soundManager->deleteChannel(2);
-
 }
 
 void World::toogleBackgroundSound(int id){

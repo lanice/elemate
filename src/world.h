@@ -29,9 +29,7 @@ public:
 
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall(const osg::Vec3d& position);
-    void startFountainSound();
-    void endFountainSound();
-    void updateFountainPosition();
+    void createFountainSound();
 
     /** plays and pauses the background sound **/
     void toogleBackgroundSound(int id);
