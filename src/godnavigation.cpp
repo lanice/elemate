@@ -447,4 +447,5 @@ void GodNavigation::updateListener(){
         { forward.x(), forward.y(), forward.z() },
         { up.x(), up.y(), up.z() }
     );
+    m_world->soundManager->update();
 }

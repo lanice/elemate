@@ -1,0 +1,91 @@
+SET(APEX_INCLUDE_PATH_DESCRIPTION "The directory containing PxFileBuf.")
+
+SET(APEX_DIR_SEARCH $ENV{APEX_ROOT})
+
+SET(VERSION_SUFFIX_FOR_PATH
+   v1.2.4
+   v1.2.3
+   1.2.3
+   1.2.3
+)
+
+SET(APEX_DIR_SEARCH
+  ${APEX_DIR_SEARCH}/public
+  ${DELTA3D_EXT_DIR}/inc
+  /usr/include/APEX
+  "C:/Program Files/NVIDIA Corporation/NVIDIA APEX SDK"
+  "C:/Program Files/AGEIA Technologies/AGEIA APEX SDK"
+  "C:/Program Files/AGEIA Technologies/APEXSDK-1.2.4-Build6-CL16501900-PhysX_3.2.4-WIN-VC10-BIN"
+)
+
+FIND_PATH(APEX_INCLUDES PxFileBuf.h PATH_SUFFIXES ${VERSION_SUFFIX_FOR_PATH} PATHS
+
+  # Look in other places.
+  ${APEX_DIR_SEARCH}
+
+  # Help the user find it if we cannot.
+  DOC "The ${APEX_INCLUDE_PATH_DESCRIPTION}"
+)
+
+SET(APEX_INCLUDE_DIR ${APEX_INCLUDES})
+
+SET(APEX_LIB_DIR_SEARCH $ENV{APEX_ROOT}/lib/vc10win64-PhysX_3.2)
+
+SET(APEX_LIB_DIR_SEARCH
+   ${APEX_LIB_DIR_SEARCH}
+   ${DELTA_DIR}/ext/lib
+   /usr/lib/APEX
+)
+
+if (NOT WIN32)
+   FIND_FILE(APEX_LIBRARY_DIR NAMES ${VERSION_SUFFIX_FOR_PATH} PATHS
+
+      # Look in other places.
+      ${APEX_LIB_DIR_SEARCH}
+
+      # Help the user find it if we cannot.
+      DOC "Set APEX_LIB_DIR_SEARCH to set the base path to search for APEX versions."
+   )
+else (NOT WIN32)
+   SET(APEX_LIBRARY_DIR ${APEX_LIB_DIR_SEARCH})
+endif (NOT WIN32)
+
+
+MACRO(FIND_APEX_LIBRARY MYLIBRARY MYLIBRARYNAME)
+
+    FIND_LIBRARY(${MYLIBRARY}
+        NAMES ${MYLIBRARYNAME}
+        PATHS
+        ${APEX_LIBRARY_DIR}
+        ~/Library/Frameworks
+        /Library/Frameworks
+        /usr/local/lib
+        /usr/lib
+        /sw/lib
+        /opt/local/lib
+        /opt/csw/lib
+        /opt/lib
+        /usr/freeware/lib64
+    )
+	
+ENDMACRO(FIND_APEX_LIBRARY MYLIBRARY MYLIBRARYNAME)
+
+SET(APEX_LIB ApexFramework_x64)
+# SET(APEX_LIB_CHECKED ApexFrameworkCHECKED_x64)
+# SET(APEX_LIB_PROFILE ApexFrameworkPROFILE_x64)
+
+FIND_APEX_LIBRARY(APEX_LIBRARY "${APEX_LIB}")
+# FIND_APEX_LIBRARY(APEX_COMMON_LIBRARY "${APEX_LIB_CHECKED}")
+# FIND_APEX_LIBRARY(APEX_EXTENSION_LIBRARY "${APEX_LIB_PROFILE}")
+
+SET(APEX_LIBRARY ${APEX_LIBRARY})
+#SET(APEX_LIBRARY ${APEX_LIBRARY} ${APEX_COMMON_LIBRARY} ${APEX_EXTENSION_LIBRARY})
+
+IF (${CMAKE_SYSTEM} MATCHES "Linux")
+    ADD_DEFINITIONS(-DLINUX -DNX_DISABLE_FLUIDS)
+ENDIF (${CMAKE_SYSTEM} MATCHES "Linux")
+
+set (APEX_FOUND "NO")
+if (APEX_INCLUDE_DIR AND APEX_LIBRARY)
+   set (APEX_FOUND "YES")
+endif (APEX_INCLUDE_DIR AND APEX_LIBRARY)
