@@ -105,7 +105,7 @@ void TerrainInteractor::setPxHeight(const osgTerrain::TileID & tileID, unsigned 
     descM.convexEdgeThreshold = hf->getConvexEdgeThreshold();
     descM.flags = hf->getFlags();
 
-    bool result = hf->modifySamples(physxColumn - 1, physxRow - 1, descM); // modify row 1 with new sample data
+    result = hf->modifySamples(physxColumn - 1, physxRow - 1, descM); // modify row 1 with new sample data
     assert(result);
 
     PxHeightFieldGeometry newGeometry(hf, PxMeshGeometryFlags(), geometry.heightScale, geometry.rowScale, geometry.columnScale);
