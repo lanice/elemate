@@ -79,7 +79,7 @@ void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readDat
     if (numParticles == 0)
         return;
 
-    assert(numParticles <= m_maxParticleCount);
+    // assert(numParticles <= m_maxParticleCount);
     if (numParticles > m_maxParticleCount) {
         std::cerr << "ParticleDrawable::updateParticles: recieving more valid new particles than expected (" << numParticles << ")" << std::endl;
         numParticles = m_maxParticleCount;

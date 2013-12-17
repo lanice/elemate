@@ -84,7 +84,8 @@ float TerrainInteractor::setHeight(osgTerrain::TerrainTile & tile, unsigned phys
 void TerrainInteractor::setPxHeight(const osgTerrain::TileID & tileID, unsigned physxRow, unsigned physxColumn, float value)
 {
     PxHeightFieldGeometry geometry;
-    assert(m_terrain->pxShape(tileID)->getHeightFieldGeometry(geometry));
+    bool result = m_terrain->pxShape(tileID)->getHeightFieldGeometry(geometry);
+    assert(result);
     PxHeightField * hf = geometry.heightField;
 
     PxHeightFieldSample samplesM[9];

@@ -63,8 +63,6 @@ void ParticleEmitter::update(t_longf elapsed_Time){
     physx::PxParticleReadData * read_data = m_particle_system->lockParticleReadData();
     assert(read_data);
 
-    std::cout << this << " " << read_data->positionBuffer[0].x << std::endl;
-
     m_particle_drawable->updateParticles(read_data);
 
     read_data->unlock();

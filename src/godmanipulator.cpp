@@ -23,7 +23,6 @@ GodManipulator::GodManipulator()
      m_camera( nullptr ),
      _keyPressedAlt_L( false ),
      m_hand(new Hand()),
-     m_isFountainOn( false ),
      _windowX(0),
      _windowY(0)
 {
@@ -39,7 +38,6 @@ GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& cop
      m_camera( gm.m_camera ),
      _keyPressedAlt_L(gm._keyPressedAlt_L),
      m_hand( gm.m_hand ),
-     m_isFountainOn( gm.m_isFountainOn),
      _windowX( gm._windowX ),
      _windowY( gm._windowY )
 {
@@ -174,11 +172,7 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
         case osgGA::GUIEventAdapter::KEY_F:
         {
             m_world->makeStandardBall(m_hand->position());
-            if (!m_isFountainOn){
-                m_world->startFountainSound();
-                m_isFountainOn = true;
-            }
-            m_world->updateFountainPosition();
+            m_world->createFountainSound();
             return true;
         }
         case osgGA::GUIEventAdapter::KEY_F5:
@@ -201,10 +195,6 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
 bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
     switch (ea.getUnmodifiedKey()){
-    case osgGA::GUIEventAdapter::KEY_F:
-        m_world->endFountainSound();
-        m_isFountainOn = false;
-        return true;
     case osgGA::GUIEventAdapter::KEY_Alt_L:
         _keyPressedAlt_L = false;
         return true;
