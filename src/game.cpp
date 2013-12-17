@@ -40,7 +40,6 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
     graphicsState->setUseModelViewAndProjectionUniforms(true);
     graphicsState->setUseVertexAttributeAliasing(true);
 
-    m_world->setGraphicsContext(m_viewer.getCamera()->getGraphicsContext());
     m_viewer.setSceneData(m_world->root());
 }
 

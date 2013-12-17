@@ -3,6 +3,7 @@
 
 #include "world.h"
 #include "terrain/elemateterrain.h"
+#include "soundmanager.h"
 
 
 static const double c_velocityDefault = 0.2;
@@ -158,6 +159,7 @@ bool GodNavigation::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     }
 
     performMovement();
+    updateListener();
 
    return false;
 }
@@ -260,12 +262,12 @@ bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
         switch( ea.getScrollingMotion() )
         {
             case osgGA::GUIEventAdapter::SCROLL_UP:
-                _distanceEyeCenter += 2.;
+                if ( _distanceEyeCenter <= 2. ) return false;
+                _distanceEyeCenter -= 2.;
                 return true;
 
             case osgGA::GUIEventAdapter::SCROLL_DOWN:
-                if ( _distanceEyeCenter <= 2. ) return false;
-                _distanceEyeCenter -= 2.;
+                _distanceEyeCenter += 2.;
                 return true;
 
             default:
@@ -276,16 +278,17 @@ bool GodNavigation::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
         osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
         osg::Vec3d localUp = getUpVector( coordinateFrame );
 
-        double heightDiff = (_center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter )).y() - _center.y();
+        osg::Vec3d eye = _center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter );
 
         switch( ea.getScrollingMotion() )
         {
             case osgGA::GUIEventAdapter::SCROLL_UP:
+                if ( (eye - _center).y() >= _distanceEyeCenter - ( _distanceEyeCenter/c_distanceEyeCenterDefault ) ) return false;
                 rotateYawPitch( _rotation, 0., -0.05, localUp );
                 return true;
 
             case osgGA::GUIEventAdapter::SCROLL_DOWN:
-                if ( heightDiff <= 0.5 ) return false;
+                if ( eye.y() <= m_world->terrain->heightAt( eye.x(), eye.z() ) + 1. ) return false;
                 rotateYawPitch( _rotation, 0., 0.05, localUp );
                 return true;
 
@@ -329,6 +332,18 @@ bool GodNavigation::performMovement()
     if ( yaw != 0 ) {
         performRotationYaw( yaw );
         moved = true;
+    }
+
+    if ( moved ) {
+        osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _center );
+        osg::Vec3d localUp = getUpVector( coordinateFrame );
+
+        osg::Vec3d eye = _center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter );
+        while ( eye.y() <= m_world->terrain->heightAt( eye.x(), eye.z() ) )
+        {
+            eye = _center + _rotation * osg::Vec3d( 0., 0., _distanceEyeCenter );
+            rotateYawPitch( _rotation, 0., -0.01, localUp );
+        }
     }
 
     return moved;
@@ -418,4 +433,18 @@ void GodNavigation::moveRight( const double distance )
 void GodNavigation::moveUp( const double distance )
 {
    _center += _rotation * osg::Vec3d( 0., distance, 0. );
+}
+
+void GodNavigation::updateListener(){
+    osg::Vec3d eye, center, up;
+    getTransformation(eye, center, up);
+    osg::Vec3d forward = eye - center;
+    forward.normalize();
+    up.normalize();
+
+    m_world->soundManager->setListenerAttributes(
+        { eye.x(), eye.y(), eye.z() },
+        { forward.x(), forward.y(), forward.z() },
+        { up.x(), up.y(), up.z() }
+    );
 }

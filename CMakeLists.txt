@@ -47,6 +47,8 @@ set(SOURCES
     src/objectscontainer.h
     src/particleemitter.cpp
     src/particleemitter.h
+    src/particledrawable.h
+    src/particledrawable.cpp
     src/hpicgs/CyclicTime.cpp
     src/hpicgs/CyclicTime.h
     src/hpicgs/Timer.cpp

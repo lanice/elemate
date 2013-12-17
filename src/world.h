@@ -12,7 +12,6 @@ class SoundManager;
 namespace osg {
     class Group;
     class Program;
-    class GraphicsContext;
     class MatrixTransform;
 }
 
@@ -34,15 +33,12 @@ public:
     void reloadShader();
     void setUniforms(long double globalTime);
 
-    void setGraphicsContext(osg::GraphicsContext * context);
-
     std::shared_ptr<PhysicsWrapper>             physics_wrapper;
     std::shared_ptr<ObjectsContainer>           objects_container;
     std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
     std::shared_ptr<SoundManager>  soundManager;
 
 protected:
-    osg::ref_ptr<osg::GraphicsContext>                  m_graphicContext;
     osg::ref_ptr<GodNavigation>                         m_navigation;
     osg::ref_ptr<osg::Group>                            m_root;
     osg::ref_ptr<osg::Group>                            m_particleGroup;

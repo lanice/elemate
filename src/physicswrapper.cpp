@@ -158,8 +158,3 @@ t_longf PhysicsWrapper::currentTime() const
 physx::PxScene* PhysicsWrapper::scene()const{
     return m_scene;
 }
-
-void PhysicsWrapper::setOsgGraphicsContext(osg::GraphicsContext * context)
-{
-    m_osgGraphicsContext = context;
-}
