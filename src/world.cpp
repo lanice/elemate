@@ -26,9 +26,7 @@ World::World()
     m_root->setName("root node");
     m_particleGroup->setName("particle root node");
     m_root->addChild(m_particleGroup.get());
-
-    objects_container->initializeParticles(m_particleGroup.get());
-
+    
     // Create two non-3D channels (paino and rain)
     //initialise as paused
     soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
@@ -101,15 +99,15 @@ osg::Matrixd World::getCameraTransform()
     return m_navigation->getMatrix();
 }
 
-void World::makeStandardBall()
+void World::makeStandardBall(const osg::Vec3d& position)
 {
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
 
     // prototype: hard-coded physx values etc.
     //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
-    objects_container->createParticles(5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
-
+    //objects_container->createParticles(5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
+    objects_container->makeParticleEmitter(m_particleGroup, physx::PxVec3(position.x(), position.y(), position.z()));
 }
 
 void World::startFountainSound()

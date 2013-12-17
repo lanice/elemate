@@ -15,6 +15,7 @@ namespace osg {
     class Program;
     class MatrixTransform;
     class Matrixd;
+    class Vec3d;
 }
 
 class World {
@@ -27,7 +28,7 @@ public:
     osg::Matrixd getCameraTransform();
 
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
-    void makeStandardBall();
+    void makeStandardBall(const osg::Vec3d& position);
     void startFountainSound();
     void endFountainSound();
     void updateFountainPosition();

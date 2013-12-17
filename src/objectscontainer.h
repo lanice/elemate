@@ -18,6 +18,7 @@ namespace osg {
 }
 
 class PhysicsWrapper;
+class ParticleEmitter;
 class ParticleDrawable;
 
 
@@ -29,14 +30,10 @@ class ParticleDrawable;
 class ObjectsContainer{
 public:
     typedef std::pair<osg::MatrixTransform*, physx::PxRigidDynamic*> DrawableAndPhysXObject;
-    /** Maximal number of particles before they begin to get destroyed. */
-    static const physx::PxU32	kMaxParticleCount = 800;
 
     /** Explicit Constructor because Copying and Assignments are disabled. The wrapper is necessary to receive an initialited scene and initialized physics.*/
     explicit ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper);
     ~ObjectsContainer();
-
-    void initializeParticles(osg::Group * particleGroup);
 
     /** Sets and rotates every OSG object according to its representation in PhysX. */
     void updateAllObjects();
@@ -47,20 +44,12 @@ public:
     /** Creates a particle emitter */
     void makeParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
 
-    void createParticles(unsigned int number_of_particles, const physx::PxVec3& position);
-
-
 protected:
   
     std::shared_ptr<PhysicsWrapper>     m_physics_wrapper;
     std::list<DrawableAndPhysXObject>   m_objects;
+    std::list<ParticleEmitter*>         m_emitters;
 
-
-    physx::PxParticleSystem*            m_particle_system;
-    std::unordered_map<std::string, osg::ref_ptr<ParticleDrawable>> m_particle_drawables;
-    osg::ref_ptr<osg::Group>            m_particle_group;
-
-    void createParticleObject(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
 private:
     DISALLOW_COPY_AND_ASSIGN(ObjectsContainer);
 };
