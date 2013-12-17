@@ -39,12 +39,16 @@ set(SOURCES
     src/game.h
     src/world.cpp
     src/world.h
+    src/hand.cpp
+    src/hand.h
     src/godmanipulator.cpp
     src/godmanipulator.h
     src/godnavigation.cpp
     src/godnavigation.h
     src/objectscontainer.cpp
     src/objectscontainer.h
+    src/screenquad.cpp
+    src/screenquad.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h
@@ -73,14 +77,18 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 
 
 set(SHADER
+    shader/flush.vert
+    shader/flush.frag
     shader/terrain_base.vert
-    shader/terrain_water.vert
     shader/terrain_base.geom
     shader/terrain_base.frag
+    shader/terrain_water.vert
     shader/terrain_water.geom
     shader/terrain_water.frag
-    shader/sphere.frag
-    shader/sphere.vert
+    shader/particle_water.vert
+    shader/particle_water.frag
+    shader/hand.frag
+    shader/hand.vert
     shader/phongLighting.frag
 )
 

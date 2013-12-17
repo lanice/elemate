@@ -7,7 +7,6 @@
 typedef long double t_longf;
 
 #include <string>
-#include <osg/ref_ptr>
 
 #include "PxPhysicsAPI.h"
 
