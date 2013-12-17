@@ -9,8 +9,10 @@
 #include <memory>
 
 
+class GodNavigation;
 class World;
 class GodNavigation;
+class TerrainInteractor;
 class Hand;
 namespace osg {
     class Camera;
@@ -32,8 +34,8 @@ class GodManipulator : public osgGA::GUIEventHandler
         virtual ~GodManipulator();
 
 
-        void setWorld( std::shared_ptr<World> world );
         void setNavigation( GodNavigation * navigation );
+        void setWorld( std::shared_ptr<World> world );
         void setCamera( osg::Camera * camera );
         
 
@@ -64,12 +66,14 @@ class GodManipulator : public osgGA::GUIEventHandler
     protected:
 
         std::shared_ptr<World> m_world;
-
         osg::ref_ptr<GodNavigation> m_navigation;
+        std::shared_ptr<TerrainInteractor> m_terrainInteractor;
         osg::ref_ptr<osg::Camera> m_camera;
 
+        bool _keyPressedAlt_L;
+
         Hand * m_hand;
-        bool isFountainOn = false;
+        bool m_isFountainOn;
 
         int _windowX;
         int _windowY;

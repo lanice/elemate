@@ -81,14 +81,14 @@ void Game::start(){
     // It is added to Viewers EventHandlerQueue to receive incoming events.
     GodManipulator * eventHandler = new GodManipulator();
     // The handler gets access to the World to process game content/logic specific events.
+    eventHandler->setNavigation(m_navigation);
     eventHandler->setWorld(m_world);
     m_viewer.addEventHandler(eventHandler);
-    
+
     setupNavigation();
 
     eventHandler->setCamera(m_viewer.getCamera());
     eventHandler->setNavigation(m_navigation.get());
-
     m_world->setNavigation(m_navigation.get());
     
     //The "particles" ... 

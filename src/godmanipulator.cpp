@@ -10,16 +10,20 @@
 
 #include "world.h"
 #include "godnavigation.h"
+#include "terrain/terraininteractor.h"
 #include "terrain/elemateterrain.h"
 #include "hand.h"
 
 
 GodManipulator::GodManipulator()
    : inherited(),
-     m_world(nullptr),
-     m_navigation(nullptr),
-     m_camera(nullptr),
+     m_world( nullptr ),
+     m_navigation( nullptr ),
+     m_terrainInteractor( nullptr ),
+     m_camera( nullptr ),
+     _keyPressedAlt_L( false ),
      m_hand(new Hand()),
+     m_isFountainOn( false ),
      _windowX(0),
      _windowY(0)
 {
@@ -31,8 +35,11 @@ GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& cop
      inherited( gm, copyOp ),
      m_world( gm.m_world ),
      m_navigation( gm.m_navigation ),
+     m_terrainInteractor( gm.m_terrainInteractor ),
      m_camera( gm.m_camera ),
+     _keyPressedAlt_L(gm._keyPressedAlt_L),
      m_hand( gm.m_hand ),
+     m_isFountainOn( gm.m_isFountainOn),
      _windowX( gm._windowX ),
      _windowY( gm._windowY )
 {
@@ -49,7 +56,8 @@ void GodManipulator::setWorld( std::shared_ptr<World> world )
 {
     m_world = world;
     m_hand->transform()->getOrCreateStateSet()->setAttribute(m_world->programByName("hand"));
-    m_world->root()->addChild( m_hand->transform() );
+    m_world->root()->addChild(m_hand->transform());
+    m_terrainInteractor = std::make_shared<TerrainInteractor>(world->terrain);
 }
 
 
@@ -124,6 +132,10 @@ bool GodManipulator::handleResize( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 
 bool GodManipulator::handleMouseMove( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
 {
+    if (_keyPressedAlt_L) {
+        osg::Vec3f position = m_hand->position();
+        m_terrainInteractor->heightPull(position.x(), position.z());
+    }
     return false;
 }
 
@@ -162,9 +174,9 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
         case osgGA::GUIEventAdapter::KEY_F:
         {
             m_world->makeStandardBall(m_hand->position());
-            if (!isFountainOn){
+            if (!m_isFountainOn){
                 m_world->startFountainSound();
-                isFountainOn = true;
+                m_isFountainOn = true;
             }
             m_world->updateFountainPosition();
             return true;
@@ -174,6 +186,13 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
             m_world->reloadShader();
             return true;
         }
+        case osgGA::GUIEventAdapter::KEY_Alt_L:
+            if (!_keyPressedAlt_L) {
+                osg::Vec3f position = m_hand->position();
+                m_terrainInteractor->heightGrab(position.x(), position.z(), TerrainLevel::BaseLevel);
+            }
+            _keyPressedAlt_L = true;
+            return true;
     }
     return false;
 }
@@ -183,18 +202,44 @@ bool GodManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 {
     switch (ea.getUnmodifiedKey()){
     case osgGA::GUIEventAdapter::KEY_F:
-    {
         m_world->endFountainSound();
-        isFountainOn = false;
+        m_isFountainOn = false;
         return true;
-    }
+    case osgGA::GUIEventAdapter::KEY_Alt_L:
+        _keyPressedAlt_L = false;
+        return true;
     }
     return false;
 }
 
 
-bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& /*ea*/, osgGA::GUIActionAdapter& /*us*/ )
+bool GodManipulator::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*us*/ )
 {
+    if (_keyPressedAlt_L) {
+        assert(m_navigation.valid());
+        assert(m_terrainInteractor);
+
+        osg::Vec3f position = m_hand->position();
+
+        m_terrainInteractor->heightGrab(position.x(), position.z(), TerrainLevel::BaseLevel);
+
+        switch (ea.getScrollingMotion())
+        {
+        case osgGA::GUIEventAdapter::SCROLL_UP:
+            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, 0.1);
+            m_navigation->updateHeight();
+            return true;
+
+        case osgGA::GUIEventAdapter::SCROLL_DOWN:
+            m_terrainInteractor->changeHeight(position.x(), position.z(), TerrainLevel::BaseLevel, -0.1);
+            m_navigation->updateHeight();
+            return true;
+
+        default:
+            return false;
+        }
+
+    }
     return false;
 }
 

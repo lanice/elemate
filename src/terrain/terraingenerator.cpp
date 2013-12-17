@@ -22,6 +22,7 @@
 #include <foundation/PxMat44.h>
 
 #include "elements.h"
+#include "osg/dynamicterraintile.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -222,15 +223,15 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     mat[2] = Elements::pxMaterial("default");
     mat[3] = Elements::pxMaterial("default");
 
-    // scale height so that we use the full range of PxI16=short (abs(min) = abs(max)+1)
-    PxReal heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
+    // scale height so that we use the full range of PxI16=short
+    PxReal heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
     assert(m_settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     assert(m_settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     assert(heightScale >= PX_MIN_HEIGHTFIELD_Y_SCALE);
     // create height field geometry and set scale
-    PxHeightFieldGeometry * m_pxHfGeometry = new  PxHeightFieldGeometry(pxHeightField, PxMeshGeometryFlags(),
+    PxHeightFieldGeometry m_pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
         heightScale, m_settings.intervalX(), m_settings.intervalZ());
-    PxShape * shape = pxActor.createShape(*m_pxHfGeometry, mat, 1);
+    PxShape * shape = pxActor.createShape(m_pxHfGeometry, mat, 1);
 
     assert(shape);
 
@@ -259,12 +260,12 @@ osgTerrain::TerrainTile * TerrainGenerator::copyHeightFieldToOsgTile(const osgTe
     osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
     layer->setLocator(locator.get());
 
-    osgTerrain::TerrainTile * tile = new osgTerrain::TerrainTile();
+    osgTerrain::TerrainTile * tile = new DynamicTerrainTile();
     tile->setElevationLayer(layer.get());
     tile->setTileID(tileID);
     tile->setRequiresNormals(true);
 
-    float heightScale = m_settings.maxHeight / (-std::numeric_limits<PxI16>::min());
+    float heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
 
     // osg column == physx row
     // osg row == numColumns - physx column - 1 (osg rows going to y, physx columns to z, where osgY == -physxZ)

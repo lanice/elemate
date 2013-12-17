@@ -123,6 +123,16 @@ void GodNavigation::getTransformation( osg::Vec3d& eye, osg::Vec3d& center, osg:
    up = _rotation * osg::Vec3d( 0.,1.,0. );
 }
 
+void GodNavigation::updateHeight()
+{
+    _center.y() = m_world->terrain->heightAt(_center.x(), _center.z()) + 1.;
+}
+
+osg::Vec3d GodNavigation::getCenter() const
+{
+    return _center;
+}
+
 
 void GodNavigation::setVelocity( const double& velocity )
 {
@@ -355,7 +365,7 @@ bool GodNavigation::performMovement( const osg::Vec3d& movementDirection, const 
     osg::Vec3d direction = movementDirection;
     direction.normalize();
     _center += (direction * distance);
-    _center.y() = m_world->terrain->heightAt( _center.x(), _center.z() ) + 1.;
+    updateHeight();
     return true;
 }
 

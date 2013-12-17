@@ -8,6 +8,8 @@
 
 #include <PxShape.h>
 
+#include "osg/sharedgeometrytechnique.h"
+
 using namespace physx;
 
 std::initializer_list<TerrainLevel> TerrainLevels = {
@@ -47,28 +49,97 @@ ElemateHeightFieldTerrain::ElemateHeightFieldTerrain(const TerrainSettings & set
     m_osgTerrainTransform->addChild(m_osgTerrain);
     m_osgTerrain->addChild(m_osgTerrainBase);
     m_osgTerrain->addChild(m_osgTerrainWater);
+
+    m_osgTerrain->setTerrainTechniquePrototype(new SharedGeometryTechnique());
 }
 
 float ElemateHeightFieldTerrain::heightAt(float x, float z) const
 {
-    // currently for one tile only
-    assert(m_settings.tilesX == 1 && m_settings.tilesZ == 1);
-    float normalizedX = x / m_settings.sizeX + 0.5f;
-    float normalizedY = 0.5f - z / m_settings.sizeZ;
-
-    if (normalizedX < 0.0f || normalizedX > 1.0f
-        || normalizedY < 0.0f || normalizedY > 1.0f)
+    float normalizedX, normalizedZ;
+    osgTerrain::TileID tileID;
+    tileID.level = 0;
+    if (!normalizePosition(x, z, tileID, normalizedX, normalizedZ))
         return 0.0f;
 
     float height = std::numeric_limits<float>::lowest();
     for (TerrainLevel level : TerrainLevels) {
-        float currentValue = 0;
-        osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(osgTerrain::TileID(static_cast<int>(level), 0, 0));
-        tile->getElevationLayer()->getInterpolatedValue(normalizedX, normalizedY, currentValue);
-        height = std::max(height, currentValue);
+        tileID.level = static_cast<int>(level);
+        height = std::max(height, interpolatedHeightAt(tileID, normalizedX, normalizedZ));
     }
 
     return height;
+}
+
+float ElemateHeightFieldTerrain::heightAt(float x, float z, TerrainLevel level) const
+{
+    float normalizedX, normalizedZ;
+    osgTerrain::TileID tileID;
+    tileID.level = static_cast<int>(level);
+    if (!normalizePosition(x, z, tileID, normalizedX, normalizedZ))
+        return 0.0f;
+
+    return interpolatedHeightAt(tileID, normalizedX, normalizedZ);
+}
+
+bool ElemateHeightFieldTerrain::normalizePosition(float x, float z, osgTerrain::TileID & tileID, float & normX, float & normZ) const
+{
+    // currently for one tile only
+    assert(m_settings.tilesX == 1 && m_settings.tilesZ == 1);
+    tileID.x = 0;
+    tileID.y = 0;
+
+    normX = x / m_settings.sizeX + 0.5f;
+    normZ = z / m_settings.sizeZ + 0.5f;
+
+    return normX >= 0.0f && normX <= 1.0f
+        && normZ >= 0.0f && normZ <= 1.0f;
+}
+
+float ElemateHeightFieldTerrain::interpolatedHeightAt(osgTerrain::TileID tileID, float normalizedX, float normalizedZ) const
+{
+    // currently for one tile only
+    assert(m_settings.tilesX == 1 && m_settings.tilesZ == 1);
+
+    assert(normalizedX >= 0 && normalizedX <= 1);
+    assert(normalizedZ >= 0 && normalizedZ <= 1);
+
+    /** get position in osg logic: osgY axis is -physxZ axis */
+    float osgNormalizedY = 1.0f - normalizedZ;
+
+    float height;
+    osg::ref_ptr<osgTerrain::TerrainTile> tile = m_osgTerrain->getTile(tileID);
+    tile->getElevationLayer()->getInterpolatedValue(normalizedX, osgNormalizedY, height);
+
+    return height;
+}
+
+float ElemateHeightFieldTerrain::heightAt(osgTerrain::TerrainTile & tile, unsigned int physxRow, unsigned int physxColumn) const
+{
+    osg::ref_ptr<osgTerrain::HeightFieldLayer> hfLayer = dynamic_cast<osgTerrain::HeightFieldLayer*>(tile.getElevationLayer());
+    assert(hfLayer.valid());
+
+    unsigned int osgColumn = physxRow;
+    unsigned int osgRow = m_settings.columns - physxColumn - 1;
+
+    return hfLayer->getHeightField()->getHeight(osgColumn, osgRow);
+}
+
+bool ElemateHeightFieldTerrain::worldToTileRowColumn(float x, float z, TerrainLevel level, osg::ref_ptr<osgTerrain::TerrainTile> & terrainTile, unsigned int & physxRow, unsigned int & physxColumn) const
+{
+    // only implemented for 1 tile
+    assert(m_settings.tilesX == 1 && m_settings.tilesZ == 1);
+    float normX = (x / m_settings.sizeX + 0.5f);
+    float normZ = (z / m_settings.sizeZ + 0.5f);
+    bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
+
+    physxRow = static_cast<int>(normX * m_settings.rows) % m_settings.rows;
+    physxColumn = static_cast<int>(normZ * m_settings.columns) % m_settings.columns;
+
+    terrainTile = m_osgTerrain->getTile(osgTerrain::TileID(static_cast<int>(level), 0, 0));
+
+    assert(terrainTile.valid());
+
+    return valid;
 }
 
 osg::MatrixTransform * ElemateHeightFieldTerrain::osgTransformedTerrain() const
@@ -96,7 +167,7 @@ osg::Group * ElemateHeightFieldTerrain::osgTerrainWater() const
     return m_osgTerrainWater.get();
 }
 
-PxShape const * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & tileID) const
+PxShape * ElemateHeightFieldTerrain::pxShape(const osgTerrain::TileID & tileID) const
 {
     return m_pxShapes.at(tileID);
 }
