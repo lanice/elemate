@@ -97,7 +97,8 @@ void ParticleEmitter::createParticles(int number_of_particles){
     particleCreationData.positionBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_position_buffer);
     particleCreationData.velocityBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_velocity_buffer);
 
-    assert(m_particle_system->createParticles(particleCreationData));
+    bool result = m_particle_system->createParticles(particleCreationData);
+    assert(result);
 
     osg::ref_ptr<ParticleDrawable> waterDrawable = m_particle_drawable.get();
     waterDrawable->addParticles(number_of_particles, m_particle_position_buffer);
