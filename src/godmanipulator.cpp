@@ -23,7 +23,6 @@ GodManipulator::GodManipulator()
      m_camera( nullptr ),
      _keyPressedAlt_L( false ),
      m_hand(new Hand()),
-     m_isFountainOn( false ),
      _windowX(0),
      _windowY(0)
 {
@@ -39,7 +38,6 @@ GodManipulator::GodManipulator( const GodManipulator& gm, const osg::CopyOp& cop
      m_camera( gm.m_camera ),
      _keyPressedAlt_L(gm._keyPressedAlt_L),
      m_hand( gm.m_hand ),
-     m_isFountainOn( gm.m_isFountainOn),
      _windowX( gm._windowX ),
      _windowY( gm._windowY )
 {

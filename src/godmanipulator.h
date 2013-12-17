@@ -73,7 +73,6 @@ class GodManipulator : public osgGA::GUIEventHandler
         bool _keyPressedAlt_L;
 
         Hand * m_hand;
-        bool m_isFountainOn;
 
         int _windowX;
         int _windowY;
