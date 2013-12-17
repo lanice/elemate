@@ -161,7 +161,7 @@ bool GodManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUI
         }
         case osgGA::GUIEventAdapter::KEY_F:
         {
-            m_world->makeStandardBall();
+            m_world->makeStandardBall(m_hand->position());
             if (!isFountainOn){
                 m_world->startFountainSound();
                 isFountainOn = true;

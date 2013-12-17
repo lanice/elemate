@@ -99,7 +99,7 @@ osg::Matrixd World::getCameraTransform()
     return m_navigation->getMatrix();
 }
 
-void World::makeStandardBall()
+void World::makeStandardBall(const osg::Vec3d& position)
 {
     osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);
@@ -107,7 +107,7 @@ void World::makeStandardBall()
     // prototype: hard-coded physx values etc.
     //objects_container->makeStandardBall(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y()+0.5, centerd.z()), 0.2F, physx::PxVec3(-2, 4, 0), physx::PxVec3(6, 13, 1));
     //objects_container->createParticles(5, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
-    objects_container->makeParticleEmitter(m_particleGroup, physx::PxVec3(centerd.x(), centerd.y() + 0.5, centerd.z()));
+    objects_container->makeParticleEmitter(m_particleGroup, physx::PxVec3(position.x(), position.y(), position.z()));
 }
 
 void World::startFountainSound()
