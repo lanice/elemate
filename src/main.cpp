@@ -2,15 +2,11 @@
 
 #include "game.h"
 
-#include <osgViewer/Viewer>
 int main()
 {
-    osgViewer::Viewer viewer;
-    // setup view and graphics context
-    //viewer.setUpViewInWindow(50, 50, 500, 500);
-    viewer.setUpViewOnSingleScreen();
+    std::cout << "view..." << std::endl;
 
-    Game game(viewer);
+    Game game;
 
     game.start();
 

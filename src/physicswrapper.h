@@ -1,9 +1,5 @@
 #pragma once
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)  \
-    TypeName(const TypeName&);              \
-    void operator=(const TypeName&);
-
 typedef long double t_longf;
 
 #include <string>
@@ -76,5 +72,5 @@ protected:
     physx::PxCooking*                               m_cooking;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(PhysicsWrapper);
+    void operator=(PhysicsWrapper&) = delete;
 };

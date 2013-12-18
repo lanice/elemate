@@ -2,25 +2,15 @@
 
 #include "particledrawable.h"
 
-#include <osg/Point>
-#include <osg/ShapeDrawable>
-#include <osgViewer/View>
-#include <osg/MatrixTransform>
-
 #include <cassert>
 #include <iostream>
 
-ParticleEmitter::ParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position):
-    m_parent(parent),
+ParticleEmitter::ParticleEmitter(const physx::PxVec3& position):
     m_position(position),
     m_emitting(false),
     akkumulator(1.0f/60.0f),
     youngest_particle_index(0),
     m_particles_per_second(kDefaultEmittedParticles)
-{
-}
-ParticleEmitter::ParticleEmitter(osg::ref_ptr<osg::Group> parent):
-    ParticleEmitter(parent,physx::PxVec3(0,0,0))
 {
 }
 
@@ -29,8 +19,6 @@ ParticleEmitter::~ParticleEmitter(){
 }
 
 void ParticleEmitter::initializeParticleSystem(){
-    m_particle_group = m_parent;
-
     m_particle_system = PxGetPhysics().createParticleSystem(kMaxParticleCount, false);
     assert(m_particle_system);
 
@@ -38,16 +26,10 @@ void ParticleEmitter::initializeParticleSystem(){
     PxGetPhysics().getScenes(&scene_buffer, 1);
     scene_buffer->addActor(*m_particle_system);
 
-    osg::ref_ptr<ParticleDrawable> waterDrawable = new ParticleDrawable(kMaxParticleCount);
-    osg::ref_ptr<osg::Geode> waterGeode = new osg::Geode;
-    waterGeode->addDrawable(waterDrawable);
+    m_particle_drawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
 
-    m_particle_drawable = waterDrawable.get();
 
-    assert(m_particle_group.valid());
-    m_particle_group->addChild(waterGeode.get());
-
-    m_particle_group->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f), osg::StateAttribute::ON);
+    //m_particle_group->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f), osg::StateAttribute::ON);
 
 }
 
@@ -73,7 +55,6 @@ void ParticleEmitter::startEmit(){
 }
 
 void ParticleEmitter::createParticles(int number_of_particles){
-    assert(m_particle_group.valid());
 
     if (number_of_particles > kMaxParticleCount)
         number_of_particles = kMaxParticleCount;
@@ -100,8 +81,8 @@ void ParticleEmitter::createParticles(int number_of_particles){
     bool result = m_particle_system->createParticles(particleCreationData);
     assert(result);
 
-    osg::ref_ptr<ParticleDrawable> waterDrawable = m_particle_drawable.get();
-    waterDrawable->addParticles(number_of_particles, m_particle_position_buffer);
+    /*osg::ref_ptr<ParticleDrawable> waterDrawable = m_particle_drawable.get();
+    waterDrawable->addParticles(number_of_particles, m_particle_position_buffer);*/
 }
 
 void ParticleEmitter::stopEmit(){
