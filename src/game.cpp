@@ -5,6 +5,8 @@
 #include <chrono>
 #include <cassert>
 
+#include <glowwindow/Window.h>
+
 // Own Classes
 #include "world.h"
 #include "physicswrapper.h"
@@ -14,7 +16,8 @@
 #include "HPICGS/CyclicTime.h"
 
 
-Game::Game() :
+Game::Game(glowwindow::Window & window) :
+m_window(window),
 m_interrupted(true),
 m_world(std::make_shared<World>()),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
@@ -66,9 +69,7 @@ void Game::loop(t_longf delta){
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
                 m_world->setUniforms(currTime);
-                //m_viewer.frame();
-
-                std::cout << "frame.." << std::endl;
+                m_window.repaint();
 
                 skippedFrames = 1;
             } else {
@@ -77,8 +78,8 @@ void Game::loop(t_longf delta){
         } else {
             t_longf sleepTime = nextTime - currTime;
 
-            if (sleepTime > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
+            /*if (sleepTime > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));*/
         }
     }
 
@@ -87,8 +88,7 @@ void Game::loop(t_longf delta){
 }
 
 bool Game::isRunning()const{
-    //return !(m_viewer.done() || m_interrupted);
-    return false;
+    return !(/*m_window. || */m_interrupted);
 }
 
 void Game::end(){

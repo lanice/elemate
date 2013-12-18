@@ -31,6 +31,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src
     ${GLOW_INCLUDE_DIR}
     ${GLM_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIR}
 )
 
 set(SOURCES
@@ -106,9 +107,11 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\
 set( GLOW_DIR $ENV{GLOW_DIR} )
 STRING(REGEX REPLACE "\\\\" "/" GLOW_DIR ${GLOW_DIR})
     
+include(findPackageHandleStandardArgs)
 
 find_package( GLM REQUIRED )
 find_package( GLOW REQUIRED )
+find_package( GLFW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
 
@@ -145,8 +148,14 @@ set_target_properties(${PROJECT_NAME}
 
 target_link_libraries( ${PROJECT_NAME}
     ${GLOW_LIBRARIES}
-    ${GLOW_UTILS_LIBRARIES}
+    # ${GLOW_UTILS_LIBRARIES}
+    #glow
+    #glowutils
+    #glowwindow
 )
 
+config_project( ${PROJECT_NAME} GLOW 0 )
+config_project( ${PROJECT_NAME} GLOW_UTIL 0 )
+config_project( ${PROJECT_NAME} GLOW_WINDOW 0 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
