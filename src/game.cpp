@@ -5,7 +5,7 @@
 #include <chrono>
 #include <cassert>
 
-#include <glowwindow/Window.h>
+#include <GLFW/glfw3.h>
 
 // Own Classes
 #include "world.h"
@@ -16,7 +16,7 @@
 #include "HPICGS/CyclicTime.h"
 
 
-Game::Game(glowwindow::Window & window) :
+Game::Game(GLFWwindow & window) :
 m_window(window),
 m_interrupted(true),
 m_world(std::make_shared<World>()),
@@ -69,14 +69,17 @@ void Game::loop(t_longf delta){
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
                 m_world->setUniforms(currTime);
-                m_window.repaint();
+
+                glfwSwapBuffers(&m_window);
+
+                glfwPollEvents();
 
                 skippedFrames = 1;
             } else {
                 ++skippedFrames;
             }
         } else {
-            t_longf sleepTime = nextTime - currTime;
+            //t_longf sleepTime = nextTime - currTime;
 
             /*if (sleepTime > 0)
                 std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));*/

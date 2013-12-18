@@ -6,7 +6,7 @@
 class World;
 class CyclicTime;
 namespace std {         class thread; }
-namespace glowwindow { class Window; }
+struct GLFWwindow;
 
 /** The Game Class that invokes a game loop and initializes PhysX.
  *  To receive the initialized physics, call getPhysicsWrapper(). See for its usage the documentation of PhysicsWrapper class.
@@ -14,7 +14,7 @@ namespace glowwindow { class Window; }
  */
 class Game{
 public:
-    Game(glowwindow::Window & window);
+    Game(GLFWwindow & window);
 
     ~Game();
 
@@ -28,7 +28,7 @@ public:
     void end();
 protected:
 
-    glowwindow::Window & m_window;
+    GLFWwindow & m_window;
 
     /** The Game's loop containing drawing and triggering physics is placed right here.
       * @param delta specifies the time between each logic update in seconds.*/

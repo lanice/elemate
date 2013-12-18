@@ -109,9 +109,11 @@ STRING(REGEX REPLACE "\\\\" "/" GLOW_DIR ${GLOW_DIR})
     
 include(findPackageHandleStandardArgs)
 
+find_package( OpenGL REQUIRED )
 find_package( GLM REQUIRED )
-find_package( GLOW REQUIRED )
+find_package( GLEW REQUIRED )
 find_package( GLFW REQUIRED )
+find_package( GLOW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
 
@@ -146,16 +148,10 @@ set_target_properties(${PROJECT_NAME}
     LINK_FLAGS_RELEASE          "${DEFAULT_LINKER_FLAGS_RELEASE}"
 )
 
-target_link_libraries( ${PROJECT_NAME}
-    ${GLOW_LIBRARIES}
-    # ${GLOW_UTILS_LIBRARIES}
-    #glow
-    #glowutils
-    #glowwindow
-)
-
+config_project( ${PROJECT_NAME} OPENGL 0 )
+config_project( ${PROJECT_NAME} GLEW 0 )
+config_project( ${PROJECT_NAME} GLFW 0 )
 config_project( ${PROJECT_NAME} GLOW 0 )
 config_project( ${PROJECT_NAME} GLOW_UTIL 0 )
-config_project( ${PROJECT_NAME} GLOW_WINDOW 0 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )

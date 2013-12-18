@@ -1,35 +1,32 @@
-#include <iostream>
+#include <GLFW/glfw3.h>
 
-#include <glowwindow/ContextFormat.h>
-#include <glowwindow/Context.h>
-#include <glowwindow/Window.h>
+#include <iostream>
 
 #include "game.h"
 
-using namespace glowwindow;
-
 int main()
 {
-    ContextFormat format;
-    format.setVersion(3, 3);
-    format.setProfile(ContextFormat::CoreProfile);
-
-    Window window;
-
-    if (window.create(format, "Elemate")) {
-        window.context()->setSwapInterval(Context::VerticalSyncronization);
-
-        window.show();
-    }
-    else {
+    if (!glfwInit()) {
+        std::cerr << "Could not initialize glfw." << std::endl;
         return -1;
     }
 
-    //return MainLoop::run();
+    GLFWwindow * window = glfwCreateWindow(640, 480, "Elemate", NULL, NULL);
+    if (!window)
+    {
+        std::cout << "glfw window creation failed." << std::endl;
+        glfwTerminate();
+        return -1;
+    }
 
-    Game game(window);
+
+    Game game(*window);
 
     game.start();
+
+    glfwMakeContextCurrent(window);
+
+    glfwTerminate();
 
     return 0;
 }
