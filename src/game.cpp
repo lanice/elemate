@@ -20,6 +20,7 @@ Game::Game(GLFWwindow & window) :
 m_window(window),
 m_interrupted(true),
 m_world(std::make_shared<World>()),
+m_eventHandler(window),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 {
 }
@@ -97,4 +98,9 @@ bool Game::isRunning()const{
 void Game::end(){
     if (isRunning())
         m_interrupted = true;
+}
+
+EventHandler * Game::eventHandler()
+{
+    return & m_eventHandler;
 }

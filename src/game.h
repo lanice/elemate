@@ -3,7 +3,10 @@
 #include <memory>
 #include <map>
 
+#include "eventhandler.h"
+
 class World;
+class EventHandler;
 class CyclicTime;
 namespace std {         class thread; }
 struct GLFWwindow;
@@ -26,6 +29,8 @@ public:
 
     /** Ending the loop. */
     void end();
+
+    EventHandler * eventHandler();
 protected:
 
     GLFWwindow & m_window;
@@ -36,6 +41,8 @@ protected:
 
     std::shared_ptr<World>      m_world;
     std::shared_ptr<CyclicTime> m_cyclicTime;
+
+    EventHandler m_eventHandler;
 
     bool                        m_interrupted;
 
