@@ -3,9 +3,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-// These include causes the '[..] needs to have dll-interface [..]' warnings.
+// These includes cause the '[..] needs to have dll-interface [..]' warnings.
 // Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
 #include <glow/logging.h>
+#include <glowutils/FileRegistry.h>
 
 #include "game.h"
 
@@ -17,6 +18,8 @@ static void keyCallback(GLFWwindow* /*window*/, int key, int /*scancode*/, int a
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         // glfwSetWindowShouldClose(window, GL_TRUE);
         game->end();
+    if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
+        glowutils::FileRegistry::instance().reloadAll();
 }
 
 void setCallbacks(GLFWwindow * window)
