@@ -69,15 +69,16 @@ int main()
 
     glfwMakeContextCurrent(window);
     setCallbacks(window);
+
     checkVersion();
 
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
+    // GLOW takes care of initializing GLEW correctly.
+    if (!glow::init())
     {
-        glow::fatal("glewInit() failed");
+        glow::fatal("GLOW initialization failed.");
         return -1;
     }
-    glow::Error::clear(); // ignores GL_INVALID_ENUM sometimes caused by glew
+    
 
     game = new Game(*window);
 
