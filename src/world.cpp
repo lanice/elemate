@@ -1,6 +1,12 @@
 #include "world.h"
 
-#include <iostream>
+#include <stdexcept>
+
+#include <glow/logging.h>
+#include <glow/Program.h>
+#include <glow/Shader.h>
+#include <glowutils/File.h>
+#include <glowutils/Camera.h>
 
 #include "PxPhysicsAPI.h"
 
@@ -9,12 +15,14 @@
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "soundmanager.h"
+#include "navigation.h"
 
 
 World::World()
-: physics_wrapper(new PhysicsWrapper())
-, objects_container(new ObjectsContainer(physics_wrapper))
+: physicsWrapper(new PhysicsWrapper())
+, objectsContainer(new ObjectsContainer(physicsWrapper))
 , soundManager(new SoundManager())
+, m_navigation(nullptr)
 {    
     // Create two non-3D channels (paino and rain)
     //initialise as paused
@@ -57,7 +65,7 @@ void World::setUpLighting()
 
 void World::makeStandardBall(const glm::vec3& position)
 {
-    objects_container->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    objectsContainer->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
 }
 
 void World::createFountainSound()
@@ -65,15 +73,30 @@ void World::createFountainSound()
     /*osg::Vec3d eyed, upd, centerd;
     m_navigation->getTransformation(eyed, centerd, upd);*/
     glm::vec3 center(0, 0, 0);
-    soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { center.x, center.y + 0.5, center.z });
+    soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { center.x, center.y + 0.5f, center.z });
 }
 
 void World::toogleBackgroundSound(int id){
     soundManager->togglePause(id);
 }
 
+void World::setNavigation(Navigation & navigation)
+{
+    m_navigation = &navigation;
+}
+
 void World::initShader()
 {
+    glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
+
+    glow::ref_ptr<glow::Shader> particleWaterVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert");
+    glow::ref_ptr<glow::Shader> particleWaterFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag");
+
+    glow::ref_ptr<glow::Program> particleWaterProgram = new glow::Program();
+    particleWaterProgram->attach(particleWaterFrag, particleWaterVert, phongLightingFrag);
+    m_programsByName.emplace("particle_water", particleWaterProgram);
+    
+
     //osg::ref_ptr<osg::Shader> flushVertex =
     //    osgDB::readShaderFile("shader/flush.vert");
     //osg::ref_ptr<osg::Shader> flushFragment =
@@ -159,9 +182,8 @@ void World::initShader()
 
 void World::reloadShader()
 {
-    std::cout << "TODO: shader loading" << std::endl;
-    //if (m_programsByName.empty())
-    //    return initShader();
+    if (m_programsByName.empty())
+        return initShader();
 
     //// reload all shader for all program from source
     //for (auto & pair : m_programsByName)
@@ -174,7 +196,20 @@ void World::reloadShader()
     //}
 }
 
-void World::setUniforms(long double globalTime)
+void World::setUniforms(glow::Program & program)
 {
+    assert(m_navigation);
+    program.setUniform("viewProjection", m_navigation->camera()->viewProjection());
+}
 
+
+glow::Program * World::programByName(const std::string & name)
+{
+    try {
+        return m_programsByName.at(name).get();
+    }
+    catch (std::out_of_range e) {
+        glow::critical("trying to use unloaded shader %;", name);
+        return nullptr;
+    }
 }

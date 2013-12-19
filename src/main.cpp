@@ -37,8 +37,11 @@ static void keyCallback(GLFWwindow* /*window*/, int key, int scancode, int actio
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         // glfwSetWindowShouldClose(window, GL_TRUE);
         game->end();
-    if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
+    if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
+        glow::info("Updating shader...");
         glowutils::FileRegistry::instance().reloadAll();
+        glow::info("Updating shader done.");
+    }
 
     game->eventHandler()->handleKeyEvent(key, scancode, action, mods);
 }

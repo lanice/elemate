@@ -1,15 +1,19 @@
-
 #pragma once
 
-#include <memory> //shared_ptr
-#include <map>
+#include <glow/ref_ptr.h>
+
+#include <memory>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 
+namespace glow {
+    class Program;
+}
+
+class Navigation;
 class PhysicsWrapper;
 class ObjectsContainer;
-class GodNavigation;
-class ElemateHeightFieldTerrain;
 class SoundManager;
 
 class World {
@@ -25,19 +29,20 @@ public:
     /** plays and pauses the background sound **/
     void toogleBackgroundSound(int id);
 
-    void setNavigation(GodNavigation * navigation);
+    void setNavigation(Navigation & navigation);
     void reloadShader();
-    void setUniforms(long double globalTime);
+    void setUniforms(glow::Program & program);
 
-    //osg::Program * programByName(const std::string & name) const;
+    glow::Program * programByName(const std::string & name);
     
-    std::shared_ptr<PhysicsWrapper>             physics_wrapper;
-    std::shared_ptr<ObjectsContainer>           objects_container;
-    std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
-    std::shared_ptr<SoundManager>  soundManager;
+    std::shared_ptr<PhysicsWrapper>             physicsWrapper;
+    std::shared_ptr<ObjectsContainer>           objectsContainer;
+    //std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+    std::shared_ptr<SoundManager>               soundManager;
 
 protected:
-    //std::map<std::string, osg::ref_ptr<osg::Program>>   m_programsByName;
+    Navigation * m_navigation;
+    std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
     void setUpLighting();
     void initShader();

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <map>
 
 #include <glowutils/Camera.h>
 
@@ -36,6 +35,7 @@ public:
     glowutils::Camera * camera();
 
 protected:
+    void draw();
 
     GLFWwindow & m_window;
 

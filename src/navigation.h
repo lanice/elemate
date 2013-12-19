@@ -15,6 +15,8 @@ public:
 
     void update();
 
+    const glowutils::Camera * camera() const;
+
 
 protected:
     GLFWwindow & m_window;

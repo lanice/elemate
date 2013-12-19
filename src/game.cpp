@@ -1,9 +1,13 @@
 #include "game.h"
 
-#include <iostream>
 #include <thread>
-#include <chrono>
 #include <cassert>
+
+#include <glow/VertexArrayObject.h>
+#include <glow/VertexAttributeBinding.h>
+#include <glow/Buffer.h>
+#include <glow/Array.h>
+#include <glow/Program.h>
 
 #include <GLFW/glfw3.h>
 
@@ -35,9 +39,10 @@ void Game::start(){
         return;
 
     m_world->reloadShader();
-    
 
-    m_world->physics_wrapper->startSimulation();
+    m_world->setNavigation(m_navigation);    
+
+    m_world->physicsWrapper->startSimulation();
 
     loop();
 }
@@ -65,16 +70,16 @@ void Game::loop(t_longf delta){
             nextTime += delta;
 
             // update physic
-            if (m_world->physics_wrapper->step())
+            if (m_world->physicsWrapper->step())
                 // physx: each simulate() call must be followed by fetchResults()
-                m_world->objects_container->updateAllObjects();
+                m_world->objectsContainer->updateAllObjects();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
-                m_world->setUniforms(currTime);
-
                 m_navigation.update();
+
+                draw();
 
                 glfwSwapBuffers(&m_window);
 
@@ -91,7 +96,7 @@ void Game::loop(t_longf delta){
     }
 
     m_interrupted = true;
-    m_world->physics_wrapper->stopSimulation();
+    m_world->physicsWrapper->stopSimulation();
 }
 
 bool Game::isRunning()const{
@@ -111,4 +116,57 @@ EventHandler * Game::eventHandler()
 glowutils::Camera * Game::camera()
 {
     return & m_camera;
+}
+
+
+static glow::VertexArrayObject * m_vao = nullptr;
+static glow::Buffer * m_vertices = nullptr;
+
+void initDraw()
+{
+    m_vao = new glow::VertexArrayObject;
+    m_vertices = new glow::Buffer(GL_ARRAY_BUFFER);
+
+    static const glow::Vec3Array raw(
+    {
+          glm::vec3(-1.f, 0.0f, -1.f)
+        , glm::vec3(+1.f, 0.0f, -1.f)
+        , glm::vec3(+1.f, 0.0f, +1.f)
+        , glm::vec3(-1.f, 0.0f, +1.f)
+    });
+    
+    m_vertices->setData(raw, GL_STATIC_DRAW);
+
+    glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
+    vertexBinding->setAttribute(0); // location 0
+    vertexBinding->setBuffer(m_vertices, 0, sizeof(glm::vec3)); // stride must be size of datatype!
+    vertexBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
+    m_vao->enable(0);
+}
+
+void Game::draw()
+{
+    if (!m_vao)
+        initDraw();
+
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+
+    glow::ref_ptr<glow::Program> program = m_world->programByName("particle_water");
+    assert(program);
+    if (program.get() == nullptr)
+        return;
+
+    program->use();
+
+    m_world->setUniforms(*program.get());
+
+    m_vao->bind();
+    m_vao->drawArrays(GL_QUADS, 0, 4);
+    m_vao->unbind();
+
+    program->release();
+
 }
