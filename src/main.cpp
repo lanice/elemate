@@ -1,6 +1,11 @@
+#include <iostream>
+
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <iostream>
+// These include causes the '[..] needs to have dll-interface [..]' warnings.
+// Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
+#include <glow/logging.h>
 
 #include "game.h"
 
@@ -23,14 +28,14 @@ void setCallbacks(GLFWwindow * window)
 int main()
 {
     if (!glfwInit()) {
-        std::cerr << "Could not initialize glfw." << std::endl;
+        glow::fatal("Could not initialize glfw.");
         return -1;
     }
 
     GLFWwindow * window = glfwCreateWindow(640, 480, "Elemate", NULL, NULL);
     if (!window)
     {
-        std::cerr << "glfw window creation failed." << std::endl;
+        glow::fatal("glfw window creation failed.");
         glfwTerminate();
         return -1;
     }
