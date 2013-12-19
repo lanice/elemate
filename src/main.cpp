@@ -5,13 +5,27 @@
 
 // These includes cause the '[..] needs to have dll-interface [..]' warnings.
 // Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
+#include <glow/global.h>
 #include <glow/logging.h>
 #include <glowutils/FileRegistry.h>
 
 #include "game.h"
 
+static GLint MajorVersionRequire = 4;
+static GLint MinorVersionRequire = 0;
 
 static Game * game;
+
+static void checkVersion() {
+    glow::info("OpenGL Version Needed %;.%; (%;.%; Found)",
+        MajorVersionRequire, MinorVersionRequire,
+        glow::query::majorVersion(), glow::query::minorVersion());
+    glow::info("version: %;", glow::query::version().toString());
+    glow::info("vendor: %;", glow::query::vendor());
+    glow::info("renderer: %;", glow::query::renderer());
+    glow::info("core profile: %;", glow::query::isCoreProfile() ? "true" : "false");
+    glow::info("GLSL version: %;\n", glow::query::getString(GL_SHADING_LANGUAGE_VERSION));
+}
 
 static void keyCallback(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
 {
@@ -30,6 +44,7 @@ void setCallbacks(GLFWwindow * window)
 
 int main()
 {
+    
     if (!glfwInit()) {
         glow::fatal("Could not initialize glfw.");
         return -1;
@@ -47,6 +62,8 @@ int main()
     glfwMakeContextCurrent(window);
 
     setCallbacks(window);
+    
+    checkVersion();
 
     game = new Game(*window);
 
