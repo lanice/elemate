@@ -10,7 +10,7 @@
 class EventHandler
 {
 public:
-    EventHandler(GLFWwindow & window/*, Camera * camera*/);
+    EventHandler(GLFWwindow & window);
     virtual ~EventHandler();
 
     void handleKeyEvent(int key, int scancode, int action, int mods);
@@ -18,5 +18,4 @@ public:
 
 protected:
     GLFWwindow & m_window;
-    // Camera * m_camera;
 };

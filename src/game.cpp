@@ -21,6 +21,8 @@ m_window(window),
 m_interrupted(true),
 m_world(std::make_shared<World>()),
 m_eventHandler(window),
+m_camera(),
+m_navigation(window, &m_camera),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 {
 }
@@ -50,6 +52,7 @@ void Game::loop(t_longf delta){
 
     while (isRunning())
     {
+        glfwPollEvents();
         // get current time
         t_longf currTime = m_cyclicTime->getNonModf(true);
 
@@ -71,19 +74,19 @@ void Game::loop(t_longf delta){
             {
                 m_world->setUniforms(currTime);
 
-                glfwSwapBuffers(&m_window);
+                m_navigation.update();
 
-                glfwPollEvents();
+                glfwSwapBuffers(&m_window);
 
                 skippedFrames = 1;
             } else {
                 ++skippedFrames;
             }
         } else {
-            //t_longf sleepTime = nextTime - currTime;
+            t_longf sleepTime = nextTime - currTime;
 
-            /*if (sleepTime > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));*/
+            if (sleepTime > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
         }
     }
 
@@ -103,4 +106,9 @@ void Game::end(){
 EventHandler * Game::eventHandler()
 {
     return & m_eventHandler;
+}
+
+glowutils::Camera * Game::camera()
+{
+    return & m_camera;
 }

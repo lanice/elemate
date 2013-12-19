@@ -3,10 +3,12 @@
 #include <memory>
 #include <map>
 
+#include <glowutils/Camera.h>
+
 #include "eventhandler.h"
+#include "navigation.h"
 
 class World;
-class EventHandler;
 class CyclicTime;
 namespace std {         class thread; }
 struct GLFWwindow;
@@ -31,6 +33,8 @@ public:
     void end();
 
     EventHandler * eventHandler();
+    glowutils::Camera * camera();
+
 protected:
 
     GLFWwindow & m_window;
@@ -43,6 +47,8 @@ protected:
     std::shared_ptr<CyclicTime> m_cyclicTime;
 
     EventHandler m_eventHandler;
+    glowutils::Camera m_camera;
+    Navigation m_navigation;
 
     bool                        m_interrupted;
 

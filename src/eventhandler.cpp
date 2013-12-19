@@ -1,15 +1,12 @@
 #include "eventhandler.h"
 
-
 #include <glow/logging.h>
 
 
-EventHandler::EventHandler(GLFWwindow & window/*, Camera * camera*/) :
-    m_window(window)/*,
-    m_camera(camera)*/
+EventHandler::EventHandler(GLFWwindow & window) :
+    m_window(window)
 {
 }
-
 
 EventHandler::~EventHandler()
 {
