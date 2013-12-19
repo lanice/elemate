@@ -27,6 +27,11 @@ static void checkVersion() {
     glow::info("GLSL version: %;\n", glow::query::getString(GL_SHADING_LANGUAGE_VERSION));
 }
 
+static void errorCallback(int error, const char* description)
+{
+    glow::warning(description);
+}
+
 static void keyCallback(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -49,6 +54,8 @@ int main()
         glow::fatal("Could not initialize glfw.");
         return -1;
     }
+
+    glfwSetErrorCallback(errorCallback);
 
     GLFWwindow * window = glfwCreateWindow(640, 480, "Elemate", NULL, NULL);
     if (!window)
