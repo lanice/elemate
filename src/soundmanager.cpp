@@ -1,6 +1,6 @@
 #include "soundmanager.h"
 
-#include <iostream>
+#include <glow/logging.h>
 
 #include "fmod_errors.h"
 
@@ -24,8 +24,7 @@ void SoundManager::ERRCHECK(FMOD_RESULT _result)
 {
     if (_result != FMOD_OK)
     {
-        std::cerr << "FMOD error! (" << _result << ") " << FMOD_ErrorString(_result) << std::endl;
-        exit(-1);
+        glow::warning("FMOD error! %; (%;)", FMOD_ErrorString(_result), _result);
     }
 }
 
@@ -46,8 +45,8 @@ void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR u
     ERRCHECK(_result);
 
     if (_version < FMOD_VERSION){
-        printf("Error!  You are using an old version of FMOD %08x.  This program requires %08x\n", _version, FMOD_VERSION);
-        return;
+        glow::fatal("You are using an old version of FMOD %08x;.  This program requires %08x;\n", _version, FMOD_VERSION);
+        exit(-1);
     }
 
     _result = _system->getNumDrivers(&_numdrivers);
@@ -101,7 +100,7 @@ void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR u
     ERRCHECK(_result);
 }
 
-int SoundManager::createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, bool paused, FMOD_VECTOR pos, FMOD_VECTOR vel){
+int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, FMOD_VECTOR pos, FMOD_VECTOR vel){
     FMOD::Sound *_sound;
     FMOD::Channel *_channel = 0;
     int _id = getNextFreeId();
@@ -259,7 +258,7 @@ void SoundManager::changeVolume(int channelId, float dVol){
     _channels[channelId].channel->setVolume(getVolume(channelId) + dVol);
 }
 
-void SoundManager::changeFile(int channelId, std::string filePath){
+void SoundManager::changeFile(int channelId, const std::string & filePath){
     FMOD_MODE _mode;
     bool _ispaused;
     // get current sound properties
