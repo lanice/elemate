@@ -6,6 +6,7 @@
 // These includes cause the '[..] needs to have dll-interface [..]' warnings.
 // Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
 #include <glow/global.h>
+#include <glow/Error.h>
 #include <glow/logging.h>
 #include <glowutils/FileRegistry.h>
 
@@ -27,7 +28,7 @@ static void checkVersion() {
     glow::info("GLSL version: %;\n", glow::query::getString(GL_SHADING_LANGUAGE_VERSION));
 }
 
-static void errorCallback(int error, const char* description)
+static void errorCallback(int /*error*/, const char* description)
 {
     glow::warning(description);
 }
@@ -67,10 +68,16 @@ int main()
 
 
     glfwMakeContextCurrent(window);
-
     setCallbacks(window);
-    
     checkVersion();
+
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK)
+    {
+        glow::fatal("glewInit() failed");
+        return -1;
+    }
+    glow::Error::clear(); // ignores GL_INVALID_ENUM sometimes caused by glew
 
     game = new Game(*window);
 
