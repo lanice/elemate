@@ -20,7 +20,9 @@ layout(location = 0)out vec4 fragColor;
 
 void main()
 {
-    vec3 normal = vec3(0, 1, 0);
+    // vec3 normal = vec3(0, 1, 0);
+    
+    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 
-    fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
+    // fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
 }

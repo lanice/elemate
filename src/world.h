@@ -15,6 +15,7 @@ class Navigation;
 class PhysicsWrapper;
 class ObjectsContainer;
 class SoundManager;
+class Terrain;
 
 class World {
 public:
@@ -35,10 +36,10 @@ public:
 
     glow::Program * programByName(const std::string & name);
     
-    std::shared_ptr<PhysicsWrapper>             physicsWrapper;
-    std::shared_ptr<ObjectsContainer>           objectsContainer;
-    //std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
-    std::shared_ptr<SoundManager>               soundManager;
+    std::shared_ptr<PhysicsWrapper>   physicsWrapper;
+    std::shared_ptr<ObjectsContainer> objectsContainer;
+    std::shared_ptr<Terrain>          terrain;
+    std::shared_ptr<SoundManager>     soundManager;
 
 protected:
     Navigation * m_navigation;

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
-
-#include "terrain.h"
+#include "elemateterrain.h"
 
 namespace physx {
     class PxShape;
@@ -10,7 +8,7 @@ namespace physx {
     struct PxHeightFieldSample;
 }
 
-class Terrain;
+class ElemateHeightFieldTerrain;
 struct TerrainSettings;
 
 /** Generator for height field terrains
@@ -23,7 +21,7 @@ struct TerrainSettings;
 class TerrainGenerator {
 public:
     /** applies all settings and creates the height field osg and physx objects */
-    std::shared_ptr<Terrain> generate() const;
+    ElemateHeightFieldTerrain * generate() const;
 
     /** terrain size in world coordinates */
     void setExtentsInWorld(float x, float z);
@@ -55,13 +53,13 @@ private:
     TerrainSettings m_settings;
 
     /** creates physx and osg heightfield data with random height shift */
-    physx::PxHeightFieldSample * createBasicPxHeightField(unsigned char defaultTerrainTypeId, float maxHeightVariance) const;
+    physx::PxHeightFieldSample * createBasicPxHeightField(unsigned int defaultTerrainTypeId, float maxHeightVariance) const;
     /** adds a river bed to the shape */
     void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
     /** copies the height values to an osg heightfield layer and create a tile with it */
-    Terrain * copyPxHeightFieldToTile(const TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    osgTerrain::TerrainTile * copyHeightFieldToOsgTile(const osgTerrain::TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     /** adds a texture to the osg tile that the shader uses to dertermine the terrain type at each position */
-    //void createTerrainTypeTexture(Terrain & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    void createOsgTerrainTypeTexture(osgTerrain::TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;
 
     void operator=(TerrainGenerator& ) = delete;

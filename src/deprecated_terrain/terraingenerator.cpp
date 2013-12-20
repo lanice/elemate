@@ -8,7 +8,10 @@
 #include <ctime>
 #include <functional>
 
-#include <glow/Array.h>
+#include <osg/Image>
+#include <osg/Texture2D>
+#include <osgTerrain/Terrain>
+#include <osgDB/ReadFile>
 
 #include <PxRigidStatic.h>
 #include <PxShape.h>
@@ -19,6 +22,7 @@
 #include <foundation/PxMat44.h>
 
 #include "elements.h"
+#include "osg/dynamicterraintile.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -28,7 +32,7 @@ std::mt19937 rng;
 using namespace physx;
 
 namespace {
-    uint32_t seed_val = static_cast<uint32_t>(std::time(0));
+    uint32_t seed_val = std::time(0);
     bool initRng() {
         rng.seed(seed_val);
         return true;
@@ -36,88 +40,84 @@ namespace {
     bool didRngInit = initRng();
 }
 
-std::shared_ptr<Terrain> TerrainGenerator::generate() const
+ElemateHeightFieldTerrain * TerrainGenerator::generate() const
 {
-    //Terrain * terrain = new Terrain(m_settings);
+    ElemateHeightFieldTerrain * terrain = new ElemateHeightFieldTerrain(m_settings);
 
     /** The tileID determines the position of the current tile in the grid of tiles.
       * Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
       */
     
-    /*int maxxID = m_settings.tilesX - int((m_settings.tilesX + 1) * 0.5);
+    int maxxID = m_settings.tilesX - int((m_settings.tilesX + 1) * 0.5);
     int minxID = maxxID - m_settings.tilesX + 1;
     int maxzID = m_settings.tilesZ - int((m_settings.tilesZ + 1) * 0.5);
     int minzID = maxzID - m_settings.tilesZ + 1;
 
     terrain->minTileXID = minxID;
-    terrain->minTileZID = minzID;*/
-    
-    assert(m_settings.tilesX == 1 && 1 == m_settings.tilesZ);
+    terrain->minTileZID = minzID;
 
-    /*for (int xID = minxID; xID <= maxxID; ++xID)
-    for (int zID = minzID; zID <= maxzID; ++zID)*/
-    //{
-    int xID = 0; int zID = 0;
+    for (int xID = minxID; xID <= maxxID; ++xID)
+    for (int zID = minzID; zID <= maxzID; ++zID)
+    {
         /** 1. Create physx terrain heightfield data.
             2. Add some landscape to it (change heightfield, add material information)
             3. Copy physx data to osg and create osg terrain tile.
             4. Create physx actor and shape.
             5. Set some uniforms, valid for the whole terrain. */
 
-        TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
+        osgTerrain::TileID tileIDBase(static_cast<int>(TerrainLevel::BaseLevel), xID, zID);
         PxHeightFieldSample * pxBaseHeightFieldSamples = createBasicPxHeightField(0, m_settings.maxBasicHeightVariance);
         assert(pxBaseHeightFieldSamples);
 
         gougeRiverBed(pxBaseHeightFieldSamples);
 
-        /** create terrain object and copy PhysX terrain data into it */
-        std::shared_ptr<Terrain> baseTile = std::shared_ptr<Terrain>(copyPxHeightFieldToTile(tileIDBase, pxBaseHeightFieldSamples));
-        assert(baseTile);
-        //createOsgTerrainTypeTexture(*baseTile.get(), pxBaseHeightFieldSamples);
-        //baseTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
-        //terrain->m_osgTerrainBase->addChild(baseTile.get());
+        /** create OSG terrain object and copy PhysX terrain data into it */
+        osg::ref_ptr<osgTerrain::TerrainTile> baseTile = copyHeightFieldToOsgTile(tileIDBase, pxBaseHeightFieldSamples);
+        assert(baseTile.valid());
+        createOsgTerrainTypeTexture(*baseTile.get(), pxBaseHeightFieldSamples);
+        baseTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
+        terrain->m_osgTerrainBase->addChild(baseTile.get());
 
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
-        /*TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
+        osgTerrain::TileID tileIDWater(static_cast<int>(TerrainLevel::WaterLevel), xID, zID);
         PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
         assert(pxWaterHeightFieldSamples);
-        std::shared_ptr<Terrain> waterTile = std::shared_ptr<Terrain>(copyPxHeightFieldToTile(tileIDWater, pxWaterHeightFieldSamples);
-        assert(waterTile);*/
-        //waterTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
-        //waterTile->setBlendingPolicy(osgTerrain::TerrainTile::BlendingPolicy::ENABLE_BLENDING);
-        //terrain->m_osgTerrainWater->addChild(waterTile.get());
+        osg::ref_ptr<osgTerrain::TerrainTile> waterTile = copyHeightFieldToOsgTile(tileIDWater, pxWaterHeightFieldSamples);
+        assert(waterTile.valid());
+        waterTile->setTerrain(terrain->osgTerrain()); // tell the tile that it's part of our terrain object
+        waterTile->setBlendingPolicy(osgTerrain::TerrainTile::BlendingPolicy::ENABLE_BLENDING);
+        terrain->m_osgTerrainWater->addChild(waterTile.get());
 
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
-        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5f), 0.0f, m_settings.tileSizeZ() * (zID - 0.5f)));
+        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5), 0.0f, m_settings.tileSizeZ() * (zID - 0.5)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
-        //terrain->m_pxActor = actor;
-        baseTile->m_pxActor = actor;
+        terrain->m_pxActors.emplace(tileIDBase, actor);
 
         PxShape * pxBaseShape = createPxShape(*actor, pxBaseHeightFieldSamples);
-        baseTile->m_pxShape = pxBaseShape;
-        /*PxShape * pxWaterShape = createPxShape(*actor, pxWaterHeightFieldSamples);
-        terrain->m_pxShapes.emplace(tileIDWater, pxWaterShape);*/
-    //}
+        terrain->m_pxShapes.emplace(tileIDBase, pxBaseShape);
+        PxShape * pxWaterShape = createPxShape(*actor, pxWaterHeightFieldSamples);
+        terrain->m_pxShapes.emplace(tileIDWater, pxWaterShape);
+    }
 
     /** set some uniforms for the terrain */
-    //osg::ref_ptr<osg::StateSet> terrainStateSet = terrain->m_osgTerrain->getOrCreateStateSet();
-    //// texture unit 0 should be color layer 0 in all tiles
-    //osg::ref_ptr<osg::Uniform> terrainIDSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "terrainIDSampler");
-    //terrainIDSampler->set(0);
-    //terrainStateSet->addUniform(terrainIDSampler.get());
-    //terrainStateSet->addUniform(new osg::Uniform("tileSize", osg::Vec3(
-    //    m_settings.tileSizeX(),
-    //    m_settings.maxHeight,
-    //    m_settings.tileSizeZ())));
-    //terrainStateSet->addUniform(new osg::Uniform("tileRowsColumns", osg::Vec2(m_settings.rows, m_settings.columns))); // ivec2
-    //// add all material shading matrices
-    //Elements::addAllUniforms(*terrainStateSet);
+    osg::ref_ptr<osg::StateSet> terrainStateSet = terrain->m_osgTerrain->getOrCreateStateSet();
+    // texture unit 0 should be color layer 0 in all tiles
+    osg::ref_ptr<osg::Uniform> terrainIDSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "terrainIDSampler");
+    terrainIDSampler->set(0);
+    terrainStateSet->addUniform(terrainIDSampler.get());
+    terrainStateSet->addUniform(new osg::Uniform("tileSize", osg::Vec3(
+        m_settings.tileSizeX(),
+        m_settings.maxHeight,
+        m_settings.tileSizeZ())));
+    terrainStateSet->addUniform(new osg::Uniform("tileRowsColumns", osg::Vec2(m_settings.rows, m_settings.columns))); // ivec2
+    // add all material shading matrices
+    Elements::addAllUniforms(*terrainStateSet);
 
 
     /** load terrain textures and add uniforms */
-    /*osg::ref_ptr<osg::Image> rockImage = osgDB::readImageFile("data/textures/rock.jpg");
+    osg::ref_ptr<osg::Image> rockImage = osgDB::readImageFile("data/textures/rock.jpg");
     assert(rockImage.valid());
 
     osg::ref_ptr<osg::Texture2D> rockTexture = new osg::Texture2D(rockImage);
@@ -131,12 +131,12 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
     terrainStateSet->setTextureAttributeAndModes(1, rockTexture.get());
     osg::ref_ptr<osg::Uniform> rockTextureSampler = new osg::Uniform(osg::Uniform::Type::SAMPLER_2D, "rockSampler");
     rockTextureSampler->set(1);
-    terrainStateSet->addUniform(rockTextureSampler.get());*/
+    terrainStateSet->addUniform(rockTextureSampler.get());
 
-    return baseTile;
+    return terrain;
 }
 
-PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned char defaultTerrainTypeId, float maxHeightVariance) const
+PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned int defaultTerrainTypeId, float maxHeightVariance) const
 {
     assert(m_settings.rows >= 2);
     assert(m_settings.columns >= 2);
@@ -146,10 +146,10 @@ PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned char d
 
     float partHeight = maxHeightVariance / m_settings.maxHeight;
     std::uniform_int_distribution<> uniform_dist(
-        static_cast<int>(std::numeric_limits<PxI16>::min() * partHeight),
-        static_cast<int>(std::numeric_limits<PxI16>::max() * partHeight));
+        std::numeric_limits<PxI16>::min() * partHeight,
+        std::numeric_limits<PxI16>::max() * partHeight);
 
-    std::function<int16_t()> getHeight;
+    std::function<int()> getHeight;
     if (maxHeightVariance == 0)
         getHeight = [] () {return 0; };
     else
@@ -190,8 +190,8 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
             float value = riverCourse(normalizedRow, normalizedColumn);
             if (value > riverScale)
                 value = riverScale;
-            value -= riverScale * 0.5f;
-            pxHfSamples[index].height = oldValue + static_cast<PxI16>(std::numeric_limits<PxI16>::max() * (value - 0.5f*maxBasicHeightVariance()));
+            value -= riverScale * 0.5;
+            pxHfSamples[index].height = oldValue + std::numeric_limits<PxI16>::max() * (value - 0.5*maxBasicHeightVariance());
 
             int8_t terrainTypeID;
             if (pxHfSamples[index].height <= 0) {
@@ -238,85 +238,96 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     return shape;
 }
 
-Terrain * TerrainGenerator::copyPxHeightFieldToTile(const TileID & tileID, const PxHeightFieldSample * pxHeightFieldSamples) const
+osgTerrain::TerrainTile * TerrainGenerator::copyHeightFieldToOsgTile(const osgTerrain::TileID & tileID, const PxHeightFieldSample * pxHeightFieldSamples) const
 {
-    unsigned int numSamples = m_settings.rows * m_settings.columns;
+    /** create needed osg terrain objects */
 
-    Terrain * terrain = new Terrain(tileID, m_settings);
+    osg::ref_ptr<osg::HeightField> heightField = new osg::HeightField;
+    // invert columns <-> rows to match with physx
+    heightField->allocate(m_settings.rows, m_settings.columns);
 
-    /** create terrain data objects */
-
-    glow::FloatArray * heightField = new glow::FloatArray();
-    heightField->resize(numSamples);
-
-    glow::Vec2Array * vertices = new glow::Vec2Array();
-    vertices->resize(numSamples);
-
+    osg::ref_ptr<osgTerrain::Locator> locator = new osgTerrain::Locator();
     // compute position depending on TileID, which sets the row/column positions of the tile
-    float minX = m_settings.tileSizeX() * (tileID.x - 0.5f);
-    float minZ = m_settings.tileSizeZ() * (tileID.z - 0.5f);
-    terrain->m_transform = glm::mat4(
-        m_settings.intervalX(), 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, m_settings.intervalZ(), 0,
-        minX, 0, minZ, 1);
+    // using x/z here, which corresponds to the world coordinates used in physx
+    float minX = m_settings.tileSizeX() * (tileID.x - 0.5);
+    float minZ = m_settings.tileSizeZ() * (tileID.y - 0.5);
+    locator->setTransform(osg::Matrixd(
+        m_settings.tileSizeX(), 0, 0, 0,
+        0, m_settings.tileSizeZ(), 0, 0,
+        0, 0, 1, 0,
+        minX, minZ, 0, 1));
+
+    osg::ref_ptr<osgTerrain::HeightFieldLayer> layer = new osgTerrain::HeightFieldLayer(heightField);
+    layer->setLocator(locator.get());
+
+    osgTerrain::TerrainTile * tile = new DynamicTerrainTile();
+    tile->setElevationLayer(layer.get());
+    tile->setTileID(tileID);
+    tile->setRequiresNormals(true);
 
     float heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
 
-    for (unsigned row = 0; row < m_settings.rows; ++row) {
-        const unsigned rowOffset = row * m_settings.columns;
-        for (unsigned column = 0; column < m_settings.columns; ++column) {
-            unsigned int index = column + rowOffset;
+    // osg column == physx row
+    // osg row == numColumns - physx column - 1 (osg rows going to y, physx columns to z, where osgY == -physxZ)
+    const unsigned numOsgRows = m_settings.columns;
+    for (unsigned physxRow = 0; physxRow < m_settings.rows; ++physxRow) {
+        const unsigned physxRowOffset = physxRow * m_settings.columns;
+        for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
+            // set osg heightfield data, matching the physx rows/columns, both in row major order
+            const unsigned osgColumn = physxRow;
+            const unsigned osgRow = numOsgRows - 1 - physxColumn;
 
-            heightField->at(index) = pxHeightFieldSamples[index].height * heightScale;
-            // simply use the row/column position as vertex position, scaling with the transform matrix
-            vertices->at(index) = glm::vec2(row, column);
+            /** copy height value from physx to osg */
+            heightField->setHeight(osgColumn, osgRow,
+                PxReal(pxHeightFieldSamples[physxColumn + physxRowOffset].height) * heightScale);
         }
     }
 
-    terrain->m_heightField = heightField;
-    terrain->m_vertices = vertices;
+    // set some tile specific uniforms
+    osg::ref_ptr<osg::StateSet> tileStateSet = tile->getOrCreateStateSet();
+    tileStateSet->addUniform(new osg::Uniform("tileID", tileID.x, tileID.y));   // ivec2
+    tileStateSet->addUniform(new osg::Uniform("tileLeftFront", osg::Vec2f(minX, minZ))); // vec2
 
-    return terrain;
+    return tile;
 }
 
-//void TerrainGenerator::createOsgTerrainTypeTexture(osgTerrain::TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const
-//{
-//    // we have to use floats for the sampler, int won't work
-//    typedef float IDTexType;
-//
-//    /** Create osg image for image layer, storing the terrain id for the graphics. */
-//    osg::ref_ptr<osg::Image> terrainTypeData = new osg::Image();
-//    terrainTypeData->allocateImage(m_settings.rows, m_settings.columns, 1, GL_RED, GL_FLOAT);
-//    assert(terrainTypeData->isDataContiguous());
-//    assert(terrainTypeData->getTotalDataSize() == m_settings.rows * m_settings.columns * sizeof(IDTexType));
-//    IDTexType * dataPtr = reinterpret_cast<IDTexType*>(terrainTypeData->data());
-//
-//    const unsigned terrainTypeCount = 4;
-//
-//    // osg column == physx row
-//    // osg row == numColumns - physx column - 1 (osg rows going to y, physx columns to z, where osgY == -physxZ)
-//    const unsigned numOsgRows = m_settings.columns;
-//    const unsigned numOsgColumns = m_settings.rows;
-//    for (unsigned physxRow = 0; physxRow < m_settings.rows; ++physxRow) {
-//        const unsigned physxRowOffset = physxRow * m_settings.columns;
-//        for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
-//            // set osg heightfield data, matching the physx rows/columns, both in row major order
-//            const unsigned osgColumn = physxRow;
-//            const unsigned osgRow = numOsgRows - 1 - physxColumn;
-//
-//            /** same with terrain type id */
-//            unsigned int terrainTypeID = pxHeightFieldSamples[physxColumn + physxRowOffset].materialIndex0;
-//            // scale terrain id to 0..1 -> values greater than 1 seem not to work with osg::Image
-//            dataPtr[osgColumn + osgRow * numOsgColumns] = static_cast<IDTexType>(terrainTypeID) / (terrainTypeCount - 1);
-//        }
-//    }
-//
-//    osg::ref_ptr<osgTerrain::ImageLayer> terrainTypeLayer = new osgTerrain::ImageLayer(terrainTypeData.get());
-//    tile.setColorLayer(0, terrainTypeLayer.get());
-//
-//    assert(tile.getNumColorLayers() == 1);
-//}
+void TerrainGenerator::createOsgTerrainTypeTexture(osgTerrain::TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const
+{
+    // we have to use floats for the sampler, int won't work
+    typedef float IDTexType;
+
+    /** Create osg image for image layer, storing the terrain id for the graphics. */
+    osg::ref_ptr<osg::Image> terrainTypeData = new osg::Image();
+    terrainTypeData->allocateImage(m_settings.rows, m_settings.columns, 1, GL_RED, GL_FLOAT);
+    assert(terrainTypeData->isDataContiguous());
+    assert(terrainTypeData->getTotalDataSize() == m_settings.rows * m_settings.columns * sizeof(IDTexType));
+    IDTexType * dataPtr = reinterpret_cast<IDTexType*>(terrainTypeData->data());
+
+    const unsigned terrainTypeCount = 4;
+
+    // osg column == physx row
+    // osg row == numColumns - physx column - 1 (osg rows going to y, physx columns to z, where osgY == -physxZ)
+    const unsigned numOsgRows = m_settings.columns;
+    const unsigned numOsgColumns = m_settings.rows;
+    for (unsigned physxRow = 0; physxRow < m_settings.rows; ++physxRow) {
+        const unsigned physxRowOffset = physxRow * m_settings.columns;
+        for (unsigned physxColumn = 0; physxColumn < m_settings.columns; ++physxColumn) {
+            // set osg heightfield data, matching the physx rows/columns, both in row major order
+            const unsigned osgColumn = physxRow;
+            const unsigned osgRow = numOsgRows - 1 - physxColumn;
+
+            /** same with terrain type id */
+            unsigned int terrainTypeID = pxHeightFieldSamples[physxColumn + physxRowOffset].materialIndex0;
+            // scale terrain id to 0..1 -> values greater than 1 seem not to work with osg::Image
+            dataPtr[osgColumn + osgRow * numOsgColumns] = static_cast<IDTexType>(terrainTypeID) / (terrainTypeCount - 1);
+        }
+    }
+
+    osg::ref_ptr<osgTerrain::ImageLayer> terrainTypeLayer = new osgTerrain::ImageLayer(terrainTypeData.get());
+    tile.setColorLayer(0, terrainTypeLayer.get());
+
+    assert(tile.getNumColorLayers() == 1);
+}
 
 void TerrainGenerator::setExtentsInWorld(float x, float z)
 {

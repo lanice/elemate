@@ -52,8 +52,6 @@ set(SOURCES
     # src/godnavigation.h
     src/objectscontainer.cpp
     src/objectscontainer.h
-    # src/screenquad.cpp
-    # src/screenquad.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h
@@ -67,22 +65,16 @@ set(SOURCES
     src/hpicgs/ChronoTimer.h
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
-    # src/terrain/terraingenerator.cpp
-    # src/terrain/terraingenerator.h
-    # src/terrain/elemateterrain.h
-    # src/terrain/elemateterrain.cpp
-    # src/terrain/terraininteractor.h
-    # src/terrain/terraininteractor.cpp
-    # src/osg/sharedgeometrytechnique.h
-    # src/osg/sharedgeometrytechnique.cpp
-    # src/osg/dynamicterraintile.h
-    # src/osg/dynamicterraintile.cpp
     src/soundmanager.cpp
     src/soundmanager.h
     src/eventhandler.cpp
     src/eventhandler.h
     src/navigation.cpp
     src/navigation.h
+    src/terrain/terrain.h
+    src/terrain/terrain.cpp
+    src/terrain/terraingenerator.h
+    src/terrain/terraingenerator.cpp
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
