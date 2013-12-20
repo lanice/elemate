@@ -3,6 +3,7 @@
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
+#include <glow/Texture.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
@@ -26,6 +27,7 @@ TerrainSettings::TerrainSettings()
 Terrain::Terrain(const TileID & tileID, const TerrainSettings & settings)
 : m_vao(nullptr)
 , m_vbo(nullptr)
+, m_heightTex(nullptr)
 , m_program(nullptr)
 , m_heightField(nullptr)
 , m_vertices(nullptr)
@@ -48,11 +50,20 @@ void Terrain::draw(const glowutils::Camera & camera)
     assert(m_program);
     assert(m_vao);
 
+
+    glActiveTexture(GL_TEXTURE0 + 0);
+    m_heightTex->bind();
+
     m_program->use();
     const auto & viewProjection = camera.viewProjection();
     m_program->setUniform("viewProjection", viewProjection);
     glm::mat4 modelViewProjection = viewProjection * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
+
+    m_program->setUniform("heightField", 0);
+    m_program->setUniform("texScale", glm::vec2(
+        1.0f / m_settings.rows,
+        1.0f / m_settings.columns));
 
     m_vao->bind();
 
@@ -62,6 +73,8 @@ void Terrain::draw(const glowutils::Camera & camera)
     m_vao->unbind();
 
     m_program->release();
+
+    m_heightTex->unbind();
 }
 
 void Terrain::initialize()
@@ -83,6 +96,17 @@ void Terrain::initialize()
     m_vao->enable(0);
 
     m_vao->unbind();
+
+    m_heightTex = new glow::Texture(GL_TEXTURE_2D);
+    m_heightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_heightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_heightTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_heightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_heightTex->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+
+    m_heightTex->image2D(0, GL_RED, m_settings.rows, m_settings.columns, 0,
+        GL_RED, GL_FLOAT, m_heightField->rawData());
 
     glow::ref_ptr<glow::Shader> terrainBaseVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrainBase.vert");
     glow::ref_ptr<glow::Shader> terrainBaseFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrainBase.frag");

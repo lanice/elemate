@@ -9,6 +9,7 @@ namespace glow {
     class VertexArrayObject;
     class Buffer;
     class Program;
+    class Texture;
 }
 namespace glowutils {
     class Camera;
@@ -86,6 +87,7 @@ protected:
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Buffer> m_vbo;
+    glow::ref_ptr<glow::Texture> m_heightTex;
     glow::ref_ptr<glow::Program> m_program;
 
     glow::FloatArray * m_heightField;
