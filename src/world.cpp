@@ -34,6 +34,10 @@ World::World()
     soundManager->setVolume(1, 0.3f);
 
     initShader();
+
+    // create the plane, just to do it somewhere for debugging
+    physx::PxRigidStatic* plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *Elements::pxMaterial("default"));
+    physicsWrapper->scene()->addActor(*plane);
 }
 
 

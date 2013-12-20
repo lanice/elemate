@@ -1,7 +1,8 @@
 #include "objectscontainer.h"
 
 #include <cassert>
-#include <iostream>
+
+#include <glow/logging.h>
 
 #include <glm/glm.hpp>
 
@@ -37,6 +38,13 @@ void ObjectsContainer::updateAllObjects()
     }
 
     physx::PxMat44 new_pos;
+
+    static bool here = false;
+    if (!here) {
+        glow::debug("TODO: ObjectsContainer::updateAllObjects()");
+        here = true;
+    }
+
     /*for (auto& current_object : m_objects){
         if (current_object.second->isSleeping())
             continue;*/
@@ -55,6 +63,8 @@ void ObjectsContainer::updateAllObjects()
 void ObjectsContainer::makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity)
 {
     glm::mat4 translation;
+
+    assert(false);
     /*translation.setTrans(osg::Vec3(global_position.x, global_position.y, global_position.z));
     osg::ref_ptr<osg::MatrixTransform> osgTransformNode = new osg::MatrixTransform(translation);
     

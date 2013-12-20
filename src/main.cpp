@@ -1,5 +1,3 @@
-#include <iostream>
-
 // These includes cause the '[..] needs to have dll-interface [..]' warnings.
 // Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
 #include <glow/global.h>
