@@ -62,7 +62,9 @@ void Navigation::apply()
 
 void Navigation::move(const glm::vec3 & direction)
 {
-    m_center += direction;
+    glm::vec3 correctDirection = m_rotation * direction;
+    
+    m_center += glm::vec3(direction.x, 0, direction.z);
 }
 
 const glowutils::Camera * Navigation::camera() const
