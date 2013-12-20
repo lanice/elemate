@@ -26,7 +26,7 @@ protected:
     static const physx::PxU32	kMaxParticleCount = 100;
     static const physx::PxU32   kDefaultEmittedParticles = 1;
 
-    std::shared_ptr<ParticleDrawable> m_particle_drawable;
+    std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
     physx::PxVec3            m_position;
     bool                     m_emitting;
@@ -36,7 +36,7 @@ protected:
     size_t                   youngest_particle_index;
 
 
-    physx::PxParticleSystem*            m_particle_system; // or fluid?
+    physx::PxParticleSystem*            m_particleSystem; // or fluid?
 
 private:
     void operator=(ParticleEmitter&) = delete;

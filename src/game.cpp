@@ -15,6 +15,7 @@
 #include "world.h"
 #include "physicswrapper.h"
 #include "objectscontainer.h"
+#include "particledrawable.h"
 
 // Classes from CGS chair
 #include "HPICGS/CyclicTime.h"
@@ -24,7 +25,7 @@ Game::Game(GLFWwindow & window) :
 m_window(window),
 m_interrupted(true),
 m_world(std::make_shared<World>()),
-m_eventHandler(window),
+m_eventHandler(window, *m_world),
 m_camera(),
 m_navigation(window, &m_camera),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
@@ -169,7 +170,8 @@ void Game::draw()
     m_vao->drawArrays(GL_QUADS, 0, 4);
     m_vao->unbind();
 
-
     terrainProgram->release();
+
+    ParticleDrawable::drawParticles(*m_navigation.camera());
 
 }
