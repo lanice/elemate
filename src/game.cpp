@@ -38,8 +38,6 @@ void Game::start(){
     if (isRunning())
         return;
 
-    m_world->reloadShader();
-
     m_world->setNavigation(m_navigation);    
 
     m_world->physicsWrapper->startSimulation();
@@ -125,6 +123,8 @@ static glow::Buffer * m_vertices = nullptr;
 void initDraw()
 {
     m_vao = new glow::VertexArrayObject;
+    m_vao->bind();
+
     m_vertices = new glow::Buffer(GL_ARRAY_BUFFER);
 
     static const glow::Vec3Array raw(
@@ -142,6 +142,8 @@ void initDraw()
     vertexBinding->setBuffer(m_vertices, 0, sizeof(glm::vec3)); // stride must be size of datatype!
     vertexBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
     m_vao->enable(0);
+
+    m_vao->unbind();
 }
 
 void Game::draw()
@@ -154,19 +156,20 @@ void Game::draw()
 
     glEnable(GL_DEPTH_TEST);
 
-    glow::ref_ptr<glow::Program> program = m_world->programByName("particle_water");
-    assert(program);
-    if (program.get() == nullptr)
+    glow::ref_ptr<glow::Program> terrainProgram = m_world->programByName("terrainPlain");
+    assert(terrainProgram);
+    if (!terrainProgram)
         return;
 
-    program->use();
+    terrainProgram->use();
 
-    m_world->setUniforms(*program.get());
+    m_world->setUniforms(*terrainProgram.get());
 
     m_vao->bind();
     m_vao->drawArrays(GL_QUADS, 0, 4);
     m_vao->unbind();
 
-    program->release();
+
+    terrainProgram->release();
 
 }

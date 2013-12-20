@@ -21,4 +21,6 @@ public:
 protected:
     GLFWwindow & m_window;
     glowutils::Camera * m_camera;
+
+    void operator= (Navigation&) = delete;
 };

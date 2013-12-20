@@ -30,7 +30,7 @@ public:
     void toogleBackgroundSound(int id);
 
     void setNavigation(Navigation & navigation);
-    void reloadShader();
+
     void setUniforms(glow::Program & program);
 
     glow::Program * programByName(const std::string & name);
@@ -44,6 +44,6 @@ protected:
     Navigation * m_navigation;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
-    void setUpLighting();
+    void setUpLighting(glow::Program & program);
     void initShader();
 };

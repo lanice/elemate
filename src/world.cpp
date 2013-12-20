@@ -16,6 +16,7 @@
 #include "objectscontainer.h"
 #include "soundmanager.h"
 #include "navigation.h"
+#include "elements.h"
 
 
 World::World()
@@ -32,35 +33,12 @@ World::World()
     soundManager->setVolume(0, 0.14f);
     soundManager->setVolume(1, 0.3f);
 
-    setUpLighting();
+    initShader();
 }
 
 
 World::~World()
 {
-}
-
-
-void World::setUpLighting()
-{
-    glm::vec4 lightambientglobal(0, 0, 0, 0);
-    glm::vec3 lightdir1(0.0, 6.5, 7.5);
-    glm::vec3 lightdir2(0.0, -8.0, 7.5);
-
-
-    // TODO : mirror matrices for glm!
-
-    // some kind of sunlight..
-    //osg::Matrixf light1(0.0, 0.0, 0.0, 1.0,        //ambient
-    //    0.2, 0.2, 0.2, 1.0,        //diffuse
-    //    0.7, 0.7, 0.5, 1.0,        //specular
-    //    0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
-
-    //// zero for now
-    //osg::Matrixf light2(0.0, 0.0, 0.0, 1.0,        //ambient
-    //    0.0, 0.0, 0.0, 1.0,        //diffuse
-    //    0.0, 0.0, 0.0, 1.0,        //specular
-    //    0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 }
 
 void World::makeStandardBall(const glm::vec3& position)
@@ -89,12 +67,12 @@ void World::initShader()
 {
     glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
 
-    glow::ref_ptr<glow::Shader> particleWaterVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert");
-    glow::ref_ptr<glow::Shader> particleWaterFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag");
+    glow::ref_ptr<glow::Shader> terrainPlainVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrainPlain.vert");
+    glow::ref_ptr<glow::Shader> terrainPlainFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrainPlain.frag");
 
-    glow::ref_ptr<glow::Program> particleWaterProgram = new glow::Program();
-    particleWaterProgram->attach(particleWaterFrag, particleWaterVert, phongLightingFrag);
-    m_programsByName.emplace("particle_water", particleWaterProgram);
+    glow::ref_ptr<glow::Program> terrainPlainProgram = new glow::Program();
+    terrainPlainProgram->attach(terrainPlainVert, terrainPlainFrag, phongLightingFrag);
+    m_programsByName.emplace("terrainPlain", terrainPlainProgram);
     
 
     //osg::ref_ptr<osg::Shader> flushVertex =
@@ -180,28 +158,42 @@ void World::initShader()
     //handProgram->addShader(phongLightningFragment);
 }
 
-void World::reloadShader()
+void World::setUpLighting(glow::Program & program)
 {
-    if (m_programsByName.empty())
-        return initShader();
+    static glm::vec4 lightambientglobal(0, 0, 0, 0);
+    static glm::vec3 lightdir1(0.0, 6.5, 7.5);
+    static glm::vec3 lightdir2(0.0, -8.0, 7.5);
 
-    //// reload all shader for all program from source
-    //for (auto & pair : m_programsByName)
-    //{
-    //    for (unsigned i = 0; i < pair.second->getNumShaders(); ++i)
-    //    {
-    //        osg::Shader * shader = pair.second->getShader(i);
-    //        shader->loadShaderSourceFromFile(shader->getFileName());
-    //    }
-    //}
+    static glm::mat4 lightMat1;
+    lightMat1[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
+    lightMat1[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
+    lightMat1[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
+    lightMat1[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
+    static glm::mat4 lightMat2;
+    lightMat2[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
+    lightMat2[1] = glm::vec4(0.1, 0.1, 0.1, 1.0);        //diffuse
+    lightMat2[2] = glm::vec4(0.1, 0.1, 0.1, 1.0);        //specular
+    lightMat2[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
+    program.setUniform("lightambientglobal", lightambientglobal);
+    program.setUniform("lightdir1", lightdir1);
+    program.setUniform("lightdir2", lightdir2);
+    program.setUniform("light1", lightMat1);
+    program.setUniform("light2", lightMat2);
 }
 
 void World::setUniforms(glow::Program & program)
 {
     assert(m_navigation);
+    program.setUniform("view", m_navigation->camera()->view());
     program.setUniform("viewProjection", m_navigation->camera()->viewProjection());
-}
+    program.setUniform("cameraposition", m_navigation->camera()->eye());
+    
+    setUpLighting(program);
 
+    Elements::setAllUniforms(program);
+}
 
 glow::Program * World::programByName(const std::string & name)
 {

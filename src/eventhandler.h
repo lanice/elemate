@@ -18,4 +18,6 @@ public:
 
 protected:
     GLFWwindow & m_window;
+
+    void operator=(EventHandler&) = delete;
 };
