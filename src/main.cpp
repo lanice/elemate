@@ -9,8 +9,8 @@
 
 #include "game.h"
 
-static GLint MajorVersionRequire = 4;
-static GLint MinorVersionRequire = 0;
+static GLint MajorVersionRequire = 3;
+static GLint MinorVersionRequire = 3;
 
 static Game * game;
 

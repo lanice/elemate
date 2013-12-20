@@ -91,12 +91,6 @@ void ParticleDrawable::updateBuffers()
 {
     m_vbo->setData(*m_vertices, GL_DYNAMIC_DRAW);
 
-    glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
-    vertexBinding->setAttribute(0);
-    vertexBinding->setBuffer(m_vbo, 0, sizeof(glm::vec3));
-    vertexBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
-    m_vao->enable(0);
-
     m_needBufferUpdate = false;
 }
 
