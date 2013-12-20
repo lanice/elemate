@@ -77,6 +77,7 @@ void Game::loop(t_longf delta){
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
                 m_navigation.update();
+                m_navigation.apply();
 
                 draw();
 
