@@ -4,7 +4,6 @@
 
 #include <glowutils/Camera.h>
 
-#include "eventhandler.h"
 #include "navigation.h"
 
 class World;
@@ -31,7 +30,7 @@ public:
     /** Ending the loop. */
     void end();
 
-    EventHandler * eventHandler();
+    // EventHandler * eventHandler();
     Navigation * navigation();
     glowutils::Camera * camera();
 
@@ -47,7 +46,6 @@ protected:
     std::shared_ptr<World>      m_world;
     std::shared_ptr<CyclicTime> m_cyclicTime;
 
-    EventHandler m_eventHandler;
     glowutils::Camera m_camera;
     Navigation m_navigation;
 
