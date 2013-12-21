@@ -85,13 +85,13 @@ set(SHADER
     shader/flush.vert
     shader/flush.frag
     shader/terrain_base.vert
-    shader/terrain_base.geom
+    # shader/terrain_base.geom
     shader/terrain_base.frag
-    shader/terrain_water.vert
-    shader/terrain_water.geom
-    shader/terrain_water.frag
-    shader/particle_water.vert
-    shader/particle_water.frag
+    # shader/terrain_water.vert
+    # shader/terrain_water.geom
+    # shader/terrain_water.frag
+    # shader/particle_water.vert
+    # shader/particle_water.frag
     shader/hand.frag
     shader/hand.vert
     shader/phongLighting.frag

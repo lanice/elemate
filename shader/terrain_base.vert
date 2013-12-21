@@ -9,15 +9,18 @@ uniform mat4 modelViewProjection;
 uniform vec2 texScale;
 uniform sampler2D heightField;
 
-// out vec3 viewPos;
+out vec3 viewPos;
+out vec2 texCoord;
 
 void main()
 {
-    float height = texture(heightField, _vertex * texScale).x;
+    texCoord = _vertex * texScale;
+
+    float height = texture(heightField, texCoord).x;
 
     vec3 vertex = vec3(_vertex.x, height, _vertex.y);
     // vec4 viewPos4 = view * vec4(vertex, 1.0);
     // viewPos = viewPos4.xyz / viewPos4.w;
-    gl_PointSize = 10.0;
+    // gl_PointSize = 10.0;
     gl_Position = modelViewProjection * vec4(vertex, 1.0);
 }

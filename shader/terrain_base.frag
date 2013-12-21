@@ -1,6 +1,7 @@
 #version 330
 
 in vec3 viewPos;
+in vec2 texCoord;
 
 uniform vec3 cameraposition;
 
@@ -22,7 +23,7 @@ void main()
 {
     // vec3 normal = vec3(0, 1, 0);
     
-    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    fragColor = vec4(texCoord, 0.0, 1.0);
 
     // fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
 }

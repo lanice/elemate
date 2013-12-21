@@ -86,14 +86,17 @@ public:
 
 protected:
     void initialize();
+    void generateIndices();
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
+    glow::ref_ptr<glow::Buffer> m_indexBuffer;
     glow::ref_ptr<glow::Buffer> m_vbo;
     glow::ref_ptr<glow::Texture> m_heightTex;
     glow::ref_ptr<glow::Program> m_program;
 
     glow::FloatArray * m_heightField;
     glow::Vec2Array * m_vertices;
+    glow::UIntArray * m_indices;
 
     physx::PxRigidStatic * m_pxActor;
     physx::PxShape * m_pxShape;
