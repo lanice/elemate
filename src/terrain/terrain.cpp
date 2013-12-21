@@ -68,6 +68,7 @@ void Terrain::draw(const glowutils::Camera & camera)
     m_vao->bind();
 
     glEnable(GL_PROGRAM_POINT_SIZE);
+    // GL_TRIANGLE_STRIP_ADJACENCY
     m_vao->drawArrays(GL_POINTS, 0, m_vertices->size());
 
     m_vao->unbind();
@@ -114,5 +115,11 @@ void Terrain::initialize()
 
     m_program = new glow::Program();
     m_program->attach(terrainBaseFrag, terrainBaseVert, phongLightingFrag);
+}
+
+physx::PxRigidStatic * Terrain::pxActor() const
+{
+    assert(m_pxActor);
+    return m_pxActor;
 }
 

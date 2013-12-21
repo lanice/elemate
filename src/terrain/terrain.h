@@ -82,6 +82,8 @@ public:
 
     virtual void draw(const glowutils::Camera & camera);
 
+    physx::PxRigidStatic * pxActor() const;
+
 protected:
     void initialize();
 

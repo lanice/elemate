@@ -18,6 +18,7 @@
 #include "navigation.h"
 #include "elements.h"
 #include "terrain/terraingenerator.h"
+#include "terrain/terrain.h"
 
 
 World::World()
@@ -36,10 +37,6 @@ World::World()
 
     initShader();
 
-    // create the plane, just to do it somewhere for debugging
-    /*physx::PxRigidStatic* plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *Elements::pxMaterial("default"));
-    physicsWrapper->scene()->addActor(*plane);*/
-
     TerrainGenerator terrainGen;
     terrainGen.setExtentsInWorld(150, 200);
     terrainGen.applySamplesPerWorldCoord(2.f);
@@ -48,6 +45,8 @@ World::World()
     terrainGen.setMaxBasicHeightVariance(0.05f);
 
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
+
+    physicsWrapper->scene()->addActor(*terrain->pxActor());
 }
 
 
