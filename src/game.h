@@ -5,6 +5,7 @@
 #include <glowutils/Camera.h>
 
 #include "navigation.h"
+#include "manipulator.h"
 
 class World;
 class CyclicTime;
@@ -32,6 +33,7 @@ public:
 
     // EventHandler * eventHandler();
     Navigation * navigation();
+    Manipulator * manipulator();
     glowutils::Camera * camera();
 
 protected:
@@ -48,6 +50,7 @@ protected:
 
     glowutils::Camera m_camera;
     Navigation m_navigation;
+    Manipulator m_manipulator;
 
     bool                        m_interrupted;
 

@@ -27,6 +27,7 @@ m_interrupted(true),
 m_world(std::make_shared<World>()),
 m_camera(),
 m_navigation(window, &m_camera),
+m_manipulator(window, *m_world),
 m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 {
 }
@@ -110,6 +111,11 @@ void Game::end(){
 Navigation * Game::navigation()
 {
     return & m_navigation;
+}
+
+Manipulator * Game::manipulator()
+{
+    return & m_manipulator;
 }
 
 glowutils::Camera * Game::camera()
