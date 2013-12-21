@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+// #include <glm/gtc/quaternion.hpp>
 
 
 static const double c_distanceEyeCenterDefault = 5.;
@@ -37,6 +38,9 @@ void Navigation::update()
 {
     if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
     {
+        if (glfwGetKey(&m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
         if (glfwGetKey(&m_window, GLFW_KEY_W) == GLFW_PRESS)
             move(glm::vec3(0, 0, -1));
         if (glfwGetKey(&m_window, GLFW_KEY_A) == GLFW_PRESS)
@@ -45,22 +49,31 @@ void Navigation::update()
             move(glm::vec3(0, 0, 1));
         if (glfwGetKey(&m_window, GLFW_KEY_D) == GLFW_PRESS)
             move(glm::vec3(1, 0, 0));
+
+        if (glfwGetKey(&m_window, GLFW_KEY_Q) == GLFW_PRESS)
+            rotate(-1.);
+        if (glfwGetKey(&m_window, GLFW_KEY_E) == GLFW_PRESS)
+            rotate(1.);
     }
 }
 
 void Navigation::apply()
 {
     glm::vec3 eye = m_center + m_rotation * glm::vec3(0, m_distanceEyeCenter, 0);
-    glm::vec3 up = /*m_rotation * */glm::vec3(0, 1, 0);
 
     m_camera->setEye(eye);
     m_camera->setCenter(m_center);
-    m_camera->setUp(up);
+    m_camera->setUp(glm::vec3(0, 1, 0));
 }
 
 void Navigation::move(const glm::vec3 & direction)
 {  
     m_center += glm::vec3(direction.x, 0, direction.z);
+}
+
+void Navigation::rotate(const float & angle)
+{
+    m_rotation = glm::angleAxis(angle, glm::vec3(0, 1, 0)) * m_rotation;
 }
 
 const glowutils::Camera * Navigation::camera() const

@@ -20,7 +20,9 @@ public:
 
     void update();
     void apply();
+
     void move(const glm::vec3 & direction);
+    void rotate(const float & degree);
 
     const glowutils::Camera * camera() const;
 
