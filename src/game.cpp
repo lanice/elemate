@@ -113,6 +113,11 @@ EventHandler * Game::eventHandler()
     return & m_eventHandler;
 }
 
+Navigation * Game::navigation()
+{
+    return & m_navigation;
+}
+
 glowutils::Camera * Game::camera()
 {
     return & m_camera;

@@ -35,6 +35,30 @@ void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & cent
     apply();
 }
 
+void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
+{
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+        if (yoffset > 0)
+        {
+            if (m_distanceEyeCenter <= 2.) return;
+            m_distanceEyeCenter -= 0.5;
+        } else {
+            m_distanceEyeCenter += 0.5;
+        }
+    } else {
+        glm::vec3 eye = m_camera->eye();
+        if (yoffset < 0)
+        {
+            if (eye.y <= (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
+            pitch(2.);
+        } else {
+            if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
+            pitch(-2.);
+        }
+    }
+}
+
 void Navigation::update()
 {
     if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
@@ -43,7 +67,7 @@ void Navigation::update()
         float boost = 1.f;
 
         if (glfwGetKey(&m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
-            setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+            { setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); m_distanceEyeCenter = c_distanceEyeCenterDefault; }
         if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             boost = 5.f;
 
@@ -88,6 +112,11 @@ void Navigation::move(glm::vec3 & position, const glm::vec3 & direction)
 void Navigation::rotate(const float & angle)
 {
     m_rotation = glm::angleAxis(angle, glm::vec3(0, 1, 0)) * m_rotation;
+}
+
+void Navigation::pitch(const float & angle)
+{
+    m_rotation = glm::angleAxis(angle, m_rotation * glm::vec3(1, 0, 0)) * m_rotation;
 }
 
 const glowutils::Camera * Navigation::camera() const

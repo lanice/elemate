@@ -18,11 +18,14 @@ public:
 
     void setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up);
 
+    void handleScrollEvent(const double & xoffset, const double & yoffset);
+
     void update();
     void apply();
 
     void move(glm::vec3 & position, const glm::vec3 & direction);
     void rotate(const float & degree);
+    void pitch(const float & degree);
 
     const glowutils::Camera * camera() const;
 
