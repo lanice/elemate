@@ -21,7 +21,6 @@ EventHandler::~EventHandler()
 
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
-    glow::debug("Receiving KeyEvent: key %;, scancode %;, action %;, modifiers %;", key, scancode, action, mods);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         m_game.end();
     }
