@@ -67,8 +67,10 @@ void Navigation::apply()
 }
 
 void Navigation::move(const glm::vec3 & direction)
-{  
-    m_center += glm::vec3(direction.x, 0, direction.z);
+{
+    glm::vec3 playerDirection = m_rotation * direction;
+
+    m_center += glm::vec3(playerDirection.x, 0, playerDirection.z);
 }
 
 void Navigation::rotate(const float & angle)
