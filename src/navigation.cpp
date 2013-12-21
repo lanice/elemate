@@ -10,6 +10,7 @@
 
 
 static const double c_distanceEyeCenterDefault = 5.;
+static const float c_speedScale = 0.05f;
 
 
 Navigation::Navigation(GLFWwindow & window, glowutils::Camera * camera) :
@@ -38,22 +39,33 @@ void Navigation::update()
 {
     if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
     {
+        glm::vec3 newCenter = m_center;
+        float boost = 1.f;
+
         if (glfwGetKey(&m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
             setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            boost = 5.f;
 
         if (glfwGetKey(&m_window, GLFW_KEY_W) == GLFW_PRESS)
-            move(glm::vec3(0, 0, -1));
+            move(newCenter, glm::vec3(0, 0, -1));
         if (glfwGetKey(&m_window, GLFW_KEY_A) == GLFW_PRESS)
-            move(glm::vec3(-1, 0, 0));
+            move(newCenter, glm::vec3(-1, 0, 0));
         if (glfwGetKey(&m_window, GLFW_KEY_S) == GLFW_PRESS)
-            move(glm::vec3(0, 0, 1));
+            move(newCenter, glm::vec3(0, 0, 1));
         if (glfwGetKey(&m_window, GLFW_KEY_D) == GLFW_PRESS)
-            move(glm::vec3(1, 0, 0));
+            move(newCenter, glm::vec3(1, 0, 0));
 
         if (glfwGetKey(&m_window, GLFW_KEY_Q) == GLFW_PRESS)
-            rotate(-1.);
+            rotate(-1.f * boost);
         if (glfwGetKey(&m_window, GLFW_KEY_E) == GLFW_PRESS)
-            rotate(1.);
+            rotate(1.f * boost);
+
+
+        if (newCenter != m_center)
+        {
+            m_center += glm::normalize(newCenter - m_center) * c_speedScale * boost;
+        }
     }
 }
 
@@ -66,11 +78,11 @@ void Navigation::apply()
     m_camera->setUp(glm::vec3(0, 1, 0));
 }
 
-void Navigation::move(const glm::vec3 & direction)
+void Navigation::move(glm::vec3 & position, const glm::vec3 & direction)
 {
     glm::vec3 playerDirection = m_rotation * direction;
 
-    m_center += glm::vec3(playerDirection.x, 0, playerDirection.z);
+    position += glm::vec3(playerDirection.x, 0, playerDirection.z);
 }
 
 void Navigation::rotate(const float & angle)
