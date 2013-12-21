@@ -6,7 +6,6 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/gtc/matrix_transform.hpp>
-// #include <glm/gtc/quaternion.hpp>
 
 
 static const double c_distanceEyeCenterDefault = 5.;
