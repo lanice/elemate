@@ -26,9 +26,7 @@ Navigation::~Navigation()
 
 void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up)
 {
-    // GLM uses a different coordinate system: x is right, y is forward, z is up!
-    // Therefore we have to adjust the vec3s.
-    glm::mat4 lookAtMatrix(glm::lookAt(glm::vec3(eye.x, -eye.z, eye.y), glm::vec3(center.x, -center.z, center.y), glm::vec3(up.x, -up.z, up.y)));
+    glm::mat4 lookAtMatrix(glm::lookAt(eye, center, up));
     m_center = center;
     m_rotation = glm::toQuat(lookAtMatrix);
 
@@ -52,8 +50,8 @@ void Navigation::update()
 
 void Navigation::apply()
 {
-    glm::vec3 eye = m_center + m_rotation * glm::vec3(0, 0, m_distanceEyeCenter);
-    glm::vec3 up = m_rotation * glm::vec3(0, 1, 0);
+    glm::vec3 eye = m_center + m_rotation * glm::vec3(0, m_distanceEyeCenter, 0);
+    glm::vec3 up = /*m_rotation * */glm::vec3(0, 1, 0);
 
     m_camera->setEye(eye);
     m_camera->setCenter(m_center);
@@ -61,9 +59,7 @@ void Navigation::apply()
 }
 
 void Navigation::move(const glm::vec3 & direction)
-{
-    glm::vec3 correctDirection = m_rotation * direction;
-    
+{  
     m_center += glm::vec3(direction.x, 0, direction.z);
 }
 
