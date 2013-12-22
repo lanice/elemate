@@ -24,6 +24,8 @@ Terrain::~Terrain()
     delete m_indices;
 }
 
+const GLuint restartIndex = -1;
+
 void Terrain::draw(const glowutils::Camera & camera)
 {
     // we probably don't want to draw an empty terrain
@@ -38,9 +40,11 @@ void Terrain::draw(const glowutils::Camera & camera)
 
     m_vao->bind();
 
+    glEnable(GL_PRIMITIVE_RESTART);
+
     for (auto & pair : m_tiles) {
         pair.second->bind(camera);
-        glPrimitiveRestartIndex(std::numeric_limits<GLuint>::max());
+        glPrimitiveRestartIndex(restartIndex);
         m_vao->drawElements(GL_TRIANGLE_STRIP, m_indices->size(), GL_UNSIGNED_INT, nullptr);
         //m_vao->drawArrays(GL_TRIANGLE_STRIP_ADJACENCY, 0, m_vertices->size());
 
@@ -99,22 +103,18 @@ void Terrain::generateIndices()
     m_indices = new glow::UIntArray;
 
     // create a quad for all vertices, except for the last row and column (covered by the forelast)
-    // we use 4 indices + primitive restart
-    unsigned numIndices = (settings.rows - 1) * (settings.columns - 1) * 5;
+    unsigned numIndices = (settings.rows - 1) * ((settings.columns) * 2 + 1);
     m_indices->reserve(numIndices);
     for (unsigned int row = 0; row < settings.rows - 1; ++row) {
         const unsigned rowOffset = row * settings.columns;
-        for (unsigned int column = 0; column < settings.columns - 1; ++column) {
+        for (unsigned int column = 0; column < settings.columns; ++column) {
             // "origin" is the left front vertex in a terrain quad
             const unsigned int origin = column + rowOffset;
 
-            // push back triangle strip for the quad + restart index
             m_indices->push_back(origin);
-            m_indices->push_back(origin + 1);
             m_indices->push_back(origin + settings.columns);
-            m_indices->push_back(origin + settings.columns + 1);
-            m_indices->push_back(std::numeric_limits<GLuint>::max());
         }
+        m_indices->push_back(restartIndex);
     }
 
     assert(m_indices->size() == numIndices);

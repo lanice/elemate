@@ -63,8 +63,8 @@ void TerrainTile::initialize()
     assert(m_heightField);
 
     m_heightTex = new glow::Texture(GL_TEXTURE_2D);
-    m_heightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    m_heightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_heightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_heightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_heightTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_heightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_heightTex->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
