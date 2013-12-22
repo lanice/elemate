@@ -22,7 +22,7 @@ EventHandler::~EventHandler()
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        m_game.end();
+        glfwSetWindowShouldClose(&m_window, GL_TRUE);
     }
     if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
         glow::info("Updating shader...");

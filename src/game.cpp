@@ -23,7 +23,6 @@
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
-m_interrupted(true),
 m_world(std::make_shared<World>()),
 m_camera(),
 m_navigation(window, &m_camera),
@@ -35,10 +34,8 @@ m_cyclicTime(new CyclicTime(0.0L, 1.0L))
 Game::~Game()
 {}
 
-void Game::start(){
-    if (isRunning())
-        return;
-
+void Game::start()
+{
     m_world->setNavigation(m_navigation);    
 
     m_world->physicsWrapper->startSimulation();
@@ -46,15 +43,14 @@ void Game::start(){
     loop();
 }
 
-void Game::loop(t_longf delta){
-    m_interrupted = false;
-
+void Game::loop(t_longf delta)
+{
     t_longf nextTime = m_cyclicTime->getNonModf(true);
     t_longf maxTimeDiff = 0.5L;
     int skippedFrames = 1;
     int maxSkippedFrames = 5;
 
-    while (isRunning())
+    while (!glfwWindowShouldClose(&m_window))
     {
         glfwPollEvents();
         // get current time
@@ -95,17 +91,7 @@ void Game::loop(t_longf delta){
         }
     }
 
-    m_interrupted = true;
     m_world->physicsWrapper->stopSimulation();
-}
-
-bool Game::isRunning()const{
-    return !(/*m_window. || */m_interrupted);
-}
-
-void Game::end(){
-    if (isRunning())
-        m_interrupted = true;
 }
 
 Navigation * Game::navigation()

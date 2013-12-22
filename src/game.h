@@ -25,13 +25,7 @@ public:
     /** Starts the Game Loop until end() is called.  */
     void start();
 
-    /** True if the game loop is running. */
-    bool isRunning() const;
 
-    /** Ending the loop. */
-    void end();
-
-    // EventHandler * eventHandler();
     Navigation * navigation();
     Manipulator * manipulator();
     glowutils::Camera * camera();
@@ -52,7 +46,6 @@ protected:
     Navigation m_navigation;
     Manipulator m_manipulator;
 
-    bool                        m_interrupted;
 
 private:
     Game() = delete;
