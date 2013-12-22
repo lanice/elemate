@@ -29,6 +29,9 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
         glowutils::FileRegistry::instance().reloadAll();
         glow::info("Updating shader done.");
     }
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        m_game.togglePause();
+    }
 
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);
     m_game.manipulator()->handleKeyEvent(key, scancode, action, mods);

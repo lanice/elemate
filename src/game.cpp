@@ -27,7 +27,8 @@ m_world(std::make_shared<World>()),
 m_camera(),
 m_navigation(window, &m_camera),
 m_manipulator(window, *m_world),
-m_cyclicTime(new CyclicTime(0.0L, 1.0L))
+m_cyclicTime(new CyclicTime(0.0L, 1.0L)),
+m_paused(false)
 {
 }
 
@@ -64,10 +65,11 @@ void Game::loop(t_longf delta)
         {
             nextTime += delta;
 
-            // update physic
-            if (m_world->physicsWrapper->step())
-                // physx: each simulate() call must be followed by fetchResults()
-                m_world->objectsContainer->updateAllObjects();
+            if (!m_paused)
+                // update physic
+                if (m_world->physicsWrapper->step())
+                    // physx: each simulate() call must be followed by fetchResults()
+                    m_world->objectsContainer->updateAllObjects();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
@@ -92,6 +94,11 @@ void Game::loop(t_longf delta)
     }
 
     m_world->physicsWrapper->stopSimulation();
+}
+
+void Game::togglePause()
+{
+    m_paused = !m_paused;
 }
 
 Navigation * Game::navigation()
