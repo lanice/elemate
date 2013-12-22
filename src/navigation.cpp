@@ -9,6 +9,7 @@
 
 
 static const double c_distanceEyeCenterDefault = 5.;
+static const float c_speedScale = 0.05f;
 
 
 Navigation::Navigation(GLFWwindow & window, glowutils::Camera * camera) :
@@ -26,45 +27,95 @@ Navigation::~Navigation()
 
 void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up)
 {
-    // GLM uses a different coordinate system: x is right, y is forward, z is up!
-    // Therefore we have to adjust the vec3s.
-    glm::mat4 lookAtMatrix(glm::lookAt(glm::vec3(eye.x, -eye.z, eye.y), glm::vec3(center.x, -center.z, center.y), glm::vec3(up.x, -up.z, up.y)));
+    glm::mat4 lookAtMatrix(glm::lookAt(eye, center, up));
     m_center = center;
     m_rotation = glm::toQuat(lookAtMatrix);
 
     apply();
 }
 
+void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
+{
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+        if (yoffset > 0)
+        {
+            if (m_distanceEyeCenter <= 2.) return;
+            m_distanceEyeCenter -= 0.5;
+        } else {
+            m_distanceEyeCenter += 0.5;
+        }
+    } else {
+        glm::vec3 eye = m_camera->eye();
+        if (yoffset < 0)
+        {
+            if (eye.y <= (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
+            pitch(2.);
+        } else {
+            if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
+            pitch(-2.);
+        }
+    }
+}
+
 void Navigation::update()
 {
     if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
     {
+        glm::vec3 newCenter = m_center;
+        float boost = 1.f;
+
+        if (glfwGetKey(&m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            { setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); m_distanceEyeCenter = c_distanceEyeCenterDefault; }
+        if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            boost = 5.f;
+
         if (glfwGetKey(&m_window, GLFW_KEY_W) == GLFW_PRESS)
-            move(glm::vec3(0, 0, -1));
+            move(newCenter, glm::vec3(0, 0, -1));
         if (glfwGetKey(&m_window, GLFW_KEY_A) == GLFW_PRESS)
-            move(glm::vec3(-1, 0, 0));
+            move(newCenter, glm::vec3(-1, 0, 0));
         if (glfwGetKey(&m_window, GLFW_KEY_S) == GLFW_PRESS)
-            move(glm::vec3(0, 0, 1));
+            move(newCenter, glm::vec3(0, 0, 1));
         if (glfwGetKey(&m_window, GLFW_KEY_D) == GLFW_PRESS)
-            move(glm::vec3(1, 0, 0));
+            move(newCenter, glm::vec3(1, 0, 0));
+
+        if (glfwGetKey(&m_window, GLFW_KEY_Q) == GLFW_PRESS)
+            rotate(-1.f * boost);
+        if (glfwGetKey(&m_window, GLFW_KEY_E) == GLFW_PRESS)
+            rotate(1.f * boost);
+
+
+        if (newCenter != m_center)
+        {
+            m_center += glm::normalize(newCenter - m_center) * c_speedScale * boost;
+        }
     }
 }
 
 void Navigation::apply()
 {
-    glm::vec3 eye = m_center + m_rotation * glm::vec3(0, 0, m_distanceEyeCenter);
-    glm::vec3 up = m_rotation * glm::vec3(0, 1, 0);
+    glm::vec3 eye = m_center + m_rotation * glm::vec3(0, m_distanceEyeCenter, 0);
 
     m_camera->setEye(eye);
     m_camera->setCenter(m_center);
-    m_camera->setUp(up);
+    m_camera->setUp(glm::vec3(0, 1, 0));
 }
 
-void Navigation::move(const glm::vec3 & direction)
+void Navigation::move(glm::vec3 & position, const glm::vec3 & direction)
 {
-    glm::vec3 correctDirection = m_rotation * direction;
-    
-    m_center += glm::vec3(direction.x, 0, direction.z);
+    glm::vec3 playerDirection = m_rotation * direction;
+
+    position += glm::vec3(playerDirection.x, 0, playerDirection.z);
+}
+
+void Navigation::rotate(const float & angle)
+{
+    m_rotation = glm::angleAxis(angle, glm::vec3(0, 1, 0)) * m_rotation;
+}
+
+void Navigation::pitch(const float & angle)
+{
+    m_rotation = glm::angleAxis(angle, m_rotation * glm::vec3(1, 0, 0)) * m_rotation;
 }
 
 const glowutils::Camera * Navigation::camera() const

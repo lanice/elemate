@@ -32,6 +32,7 @@ public:
     void end();
 
     EventHandler * eventHandler();
+    Navigation * navigation();
     glowutils::Camera * camera();
 
 protected:

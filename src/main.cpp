@@ -44,9 +44,27 @@ static void keyCallback(GLFWwindow* /*window*/, int key, int scancode, int actio
     game->eventHandler()->handleKeyEvent(key, scancode, action, mods);
 }
 
+static void scrollCallback(GLFWwindow* /*window*/, double xoffset, double yoffset)
+{
+    // As soon as we have a HUD interface in which we scroll,
+    // e.g. to choose an element, add a condition here,
+    // as we don't want the navigation to scroll if we are "navigating" in our HUD.
+
+    // if (HUD_active)
+    // {
+    //     game->hud()->handleScrollEvent(xoffset, yoffset);
+    //     return;
+    // }
+
+    // or something like this...
+
+    game->navigation()->handleScrollEvent(xoffset, yoffset);
+}
+
 void setCallbacks(GLFWwindow * window)
 {
     glfwSetKeyCallback(window, keyCallback);
+    glfwSetScrollCallback(window, scrollCallback);
 }
 
 
