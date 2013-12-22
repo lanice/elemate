@@ -2,13 +2,12 @@
 
 #include <random>
 #include <cstdint>
-#include <iostream>
-#include <iomanip>
 #include <limits>
 #include <ctime>
 #include <functional>
 
 #include <glow/Array.h>
+#include <glow/logging.h>
 
 #include <PxRigidStatic.h>
 #include <PxShape.h>
@@ -19,7 +18,8 @@
 #include <foundation/PxMat44.h>
 
 #include "terrain.h"
-#include "terraintile.h"
+#include "basetile.h"
+#include "watertile.h"
 #include "elements.h"
 
 // Mersenne Twister, preconfigured
@@ -72,8 +72,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         gougeRiverBed(pxBaseHeightFieldSamples);
 
         /** create terrain object and copy PhysX terrain data into it */
-        TerrainTile * baseTile = copyPxHeightFieldToTile(tileIDBase, pxBaseHeightFieldSamples);
-        assert(baseTile);
+        TerrainTile * baseTile = new BaseTile(tileIDBase);
+        copyPxHeightFieldToTile(*baseTile, pxBaseHeightFieldSamples);
         //createOsgTerrainTypeTexture(*baseTile.get(), pxBaseHeightFieldSamples);
         terrain->addTile(tileIDBase, *baseTile);
 
@@ -81,8 +81,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
         PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
         assert(pxWaterHeightFieldSamples);
-        TerrainTile * waterTile = copyPxHeightFieldToTile(tileIDWater, pxWaterHeightFieldSamples);
-        assert(waterTile);
+        TerrainTile * waterTile = new WaterTile(tileIDWater);
+        copyPxHeightFieldToTile(*waterTile, pxWaterHeightFieldSamples);
         terrain->addTile(tileIDWater, *waterTile);
         //waterTile->setBlendingPolicy(osgTerrain::TerrainTile::BlendingPolicy::ENABLE_BLENDING);
 
@@ -159,7 +159,6 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
     };
 
     static const float riverScale = 0.15f;
-    //std::uniform_int_distribution<> rndRiverHoles(0, 4);
 
     for (unsigned row = 0; row < m_settings.rows; ++row)
     {
@@ -174,8 +173,7 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
             if (value > riverScale)
                 value = riverScale;
             value -= riverScale * 0.5f;
-            pxHfSamples[index].height = oldValue + static_cast<PxI16>(std::numeric_limits<PxI16>::max() * (value - 0.5f*maxBasicHeightVariance()));
-
+            pxHfSamples[index].height = static_cast<PxI16>(oldValue + std::numeric_limits<PxI16>::max() * (value - 0.5f*maxBasicHeightVariance()));
             int8_t terrainTypeID;
             if (pxHfSamples[index].height <= 0) {
                 terrainTypeID = 2;  // this is dirt
@@ -221,11 +219,11 @@ PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeigh
     return shape;
 }
 
-TerrainTile * TerrainGenerator::copyPxHeightFieldToTile(const TileID & tileID, const PxHeightFieldSample * pxHeightFieldSamples) const
+void TerrainGenerator::copyPxHeightFieldToTile(TerrainTile & tile, const PxHeightFieldSample * pxHeightFieldSamples) const
 {
     unsigned int numSamples = m_settings.rows * m_settings.columns;
 
-    TerrainTile * tile = new TerrainTile(tileID);
+    const TileID & tileID = tile.m_tileID;
 
     /** create terrain data objects */
 
@@ -235,7 +233,7 @@ TerrainTile * TerrainGenerator::copyPxHeightFieldToTile(const TileID & tileID, c
     // compute position depending on TileID, which sets the row/column positions of the tile
     float minX = m_settings.tileSizeX() * (tileID.x - 0.5f);
     float minZ = m_settings.tileSizeZ() * (tileID.z - 0.5f);
-    tile->m_transform = glm::mat4(
+    tile.m_transform = glm::mat4(
         m_settings.intervalX(), 0, 0, 0,
         0, 1, 0, 0,
         0, 0, m_settings.intervalZ(), 0,
@@ -247,9 +245,7 @@ TerrainTile * TerrainGenerator::copyPxHeightFieldToTile(const TileID & tileID, c
         heightField->at(index) = pxHeightFieldSamples[index].height * heightScale;
     }
 
-    tile->m_heightField = heightField;
-
-    return tile;
+    tile.m_heightField = heightField;
 }
 
 //void TerrainGenerator::createOsgTerrainTypeTexture(osgTerrain::TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const

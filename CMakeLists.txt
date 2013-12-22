@@ -77,6 +77,10 @@ set(SOURCES
     src/terrain/terrainsettings.cpp
     src/terrain/terraintile.h
     src/terrain/terraintile.cpp
+    src/terrain/basetile.h
+    src/terrain/basetile.cpp
+    src/terrain/watertile.h
+    src/terrain/watertile.cpp
     src/terrain/terraingenerator.h
     src/terrain/terraingenerator.cpp
 )

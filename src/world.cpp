@@ -38,8 +38,8 @@ World::World()
     initShader();
 
     TerrainGenerator terrainGen;
-    terrainGen.setExtentsInWorld(150, 200);
-    terrainGen.applySamplesPerWorldCoord(2.f);
+    terrainGen.setExtentsInWorld(50, 50);
+    terrainGen.applySamplesPerWorldCoord(1.f);
     terrainGen.setTilesPerAxis(1, 1);
     terrainGen.setMaxHeight(20.0f);
     terrainGen.setMaxBasicHeightVariance(0.05f);

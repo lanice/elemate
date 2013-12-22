@@ -25,14 +25,15 @@ TerrainTile::~TerrainTile()
 
 void TerrainTile::bind(const glowutils::Camera & camera)
 {
-    if (!m_heightTex || !m_program)
+    if (!m_heightTex)
         initialize();
+    if (!m_program)
+        initializeProgram();
 
     assert(m_terrain);
     assert(m_program);
     assert(m_heightField);
     assert(m_heightTex);
-
 
     glActiveTexture(GL_TEXTURE0 + 0);
     m_heightTex->bind();
@@ -68,13 +69,6 @@ void TerrainTile::initialize()
     m_heightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_heightTex->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    m_heightTex->image2D(0, GL_RED, m_terrain->settings.rows, m_terrain->settings.columns, 0,
+    m_heightTex->image2D(0, GL_R32F, m_terrain->settings.rows, m_terrain->settings.columns, 0,
         GL_RED, GL_FLOAT, m_heightField->rawData());
-
-    glow::ref_ptr<glow::Shader> terrainBaseVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_base.vert");
-    glow::ref_ptr<glow::Shader> terrainBaseFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_base.frag");
-    glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
-
-    m_program = new glow::Program();
-    m_program->attach(terrainBaseFrag, terrainBaseVert, phongLightingFrag);
 }

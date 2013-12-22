@@ -34,7 +34,8 @@ protected:
 
     const Terrain * m_terrain;
 
-    void initialize();
+    virtual void initialize();
+    virtual void initializeProgram() = 0;
 
     glow::ref_ptr<glow::Texture> m_heightTex;
     glow::ref_ptr<glow::Program> m_program;

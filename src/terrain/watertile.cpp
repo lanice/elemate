@@ -1,0 +1,20 @@
+#include "watertile.h"
+
+#include <glow/Shader.h>
+#include <glow/Program.h>
+#include <glowutils/File.h>
+
+WaterTile::WaterTile(const TileID & tileID)
+: TerrainTile(tileID)
+{
+}
+
+void WaterTile::initializeProgram()
+{
+    glow::ref_ptr<glow::Shader> vertex = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_water.vert");
+    glow::ref_ptr<glow::Shader> fragment = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_water.frag");
+    glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
+
+    m_program = new glow::Program();
+    m_program->attach(vertex, fragment, phongLightingFrag);
+}

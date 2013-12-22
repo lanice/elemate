@@ -58,8 +58,6 @@ protected:
     unsigned minTileXID;
     /** lowest tile id in z direction */
     unsigned minTileZID;
-    /** scaling factor to get physx integer height from world float height value */
-    float heightScaleToPhysx;
 
     void initialize();
     void generateVertices();

@@ -59,7 +59,7 @@ private:
     /** adds a river bed to the shape */
     void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
     /** copies the height values to an osg heightfield layer and create a tile with it */
-    TerrainTile * copyPxHeightFieldToTile(const TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    void copyPxHeightFieldToTile(TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     /** adds a texture to the osg tile that the shader uses to dertermine the terrain type at each position */
     //void createTerrainTypeTexture(Terrain & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;
