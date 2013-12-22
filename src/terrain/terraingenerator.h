@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "terrain.h"
+#include "terrainsettings.h"
 
 namespace physx {
     class PxShape;
@@ -11,7 +11,7 @@ namespace physx {
 }
 
 class Terrain;
-struct TerrainSettings;
+class TerrainTile;
 
 /** Generator for height field terrains
   * Creates height field data and wraps it into PhysX and OSG objects. 
@@ -59,7 +59,7 @@ private:
     /** adds a river bed to the shape */
     void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
     /** copies the height values to an osg heightfield layer and create a tile with it */
-    Terrain * copyPxHeightFieldToTile(const TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
+    TerrainTile * copyPxHeightFieldToTile(const TileID & tileID, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     /** adds a texture to the osg tile that the shader uses to dertermine the terrain type at each position */
     //void createTerrainTypeTexture(Terrain & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
     physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;

@@ -1,15 +1,16 @@
 #pragma once
 
+#include <unordered_map>
 #include <memory>
 
 #include <glow/ref_ptr.h>
 #include <glow/Array.h>
 
+#include "terrainsettings.h"
+
 namespace glow {
     class VertexArrayObject;
     class Buffer;
-    class Program;
-    class Texture;
 }
 namespace glowutils {
     class Camera;
@@ -19,92 +20,39 @@ namespace physx {
     class PxRigidStatic;
 }
 
-
-enum class TerrainLevel {
-    BaseLevel,
-    WaterLevel
-};
-extern std::initializer_list<TerrainLevel> TerrainLevels;
-
-struct TileID {
-    TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0)
-    : level(level), x(xID), z(zID)
-    {}
-    TerrainLevel level;
-    unsigned int x;
-    unsigned int z;
-};
-
-struct TerrainSettings {
-    TerrainSettings();
-    float sizeX;
-    float sizeZ;
-    /** maximal possible height value in terrain, as used in the generator */
-    float maxHeight;
-    /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure. */
-    float maxBasicHeightVariance;
-    /** number of sample points along the x axis in one tile */
-    unsigned rows;
-    /** number of sample points along the z axis in one tile */
-    unsigned columns;
-    /** number of tiles along the x axis */
-    unsigned tilesX;
-    /** number of tiles along the z axis */
-    unsigned tilesZ;
-    /** size of one tile along the x axis */
-    inline float tileSizeX() const { assert(tilesX >= 1); return sizeX / tilesX; };
-    /** size of one tile along the z axis */
-    inline float tileSizeZ() const { assert(tilesZ >= 1); return sizeZ / tilesZ; };
-    /** number of sample points along the x axis in the hole terrain */
-    unsigned samplesX() const {
-        assert(((long long) rows*tilesX) < std::numeric_limits<unsigned>::max());
-        return rows * tilesX;
-    }
-    /** number of sample points along the z axis in the hole terrain */
-    unsigned samplesZ() const {
-        assert(((long long) columns*tilesZ) < std::numeric_limits<unsigned>::max());
-        return columns * tilesZ;
-    }
-    /** number of sample columns per x coordinate */
-    inline float samplesPerXCoord() const { assert(sizeX > 0); return rows / sizeX; }
-    /** number of sample rows per z coordinate */
-    inline float samplesPerZCoord() const { assert(sizeZ > 0); return columns / sizeZ; }
-    /** distance between two sample points along the x axis */
-    inline float intervalX() const { assert(rows >= 2); return sizeX / (rows - 1); }
-    /** distance between two sample points along the z axis */
-    inline float intervalZ() const { assert(columns >= 2); return sizeZ / (columns - 1); }
-};
+class TerrainTile;
 
 class Terrain {
 public:
-    Terrain(const TileID & tileID, const TerrainSettings & settings);
+    Terrain(const TerrainSettings & settings);
     virtual ~Terrain();
 
     virtual void draw(const glowutils::Camera & camera);
 
-    physx::PxRigidStatic * pxActor() const;
+    /** PhysX shape containing height field geometry for one tile.
+    * Terrain tile in origin is identified by TileId(0, 0, 0) */
+    physx::PxShape * pxShape(const TileID & tileID) const;
+    /** static PhysX actor for terrain tiles at specified x/z-ID.
+    * Terrain tile in origin is identified by TileId(0, 0, 0) */
+    physx::PxRigidStatic * pxActor(const TileID & tileID) const;
+    /** Map of static PhysX actors. TileID's level is always BaseLevel.
+      * One actor owns the shapes for all terain levels at its x/z-ID. */
+    const std::unordered_map<TileID, physx::PxRigidStatic*> pxActorMap() const;
+    /** @return interpolated height at specific world position */
+    float heightAt(float x, float z) const;
+    /** @return interpolated height at specific world position in a specific terrain level */
+    float heightAt(float x, float z, TerrainLevel level) const;
+    /** Access settings object. This only stores values from creation time and cannot be changed. */
+    const TerrainSettings settings;
+
+    friend class TerrainGenerator;
 
 protected:
-    void initialize();
-    void generateIndices();
+    void addTile(TileID & tileID, TerrainTile & tile);
 
-    glow::ref_ptr<glow::VertexArrayObject> m_vao;
-    glow::ref_ptr<glow::Buffer> m_indexBuffer;
-    glow::ref_ptr<glow::Buffer> m_vbo;
-    glow::ref_ptr<glow::Texture> m_heightTex;
-    glow::ref_ptr<glow::Program> m_program;
-
-    glow::FloatArray * m_heightField;
-    glow::Vec2Array * m_vertices;
-    glow::UIntArray * m_indices;
-
-    physx::PxRigidStatic * m_pxActor;
-    physx::PxShape * m_pxShape;
-
-    const TerrainSettings m_settings;
-    const TileID m_tileID;
-
-    glm::mat4 m_transform;
+    std::unordered_map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
+    /** holds one physx actor per tile x/z-ID. TileId.level is always BaseLevel */
+    std::unordered_map<TileID, physx::PxRigidStatic*> m_pxActors;
 
     /** lowest tile id in x direction */
     unsigned minTileXID;
@@ -113,9 +61,19 @@ protected:
     /** scaling factor to get physx integer height from world float height value */
     float heightScaleToPhysx;
 
-    friend class TerrainGenerator;
+    void initialize();
+    void generateVertices();
+    void generateIndices();
+
+    glow::ref_ptr<glow::VertexArrayObject> m_vao;
+    glow::ref_ptr<glow::Buffer> m_indexBuffer;
+    glow::ref_ptr<glow::Buffer> m_vbo;
+
+    glow::Vec2Array * m_vertices;
+    glow::UIntArray * m_indices;
 
 private:
     Terrain() = delete;
     void operator=(Terrain&) = delete;
+
 };

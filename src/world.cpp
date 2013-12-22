@@ -46,7 +46,8 @@ World::World()
 
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
-    physicsWrapper->scene()->addActor(*terrain->pxActor());
+    for (const auto actor : terrain->pxActorMap())
+        physicsWrapper->scene()->addActor(*actor.second);
 }
 
 

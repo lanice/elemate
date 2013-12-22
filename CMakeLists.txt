@@ -73,6 +73,10 @@ set(SOURCES
     src/navigation.h
     src/terrain/terrain.h
     src/terrain/terrain.cpp
+    src/terrain/terrainsettings.h
+    src/terrain/terrainsettings.cpp
+    src/terrain/terraintile.h
+    src/terrain/terraintile.cpp
     src/terrain/terraingenerator.h
     src/terrain/terraingenerator.cpp
 )
