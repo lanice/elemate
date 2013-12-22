@@ -9,6 +9,19 @@ WaterTile::WaterTile(const TileID & tileID)
 {
 }
 
+void WaterTile::bind(const glowutils::Camera & camera)
+{
+    TerrainTile::bind(camera);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+}
+
+void WaterTile::unbind()
+{
+    glDisable(GL_BLEND);
+}
+
 void WaterTile::initializeProgram()
 {
     glow::ref_ptr<glow::Shader> vertex = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_water.vert");
