@@ -9,13 +9,14 @@
 
 #include "terrain.h"
 
-TerrainTile::TerrainTile(const TileID & tileID)
+TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
-, m_terrain(nullptr)
+, m_terrain(&terrain)
 , m_heightTex(nullptr)
 , m_program(nullptr)
 , m_heightField(nullptr)
 {
+    terrain.registerTile(tileID, *this);
 }
 
 TerrainTile::~TerrainTile()

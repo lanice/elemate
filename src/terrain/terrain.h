@@ -48,7 +48,7 @@ public:
     friend class TerrainGenerator;
 
 protected:
-    void addTile(TileID & tileID, TerrainTile & tile);
+    void registerTile(const TileID & tileID, TerrainTile & tile);
 
     std::unordered_map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
     /** holds one physx actor per tile x/z-ID. TileId.level is always BaseLevel */
@@ -69,6 +69,8 @@ protected:
 
     glow::Vec2Array * m_vertices;
     glow::UIntArray * m_indices;
+
+    friend class TerrainTile;
 
 private:
     Terrain() = delete;

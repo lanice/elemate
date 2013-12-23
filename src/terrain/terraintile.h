@@ -21,7 +21,7 @@ class Terrain;
 
 class TerrainTile {
 public:
-    TerrainTile(const TileID & tileID);
+    TerrainTile(Terrain & terrain, const TileID & tileID);
     virtual ~TerrainTile();
 
     virtual void bind(const glowutils::Camera & camera);
@@ -46,7 +46,6 @@ protected:
 
     glm::mat4 m_transform;
 
-    friend class Terrain;
     friend class TerrainGenerator;
 
 private:

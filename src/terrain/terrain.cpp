@@ -24,7 +24,7 @@ Terrain::~Terrain()
     delete m_indices;
 }
 
-const GLuint restartIndex = -1;
+const GLuint restartIndex = std::numeric_limits<GLuint>::max();
 
 void Terrain::draw(const glowutils::Camera & camera)
 {
@@ -45,7 +45,7 @@ void Terrain::draw(const glowutils::Camera & camera)
     for (auto & pair : m_tiles) {
         pair.second->bind(camera);
         glPrimitiveRestartIndex(restartIndex);
-        m_vao->drawElements(GL_TRIANGLE_STRIP, m_indices->size(), GL_UNSIGNED_INT, nullptr);
+        m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
         //m_vao->drawArrays(GL_TRIANGLE_STRIP_ADJACENCY, 0, m_vertices->size());
 
         pair.second->unbind();
@@ -120,14 +120,11 @@ void Terrain::generateIndices()
     assert(m_indices->size() == numIndices);
 }
 
-void Terrain::addTile(TileID & tileID, TerrainTile & tile)
+void Terrain::registerTile(const TileID & tileID, TerrainTile & tile)
 {
     assert(m_tiles.find(tileID) == m_tiles.end());
 
     m_tiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
-
-    assert(tile.m_terrain == nullptr);
-    tile.m_terrain = this;
 }
 
 const std::unordered_map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const

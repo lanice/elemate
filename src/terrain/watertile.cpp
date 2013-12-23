@@ -4,8 +4,8 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 
-WaterTile::WaterTile(const TileID & tileID)
-: TerrainTile(tileID)
+WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
+: TerrainTile(terrain, tileID)
 {
 }
 
