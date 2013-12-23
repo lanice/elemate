@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 
 
+namespace glowutils { class Camera; }
+
 class World;
 
 class Manipulator
@@ -14,6 +16,8 @@ public:
     virtual ~Manipulator();
 
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
+
+    void updateHandPosition(const glowutils::Camera & camera);
 
 
 protected:

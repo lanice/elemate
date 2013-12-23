@@ -77,6 +77,8 @@ void Game::loop(t_longf delta)
                 m_navigation.update();
                 m_navigation.apply();
 
+                m_manipulator.updateHandPosition(*m_navigation.camera());
+
                 draw();
 
                 glfwSwapBuffers(&m_window);
