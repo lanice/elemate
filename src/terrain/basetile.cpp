@@ -4,9 +4,12 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 
+#include <PxMaterial.h>
 #include <geometry/PxHeightFieldSample.h>
+#include <geometry/PxHeightFieldDesc.h>
 
 #include "terrain.h"
+#include "elements.h"
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID)
 : TerrainTile(terrain, tileID)
@@ -22,7 +25,8 @@ BaseTile::~BaseTile()
 
 void BaseTile::bind(const glowutils::Camera & camera)
 {
-    assert(m_terrainTypeTex);
+    if (!m_terrainTypeTex)
+        createTerrainTypeTexture();
 
     glActiveTexture(GL_TEXTURE0 + 1);
     m_terrainTypeTex->bind();
@@ -47,16 +51,27 @@ void BaseTile::initializeProgram()
     m_program->setUniform("terrainTypeID", 1);
 }
 
-void BaseTile::createTerrainTypeTexture(const physx::PxHeightFieldSample * pxHeightFieldSamples)
+using namespace physx;
+
+void BaseTile::pxSamplesAndMaterials(PxHeightFieldSample * hfSamples, PxReal heightScale, PxMaterial ** &materials)
 {
+    materials = new PxMaterial*[1];
+
+    materials[0] = Elements::pxMaterial("default");
+    //materials[1] = Elements::pxMaterial("default");
+
     unsigned int numSamples = m_terrain->settings.rows * m_terrain->settings.columns;
-
-    m_terrainTypeData = new glow::UByteArray();
-    m_terrainTypeData->resize(numSamples);
-
     for (unsigned index = 0; index < numSamples; ++index) {
-        m_terrainTypeData->at(index) = pxHeightFieldSamples[index].materialIndex0;
+        hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1
+            //= m_terrainTypeData->at(index);
+            = 0;    // no special px materials for now
+        hfSamples[index].height = static_cast<PxI16>(m_heightField->at(index) * heightScale);
     }
+}
+
+void BaseTile::createTerrainTypeTexture()
+{
+    assert(m_terrainTypeData);
 
     m_terrainTypeTex = new glow::Texture(GL_TEXTURE_2D);
     m_terrainTypeTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);

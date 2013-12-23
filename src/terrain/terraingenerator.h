@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <glow/Array.h>
+
 #include "terrainsettings.h"
 
 namespace physx {
@@ -54,13 +56,11 @@ public:
 private:
     TerrainSettings m_settings;
 
-    /** creates physx and osg heightfield data with random height shift */
-    physx::PxHeightFieldSample * createBasicPxHeightField(unsigned char defaultTerrainTypeId, float maxHeightVariance) const;
-    /** adds a river bed to the shape */
-    void gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const;
-    /** copies the height values to an osg heightfield layer and create a tile with it */
-    void copyPxHeightFieldToTile(TerrainTile & tile, const physx::PxHeightFieldSample * pxHeightFieldSamples) const;
-    physx::PxShape * createPxShape(physx::PxRigidStatic & pxActor, const physx::PxHeightFieldSample * hfSamples) const;
+    /** creates heightfield data with random height shift */
+    glow::FloatArray * createBasicHeightField(float maxHeightVariance) const;
+    /** adds a river bed to the heightField
+      * @return terrain type id storage in row major order */
+    glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField) const;
 
     void operator=(TerrainGenerator& ) = delete;
 };

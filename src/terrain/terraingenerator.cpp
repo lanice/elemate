@@ -66,22 +66,23 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
             5. Set some uniforms, valid for the whole terrain. */
 
         TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
-        PxHeightFieldSample * pxBaseHeightFieldSamples = createBasicPxHeightField(0, m_settings.maxBasicHeightVariance);
-        assert(pxBaseHeightFieldSamples);
+        //PxHeightFieldSample * pxBaseHeightFieldSamples
+        glow::FloatArray * baseHeightField = createBasicHeightField(m_settings.maxBasicHeightVariance);
+        assert(baseHeightField);
 
-        gougeRiverBed(pxBaseHeightFieldSamples);
+        glow::UByteArray * baseTerrainTypeIDs = gougeRiverBed(*baseHeightField);
 
-        /** create terrain object and copy PhysX terrain data into it */
+        /** create terrain object and pass terrain data */
         BaseTile * baseTile = new BaseTile(*terrain, tileIDBase);
-        copyPxHeightFieldToTile(*baseTile, pxBaseHeightFieldSamples);
-        baseTile->createTerrainTypeTexture(pxBaseHeightFieldSamples);
+        baseTile->m_heightField = baseHeightField;
+        baseTile->m_terrainTypeData = baseTerrainTypeIDs;
 
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
         TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
-        PxHeightFieldSample * pxWaterHeightFieldSamples = createBasicPxHeightField(1, 0);
-        assert(pxWaterHeightFieldSamples);
+        glow::FloatArray * waterHeightField = createBasicHeightField(0);
+        assert(waterHeightField);
         WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
-        copyPxHeightFieldToTile(*waterTile, pxWaterHeightFieldSamples);
+        waterTile->m_heightField = waterHeightField;
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
@@ -89,16 +90,14 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
         terrain->m_pxActors.emplace(tileIDBase, actor);
 
-        PxShape * pxBaseShape = createPxShape(*actor, pxBaseHeightFieldSamples);
-        baseTile->m_pxShape = pxBaseShape;
-        PxShape * pxWaterShape = createPxShape(*actor, pxWaterHeightFieldSamples);
-        baseTile->m_pxShape = pxWaterShape;
+        baseTile->createPxObjects(*actor);
+        waterTile->createPxObjects(*actor);
     }
 
     return terrain;
 }
 
-PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned char defaultTerrainTypeId, float maxHeightVariance) const
+glow::FloatArray * TerrainGenerator::createBasicHeightField(float maxHeightVariance) const
 {
     assert(m_settings.rows >= 2);
     assert(m_settings.columns >= 2);
@@ -107,9 +106,7 @@ PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned char d
     assert(m_settings.maxHeight >= maxHeightVariance);
 
     float partHeight = maxHeightVariance / m_settings.maxHeight;
-    std::uniform_int_distribution<> uniform_dist(
-        static_cast<int>(std::numeric_limits<PxI16>::min() * partHeight),
-        static_cast<int>(std::numeric_limits<PxI16>::max() * partHeight));
+    std::uniform_real_distribution<> uniform_dist(-partHeight, partHeight);
 
     std::function<int16_t()> getHeight;
     if (maxHeightVariance == 0)
@@ -120,17 +117,16 @@ PxHeightFieldSample * TerrainGenerator::createBasicPxHeightField(unsigned char d
     unsigned int numSamples = m_settings.rows * m_settings.columns;
 
     // physx stores values in row major order (means starting with all values (per column) for the first row)
-    PxHeightFieldSample* hfSamples = new PxHeightFieldSample[numSamples];
+    glow::FloatArray * heightField = new glow::FloatArray;
+    heightField->resize(numSamples);
     for (unsigned i = 0; i < numSamples; ++i) {
-        hfSamples[i].materialIndex0 = defaultTerrainTypeId;    // this clears also the tessellation flag
-        hfSamples[i].materialIndex1 = defaultTerrainTypeId;
-        hfSamples[i].height = getHeight();
+        heightField->at(i) = getHeight();
     }
 
-    return hfSamples;
+    return heightField;
 }
 
-void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) const
+glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightField) const
 {
     std::function<float(float, float)> riverCourse = [](float normRow, float normColumn)
     {
@@ -138,6 +134,11 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
     };
 
     static const float riverScale = 0.15f;
+
+    unsigned int numSamples = m_settings.rows * m_settings.columns;
+
+    glow::UByteArray * terrainTypeIDs = new glow::UByteArray;
+    terrainTypeIDs->resize(numSamples);
 
     for (unsigned row = 0; row < m_settings.rows; ++row)
     {
@@ -147,84 +148,23 @@ void TerrainGenerator::gougeRiverBed(physx::PxHeightFieldSample * pxHfSamples) c
         {
             float normalizedColumn = float(column) / m_settings.columns;
             unsigned index = column + rowOffset;
-            PxI16 oldValue = pxHfSamples[index].height;
             float value = riverCourse(normalizedRow, normalizedColumn);
             if (value > riverScale)
                 value = riverScale;
             value -= riverScale * 0.5f;
-            pxHfSamples[index].height = static_cast<PxI16>(oldValue + std::numeric_limits<PxI16>::max() * (value - 0.5f*maxBasicHeightVariance()));
-            int8_t terrainTypeID;
-            if (pxHfSamples[index].height <= 0) {
-                terrainTypeID = 2;  // this is dirt
+            value -= 0.5f*maxBasicHeightVariance();
+            value *= m_settings.maxHeight;
+            heightField.at(index) += value;
+            if (heightField.at(index) <= 0) {
+                terrainTypeIDs->at(index) = 2;  // this is dirt
             }
             else {
-                terrainTypeID = 0; // this is something else.. bedrock or so
+                terrainTypeIDs->at(index) = 0; // this is something else.. bedrock or so
             }
-            pxHfSamples[index].materialIndex0 = pxHfSamples[index].materialIndex1 = terrainTypeID;
         }
     }
-}
 
-PxShape * TerrainGenerator::createPxShape(PxRigidStatic & pxActor, const PxHeightFieldSample * hfSamples) const
-{
-    PxHeightFieldDesc hfDesc;
-    hfDesc.format = PxHeightFieldFormat::eS16_TM;
-    hfDesc.nbRows = m_settings.rows;
-    hfDesc.nbColumns = m_settings.columns;
-    hfDesc.samples.data = hfSamples;
-    hfDesc.samples.stride = sizeof( PxHeightFieldSample );
-
-    PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
-
-    PxMaterial * mat[4];
-    // this is only for visuals testing: use some physx default material
-    mat[0] = Elements::pxMaterial("default");
-    mat[1] = Elements::pxMaterial("default");
-    mat[2] = Elements::pxMaterial("default");
-    mat[3] = Elements::pxMaterial("default");
-
-    // scale height so that we use the full range of PxI16=short
-    PxReal heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
-    assert(m_settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
-    assert(m_settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
-    assert(heightScale >= PX_MIN_HEIGHTFIELD_Y_SCALE);
-    // create height field geometry and set scale
-    PxHeightFieldGeometry m_pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
-        heightScale, m_settings.intervalX(), m_settings.intervalZ());
-    PxShape * shape = pxActor.createShape(m_pxHfGeometry, mat, 1);
-
-    assert(shape);
-
-    return shape;
-}
-
-void TerrainGenerator::copyPxHeightFieldToTile(TerrainTile & tile, const PxHeightFieldSample * pxHeightFieldSamples) const
-{
-    unsigned int numSamples = m_settings.rows * m_settings.columns;
-
-    const TileID & tileID = tile.m_tileID;
-
-    /** create terrain data objects */
-
-    glow::FloatArray * heightField = new glow::FloatArray();
-    heightField->resize(numSamples);
-
-    // compute position depending on TileID, which sets the row/column positions of the tile
-    float minX = m_settings.tileSizeX() * (tileID.x - 0.5f);
-    float minZ = m_settings.tileSizeZ() * (tileID.z - 0.5f);
-    tile.m_transform = glm::mat4(
-        m_settings.intervalX(), 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, m_settings.intervalZ(), 0,
-        minX, 0, minZ, 1);
-
-    float heightScale = m_settings.maxHeight / std::numeric_limits<PxI16>::max();
-
-    for (unsigned index = 0; index < numSamples; ++index) {
-        heightField->at(index) = pxHeightFieldSamples[index].height * heightScale;
-    }
-
-    tile.m_heightField = heightField;
+    return terrainTypeIDs;
 }
 
 void TerrainGenerator::setExtentsInWorld(float x, float z)

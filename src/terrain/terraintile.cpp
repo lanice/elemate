@@ -7,7 +7,17 @@
 
 #include <glm/glm.hpp>
 
+#include <PxPhysics.h>
+#include <PxRigidStatic.h>
+#include <PxShape.h>
+#include <geometry/PxHeightField.h>
+#include <geometry/PxHeightFieldSample.h>
+#include <geometry/PxHeightFieldDesc.h>
+#include <geometry/PxHeightFieldGeometry.h>
+#include <foundation/PxMat44.h>
+
 #include "terrain.h"
+#include "elements.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
@@ -17,6 +27,15 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 , m_heightField(nullptr)
 {
     terrain.registerTile(tileID, *this);
+
+    // compute position depending on TileID, which sets the row/column positions of the tile
+    float minX = terrain.settings.tileSizeX() * (tileID.x - 0.5f);
+    float minZ = terrain.settings.tileSizeZ() * (tileID.z - 0.5f);
+    m_transform = glm::mat4(
+        terrain.settings.intervalX(), 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, terrain.settings.intervalZ(), 0,
+        minX, 0, minZ, 1);
 }
 
 TerrainTile::~TerrainTile()
@@ -72,4 +91,41 @@ void TerrainTile::initialize()
 
     m_heightTex->image2D(0, GL_R32F, m_terrain->settings.rows, m_terrain->settings.columns, 0,
         GL_RED, GL_FLOAT, m_heightField->rawData());
+}
+
+using namespace physx;
+
+void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
+{
+    const unsigned int numSamples = m_terrain->settings.rows * m_terrain->settings.columns;
+
+    // scale height so that we use the full range of PxI16=short
+    PxReal heightScale = m_terrain->settings.maxHeight / std::numeric_limits<PxI16>::max();
+    assert(heightScale >= PX_MIN_HEIGHTFIELD_Y_SCALE);
+
+    PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
+    PxMaterial ** materials = nullptr;
+
+    pxSamplesAndMaterials(hfSamples, heightScale, materials);
+
+    PxHeightFieldDesc hfDesc;
+    hfDesc.format = PxHeightFieldFormat::eS16_TM;
+    hfDesc.nbRows = m_terrain->settings.rows;
+    hfDesc.nbColumns = m_terrain->settings.columns;
+    hfDesc.samples.data = hfSamples;
+    hfDesc.samples.stride = sizeof(PxHeightFieldSample);
+
+    PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
+
+    assert(m_terrain->settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(m_terrain->settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    // create height field geometry and set scale
+    PxHeightFieldGeometry pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
+        heightScale, m_terrain->settings.intervalX(), m_terrain->settings.intervalZ());
+    m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
+
+    assert(m_pxShape);
+
+    delete[] hfSamples;
+    delete[] materials;
 }

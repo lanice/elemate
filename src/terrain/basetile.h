@@ -2,10 +2,6 @@
 
 #include "terraintile.h"
 
-namespace physx {
-    struct PxHeightFieldSample;
-}
-
 class BaseTile : public TerrainTile
 {
 public:
@@ -17,7 +13,8 @@ public:
 
 protected:
     virtual void initializeProgram() override;
-    virtual void createTerrainTypeTexture(const physx::PxHeightFieldSample * pxHeightFieldSamples);
+    virtual void pxSamplesAndMaterials(physx::PxHeightFieldSample * hfSamples, physx::PxReal heightScale, physx::PxMaterial ** &materials) override;
+    virtual void createTerrainTypeTexture();
 
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::UByteArray * m_terrainTypeData;

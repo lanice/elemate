@@ -3,6 +3,8 @@
 #include <glow/ref_ptr.h>
 #include <glow/Array.h>
 
+#include <foundation/PxSimpleTypes.h>
+
 #include "terrainsettings.h"
 
 namespace glow {
@@ -16,6 +18,9 @@ namespace glowutils {
 }
 namespace physx {
     class PxShape;
+    class PxRigidStatic;
+    struct PxHeightFieldSample;
+    class PxMaterial;
 }
 class Terrain;
 
@@ -36,10 +41,17 @@ protected:
 
     virtual void initialize();
     virtual void initializeProgram() = 0;
+    virtual void createPxObjects(physx::PxRigidStatic & pxActor);
+    virtual void pxSamplesAndMaterials(
+        physx::PxHeightFieldSample * hfSamples,
+        physx::PxReal heightScale,
+        physx::PxMaterial ** &materials) = 0;
 
     glow::ref_ptr<glow::Texture> m_heightTex;
     glow::ref_ptr<glow::Program> m_program;
 
+    /** Contains the height field values in row major order.
+      * Initially created by the TerrainGenerator. */
     glow::FloatArray * m_heightField;
 
     physx::PxShape * m_pxShape;

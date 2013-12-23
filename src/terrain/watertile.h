@@ -12,6 +12,7 @@ public:
 
 protected:
     virtual void initializeProgram() override;
+    virtual void pxSamplesAndMaterials(physx::PxHeightFieldSample * hfSamples, physx::PxReal heightScale, physx::PxMaterial ** &materials) override;
 
 private:
     WaterTile() = delete;
