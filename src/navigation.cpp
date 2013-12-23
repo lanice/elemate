@@ -58,6 +58,15 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
     }
 }
 
+void Navigation::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
+{
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    {
+        setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        m_distanceEyeCenter = c_distanceEyeCenterDefault;
+    }
+}
+
 void Navigation::update()
 {
     if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
@@ -65,8 +74,6 @@ void Navigation::update()
         glm::vec3 newCenter = m_center;
         float boost = 1.f;
 
-        if (glfwGetKey(&m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
-            { setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); m_distanceEyeCenter = c_distanceEyeCenterDefault; }
         if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             boost = 5.f;
 

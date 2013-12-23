@@ -23,22 +23,20 @@
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
-m_interrupted(true),
 m_world(std::make_shared<World>()),
-m_eventHandler(window, *m_world),
 m_camera(),
 m_navigation(window, &m_camera),
-m_cyclicTime(new CyclicTime(0.0L, 1.0L))
+m_manipulator(window, *m_world),
+m_cyclicTime(new CyclicTime(0.0L, 1.0L)),
+m_paused(false)
 {
 }
 
 Game::~Game()
 {}
 
-void Game::start(){
-    if (isRunning())
-        return;
-
+void Game::start()
+{
     m_world->setNavigation(m_navigation);    
 
     m_world->physicsWrapper->startSimulation();
@@ -46,15 +44,14 @@ void Game::start(){
     loop();
 }
 
-void Game::loop(t_longf delta){
-    m_interrupted = false;
-
+void Game::loop(t_longf delta)
+{
     t_longf nextTime = m_cyclicTime->getNonModf(true);
     t_longf maxTimeDiff = 0.5L;
     int skippedFrames = 1;
     int maxSkippedFrames = 5;
 
-    while (isRunning())
+    while (!glfwWindowShouldClose(&m_window))
     {
         glfwPollEvents();
         // get current time
@@ -68,16 +65,19 @@ void Game::loop(t_longf delta){
         {
             nextTime += delta;
 
-            // update physic
-            if (m_world->physicsWrapper->step())
-                // physx: each simulate() call must be followed by fetchResults()
-                m_world->objectsContainer->updateAllObjects();
+            if (!m_paused)
+                // update physic
+                if (m_world->physicsWrapper->step())
+                    // physx: each simulate() call must be followed by fetchResults()
+                    m_world->objectsContainer->updateAllObjects();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
                 m_navigation.update();
                 m_navigation.apply();
+
+                m_manipulator.updateHandPosition(*m_navigation.camera());
 
                 draw();
 
@@ -95,27 +95,22 @@ void Game::loop(t_longf delta){
         }
     }
 
-    m_interrupted = true;
     m_world->physicsWrapper->stopSimulation();
 }
 
-bool Game::isRunning()const{
-    return !(/*m_window. || */m_interrupted);
-}
-
-void Game::end(){
-    if (isRunning())
-        m_interrupted = true;
-}
-
-EventHandler * Game::eventHandler()
+void Game::togglePause()
 {
-    return & m_eventHandler;
+    m_paused = !m_paused;
 }
 
 Navigation * Game::navigation()
 {
     return & m_navigation;
+}
+
+Manipulator * Game::manipulator()
+{
+    return & m_manipulator;
 }
 
 glowutils::Camera * Game::camera()

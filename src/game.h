@@ -4,8 +4,8 @@
 
 #include <glowutils/Camera.h>
 
-#include "eventhandler.h"
 #include "navigation.h"
+#include "manipulator.h"
 
 class World;
 class CyclicTime;
@@ -25,14 +25,12 @@ public:
     /** Starts the Game Loop until end() is called.  */
     void start();
 
-    /** True if the game loop is running. */
-    bool isRunning() const;
+    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
+    void togglePause();
 
-    /** Ending the loop. */
-    void end();
 
-    EventHandler * eventHandler();
     Navigation * navigation();
+    Manipulator * manipulator();
     glowutils::Camera * camera();
 
 protected:
@@ -47,11 +45,12 @@ protected:
     std::shared_ptr<World>      m_world;
     std::shared_ptr<CyclicTime> m_cyclicTime;
 
-    EventHandler m_eventHandler;
     glowutils::Camera m_camera;
     Navigation m_navigation;
+    Manipulator m_manipulator;
 
-    bool                        m_interrupted;
+    bool m_paused;
+
 
 private:
     Game() = delete;
