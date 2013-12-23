@@ -68,7 +68,7 @@ void World::createFountainSound()
     soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { center.x, center.y + 0.5f, center.z });
 }
 
-void World::toogleBackgroundSound(int id){
+void World::toggleBackgroundSound(int id){
     soundManager->togglePause(id);
 }
 

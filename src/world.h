@@ -28,7 +28,7 @@ public:
     void createFountainSound();
 
     /** plays and pauses the background sound **/
-    void toogleBackgroundSound(int id);
+    void toggleBackgroundSound(int id);
 
     void setNavigation(Navigation & navigation);
 

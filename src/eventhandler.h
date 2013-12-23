@@ -5,22 +5,21 @@
 #include <GLFW/glfw3.h>
 
 
-// class Camera;
-
-class World;
+class Game;
 
 class EventHandler
 {
 public:
-    EventHandler(GLFWwindow & window, World & world);
+    EventHandler(GLFWwindow & window, Game & game);
     virtual ~EventHandler();
 
     void handleKeyEvent(int key, int scancode, int action, int mods);
+    void handleScrollEvent(double xoffset, double yoffset);
 
 
 protected:
     GLFWwindow & m_window;
-    World & m_world;
+    Game & m_game;
 
     void operator=(EventHandler&) = delete;
 };

@@ -19,6 +19,7 @@ public:
     void setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up);
 
     void handleScrollEvent(const double & xoffset, const double & yoffset);
+    void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
 
     void update();
     void apply();

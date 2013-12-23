@@ -71,6 +71,8 @@ set(SOURCES
     src/eventhandler.h
     src/navigation.cpp
     src/navigation.h
+    src/manipulator.cpp
+    src/manipulator.h
     src/terrain/terrain.h
     src/terrain/terrain.cpp
     src/terrain/terrainsettings.h
