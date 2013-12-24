@@ -17,9 +17,6 @@
 #include "objectscontainer.h"
 #include "particledrawable.h"
 
-// Classes from CGS chair
-#include "HPICGS/CyclicTime.h"
-
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
@@ -27,7 +24,6 @@ m_world(std::make_shared<World>()),
 m_camera(),
 m_navigation(window, &m_camera),
 m_manipulator(window, *m_world),
-m_cyclicTime(new CyclicTime(0.0L, 1.0L)),
 m_paused(false)
 {
 }
@@ -41,13 +37,15 @@ void Game::start()
 
     m_world->physicsWrapper->startSimulation();
 
+    glfwSetTime(0.0);
+
     loop();
 }
 
-void Game::loop(t_longf delta)
+void Game::loop(double delta)
 {
-    t_longf nextTime = m_cyclicTime->getNonModf(true);
-    t_longf maxTimeDiff = 0.5L;
+    double nextTime = glfwGetTime();
+    double maxTimeDiff = 0.5;
     int skippedFrames = 1;
     int maxSkippedFrames = 5;
 
@@ -55,7 +53,7 @@ void Game::loop(t_longf delta)
     {
         glfwPollEvents();
         // get current time
-        t_longf currTime = m_cyclicTime->getNonModf(true);
+        double currTime = glfwGetTime();
 
         // are we too far far behind? then do drawing step now.
         if ((currTime - nextTime) > maxTimeDiff)
@@ -88,7 +86,7 @@ void Game::loop(t_longf delta)
                 ++skippedFrames;
             }
         } else {
-            t_longf sleepTime = nextTime - currTime;
+            double sleepTime = nextTime - currTime;
 
             if (sleepTime > 0)
                 std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
