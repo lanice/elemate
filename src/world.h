@@ -22,6 +22,10 @@ public:
     World();
     ~World();
 
+    void startSimulation();
+    void stopSimulation();
+    void update();
+
     /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
     void makeStandardBall(const glm::vec3& position);
     void createFountainSound();
@@ -35,12 +39,13 @@ public:
 
     glow::Program * programByName(const std::string & name);
     
-    std::shared_ptr<PhysicsWrapper>             physicsWrapper;
-    std::shared_ptr<ObjectsContainer>           objectsContainer;
     //std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
     std::shared_ptr<SoundManager>               soundManager;
 
 protected:
+    std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
+    std::shared_ptr<ObjectsContainer>           m_objectsContainer;
+
     Navigation * m_navigation;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 

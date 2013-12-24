@@ -20,8 +20,8 @@
 
 
 World::World()
-: physicsWrapper(new PhysicsWrapper())
-, objectsContainer(new ObjectsContainer(physicsWrapper))
+: m_physicsWrapper(new PhysicsWrapper())
+, m_objectsContainer(new ObjectsContainer(m_physicsWrapper))
 , soundManager(new SoundManager())
 , m_navigation(nullptr)
 {    
@@ -37,17 +37,35 @@ World::World()
 
     // create the plane, just to do it somewhere for debugging
     physx::PxRigidStatic* plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *Elements::pxMaterial("default"));
-    physicsWrapper->scene()->addActor(*plane);
+    m_physicsWrapper->scene()->addActor(*plane);
 }
-
 
 World::~World()
 {
 }
 
+
+void World::startSimulation()
+{
+    m_physicsWrapper->startSimulation();
+}
+
+void World::stopSimulation()
+{
+    m_physicsWrapper->stopSimulation();
+}
+
+void World::update()
+{
+    // update physic
+    if (m_physicsWrapper->step())
+        // physx: each simulate() call must be followed by fetchResults()
+        m_objectsContainer->updateAllObjects();
+}
+
 void World::makeStandardBall(const glm::vec3& position)
 {
-    objectsContainer->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    m_objectsContainer->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
 }
 
 void World::createFountainSound()

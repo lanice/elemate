@@ -35,7 +35,7 @@ void Game::start()
 {
     m_world->setNavigation(m_navigation);    
 
-    m_world->physicsWrapper->startSimulation();
+    m_world->startSimulation();
 
     glfwSetTime(0.0);
 
@@ -66,10 +66,7 @@ void Game::loop(double delta)
             nextTime += delta;
 
             if (!m_paused)
-                // update physic
-                if (m_world->physicsWrapper->step())
-                    // physx: each simulate() call must be followed by fetchResults()
-                    m_world->objectsContainer->updateAllObjects();
+                m_world->update();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
@@ -98,7 +95,7 @@ void Game::loop(double delta)
         }
     }
 
-    m_world->physicsWrapper->stopSimulation();
+    m_world->stopSimulation();
 }
 
 void Game::togglePause()
