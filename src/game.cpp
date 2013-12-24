@@ -49,6 +49,8 @@ void Game::loop(double delta)
     int skippedFrames = 1;
     int maxSkippedFrames = 5;
 
+    double drawTime = nextTime;
+
     while (!glfwWindowShouldClose(&m_window))
     {
         glfwPollEvents();
@@ -72,7 +74,10 @@ void Game::loop(double delta)
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
-                m_navigation.update();
+                double deltaTime = glfwGetTime() - drawTime;
+                drawTime = glfwGetTime();
+                
+                m_navigation.update(deltaTime);
                 m_navigation.apply();
 
                 m_manipulator.updateHandPosition(*m_navigation.camera());
