@@ -23,7 +23,9 @@ public:
     World();
     ~World();
 
-    void startSimulation();
+    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
+    void togglePause();
+
     void stopSimulation();
     void update();
 

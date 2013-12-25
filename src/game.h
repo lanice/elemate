@@ -24,9 +24,6 @@ public:
     /** Starts the Game Loop until end() is called.  */
     void start();
 
-    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
-    void togglePause();
-
 
     Navigation * navigation();
     Manipulator * manipulator();
@@ -46,8 +43,6 @@ protected:
     glowutils::Camera m_camera;
     Navigation m_navigation;
     Manipulator m_manipulator;
-
-    bool m_paused;
 
 
 private:

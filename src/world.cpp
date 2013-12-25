@@ -47,9 +47,9 @@ World::~World()
 }
 
 
-void World::startSimulation()
+void World::togglePause()
 {
-    m_time->start();
+    m_time->isRunning() ? m_time->pause() : m_time->start();
 }
 
 void World::stopSimulation()

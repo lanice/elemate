@@ -21,8 +21,7 @@ m_window(window),
 m_world(std::make_shared<World>()),
 m_camera(),
 m_navigation(window, &m_camera),
-m_manipulator(window, *m_world),
-m_paused(false)
+m_manipulator(window, *m_world)
 {
 }
 
@@ -35,7 +34,7 @@ void Game::start()
 
     m_world->setNavigation(m_navigation);    
 
-    m_world->startSimulation();
+    m_world->togglePause();
 
     loop();
 }
@@ -63,8 +62,7 @@ void Game::loop(double delta)
         {
             nextTime += delta;
 
-            if (!m_paused)
-                m_world->update();
+            m_world->update();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
@@ -94,11 +92,6 @@ void Game::loop(double delta)
     }
 
     m_world->stopSimulation();
-}
-
-void Game::togglePause()
-{
-    m_paused = !m_paused;
 }
 
 Navigation * Game::navigation()
