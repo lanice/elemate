@@ -15,6 +15,7 @@ class Navigation;
 class PhysicsWrapper;
 class ObjectsContainer;
 class SoundManager;
+class CyclicTime;
 
 class World {
 public:
@@ -47,6 +48,7 @@ protected:
     std::shared_ptr<ObjectsContainer>           m_objectsContainer;
 
     Navigation * m_navigation;
+    CyclicTime * m_time;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
     void setUpLighting(glow::Program & program);

@@ -12,6 +12,7 @@
 
 #include <glm/glm.hpp>
 
+#include "hpicgs/CyclicTime.h"
 #include "physicswrapper.h"
 #include "objectscontainer.h"
 #include "soundmanager.h"
@@ -24,6 +25,7 @@ World::World()
 , m_objectsContainer(new ObjectsContainer(m_physicsWrapper))
 , soundManager(new SoundManager())
 , m_navigation(nullptr)
+, m_time(new CyclicTime(0.0L, 1.0L))
 {    
     // Create two non-3D channels (paino and rain)
     //initialise as paused
@@ -47,20 +49,24 @@ World::~World()
 
 void World::startSimulation()
 {
-    m_physicsWrapper->startSimulation();
+    m_time->start();
 }
 
 void World::stopSimulation()
 {
-    m_physicsWrapper->stopSimulation();
+    m_time->stop(true);
 }
 
 void World::update()
 {
+    // Retrieve time delta from last physicstep to now.
+    long double delta = m_time->getNonModf();
+    delta = m_time->getNonModf(true) - delta;
+
     // update physic
-    if (m_physicsWrapper->step())
+    if (m_physicsWrapper->step(delta))
         // physx: each simulate() call must be followed by fetchResults()
-        m_objectsContainer->updateAllObjects();
+        m_objectsContainer->updateAllObjects(delta);
 }
 
 void World::makeStandardBall(const glm::vec3& position)

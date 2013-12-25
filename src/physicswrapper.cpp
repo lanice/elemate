@@ -3,7 +3,6 @@
 #include <iostream>
 #include <cassert>
 
-#include "hpicgs/CyclicTime.h"
 #include "elements.h"
 
 
@@ -13,21 +12,16 @@ PhysicsWrapper::PhysicsWrapper():
         m_foundation(nullptr),
         m_physics(nullptr),
         //m_profile_zone_manager(nullptr),
-        m_cyclic_time(nullptr),
         m_scene(nullptr),
-        m_cpu_dispatcher(nullptr),
-        m_elapsed(0.0f)
+        m_cpu_dispatcher(nullptr)
 {
     initializePhysics();
     initializeScene();
-    initializeTime();
     Elements::initialize(*m_physics);
 }
 
 PhysicsWrapper::~PhysicsWrapper(){
     shutdown();
-    if (m_cyclic_time)
-        delete m_cyclic_time;
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -86,30 +80,18 @@ void PhysicsWrapper::initializeScene(){
         fatalError("createScene failed!");
 }
 
-void PhysicsWrapper::initializeTime(){
-    if (m_cyclic_time)
-        delete m_cyclic_time;
-    m_cyclic_time = new CyclicTime(0.0L, 1.0L);
-}
-
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
     scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
 
-bool PhysicsWrapper::step(){
-    static t_longf last_time = m_cyclic_time->getNonModf();
-    
-    t_longf now = m_cyclic_time->getNonModf(true);
+bool PhysicsWrapper::step(long double delta){
 
-    m_elapsed = now - last_time;
-
-    if (m_elapsed == 0)
+    if (delta == 0)
         return false;
     
-    last_time = now;
-
-    m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
+    m_scene->simulate(static_cast<physx::PxReal>(delta));
     m_scene->fetchResults();
+    
     return true;
 }
 
@@ -132,28 +114,19 @@ void PhysicsWrapper::fatalError(std::string error_message){
     exit(1);
 }
 
-void PhysicsWrapper::startSimulation(){
-    m_cyclic_time->start();
-}
+// void PhysicsWrapper::startSimulation(){
+//     m_cyclic_time->start();
+// }
 
-void PhysicsWrapper::pauseSimulation(){
-    m_cyclic_time->pause();
-}
+// void PhysicsWrapper::pauseSimulation(){
+//     m_cyclic_time->pause();
+// }
 
-void PhysicsWrapper::stopSimulation(){
-    m_cyclic_time->stop();
-    m_cyclic_time->reset();
-}
+// void PhysicsWrapper::stopSimulation(){
+//     m_cyclic_time->stop();
+//     m_cyclic_time->reset();
+// }
 
-
-t_longf PhysicsWrapper::elapsedTime()const{
-    return m_elapsed;
-}
-
-t_longf PhysicsWrapper::currentTime() const
-{
-    return m_cyclic_time->getNonModf();
-}
 
 physx::PxScene* PhysicsWrapper::scene()const{
     return m_scene;

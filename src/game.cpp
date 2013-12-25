@@ -13,8 +13,6 @@
 
 // Own Classes
 #include "world.h"
-#include "physicswrapper.h"
-#include "objectscontainer.h"
 #include "particledrawable.h"
 
 
@@ -33,11 +31,11 @@ Game::~Game()
 
 void Game::start()
 {
+    glfwSetTime(0.0);
+
     m_world->setNavigation(m_navigation);    
 
     m_world->startSimulation();
-
-    glfwSetTime(0.0);
 
     loop();
 }
