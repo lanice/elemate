@@ -165,9 +165,7 @@ void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_descrip
 }
 
 void PhysicsWrapper::fatalError(std::string error_message){
-    std::cerr << "PhysX Error occured:" << std::endl;
-    std::cerr << error_message << std::endl;
-    std::cerr << "Press Enter to close the Application" << std::endl;
+    glow::fatal("PhysX Error occured:\n%;\nPress Enter to close the Application.", error_message);
     std::string temp;
     std::getline(std::cin, temp);
     exit(1);
