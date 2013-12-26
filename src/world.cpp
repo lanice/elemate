@@ -59,7 +59,7 @@ void World::stopSimulation()
 
 void World::update()
 {
-    // Retrieve time delta from last physicstep to now.
+    // Retrieve time delta from last World update to now.
     long double delta = m_time->getNonModf();
     delta = m_time->getNonModf(true) - delta;
 
