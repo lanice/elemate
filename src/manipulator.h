@@ -19,6 +19,8 @@ public:
 
     void updateHandPosition(const glowutils::Camera & camera);
 
+    void updateListener(const glowutils::Camera & camera);
+
 
 protected:
     GLFWwindow & m_window;

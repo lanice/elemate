@@ -22,8 +22,10 @@ Manipulator::~Manipulator()
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
+    {
         m_world.makeStandardBall(glm::vec3(0, 1, 0));
-
+        m_world.createFountainSound(glm::vec3(0, 1, 0));
+    }
     if (key == GLFW_KEY_I && action == GLFW_PRESS)
         m_world.toggleBackgroundSound(0);
     if (key == GLFW_KEY_O && action == GLFW_PRESS)
@@ -58,4 +60,12 @@ void Manipulator::updateHandPosition(const glowutils::Camera & camera)
 
     // Final step, as soon as we have the Hand.
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
+
+    updateListener(camera);
+}
+
+void Manipulator::updateListener(const glowutils::Camera & camera){
+    glm::vec3 forward = glm::normalize(camera.eye() - camera.center());
+
+    m_world.updateListener(camera.eye(), forward, camera.up());
 }
