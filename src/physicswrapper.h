@@ -25,12 +25,12 @@ public:
 
     /** Proceeds with simulation for amount of given time delta. */
     bool step(long double delta);
-
-    /** Creates a ball. */
-    void makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
     
     /** Creates a particle emitter */
     void makeParticleEmitter(const physx::PxVec3& position);
+
+    /** Creates a ball. */
+    void makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
 
 
     /** The returned object is initialized. */
@@ -39,6 +39,9 @@ public:
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
     static const int            kNumberOfThreads;
+
+    /** Sets and rotates every object according to its representation in PhysX. */
+    void updateAllObjects(long double delta);
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();
@@ -51,9 +54,6 @@ protected:
 
     /** Prints an error message and end the application after pressing enter. */
     void fatalError(std::string error_message);
-
-    /** Sets and rotates every object according to its representation in PhysX. */
-    void updateAllObjects(long double delta);
     
 
 
