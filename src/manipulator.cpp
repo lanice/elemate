@@ -60,12 +60,4 @@ void Manipulator::updateHandPosition(const glowutils::Camera & camera)
 
     // Final step, as soon as we have the Hand.
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
-
-    updateListener(camera);
-}
-
-void Manipulator::updateListener(const glowutils::Camera & camera){
-    glm::vec3 forward = glm::normalize(camera.eye() - camera.center());
-
-    m_world.updateListener(camera.eye(), forward, camera.up());
 }

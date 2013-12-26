@@ -79,12 +79,13 @@ void World::toggleBackgroundSound(int id){
     m_soundManager->togglePause(id);
 }
 
-void World::updateListener(glm::vec3 eye, glm::vec3 forward, glm::vec3 up){
-
+void World::updateListener(){
+    auto cam = m_navigation->camera();
+    glm::vec3 forward = glm::normalize(cam->eye() - cam->center());
     m_soundManager->setListenerAttributes(
-    { eye.x, eye.y, eye.z },
+    { cam->eye().x, cam->eye().y, cam->eye().z },
     { forward.x, forward.y, forward.z },
-    { up.x, up.y, up.z }
+    { cam->up().x, cam->up().y, cam->up().z }
     );
     m_soundManager->update();
 }

@@ -35,7 +35,7 @@ public:
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
 
-    void updateListener(glm::vec3 eye, glm::vec3 forward, glm::vec3 up);
+    void updateListener();
 
     void setNavigation(Navigation & navigation);
 
