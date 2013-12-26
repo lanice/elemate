@@ -74,6 +74,7 @@ void Game::loop(double delta)
                 m_navigation.apply();
 
                 m_manipulator.updateHandPosition(*m_navigation.camera());
+                m_world->updateListener();
 
                 draw();
 

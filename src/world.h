@@ -30,10 +30,12 @@ public:
 
     /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
     void makeStandardBall(const glm::vec3& position);
-    void createFountainSound();
+    void createFountainSound(const glm::vec3& position);
 
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
+
+    void updateListener();
 
     void setNavigation(Navigation & navigation);
 
@@ -42,7 +44,7 @@ public:
     glow::Program * programByName(const std::string & name);
     
     //std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
-    std::shared_ptr<SoundManager>               soundManager;
+    std::shared_ptr<SoundManager>               m_soundManager;
 
 protected:
     std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
