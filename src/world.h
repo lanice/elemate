@@ -1,22 +1,20 @@
-
 #pragma once
 
-#include <memory> //shared_ptr
-#include <map>
-#include <osg/ref_ptr>
+#include <glow/ref_ptr.h>
 
-class PhysicsWrapper;
-class ObjectsContainer;
-class GodNavigation;
-class ElemateHeightFieldTerrain;
-class SoundManager;
-namespace osg {
-    class Group;
+#include <memory>
+#include <unordered_map>
+
+#include <glm/glm.hpp>
+
+namespace glow {
     class Program;
-    class MatrixTransform;
-    class Matrixd;
-    class Vec3d;
 }
+
+class Navigation;
+class PhysicsWrapper;
+class SoundManager;
+class CyclicTime;
 
 class World {
 public:
@@ -24,33 +22,37 @@ public:
     World();
     ~World();
 
-    osg::Group* root();
-    osg::Matrixd getCameraTransform();
+    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
+    void togglePause();
 
-    /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
-    void makeStandardBall(const osg::Vec3d& position);
-    void createFountainSound();
+    void stopSimulation();
+    void update();
+
+    /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
+    void makeStandardBall(const glm::vec3& position);
+    void createFountainSound(const glm::vec3& position);
 
     /** plays and pauses the background sound **/
-    void toogleBackgroundSound(int id);
+    void toggleBackgroundSound(int id);
 
-    void setNavigation(GodNavigation * navigation);
-    void reloadShader();
-    void setUniforms(long double globalTime);
+    void updateListener(glm::vec3 eye, glm::vec3 forward, glm::vec3 up);
 
-    osg::Program * programByName(const std::string & name) const;
+    void setNavigation(Navigation & navigation);
+
+    void setUniforms(glow::Program & program);
+
+    glow::Program * programByName(const std::string & name);
     
-    std::shared_ptr<PhysicsWrapper>             physics_wrapper;
-    std::shared_ptr<ObjectsContainer>           objects_container;
-    std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
-    std::shared_ptr<SoundManager>  soundManager;
+    //std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+    std::shared_ptr<SoundManager>               m_soundManager;
 
 protected:
-    osg::ref_ptr<GodNavigation>                         m_navigation;
-    osg::ref_ptr<osg::Group>                            m_root;
-    osg::ref_ptr<osg::Group>                            m_particleGroup;
-    std::map<std::string, osg::ref_ptr<osg::Program>>   m_programsByName;
+    std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
 
-    void setUpLighting();
+    Navigation * m_navigation;
+    CyclicTime * m_time;
+    std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
+
+    void setUpLighting(glow::Program & program);
     void initShader();
 };

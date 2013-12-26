@@ -1,16 +1,9 @@
 #pragma once
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)  \
-    TypeName(const TypeName&);              \
-    void operator=(const TypeName&);
+#include <memory>
 
 #include "PxPhysicsAPI.h"
-#include <osg/ref_ptr> // ref_ptr
 
-namespace osg {
-    class MatrixTransform;
-    class Group;
-}
 class ParticleDrawable;
 
 typedef long double t_longf;
@@ -18,8 +11,7 @@ typedef long double t_longf;
 class ParticleEmitter
 {
 public:
-    ParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
-    ParticleEmitter(osg::ref_ptr<osg::Group> parent);
+    ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
     void initializeParticleSystem();
@@ -34,9 +26,7 @@ protected:
     static const physx::PxU32	kMaxParticleCount = 100;
     static const physx::PxU32   kDefaultEmittedParticles = 1;
 
-    osg::ref_ptr<osg::Group> m_parent;
-    osg::ref_ptr<osg::Group> m_particle_group;
-    osg::ref_ptr<ParticleDrawable> m_particle_drawable;
+    std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
     physx::PxVec3            m_position;
     bool                     m_emitting;
@@ -46,8 +36,8 @@ protected:
     size_t                   youngest_particle_index;
 
 
-    physx::PxParticleSystem*            m_particle_system; // or fluid?
+    physx::PxParticleSystem*            m_particleSystem; // or fluid?
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(ParticleEmitter);
+    void operator=(ParticleEmitter&) = delete;
 };

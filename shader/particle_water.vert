@@ -1,8 +1,11 @@
 #version 330
 
-uniform mat4 osg_ModelViewProjectionMatrix;
+layout(location = 0)in vec3 vertex;
+
+uniform mat4 viewProjection;
 
 void main()
 {
-    gl_Position = osg_ModelViewProjectionMatrix * vec4(gl_Vertex.xyz, 1.0);
+    gl_PointSize = 10.0;
+    gl_Position = viewProjection * vec4(vertex, 1.0);
 }

@@ -19,7 +19,7 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
 
 
 set(WIN32_COMPILE_FLAGS
-    "/nologo /Zc:wchar_t /Zc:forScope /GF /GR /Zi /fp:precise /MP /arch:AVX /W4"
+    "/nologo /Zc:wchar_t /Zc:forScope /GF /GR /Zi /fp:precise /MP /arch:AVX /W4 /wd4201 /wd4251"
     # nologo       -> no logo
     # Zc:wchar_t   -> treat wchar_t as built-in type: yes
     # Zc:forScope  -> force conformance in for loop scope: Yes
@@ -35,6 +35,8 @@ set(WIN32_COMPILE_FLAGS
     # wd           -> disable warning
     #   wd4100     -> 'identifier' : unreferenced formal parameter
     #   wd4127     -> conditional expression is constant
+    #   wd4201     -> nonstandard extension used : nameless struct/union
+    #   wd4251     -> 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     #   wd4267     -> 'var' : conversion from 'size_t' to 'type', possible loss of data
     # W4           -> warning level 4
     # WX           -> treat warnings as errors
