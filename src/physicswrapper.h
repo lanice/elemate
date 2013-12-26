@@ -38,9 +38,6 @@ protected:
     /** Specifies special scene description.  */
     void customizeSceneDescription(physx::PxSceneDesc&);
 
-    /** Releases all members to free their instances. Automatically called in Destructor. */
-    void shutdown();
-
     /** Prints an error message and end the application after pressing enter. */
     void fatalError(std::string error_message);
 

@@ -21,7 +21,13 @@ PhysicsWrapper::PhysicsWrapper():
 }
 
 PhysicsWrapper::~PhysicsWrapper(){
-    shutdown();
+    m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
+    m_scene->release();
+    m_physics->release();
+    m_cpu_dispatcher->release();
+    //Please don't forget if you activate this feature.
+    //m_profile_zone_manager->release();
+    m_foundation->release();
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -95,16 +101,6 @@ bool PhysicsWrapper::step(long double delta){
     return true;
 }
 
-void PhysicsWrapper::shutdown(){
-    m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
-    m_scene->release();
-    m_physics->release();
-    m_cpu_dispatcher->release();
-    //Please don't forget if you activate this feature.
-    //m_profile_zone_manager->release();
-    m_foundation->release();
-}
-
 void PhysicsWrapper::fatalError(std::string error_message){
     std::cerr << "PhysX Error occured:" << std::endl;
     std::cerr << error_message << std::endl;
@@ -113,20 +109,6 @@ void PhysicsWrapper::fatalError(std::string error_message){
     std::getline(std::cin, temp);
     exit(1);
 }
-
-// void PhysicsWrapper::startSimulation(){
-//     m_cyclic_time->start();
-// }
-
-// void PhysicsWrapper::pauseSimulation(){
-//     m_cyclic_time->pause();
-// }
-
-// void PhysicsWrapper::stopSimulation(){
-//     m_cyclic_time->stop();
-//     m_cyclic_time->reset();
-// }
-
 
 physx::PxScene* PhysicsWrapper::scene()const{
     return m_scene;
