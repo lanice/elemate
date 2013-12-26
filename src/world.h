@@ -13,7 +13,6 @@ namespace glow {
 
 class Navigation;
 class PhysicsWrapper;
-class ObjectsContainer;
 class SoundManager;
 class CyclicTime;
 
@@ -29,7 +28,7 @@ public:
     void stopSimulation();
     void update();
 
-    /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
+    /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
     void makeStandardBall(const glm::vec3& position);
     void createFountainSound();
 
@@ -47,7 +46,6 @@ public:
 
 protected:
     std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
-    std::shared_ptr<ObjectsContainer>           m_objectsContainer;
 
     Navigation * m_navigation;
     CyclicTime * m_time;

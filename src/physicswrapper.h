@@ -2,8 +2,13 @@
 
 
 #include <string>
+#include <unordered_map>
+#include <memory>
 
 #include "PxPhysicsAPI.h"
+
+class ParticleEmitter;
+class ParticleDrawable;
 
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -20,6 +25,12 @@ public:
 
     /** Proceeds with simulation for amount of given time delta. */
     bool step(long double delta);
+
+    /** Creates a ball. */
+    void makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
+    
+    /** Creates a particle emitter */
+    void makeParticleEmitter(const physx::PxVec3& position);
 
 
     /** The returned object is initialized. */
@@ -41,12 +52,20 @@ protected:
     /** Prints an error message and end the application after pressing enter. */
     void fatalError(std::string error_message);
 
+    /** Sets and rotates every object according to its representation in PhysX. */
+    void updateAllObjects(long double delta);
+    
+
+
     physx::PxFoundation*                            m_foundation;
     //physx::PxProfileZoneManager*                  m_profile_zone_manager; ///< currently disabled.
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
     physx::PxCooking*                               m_cooking;
+
+    //std::list<DrawableAndPhysXObject>   m_objects;
+    std::list<ParticleEmitter*>         m_emitters;
 
 private:
     void operator=(PhysicsWrapper&) = delete;

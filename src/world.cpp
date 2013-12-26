@@ -14,7 +14,6 @@
 
 #include "hpicgs/CyclicTime.h"
 #include "physicswrapper.h"
-#include "objectscontainer.h"
 #include "soundmanager.h"
 #include "navigation.h"
 #include "elements.h"
@@ -22,7 +21,6 @@
 
 World::World()
 : m_physicsWrapper(new PhysicsWrapper())
-, m_objectsContainer(new ObjectsContainer(m_physicsWrapper))
 , soundManager(new SoundManager())
 , m_navigation(nullptr)
 , m_time(new CyclicTime(0.0L, 1.0L))
@@ -64,14 +62,12 @@ void World::update()
     delta = m_time->getNonModf(true) - delta;
 
     // update physic
-    if (m_physicsWrapper->step(delta))
-        // physx: each simulate() call must be followed by fetchResults()
-        m_objectsContainer->updateAllObjects(delta);
+    m_physicsWrapper->step(delta);
 }
 
 void World::makeStandardBall(const glm::vec3& position)
 {
-    m_objectsContainer->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    m_physicsWrapper->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
 }
 
 void World::createFountainSound()
