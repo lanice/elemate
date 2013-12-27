@@ -12,7 +12,8 @@
 Manipulator::Manipulator(GLFWwindow & window, World & world) :
 m_window(window),
 m_world(world),
-m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain))
+m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
+m_grabbedTerrain(false)
 {
 }
 
@@ -20,10 +21,14 @@ Manipulator::~Manipulator()
 {
 }
 
+// until we have a hand
+static glm::vec3 handPosition;
 
-void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
+void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
 {
-    if (key == GLFW_KEY_F && action == GLFW_PRESS)
+    bool altPressed = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
+
+    if (key == GLFW_KEY_F && action == GLFW_PRESS && !altPressed)
     {
         m_world.makeStandardBall(glm::vec3(0, 1, 0));
         m_world.createFountainSound(glm::vec3(0, 1, 0));
@@ -35,6 +40,26 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
         m_world.togglePause();
+
+
+    // Terrain interaction
+    if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS) {
+        m_grabbedTerrain = true;
+        m_terrainInteractor->heightGrab(handPosition.x, handPosition.z, TerrainLevel::BaseLevel);
+    }
+    if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE) {
+        m_grabbedTerrain = false;
+    }
+
+    if (key == GLFW_KEY_R && action == GLFW_PRESS && altPressed) {
+        m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, TerrainLevel::BaseLevel, 0.1f);
+        m_terrainInteractor->heightGrab(handPosition.x, handPosition.z, TerrainLevel::BaseLevel);
+    }
+
+    if (key == GLFW_KEY_F && action == GLFW_PRESS && altPressed) {
+        m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, TerrainLevel::BaseLevel, -0.1f);
+        m_terrainInteractor->heightGrab(handPosition.x, handPosition.z, TerrainLevel::BaseLevel);
+    }
 }
 
 void Manipulator::updateHandPosition(const glowutils::Camera & camera)
@@ -62,4 +87,10 @@ void Manipulator::updateHandPosition(const glowutils::Camera & camera)
 
     // Final step, as soon as we have the Hand.
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
+
+    // until than:
+    handPosition = pos;
+
+    if (m_grabbedTerrain)
+        m_terrainInteractor->heightPull(pos.x, pos.z);
 }
