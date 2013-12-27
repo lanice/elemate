@@ -1,8 +1,5 @@
 #include "terrain.h"
 
-#define NOMINMAX
-#include <Windows.h>
-
 #include <limits>
 
 #include <glow/VertexArrayObject.h>
