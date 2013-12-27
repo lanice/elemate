@@ -11,6 +11,7 @@
 namespace glow {
     class VertexArrayObject;
     class Buffer;
+    class Program;
 }
 namespace glowutils {
     class Camera;
@@ -44,6 +45,9 @@ public:
     float heightAt(float x, float z, TerrainLevel level) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
+
+    /** sets the lighting uniforms for terrain tile shaders - copy paste from World */
+    void setUpLighting(glow::Program & program) const;
 
     friend class TerrainGenerator;
 

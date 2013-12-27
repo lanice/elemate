@@ -159,7 +159,7 @@ glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightFiel
                 terrainTypeIDs->at(index) = 2;  // this is dirt
             }
             else {
-                terrainTypeIDs->at(index) = 0; // this is something else.. bedrock or so
+                terrainTypeIDs->at(index) = 1;  // this is bedrock
             }
         }
     }

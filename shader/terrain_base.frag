@@ -13,6 +13,7 @@ uniform mat4 light1;
 uniform mat4 light2;
 
 uniform mat4 material_bedrock;
+uniform mat4 material_dirt;
 
 uniform usamplerBuffer terrainTypeID;
 
@@ -23,24 +24,21 @@ layout(location = 0)out vec4 fragColor;
 
 void main()
 {
-    // vec3 normal = vec3(0, 1, 0);
+    vec3 normal = vec3(0, 1, 0);
     
     uint id = texelFetch(terrainTypeID, texIndex).x;
     
     switch(id) {
-    case 0u: fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    case 0u:
+        fragColor = vec4(1.0, 0.0, 0.0, 1.0);
         return;
-    case 1u: fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+    case 1u:
+        fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
         return;
-    case 2u: fragColor = vec4(0.0, 0.0, 1.0, 1.0);
-        return;
-    case 3u: fragColor = vec4(1.0, 1.0, 0.0, 1.0);
+    case 2u:
+        fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_dirt);
         return;
     default:
         discard;
     }
- 
-    // fragColor = vec4(texCoord, 0.0, 1.0);
-
-    // fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
 }

@@ -35,7 +35,7 @@ void BaseTile::bind(const glowutils::Camera & camera)
 
     TerrainTile::bind(camera);
 
-    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain->settings.rows, m_terrain->settings.columns));
+    Elements::setAllUniforms(*m_program);
 }
 
 void BaseTile::unbind()

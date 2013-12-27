@@ -61,6 +61,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     m_heightTex->bind();
 
     m_program->use();
+    m_program->setUniform("cameraposition", camera.eye());
     glm::mat4 modelView = camera.view() * m_transform;
     m_program->setUniform("modelView", modelView);
     glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;
@@ -68,6 +69,8 @@ void TerrainTile::bind(const glowutils::Camera & camera)
 
     m_program->setUniform("heightField", 0);
     m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain->settings.rows, m_terrain->settings.columns));
+
+    m_terrain->setUpLighting(*m_program);
 
 }
 
