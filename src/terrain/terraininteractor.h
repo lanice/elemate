@@ -11,6 +11,9 @@ class TerrainInteractor {
 public:
     TerrainInteractor(std::shared_ptr<Terrain>& terrain);
 
+    float heightAt(float worldX, float worldZ) const;
+    float heightAt(float worldX, float worldZ, TerrainLevel level) const;
+
     /** Set the terrain height at a specified world position to value.
       * @param value the new height value. Will be clamped to terrain's [-maxHeight, maxHeight] if necessary.
       * @return the new applied height value or zero if the position is out of range. */
@@ -36,4 +39,6 @@ private:
 
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;
+
+    TerrainInteractor() = delete;
 };

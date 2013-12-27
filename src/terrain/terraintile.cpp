@@ -170,8 +170,8 @@ void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
 float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
 {
     double row_r, column_r;
-    double rowFraction = std::modf(normX, &row_r);
-    double columnFraction = std::modf(normZ, &column_r);
+    double rowFraction = std::modf(normX * m_terrain->settings.rows, &row_r);
+    double columnFraction = std::modf(normZ * m_terrain->settings.columns, &column_r);
 
     unsigned int row = static_cast<unsigned int>(row_r);
     unsigned int column = static_cast<unsigned int>(column_r);
@@ -189,7 +189,7 @@ float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
     }
 
     mix = (rowFraction) * (1.0 - columnFraction);
-    if (mix > 0.0 && heightAt(row, column + 1, gridValue))
+    if (mix > 0.0 && heightAt(row + 1, column, gridValue))
     {
         value += gridValue * mix;
         div += mix;

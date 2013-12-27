@@ -22,6 +22,16 @@ TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain)
 {
 }
 
+float TerrainInteractor::heightAt(float worldX, float worldZ) const
+{
+    return m_terrain->heightAt(worldX, worldZ);
+}
+
+float TerrainInteractor::heightAt(float worldX, float worldZ, TerrainLevel level) const
+{
+    return m_terrain->heightAt(worldX, worldZ, level);
+}
+
 float TerrainInteractor::setHeight(float worldX, float worldZ, TerrainLevel level, float value)
 {
     std::shared_ptr<TerrainTile> tile = nullptr;

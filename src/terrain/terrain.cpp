@@ -174,15 +174,18 @@ float Terrain::heightAt(float x, float z) const
 float Terrain::heightAt(float x, float z, TerrainLevel level) const
 {
     std::shared_ptr<TerrainTile> tile = nullptr;
-    unsigned int row = 0;
-    unsigned int column = 0;
-    if (!worldToTileRowColumn(x, z, level, tile, row, column))
+    float normX = 0.0f;
+    float normZ = 0.0f;
+    TileID tileID;
+    if (!normalizePosition(x, z, tileID, normX, normZ))
         return 0.0f;
 
-    return tile->interpolatedHeightAt(x, z);
+    tileID.level = level;
+
+    return m_tiles.at(tileID)->interpolatedHeightAt(normX, normZ);
 }
 
-bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & physxRow, unsigned int & physxColumn) const
+bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const
 {
     // only implemented for 1 tile
     assert(settings.tilesX == 1 && settings.tilesZ == 1);
@@ -190,8 +193,8 @@ bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::sh
     float normZ = (z / settings.sizeZ + 0.5f);
     bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
 
-    physxRow = static_cast<int>(normX * settings.rows) % settings.rows;
-    physxColumn = static_cast<int>(normZ * settings.columns) % settings.columns;
+    row = static_cast<int>(normX * settings.rows) % settings.rows;
+    column = static_cast<int>(normZ * settings.columns) % settings.columns;
 
     TileID tileID(level, 0, 0);
 
