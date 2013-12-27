@@ -17,6 +17,7 @@ protected:
     virtual void createTerrainTypeTexture();
 
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
+    glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;
     glow::UByteArray * m_terrainTypeData;
 
     friend class TerrainGenerator;

@@ -1,6 +1,7 @@
 #include "terraintile.h"
 
 #include <glow/Texture.h>
+#include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
@@ -23,6 +24,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
 , m_terrain(&terrain)
 , m_heightTex(nullptr)
+, m_heightBuffer(nullptr)
 , m_program(nullptr)
 , m_heightField(nullptr)
 {
@@ -59,15 +61,13 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     m_heightTex->bind();
 
     m_program->use();
-    const auto & viewProjection = camera.viewProjection();
-    m_program->setUniform("viewProjection", viewProjection);
-    glm::mat4 modelViewProjection = viewProjection * m_transform;
+    glm::mat4 modelView = camera.view() * m_transform;
+    m_program->setUniform("modelView", modelView);
+    glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
 
     m_program->setUniform("heightField", 0);
-    m_program->setUniform("texScale", glm::vec2(
-        1.0f / m_terrain->settings.rows,
-        1.0f / m_terrain->settings.columns));
+    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain->settings.rows, m_terrain->settings.columns));
 
 }
 
@@ -82,15 +82,13 @@ void TerrainTile::initialize()
 {
     assert(m_heightField);
 
-    m_heightTex = new glow::Texture(GL_TEXTURE_2D);
-    m_heightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_heightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_heightTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_heightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_heightTex->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
+    m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
 
-    m_heightTex->image2D(0, GL_R32F, m_terrain->settings.rows, m_terrain->settings.columns, 0,
-        GL_RED, GL_FLOAT, m_heightField->rawData());
+    m_heightTex = new glow::Texture(GL_TEXTURE_BUFFER);
+    m_heightTex->bind();
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
+    m_heightBuffer->unbind();
 }
 
 using namespace physx;

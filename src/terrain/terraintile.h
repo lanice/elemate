@@ -9,9 +9,9 @@
 
 namespace glow {
     class VertexArrayObject;
-    class Buffer;
     class Program;
     class Texture;
+    class Buffer;
 }
 namespace glowutils {
     class Camera;
@@ -48,6 +48,7 @@ protected:
         physx::PxMaterial ** &materials) = 0;
 
     glow::ref_ptr<glow::Texture> m_heightTex;
+    glow::ref_ptr<glow::Buffer>  m_heightBuffer;
     glow::ref_ptr<glow::Program> m_program;
 
     /** Contains the height field values in row major order.

@@ -1,7 +1,7 @@
-#version 330
+#version 330 core
 
 in vec3 viewPos;
-in vec2 texCoord;
+in int texIndex;
 
 uniform vec3 cameraposition;
 
@@ -14,7 +14,7 @@ uniform mat4 light2;
 
 uniform mat4 material_bedrock;
 
-uniform usampler2D terrainTypeID;
+uniform usamplerBuffer terrainTypeID;
 
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3 lightdir2, mat4 light1, mat4 light2, vec4 lightambientglobal, mat4 material);
 
@@ -25,7 +25,7 @@ void main()
 {
     // vec3 normal = vec3(0, 1, 0);
     
-    uint id = texture(terrainTypeID, texCoord).x;
+    uint id = texelFetch(terrainTypeID, texIndex).x;
     
     switch(id) {
     case 0u: fragColor = vec4(1.0, 0.0, 0.0, 1.0);

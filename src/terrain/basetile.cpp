@@ -2,6 +2,7 @@
 
 #include <glow/Shader.h>
 #include <glow/Program.h>
+#include <glow/Buffer.h>
 #include <glowutils/File.h>
 
 #include <PxMaterial.h>
@@ -14,6 +15,7 @@
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID)
 : TerrainTile(terrain, tileID)
 , m_terrainTypeTex(nullptr)
+, m_terrainTypeBuffer(nullptr)
 , m_terrainTypeData(nullptr)
 {
 }
@@ -32,6 +34,8 @@ void BaseTile::bind(const glowutils::Camera & camera)
     m_terrainTypeTex->bind();
 
     TerrainTile::bind(camera);
+
+    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain->settings.rows, m_terrain->settings.columns));
 }
 
 void BaseTile::unbind()
@@ -73,13 +77,11 @@ void BaseTile::createTerrainTypeTexture()
 {
     assert(m_terrainTypeData);
 
-    m_terrainTypeTex = new glow::Texture(GL_TEXTURE_2D);
-    m_terrainTypeTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_terrainTypeTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_terrainTypeTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_terrainTypeTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_terrainTypeTex->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    m_terrainTypeBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
+    m_terrainTypeBuffer->setData(*m_terrainTypeData, GL_DYNAMIC_DRAW);
 
-    m_terrainTypeTex->image2D(0, GL_R8UI, m_terrain->settings.rows, m_terrain->settings.columns, 0, GL_RED_INTEGER,
-        GL_UNSIGNED_BYTE, m_terrainTypeData->rawData());
+    m_terrainTypeTex = new glow::Texture(GL_TEXTURE_BUFFER);
+    m_terrainTypeTex->bind();
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, m_terrainTypeBuffer->id());
+    m_terrainTypeTex->unbind();
 }
