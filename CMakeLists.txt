@@ -93,7 +93,7 @@ set(SHADER
     shader/flush.vert
     shader/flush.frag
     shader/terrain_base.vert
-    # shader/terrain_base.geom
+    shader/terrain_base.geo
     shader/terrain_base.frag
     # shader/terrain_water.vert
     # shader/terrain_water.geom
@@ -105,7 +105,7 @@ set(SHADER
     shader/phongLighting.frag
 )
 
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geom$"
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
 
 set( GLOW_DIR $ENV{GLOW_DIR} )

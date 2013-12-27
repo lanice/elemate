@@ -62,6 +62,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
 
     m_program->use();
     m_program->setUniform("cameraposition", camera.eye());
+    m_program->setUniform("modelTransform", m_transform);
     glm::mat4 modelView = camera.view() * m_transform;
     m_program->setUniform("modelView", modelView);
     glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;

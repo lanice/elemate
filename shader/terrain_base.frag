@@ -1,7 +1,8 @@
 #version 330 core
 
-in vec3 viewPos;
-in int texIndex;
+in vec3 g_normal;
+in vec3 g_viewPos;
+in int g_texIndex;
 
 uniform vec3 cameraposition;
 
@@ -23,20 +24,18 @@ vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3
 layout(location = 0)out vec4 fragColor;
 
 void main()
-{
-    vec3 normal = vec3(0, 1, 0);
-    
-    uint id = texelFetch(terrainTypeID, texIndex).x;
+{    
+    uint id = texelFetch(terrainTypeID, g_texIndex).x;
     
     switch(id) {
     case 0u:
         fragColor = vec4(1.0, 0.0, 0.0, 1.0);
         return;
     case 1u:
-        fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
+        fragColor = phongLighting(g_normal, g_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
         return;
     case 2u:
-        fragColor = phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_dirt);
+        fragColor = phongLighting(g_normal, g_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_dirt);
         return;
     default:
         discard;

@@ -104,6 +104,7 @@ void Terrain::generateIndices()
     m_indices = new glow::UIntArray;
 
     // create a quad for all vertices, except for the last row and column (covered by the forelast)
+    // see PxHeightFieldDesc::samples documentation: "...(nbRows - 1) * (nbColumns - 1) cells are actually used."
     unsigned numIndices = (settings.rows - 1) * ((settings.columns) * 2 + 1);
     m_indices->reserve(numIndices);
     for (unsigned int row = 0; row < settings.rows - 1; ++row) {
