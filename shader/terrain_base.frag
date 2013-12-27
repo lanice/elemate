@@ -2,7 +2,7 @@
 
 in vec3 g_normal;
 in vec3 g_viewPos;
-in int g_texIndex;
+flat in int g_texIndex;
 
 uniform vec3 cameraposition;
 
@@ -24,7 +24,7 @@ vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3
 layout(location = 0)out vec4 fragColor;
 
 void main()
-{    
+{
     uint id = texelFetch(terrainTypeID, g_texIndex).x;
     
     switch(id) {

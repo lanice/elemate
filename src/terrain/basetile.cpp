@@ -34,8 +34,6 @@ void BaseTile::bind(const glowutils::Camera & camera)
     m_terrainTypeTex->bind();
 
     TerrainTile::bind(camera);
-
-    Elements::setAllUniforms(*m_program);
 }
 
 void BaseTile::unbind()
@@ -54,6 +52,8 @@ void BaseTile::initializeProgram()
     m_program->attach(vertex, geo, fragment, phongLightingFrag);
 
     m_program->setUniform("terrainTypeID", 1);
+
+    Elements::setAllUniforms(*m_program);
 }
 
 using namespace physx;

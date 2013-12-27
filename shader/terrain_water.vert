@@ -1,26 +1,25 @@
-#version 330
+#version 330 core
 
 layout(location = 0)in vec2 _vertex;
 
-// uniform mat4 view;
-uniform mat4 viewProjection;
+out vec3 v_viewPos;
+
+uniform mat4 modelView;
 uniform mat4 modelViewProjection;
 
-uniform vec2 texScale;
-uniform sampler2D heightField;
+uniform samplerBuffer heightField;
 
-out vec3 viewPos;
-out vec2 texCoord;
+uniform uvec2 tileRowsColumns;
 
 void main()
 {
-    texCoord = _vertex * texScale;
-
-    float height = texture(heightField, texCoord).x;
-
-    vec3 vertex = vec3(_vertex.x, height, _vertex.y);
-    // vec4 viewPos4 = view * vec4(vertex, 1.0);
-    // viewPos = viewPos4.xyz / viewPos4.w;
-    // gl_PointSize = 10.0;
-    gl_Position = modelViewProjection * vec4(vertex, 1.0);
+    int texIndex = int(_vertex.t) + int(_vertex.s) * int(tileRowsColumns.t);
+    float height = texelFetch(heightField, texIndex).x;
+    
+    vec4 vertex = vec4(_vertex.x, height, _vertex.y, 1.0);
+    
+    vec4 viewPos4 = modelView * vertex;
+    v_viewPos = viewPos4.xyz / viewPos4.w;
+    
+    gl_Position = modelViewProjection * vertex;
 }

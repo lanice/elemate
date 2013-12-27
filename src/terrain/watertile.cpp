@@ -37,6 +37,8 @@ void WaterTile::initializeProgram()
 
     m_program = new glow::Program();
     m_program->attach(vertex, fragment, phongLightingFrag);
+
+    Elements::setAllUniforms(*m_program);
 }
 
 using namespace physx;
