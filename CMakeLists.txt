@@ -46,10 +46,6 @@ set(SOURCES
     src/world.h
     # src/hand.cpp
     # src/hand.h
-    # src/godmanipulator.cpp
-    # src/godmanipulator.h
-    # src/godnavigation.cpp
-    # src/godnavigation.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h
@@ -97,11 +93,6 @@ set(SHADER
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
-    # shader/terrain_water.vert
-    # shader/terrain_water.geom
-    # shader/terrain_water.frag
-    # shader/particle_water.vert
-    # shader/particle_water.frag
     shader/terrain_water.vert
     shader/terrain_water.frag
     shader/hand.frag
