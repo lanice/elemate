@@ -29,12 +29,12 @@ ObjectsContainer::~ObjectsContainer()
 //        );
 //}
 
-void ObjectsContainer::updateAllObjects()
+void ObjectsContainer::updateAllObjects(long double delta)
 {
     m_physics_wrapper->scene()->fetchResults(true);
 
     for (auto& emitter : m_emitters){
-        emitter->update(m_physics_wrapper->elapsedTime());
+        emitter->update(delta);
     }
 
     physx::PxMat44 new_pos;

@@ -13,8 +13,8 @@ namespace glow {
 
 class Navigation;
 class PhysicsWrapper;
-class ObjectsContainer;
 class SoundManager;
+class CyclicTime;
 class Terrain;
 
 class World {
@@ -23,12 +23,20 @@ public:
     World();
     ~World();
 
-    /** Throws a standard osg ball into the game using the ObjectsContainer with correct physics.*/
+    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
+    void togglePause();
+
+    void stopSimulation();
+    void update();
+
+    /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
     void makeStandardBall(const glm::vec3& position);
-    void createFountainSound();
+    void createFountainSound(const glm::vec3& position);
 
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
+
+    void updateListener();
 
     void setNavigation(Navigation & navigation);
 
@@ -36,13 +44,14 @@ public:
 
     glow::Program * programByName(const std::string & name);
     
-    std::shared_ptr<PhysicsWrapper>   physicsWrapper;
-    std::shared_ptr<ObjectsContainer> objectsContainer;
-    std::shared_ptr<Terrain>          terrain;
-    std::shared_ptr<SoundManager>     soundManager;
+    std::shared_ptr<Terrain>                    terrain;
+    std::shared_ptr<SoundManager>               m_soundManager;
 
 protected:
+    std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
+
     Navigation * m_navigation;
+    CyclicTime * m_time;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
     void setUpLighting(glow::Program & program);

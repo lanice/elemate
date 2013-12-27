@@ -70,6 +70,7 @@ int main()
 
     glfwMakeContextCurrent(window);
     setCallbacks(window);
+    glfwSwapInterval(1);
 
     checkVersion();
 

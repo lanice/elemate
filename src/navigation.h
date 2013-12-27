@@ -21,7 +21,7 @@ public:
     void handleScrollEvent(const double & xoffset, const double & yoffset);
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
 
-    void update();
+    void update(double delta);
     void apply();
 
     void move(glm::vec3 & position, const glm::vec3 & direction);

@@ -50,8 +50,6 @@ set(SOURCES
     # src/godmanipulator.h
     # src/godnavigation.cpp
     # src/godnavigation.h
-    src/objectscontainer.cpp
-    src/objectscontainer.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h

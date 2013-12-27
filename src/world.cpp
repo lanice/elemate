@@ -12,8 +12,8 @@
 
 #include <glm/glm.hpp>
 
+#include "hpicgs/CyclicTime.h"
 #include "physicswrapper.h"
-#include "objectscontainer.h"
 #include "soundmanager.h"
 #include "navigation.h"
 #include "elements.h"
@@ -22,18 +22,18 @@
 
 
 World::World()
-: physicsWrapper(new PhysicsWrapper())
-, objectsContainer(new ObjectsContainer(physicsWrapper))
-, soundManager(new SoundManager())
+: m_physicsWrapper(new PhysicsWrapper())
+, m_soundManager(new SoundManager())
 , m_navigation(nullptr)
+, m_time(new CyclicTime(0.0L, 1.0L))
 {    
     // Create two non-3D channels (paino and rain)
     //initialise as paused
-    soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
-    soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
+    m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
+    m_soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
     //set volume (make quieter)
-    soundManager->setVolume(0, 0.14f);
-    soundManager->setVolume(1, 0.3f);
+    m_soundManager->setVolume(0, 0.14f);
+    m_soundManager->setVolume(1, 0.3f);
 
     initShader();
 
@@ -47,29 +47,57 @@ World::World()
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
     for (const auto actor : terrain->pxActorMap())
-        physicsWrapper->scene()->addActor(*actor.second);
+        m_physicsWrapper->scene()->addActor(*actor.second);
 }
-
 
 World::~World()
 {
 }
 
-void World::makeStandardBall(const glm::vec3& position)
+
+void World::togglePause()
 {
-    objectsContainer->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    m_time->isRunning() ? m_time->pause() : m_time->start();
 }
 
-void World::createFountainSound()
+void World::stopSimulation()
 {
-    /*osg::Vec3d eyed, upd, centerd;
-    m_navigation->getTransformation(eyed, centerd, upd);*/
-    glm::vec3 center(0, 0, 0);
-    soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { center.x, center.y + 0.5f, center.z });
+    m_time->stop(true);
+}
+
+void World::update()
+{
+    // Retrieve time delta from last World update to now.
+    long double delta = m_time->getNonModf();
+    delta = m_time->getNonModf(true) - delta;
+
+    // update physic
+    m_physicsWrapper->step(delta);
+}
+
+void World::makeStandardBall(const glm::vec3& position)
+{
+    m_physicsWrapper->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+}
+
+void World::createFountainSound(const glm::vec3& position)
+{
+    m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { position.x, position.y, position.z });
 }
 
 void World::toggleBackgroundSound(int id){
-    soundManager->togglePause(id);
+    m_soundManager->togglePause(id);
+}
+
+void World::updateListener(){
+    auto cam = m_navigation->camera();
+    glm::vec3 forward = glm::normalize(cam->eye() - cam->center());
+    m_soundManager->setListenerAttributes(
+    { cam->eye().x, cam->eye().y, cam->eye().z },
+    { forward.x, forward.y, forward.z },
+    { cam->up().x, cam->up().y, cam->up().z }
+    );
+    m_soundManager->update();
 }
 
 void World::setNavigation(Navigation & navigation)
