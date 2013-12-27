@@ -8,7 +8,6 @@
 #include "manipulator.h"
 
 class World;
-class CyclicTime;
 namespace std {         class thread; }
 struct GLFWwindow;
 
@@ -25,9 +24,6 @@ public:
     /** Starts the Game Loop until end() is called.  */
     void start();
 
-    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
-    void togglePause();
-
 
     Navigation * navigation();
     Manipulator * manipulator();
@@ -40,16 +36,13 @@ protected:
 
     /** The Game's loop containing drawing and triggering physics is placed right here.
       * @param delta specifies the time between each logic update in seconds.*/
-    void loop(long double delta = 1.0L/100.0L);
+    void loop(double delta = 1.0/100.0);
 
     std::shared_ptr<World>      m_world;
-    std::shared_ptr<CyclicTime> m_cyclicTime;
 
     glowutils::Camera m_camera;
     Navigation m_navigation;
     Manipulator m_manipulator;
-
-    bool m_paused;
 
 
 private:

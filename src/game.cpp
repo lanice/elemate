@@ -13,12 +13,7 @@
 
 // Own Classes
 #include "world.h"
-#include "physicswrapper.h"
-#include "objectscontainer.h"
 #include "particledrawable.h"
-
-// Classes from CGS chair
-#include "HPICGS/CyclicTime.h"
 
 
 Game::Game(GLFWwindow & window) :
@@ -26,9 +21,7 @@ m_window(window),
 m_world(std::make_shared<World>()),
 m_camera(),
 m_navigation(window, &m_camera),
-m_manipulator(window, *m_world),
-m_cyclicTime(new CyclicTime(0.0L, 1.0L)),
-m_paused(false)
+m_manipulator(window, *m_world)
 {
 }
 
@@ -37,25 +30,29 @@ Game::~Game()
 
 void Game::start()
 {
+    glfwSetTime(0.0);
+
     m_world->setNavigation(m_navigation);    
 
-    m_world->physicsWrapper->startSimulation();
+    m_world->togglePause();
 
     loop();
 }
 
-void Game::loop(t_longf delta)
+void Game::loop(double delta)
 {
-    t_longf nextTime = m_cyclicTime->getNonModf(true);
-    t_longf maxTimeDiff = 0.5L;
+    double nextTime = glfwGetTime();
+    double maxTimeDiff = 0.5;
     int skippedFrames = 1;
     int maxSkippedFrames = 5;
+
+    double drawTime = nextTime;
 
     while (!glfwWindowShouldClose(&m_window))
     {
         glfwPollEvents();
         // get current time
-        t_longf currTime = m_cyclicTime->getNonModf(true);
+        double currTime = glfwGetTime();
 
         // are we too far far behind? then do drawing step now.
         if ((currTime - nextTime) > maxTimeDiff)
@@ -65,19 +62,19 @@ void Game::loop(t_longf delta)
         {
             nextTime += delta;
 
-            if (!m_paused)
-                // update physic
-                if (m_world->physicsWrapper->step())
-                    // physx: each simulate() call must be followed by fetchResults()
-                    m_world->objectsContainer->updateAllObjects();
+            m_world->update();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
             {
-                m_navigation.update();
+                double deltaTime = glfwGetTime() - drawTime;
+                drawTime = glfwGetTime();
+                
+                m_navigation.update(deltaTime);
                 m_navigation.apply();
 
                 m_manipulator.updateHandPosition(*m_navigation.camera());
+                m_world->updateListener();
 
                 draw();
 
@@ -87,20 +84,16 @@ void Game::loop(t_longf delta)
             } else {
                 ++skippedFrames;
             }
-        } else {
-            t_longf sleepTime = nextTime - currTime;
+        // Don't need to sleep because vsync is on.
+        // } else {
+        //     double sleepTime = nextTime - currTime;
 
-            if (sleepTime > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
+        //     if (sleepTime > 0)
+        //         std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
         }
     }
 
-    m_world->physicsWrapper->stopSimulation();
-}
-
-void Game::togglePause()
-{
-    m_paused = !m_paused;
+    m_world->stopSimulation();
 }
 
 Navigation * Game::navigation()

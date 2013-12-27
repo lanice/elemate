@@ -22,8 +22,8 @@ public:
     ObjectsContainer(std::shared_ptr<PhysicsWrapper> physics_wrapper);
     ~ObjectsContainer();
 
-    /** Sets and rotates every OSG object according to its representation in PhysX. */
-    void updateAllObjects();
+    /** Sets and rotates every object according to its representation in PhysX. */
+    void updateAllObjects(long double delta);
 
     /** Creates a ball. */
     void makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);

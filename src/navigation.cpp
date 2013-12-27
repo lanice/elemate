@@ -67,8 +67,9 @@ void Navigation::handleKeyEvent(const int & key, const int & /*scancode*/, const
     }
 }
 
-void Navigation::update()
+void Navigation::update(double delta)
 {
+    float frameScale = static_cast<float>(delta * 100);
     if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
     {
         glm::vec3 newCenter = m_center;
@@ -87,14 +88,14 @@ void Navigation::update()
             move(newCenter, glm::vec3(1, 0, 0));
 
         if (glfwGetKey(&m_window, GLFW_KEY_Q) == GLFW_PRESS)
-            rotate(-1.f * boost);
+            rotate(-1.f * boost * frameScale);
         if (glfwGetKey(&m_window, GLFW_KEY_E) == GLFW_PRESS)
-            rotate(1.f * boost);
+            rotate(1.f * boost * frameScale);
 
 
         if (newCenter != m_center)
         {
-            m_center += glm::normalize(newCenter - m_center) * c_speedScale * boost;
+            m_center += glm::normalize(newCenter - m_center) * c_speedScale * boost * frameScale;
         }
     }
 }
