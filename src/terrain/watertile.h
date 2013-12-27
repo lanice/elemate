@@ -14,6 +14,8 @@ protected:
     virtual void initializeProgram() override;
     virtual void pxSamplesAndMaterials(physx::PxHeightFieldSample * hfSamples, physx::PxReal heightScale, physx::PxMaterial ** &materials) override;
 
+    virtual physx::PxU8 pxMaterialIndexAt(unsigned int row, unsigned int column) const override;
+
 private:
     WaterTile() = delete;
     void operator()(WaterTile&) = delete;

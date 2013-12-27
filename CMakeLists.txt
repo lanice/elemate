@@ -75,6 +75,8 @@ set(SOURCES
     src/terrain/terrain.cpp
     src/terrain/terrainsettings.h
     src/terrain/terrainsettings.cpp
+    src/terrain/terraininteractor.h
+    src/terrain/terraininteractor.cpp
     src/terrain/terraintile.h
     src/terrain/terraintile.cpp
     src/terrain/basetile.h
@@ -100,6 +102,8 @@ set(SHADER
     # shader/terrain_water.frag
     # shader/particle_water.vert
     # shader/particle_water.frag
+    shader/terrain_water.vert
+    shader/terrain_water.frag
     shader/hand.frag
     shader/hand.vert
     shader/phongLighting.frag

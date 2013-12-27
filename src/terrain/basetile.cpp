@@ -86,3 +86,8 @@ void BaseTile::createTerrainTypeTexture()
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, m_terrainTypeBuffer->id());
     m_terrainTypeTex->unbind();
 }
+
+PxU8 BaseTile::pxMaterialIndexAt(unsigned int row, unsigned int column) const
+{
+    return m_terrainTypeData->at(column + row * m_terrain->settings.columns);
+}

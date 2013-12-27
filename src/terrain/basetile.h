@@ -16,6 +16,8 @@ protected:
     virtual void pxSamplesAndMaterials(physx::PxHeightFieldSample * hfSamples, physx::PxReal heightScale, physx::PxMaterial ** &materials) override;
     virtual void createTerrainTypeTexture();
 
+    virtual physx::PxU8 pxMaterialIndexAt(unsigned int row, unsigned int column) const override;
+
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;
     glow::UByteArray * m_terrainTypeData;

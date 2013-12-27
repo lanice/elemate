@@ -1,6 +1,7 @@
 #include "terrain.h"
 
 #include <limits>
+#include <algorithm>
 
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
@@ -134,8 +135,6 @@ const std::unordered_map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() co
     return m_pxActors;
 }
 
-
-
 void Terrain::setUpLighting(glow::Program & program) const
 {
     static glm::vec4 lightambientglobal(0, 0, 0, 0);
@@ -159,4 +158,60 @@ void Terrain::setUpLighting(glow::Program & program) const
     program.setUniform("lightdir2", lightdir2);
     program.setUniform("light1", lightMat1);
     program.setUniform("light2", lightMat2);
+}
+
+float Terrain::heightAt(float x, float z) const
+{
+    float height = std::numeric_limits<float>::lowest();
+    for (TerrainLevel level : TerrainLevels) {
+        height = std::max(
+            height,
+            heightAt(x, z, level));
+    }
+    return height;
+}
+
+float Terrain::heightAt(float x, float z, TerrainLevel level) const
+{
+    std::shared_ptr<TerrainTile> tile = nullptr;
+    unsigned int row = 0;
+    unsigned int column = 0;
+    if (!worldToTileRowColumn(x, z, level, tile, row, column))
+        return 0.0f;
+
+    return tile->interpolatedHeightAt(x, z);
+}
+
+bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & physxRow, unsigned int & physxColumn) const
+{
+    // only implemented for 1 tile
+    assert(settings.tilesX == 1 && settings.tilesZ == 1);
+    float normX = (x / settings.sizeX + 0.5f);
+    float normZ = (z / settings.sizeZ + 0.5f);
+    bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
+
+    physxRow = static_cast<int>(normX * settings.rows) % settings.rows;
+    physxColumn = static_cast<int>(normZ * settings.columns) % settings.columns;
+
+    TileID tileID(level, 0, 0);
+
+    terrainTile = m_tiles.at(tileID);
+
+    assert(terrainTile);
+
+    return valid;
+}
+
+bool Terrain::normalizePosition(float x, float z, TileID & tileID, float & normX, float & normZ) const
+{
+    // currently for one tile only
+    assert(settings.tilesX == 1 && settings.tilesZ == 1);
+    tileID.x = 0;
+    tileID.z = 0;
+
+    normX = x / settings.sizeX + 0.5f;
+    normZ = z / settings.sizeZ + 0.5f;
+
+    return normX >= 0.0f && normX <= 1.0f
+        && normZ >= 0.0f && normZ <= 1.0f;
 }
