@@ -105,7 +105,7 @@ glow::FloatArray * TerrainGenerator::createBasicHeightField(float maxHeightVaria
     assert(maxHeightVariance >= 0);
     assert(m_settings.maxHeight >= maxHeightVariance);
 
-    float partHeight = maxHeightVariance / m_settings.maxHeight;
+    float partHeight = maxHeightVariance;
     std::uniform_real_distribution<float> uniform_dist(-partHeight, partHeight);
 
     std::function<float()> getHeight;
