@@ -3,10 +3,11 @@
 in vec2 v_vertex[3];
 in vec3 v_viewPos[3];
 in vec4 v_projPos[3];
+in vec3 v_normal[3];
 
 flat out int g_texIndex;
-out vec3 g_normal;
 out vec3 g_viewPos;
+out vec3 g_normal;
 
 uniform uvec2 tileRowsColumns;
 
@@ -24,9 +25,8 @@ void main()
     
     for (int i=0; i < 3; ++i) {
         g_texIndex = texIndex;
-    
-        // TODO calculate normals
-        g_normal = vec3(0.0, 1.0, 0.0);
+        
+        g_normal = v_normal[i];
         
         g_viewPos = v_viewPos[i];
         gl_Position = v_projPos[i];

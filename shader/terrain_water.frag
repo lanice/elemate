@@ -1,6 +1,7 @@
 #version 330
 
 in vec3 v_viewPos;
+in vec3 v_normal;
 
 uniform vec3 cameraposition;
 
@@ -19,10 +20,8 @@ vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3
 layout(location = 0)out vec4 fragColor;
 
 void main()
-{
-    vec3 normal = vec3(0, 1, 0);
-    
+{    
     fragColor = vec4(
-        phongLighting(normal, v_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_water).rgb,
+        phongLighting(v_normal, v_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_water).rgb,
         0.5);
 }
