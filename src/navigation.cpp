@@ -7,15 +7,18 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "terrain/terrain.h"
+
 
 static const double c_distanceEyeCenterDefault = 5.;
 static const float c_speedScale = 0.05f;
 
 
-Navigation::Navigation(GLFWwindow & window, glowutils::Camera * camera) :
+Navigation::Navigation(GLFWwindow & window, glowutils::Camera * camera, std::shared_ptr<Terrain>& terrain) :
     m_window(window),
     m_camera(camera),
-    m_distanceEyeCenter(c_distanceEyeCenterDefault)
+    m_distanceEyeCenter(c_distanceEyeCenterDefault),
+    m_terrain(terrain)
 {
     setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); // eye, center, up
 }
@@ -24,11 +27,15 @@ Navigation::~Navigation()
 {
 }
 
-
 void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up)
 {
-    glm::mat4 lookAtMatrix(glm::lookAt(eye, center, up));
-    m_center = center;
+    glm::vec3 center_terrainHeight = glm::vec3(
+        center.x,
+        m_terrain->heightAt(center.x, center.z),
+        center.z);
+
+    glm::mat4 lookAtMatrix(glm::lookAt(eye, center_terrainHeight, up));
+    m_center = center_terrainHeight;
     m_rotation = glm::toQuat(lookAtMatrix);
 
     apply();
@@ -96,6 +103,11 @@ void Navigation::update(double delta)
         if (newCenter != m_center)
         {
             m_center += glm::normalize(newCenter - m_center) * c_speedScale * boost * frameScale;
+
+            m_center = glm::vec3(
+                m_center.x,
+                m_terrain->heightAt(m_center.x, m_center.z),
+                m_center.z);
         }
     }
 }

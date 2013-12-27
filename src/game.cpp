@@ -21,9 +21,10 @@ Game::Game(GLFWwindow & window) :
 m_window(window),
 m_world(std::make_shared<World>()),
 m_camera(),
-m_navigation(window, &m_camera),
+m_navigation(window, &m_camera, m_world->terrain),
 m_manipulator(window, *m_world)
 {
+    m_world->setNavigation(m_navigation);
 }
 
 Game::~Game()
@@ -31,9 +32,7 @@ Game::~Game()
 
 void Game::start()
 {
-    glfwSetTime(0.0);
-
-    m_world->setNavigation(m_navigation);    
+    glfwSetTime(0.0);   
 
     m_world->togglePause();
 

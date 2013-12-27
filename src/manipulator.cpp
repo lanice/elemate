@@ -6,11 +6,13 @@
 #include <glm/gtc/swizzle.hpp>
 
 #include "world.h"
+#include "terrain/terraininteractor.h"
 
 
 Manipulator::Manipulator(GLFWwindow & window, World & world) :
-    m_window(window),
-    m_world(world)
+m_window(window),
+m_world(world),
+m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain))
 {
 }
 
@@ -55,8 +57,8 @@ void Manipulator::updateHandPosition(const glowutils::Camera & camera)
     glm::vec3 lookAtWorld = glm::vec3(glm::swizzle<glm::X, glm::Y, glm::Z>(position)) / position.w;
 
     glm::vec3 pos = eye - (lookAtWorld * eye.y / lookAtWorld.y);
-    // As soon as we can access sth like m_world->terrain->heightAt(pos.x, pos.z) we will use that instead.
-    pos.y = 0.5; // For now.
+
+    pos.y = m_terrainInteractor->heightAt(pos.x, pos.z);
 
     // Final step, as soon as we have the Hand.
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
