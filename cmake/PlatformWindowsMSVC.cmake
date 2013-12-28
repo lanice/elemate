@@ -3,6 +3,7 @@ set(WIN32_COMPILE_DEFS
     WIN32                       # Windows system
     UNICODE                     # Use unicode
     _UNICODE                    # Use unicode
+    NOMINMAX                    # do not define min() and max() in windows headers
     #_SCL_SECURE_NO_WARNINGS     # Calling any one of the potentially unsafe methods in the Standard C++ Library
     #_CRT_SECURE_NO_DEPRECATE    # Disable CRT deprecation warnings
 )

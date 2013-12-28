@@ -17,6 +17,8 @@
 #include "soundmanager.h"
 #include "navigation.h"
 #include "elements.h"
+#include "terrain/terraingenerator.h"
+#include "terrain/terrain.h"
 
 
 World::World()
@@ -35,9 +37,17 @@ World::World()
 
     initShader();
 
-    // create the plane, just to do it somewhere for debugging
-    physx::PxRigidStatic* plane = PxCreatePlane(PxGetPhysics(), physx::PxPlane(physx::PxVec3(0, 1, 0), 0), *Elements::pxMaterial("default"));
-    m_physicsWrapper->scene()->addActor(*plane);
+    TerrainGenerator terrainGen;
+    terrainGen.setExtentsInWorld(50, 50);
+    terrainGen.applySamplesPerWorldCoord(3.f);
+    terrainGen.setTilesPerAxis(1, 1);
+    terrainGen.setMaxHeight(20.0f);
+    terrainGen.setMaxBasicHeightVariance(0.05f);
+
+    terrain = std::shared_ptr<Terrain>(terrainGen.generate());
+
+    for (const auto actor : terrain->pxActorMap())
+        m_physicsWrapper->scene()->addActor(*actor.second);
 }
 
 World::~World()
@@ -97,14 +107,6 @@ void World::setNavigation(Navigation & navigation)
 
 void World::initShader()
 {
-    glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
-
-    glow::ref_ptr<glow::Shader> terrainPlainVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrainPlain.vert");
-    glow::ref_ptr<glow::Shader> terrainPlainFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrainPlain.frag");
-
-    glow::ref_ptr<glow::Program> terrainPlainProgram = new glow::Program();
-    terrainPlainProgram->attach(terrainPlainVert, terrainPlainFrag, phongLightingFrag);
-    m_programsByName.emplace("terrainPlain", terrainPlainProgram);
 }
 
 void World::setUpLighting(glow::Program & program)

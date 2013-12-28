@@ -15,6 +15,7 @@ class Navigation;
 class PhysicsWrapper;
 class SoundManager;
 class CyclicTime;
+class Terrain;
 
 class World {
 public:
@@ -43,7 +44,7 @@ public:
 
     glow::Program * programByName(const std::string & name);
     
-    //std::shared_ptr<ElemateHeightFieldTerrain>  terrain;
+    std::shared_ptr<Terrain>                    terrain;
     std::shared_ptr<SoundManager>               m_soundManager;
 
 protected:

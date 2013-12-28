@@ -1,26 +1,38 @@
-#version 330
+#version 330 core
 
-out vec3 v_normal;
+layout(location = 0)in vec2 _vertex;
+
+out vec2 v_vertex;
 out vec3 v_viewPos;
-out vec3 v_worldPos;
 out vec4 v_projPos;
+out vec3 v_normal;
 
-uniform mat4 osg_ModelViewMatrix;
-uniform mat4 osg_ModelViewProjectionMatrix;
+uniform mat4 modelView;
+uniform mat4 modelViewProjection;
+uniform samplerBuffer heightField;
 
-/** Base transform: osg to OpenGL 
-    We need this, because osg creates terrains in xy plane, but we want them in xz.
-    osg_* matrices already contain this one, but we need it to use world coordinates. */
-mat3 osgTerrainToOpenGl = mat3(
-    1,0,0,  // column 1
-    0,0,-1, // column 2 ...
-    0,1,0);
+uniform uvec2 tileRowsColumns;
 
-void main(void) 
+void main()
 {
-    v_worldPos = osgTerrainToOpenGl * (gl_Vertex.xyz / gl_Vertex.w);
-	v_normal = normalize(osgTerrainToOpenGl * gl_Normal);
-    vec4 viewPos4 = osg_ModelViewMatrix * gl_Vertex;
+    int texIndex = int(_vertex.t) + int(_vertex.s) * int(tileRowsColumns.t); // texelFetch expects an integer position
+    float height = texelFetch(heightField, texIndex).x;
+
+    v_vertex = _vertex;
+    
+    vec4 vertex = vec4(_vertex.x, height, _vertex.y, 1.0);
+    
+    vec4 viewPos4 = modelView * vertex;
     v_viewPos = viewPos4.xyz / viewPos4.w;
-    v_projPos = osg_ModelViewProjectionMatrix * gl_Vertex;
+    
+    v_projPos = modelViewProjection * vertex;
+    
+    // normal calculation, see http://stackoverflow.com/a/5284527
+    float height_left = texelFetch(heightField, texIndex - int(tileRowsColumns.s)).x;
+    float height_right = texelFetch(heightField, texIndex + int(tileRowsColumns.s)).x;
+    float height_front = texelFetch(heightField, texIndex - 1).x;
+    float height_back = texelFetch(heightField, texIndex + 1).x;
+    vec3 va =  normalize(vec3(2.0, height_right - height_left, 0.0));
+    vec3 vb =  normalize(vec3(0.0, height_back - height_front, 2.0));
+    v_normal = - cross(va, vb);
 }

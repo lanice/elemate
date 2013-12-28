@@ -14,15 +14,17 @@
 // Own Classes
 #include "world.h"
 #include "particledrawable.h"
+#include "terrain/terrain.h"
 
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
 m_world(std::make_shared<World>()),
 m_camera(),
-m_navigation(window, &m_camera),
+m_navigation(window, &m_camera, m_world->terrain),
 m_manipulator(window, *m_world)
 {
+    m_world->setNavigation(m_navigation);
 }
 
 Game::~Game()
@@ -30,9 +32,7 @@ Game::~Game()
 
 void Game::start()
 {
-    glfwSetTime(0.0);
-
-    m_world->setNavigation(m_navigation);    
+    glfwSetTime(0.0);   
 
     m_world->togglePause();
 
@@ -112,59 +112,17 @@ glowutils::Camera * Game::camera()
 }
 
 
-static glow::VertexArrayObject * m_vao = nullptr;
-static glow::Buffer * m_vertices = nullptr;
-
-void initDraw()
-{
-    m_vao = new glow::VertexArrayObject;
-    m_vao->bind();
-
-    m_vertices = new glow::Buffer(GL_ARRAY_BUFFER);
-
-    static const glow::Vec3Array raw(
-    {
-          glm::vec3(-1.f, 0.0f, -1.f)
-        , glm::vec3(+1.f, 0.0f, -1.f)
-        , glm::vec3(+1.f, 0.0f, +1.f)
-        , glm::vec3(-1.f, 0.0f, +1.f)
-    });
-    
-    m_vertices->setData(raw, GL_STATIC_DRAW);
-
-    glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
-    vertexBinding->setAttribute(0); // location 0
-    vertexBinding->setBuffer(m_vertices, 0, sizeof(glm::vec3)); // stride must be size of datatype!
-    vertexBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
-    m_vao->enable(0);
-
-    m_vao->unbind();
-}
 
 void Game::draw()
 {
-    if (!m_vao)
-        initDraw();
 
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
 
-    glow::ref_ptr<glow::Program> terrainProgram = m_world->programByName("terrainPlain");
-    assert(terrainProgram);
-    if (!terrainProgram)
-        return;
 
-    terrainProgram->use();
-
-    m_world->setUniforms(*terrainProgram.get());
-
-    m_vao->bind();
-    m_vao->drawArrays(GL_QUADS, 0, 4);
-    m_vao->unbind();
-
-    terrainProgram->release();
+    m_world->terrain->draw(*m_navigation.camera());
 
     ParticleDrawable::drawParticles(*m_navigation.camera());
 

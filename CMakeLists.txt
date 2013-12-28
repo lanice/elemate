@@ -46,12 +46,6 @@ set(SOURCES
     src/world.h
     # src/hand.cpp
     # src/hand.h
-    # src/godmanipulator.cpp
-    # src/godmanipulator.h
-    # src/godnavigation.cpp
-    # src/godnavigation.h
-    # src/screenquad.cpp
-    # src/screenquad.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h
@@ -65,16 +59,6 @@ set(SOURCES
     src/hpicgs/ChronoTimer.h
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
-    # src/terrain/terraingenerator.cpp
-    # src/terrain/terraingenerator.h
-    # src/terrain/elemateterrain.h
-    # src/terrain/elemateterrain.cpp
-    # src/terrain/terraininteractor.h
-    # src/terrain/terraininteractor.cpp
-    # src/osg/sharedgeometrytechnique.h
-    # src/osg/sharedgeometrytechnique.cpp
-    # src/osg/dynamicterraintile.h
-    # src/osg/dynamicterraintile.cpp
     src/soundmanager.cpp
     src/soundmanager.h
     src/eventhandler.cpp
@@ -83,6 +67,20 @@ set(SOURCES
     src/navigation.h
     src/manipulator.cpp
     src/manipulator.h
+    src/terrain/terrain.h
+    src/terrain/terrain.cpp
+    src/terrain/terrainsettings.h
+    src/terrain/terrainsettings.cpp
+    src/terrain/terraininteractor.h
+    src/terrain/terraininteractor.cpp
+    src/terrain/terraintile.h
+    src/terrain/terraintile.cpp
+    src/terrain/basetile.h
+    src/terrain/basetile.cpp
+    src/terrain/watertile.h
+    src/terrain/watertile.cpp
+    src/terrain/terraingenerator.h
+    src/terrain/terraingenerator.cpp
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -93,19 +91,16 @@ set(SHADER
     shader/flush.vert
     shader/flush.frag
     shader/terrain_base.vert
-    shader/terrain_base.geom
+    shader/terrain_base.geo
     shader/terrain_base.frag
     shader/terrain_water.vert
-    shader/terrain_water.geom
     shader/terrain_water.frag
-    shader/particle_water.vert
-    shader/particle_water.frag
     shader/hand.frag
     shader/hand.vert
     shader/phongLighting.frag
 )
 
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geom$"
+source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
 
 set( GLOW_DIR $ENV{GLOW_DIR} )
