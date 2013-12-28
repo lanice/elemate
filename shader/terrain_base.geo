@@ -11,6 +11,7 @@ out vec3 g_normal;
 
 uniform uvec2 tileRowsColumns;
 
+layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
 void main()
