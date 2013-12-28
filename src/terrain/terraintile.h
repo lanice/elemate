@@ -10,7 +10,6 @@
 #include "terrainsettings.h"
 
 namespace glow {
-    class VertexArrayObject;
     class Program;
     class Texture;
     class Buffer;
@@ -40,7 +39,6 @@ public:
 
     /** @return interpolated height (y value) at specified normalized in tile position. */
     float interpolatedHeightAt(float normX, float normZ) const;
-
 
     friend class TerrainGenerator;
     friend class TerrainInteractor;

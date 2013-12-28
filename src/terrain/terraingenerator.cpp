@@ -10,17 +10,10 @@
 #include <glow/logging.h>
 
 #include <PxRigidStatic.h>
-#include <PxShape.h>
-#include <geometry/PxHeightField.h>
-#include <geometry/PxHeightFieldSample.h>
-#include <geometry/PxHeightFieldDesc.h>
-#include <geometry/PxHeightFieldGeometry.h>
-#include <foundation/PxMat44.h>
 
 #include "terrain.h"
 #include "basetile.h"
 #include "watertile.h"
-#include "elements.h"
 
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
@@ -42,9 +35,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
 {
     std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(m_settings);
 
-    /** The tileID determines the position of the current tile in the grid of tiles.
-      * Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
-      */
+    // The tileID determines the position of the current tile in the grid of tiles.
+    // Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
     
     int maxxID = m_settings.tilesX - int((m_settings.tilesX + 1) * 0.5);
     int minxID = maxxID - m_settings.tilesX + 1;
@@ -53,23 +45,17 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
 
     terrain->minTileXID = minxID;
     terrain->minTileZID = minzID;
-    
-    assert(m_settings.tilesX == 1 && 1 == m_settings.tilesZ);
 
     for (int xID = minxID; xID <= maxxID; ++xID)
     for (int zID = minzID; zID <= maxzID; ++zID)
     {
-        /** 1. Create physx terrain heightfield data.
-            2. Add some landscape to it (change heightfield, add material information)
-            3. Copy physx data to osg and create osg terrain tile.
-            4. Create physx actor and shape.
-            5. Set some uniforms, valid for the whole terrain. */
-
         TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
-        //PxHeightFieldSample * pxBaseHeightFieldSamples
+
+        // create base terrain heightfield with random structure
         glow::FloatArray * baseHeightField = createBasicHeightField(m_settings.maxBasicHeightVariance);
         assert(baseHeightField);
 
+        // make landscape more interesting
         glow::UByteArray * baseTerrainTypeIDs = gougeRiverBed(*baseHeightField);
 
         /** create terrain object and pass terrain data */

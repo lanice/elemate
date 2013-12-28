@@ -50,8 +50,11 @@ public:
     void setUpLighting(glow::Program & program) const;
 
     friend class TerrainGenerator;
+    friend class TerrainTile;
+    friend class TerrainInteractor;
 
 protected:
+    /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);
 
     std::unordered_map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
@@ -74,10 +77,7 @@ protected:
     glow::Vec2Array * m_vertices;
     glow::UIntArray * m_indices;
 
-    friend class TerrainTile;
-
 protected:
-    friend class TerrainInteractor;
 
     /** Fetch the tile corresponding to the xz world coordinates and the terrain level and sets the row/column position in this tile.
     * @param terrainTile if world x/z position are in range, this pointer will be set to a valid terrain tile.

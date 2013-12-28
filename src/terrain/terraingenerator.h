@@ -16,15 +16,12 @@ class Terrain;
 class TerrainTile;
 
 /** Generator for height field terrains
-  * Creates height field data and wraps it into PhysX and OSG objects. 
   * Terrains are oriented in the xz-plane, using the default PhysX coordinate system for heightfields.
   * x is right, y is up, z is back
-  * Creates a transform node for the osg terrain object, to transform it in our cordinate system.
-  * rows = x axis, height = y axis, columns = z axis
-  * This is PhysX logic, OSG is kind of inverse, so don't get confused when reading the cpp =) */
+  * rows = x axis, height = y axis, columns = z axis */
 class TerrainGenerator {
 public:
-    /** applies all settings and creates the height field osg and physx objects */
+    /** applies all settings and creates the height field landscape */
     std::shared_ptr<Terrain> generate() const;
 
     /** terrain size in world coordinates */
@@ -48,7 +45,7 @@ public:
     /** maximum latitude (y value) in world coordinates
       * -maxHeight <= y <= maxHeight */
     float maxHeight() const;
-    /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure.
+    /** Maximal height variance from terrain profil. This value is used to give the terrain a slightly random structure.
       * Must be lower or equal than maxHeight, but should only be a fraction of it.*/
     void setMaxBasicHeightVariance(float variance);
     /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure. */

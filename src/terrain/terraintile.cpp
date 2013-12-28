@@ -166,7 +166,7 @@ void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
     m_heightField->at(column + row * m_terrain->settings.columns) = value;
 }
 
-// got it from OpenSceneGraph: osgTerrain/Layer
+// mostly from OpenSceneGraph: osgTerrain/Layer
 float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
 {
     double row_r, column_r;
