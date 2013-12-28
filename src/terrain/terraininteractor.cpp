@@ -79,6 +79,8 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
         tile.addBufferUpdateRange(column - 1 + (row + u)*settings.columns, 3);
     }
 
+    setPxHeight(tile, row, column, value);
+
     return value_inRange;
 }
 

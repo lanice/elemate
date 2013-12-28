@@ -112,13 +112,14 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     const unsigned int numSamples = m_terrain->settings.rows * m_terrain->settings.columns;
 
     // scale height so that we use the full range of PxI16=short
-    PxReal heightScale = m_terrain->settings.maxHeight / std::numeric_limits<PxI16>::max();
-    assert(heightScale >= PX_MIN_HEIGHTFIELD_Y_SCALE);
+    PxReal heightScaleToWorld = m_terrain->settings.maxHeight / std::numeric_limits<PxI16>::max();
+    assert(heightScaleToWorld >= PX_MIN_HEIGHTFIELD_Y_SCALE);
+    float heightScaleToPx = std::numeric_limits<PxI16>::max() / m_terrain->settings.maxHeight;
 
     PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
     PxMaterial ** materials = nullptr;
 
-    pxSamplesAndMaterials(hfSamples, heightScale, materials);
+    pxSamplesAndMaterials(hfSamples, heightScaleToPx, materials);
 
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;
@@ -133,7 +134,7 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     assert(m_terrain->settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     // create height field geometry and set scale
     PxHeightFieldGeometry pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
-        heightScale, m_terrain->settings.intervalX(), m_terrain->settings.intervalZ());
+        heightScaleToWorld, m_terrain->settings.intervalX(), m_terrain->settings.intervalZ());
     m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
 
     assert(m_pxShape);
