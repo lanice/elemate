@@ -49,8 +49,11 @@ void Elements::initialize(physx::PxPhysics & physxSdk)
         0.5f, 0.7f, 0.9f, 1.0f,    //specular
         0.0f, 0.0f, 0.0f, 0.0f));  //emission
 
-    for (const auto & pair : s_pxMaterials)
+    for (const auto & pair : s_pxMaterials) {
         assert(pair.second);
+        if (!pair.second)
+            glow::warning("Elements::initialize could not create PhysX material: %;", pair.first);
+    }
 
     s_isInitialized = true;
 }
