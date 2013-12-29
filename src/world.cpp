@@ -21,8 +21,8 @@
 #include "terrain/terrain.h"
 
 
-World::World()
-: m_physicsWrapper(std::make_shared<PhysicsWrapper>())
+World::World(PhysicsWrapper & physicsWrapper)
+: m_physicsWrapper(physicsWrapper)
 , m_soundManager(std::make_shared<SoundManager>())
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
@@ -47,7 +47,7 @@ World::World()
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
     for (const auto actor : terrain->pxActorMap())
-        m_physicsWrapper->scene()->addActor(*actor.second);
+        m_physicsWrapper.scene()->addActor(*actor.second);
 }
 
 World::~World()
@@ -72,12 +72,12 @@ void World::update()
     delta = m_time->getNonModf(true) - delta;
 
     // update physic
-    m_physicsWrapper->step(delta);
+    m_physicsWrapper.step(delta);
 }
 
 void World::makeStandardBall(const glm::vec3& position)
 {
-    m_physicsWrapper->makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    m_physicsWrapper.makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
 }
 
 void World::createFountainSound(const glm::vec3& position)

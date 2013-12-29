@@ -82,12 +82,14 @@ int main()
     }
     
 
-    Game * game = new Game(*window);
-    eventHandler = new EventHandler(*window, *game);
+    Game game(*window);
+    eventHandler = new EventHandler(*window, game);
 
-    game->start();
+    game.start();
 
     glfwTerminate();
+
+    delete eventHandler;
 
     return 0;
 }
