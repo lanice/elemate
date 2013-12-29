@@ -16,7 +16,7 @@ class Terrain;
 class Navigation
 {
 public:
-    Navigation(GLFWwindow & window, glowutils::Camera * camera, std::shared_ptr<Terrain>& terrain);
+    Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain);
     virtual ~Navigation();
 
     void setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up);

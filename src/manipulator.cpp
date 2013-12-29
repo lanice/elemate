@@ -1,5 +1,6 @@
 #include "manipulator.h"
 
+#include <glow/logging.h>
 #include <glowutils/Camera.h>
 
 #include <glm/glm.hpp>
@@ -9,8 +10,9 @@
 #include "terrain/terraininteractor.h"
 
 
-Manipulator::Manipulator(GLFWwindow & window, World & world) :
+Manipulator::Manipulator(GLFWwindow & window, const glowutils::Camera & camera, World & world) :
 m_window(window),
+m_camera(camera),
 m_world(world),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
 m_grabbedTerrain(false)
@@ -62,35 +64,34 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
     }
 }
 
-void Manipulator::updateHandPosition(const glowutils::Camera & camera)
+void Manipulator::updateHandPosition()
 {
     double xpos, ypos;
     glfwGetCursorPos(&m_window, &xpos, &ypos);
 
-    int width, height;
-    glfwGetWindowSize(&m_window, &width, &height);
+    handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos))) + glm::vec3(0.0f, 0.5f, 0.0f);
 
-    glm::vec3 eye = camera.eye();
-    glm::vec3 center = camera.center();
-
-    glm::mat4 viewProjectionInverted = camera.viewProjectionInverted();
-
-    double x = (xpos / float(width) - 0.5) * 2.;
-    double y = (ypos / float(height) - 0.5) * 2.;
-
-    glm::vec4 position = viewProjectionInverted * glm::vec4(x, -y, 1., 1.);
-    glm::vec3 lookAtWorld = glm::vec3(glm::swizzle<glm::X, glm::Y, glm::Z>(position)) / position.w;
-
-    glm::vec3 pos = eye - (lookAtWorld * eye.y / lookAtWorld.y);
-
-    pos.y = m_terrainInteractor->heightAt(pos.x, pos.z);
+    if (m_grabbedTerrain)
+        m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
 
     // Final step, as soon as we have the Hand.
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
+}
 
-    // until than:
-    handPosition = pos;
+const float Manipulator::depthAt(const glm::ivec2 & windowCoordinates)
+{
+    return AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
+}
 
-    if (m_grabbedTerrain)
-        m_terrainInteractor->heightPull(pos.x, pos.z);
+const glm::vec3 Manipulator::objAt(const glm::ivec2 & windowCoordinates, const float depth)
+{
+    return unproject(m_camera, depth, windowCoordinates);
+}
+
+const glm::vec3 Manipulator::objAt(
+    const glm::ivec2 & windowCoordinates
+    , const float depth
+    , const glm::mat4 & viewProjectionInverted)
+{
+    return unproject(m_camera, viewProjectionInverted, depth, windowCoordinates);
 }

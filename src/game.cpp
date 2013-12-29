@@ -20,8 +20,8 @@ m_window(window),
 m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
 m_camera(),
-m_navigation(window, &m_camera, m_world->terrain),
-m_manipulator(window, *m_world),
+m_navigation(window, m_camera, m_world->terrain),
+m_manipulator(window, m_camera, *m_world),
 m_renderer(*m_world)
 {
     m_world->setNavigation(m_navigation);
@@ -76,7 +76,7 @@ void Game::loop(double delta)
                 m_navigation.update(deltaTime);
                 m_navigation.apply();
 
-                m_manipulator.updateHandPosition(*m_navigation.camera());
+                m_manipulator.updateHandPosition();
                 m_world->updateListener();
 
                 m_renderer(m_camera);
