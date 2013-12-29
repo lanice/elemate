@@ -22,10 +22,10 @@
 
 
 World::World()
-: m_physicsWrapper(new PhysicsWrapper())
-, m_soundManager(new SoundManager())
+: m_physicsWrapper(std::make_shared<PhysicsWrapper>())
+, m_soundManager(std::make_shared<SoundManager>())
 , m_navigation(nullptr)
-, m_time(new CyclicTime(0.0L, 1.0L))
+, m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
 {    
     // Create two non-3D channels (paino and rain)
     //initialise as paused

@@ -65,7 +65,7 @@ void BaseTile::pxSamplesAndMaterials(PxHeightFieldSample * hfSamples, PxReal hei
     materials[0] = Elements::pxMaterial("default");
     //materials[1] = Elements::pxMaterial("default");
 
-    unsigned int numSamples = m_terrain->settings.rows * m_terrain->settings.columns;
+    unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
     for (unsigned index = 0; index < numSamples; ++index) {
         hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1
             //= m_terrainTypeData->at(index);
@@ -89,5 +89,5 @@ void BaseTile::createTerrainTypeTexture()
 
 PxU8 BaseTile::pxMaterialIndexAt(unsigned int row, unsigned int column) const
 {
-    return m_terrainTypeData->at(column + row * m_terrain->settings.columns);
+    return m_terrainTypeData->at(column + row * m_terrain.settings.columns);
 }

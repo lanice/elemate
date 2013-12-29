@@ -79,7 +79,7 @@ void PhysicsWrapper::updateAllObjects(long double delta)
 }
 
 void PhysicsWrapper::makeParticleEmitter(const physx::PxVec3& position){
-    m_emitters.push_back(new ParticleEmitter(position));
+    m_emitters.push_back(std::make_shared<ParticleEmitter>(position));
     m_emitters.back()->initializeParticleSystem();
     m_emitters.back()->startEmit();
 }

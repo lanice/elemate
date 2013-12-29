@@ -46,7 +46,7 @@ public:
 protected:
     const TileID m_tileID;
 
-    const Terrain * m_terrain;
+    const Terrain & m_terrain;
 
     virtual void initialize();
     virtual void initializeProgram() = 0;

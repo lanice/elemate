@@ -71,7 +71,7 @@ protected:
     physx::PxScene*                                 m_scene;
     physx::PxCooking*                               m_cooking;
 
-    std::list<ParticleEmitter*>         m_emitters;
+    std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
 
 private:
     PhysicsWrapper(PhysicsWrapper&) = delete;

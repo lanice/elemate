@@ -51,7 +51,7 @@ protected:
     std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
 
     Navigation * m_navigation;
-    CyclicTime * m_time;
+    std::shared_ptr<CyclicTime> m_time;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
     void setUpLighting(glow::Program & program);
