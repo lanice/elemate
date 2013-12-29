@@ -69,7 +69,7 @@ protected:
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
-    physx::PxCooking*                               m_cooking;
+    //physx::PxCooking*                               m_cooking;
 
     std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
 

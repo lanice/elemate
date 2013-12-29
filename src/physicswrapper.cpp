@@ -32,8 +32,9 @@ PhysicsWrapper::~PhysicsWrapper()
 
     m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
     m_scene->release();
-    m_physics->release();
     m_cpu_dispatcher->release();
+    m_physics->release();
+    PxCloseExtensions();
     //Please don't forget if you activate this feature.
     //m_profile_zone_manager->release();
     m_foundation->release();
@@ -45,7 +46,7 @@ bool PhysicsWrapper::step(long double delta){
         return false;
     
     m_scene->simulate(static_cast<physx::PxReal>(delta));
-    // m_scene->fetchResults();
+
     updateAllObjects(delta);
     
     return true;
@@ -176,6 +177,8 @@ void PhysicsWrapper::fatalError(std::string error_message){
     exit(1);
 }
 
-physx::PxScene* PhysicsWrapper::scene()const{
+physx::PxScene* PhysicsWrapper::scene() const
+{
+    assert(m_scene);
     return m_scene;
 }
