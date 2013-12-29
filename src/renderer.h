@@ -25,7 +25,8 @@ public:
 
 protected:
     // drawing steps
-    void colorStep(const glowutils::Camera & camera);
+    void sceneStep(const glowutils::Camera & camera);
+    void particleWaterStep(const glowutils::Camera & camera);
     void flushStep();
 
 
@@ -36,10 +37,13 @@ protected:
     glow::ref_ptr<glowutils::ScreenAlignedQuad> m_quad;
     glow::ref_ptr<glow::Program> m_quadProgram;
 
-    glow::ref_ptr<glow::FrameBufferObject> m_colorFbo;
+    glow::ref_ptr<glow::FrameBufferObject> m_sceneFbo;
+    glow::ref_ptr<glow::Texture> m_sceneColor;
+    glow::ref_ptr<glow::Texture> m_sceneDepth;
 
-    glow::ref_ptr<glow::Texture> m_colorTex;
-    glow::ref_ptr<glow::RenderBufferObject> m_depthBuffer;
+    glow::ref_ptr<glow::FrameBufferObject> m_particleWaterFbo;
+    glow::ref_ptr<glow::Texture> m_particleWaterColor;
+    glow::ref_ptr<glow::Texture> m_particleWaterDepth;
 
 public:
     Renderer() = delete;

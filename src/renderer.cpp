@@ -29,31 +29,47 @@ void Renderer::initialize()
 {
     glClearColor(1, 1, 1, 1);
 
-    m_colorFbo = new glow::FrameBufferObject();
+    m_sceneColor = new glow::Texture(GL_TEXTURE_2D);
+    m_sceneColor->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_sceneColor->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_sceneColor->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_sceneColor->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    m_colorTex = new glow::Texture(GL_TEXTURE_2D);
-    m_colorTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_colorTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_colorTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_colorTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_colorTex->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    m_sceneDepth = new glow::Texture(GL_TEXTURE_2D);
+    m_sceneDepth->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_sceneDepth->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_sceneDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_sceneDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_sceneDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    m_sceneDepth->setParameter(GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
-    m_depthBuffer = new glow::RenderBufferObject();
+    m_sceneFbo = new glow::FrameBufferObject();
+    m_sceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
+    m_sceneFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_sceneDepth);
+    m_sceneFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_sceneFbo->unbind();
 
-    m_colorFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_colorTex);
-    m_colorFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_depthBuffer);
+    m_particleWaterDepth = new glow::Texture(GL_TEXTURE_2D);
+    m_particleWaterDepth->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_particleWaterDepth->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_particleWaterDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_particleWaterDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_particleWaterDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    m_particleWaterDepth->setParameter(GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
-    m_colorFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
-
-    m_colorFbo->unbind();
+    m_particleWaterFbo = new glow::FrameBufferObject();
+    m_particleWaterFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_particleWaterDepth);
+    m_particleWaterFbo->setDrawBuffer(GL_NONE);
+    m_particleWaterFbo->unbind();
 
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag"));
 
-    m_quadProgram->setUniform("colorBuffer", 0);
-    m_quadProgram->setUniform("depthBuffer", 1);
+    m_quadProgram->setUniform("sceneColor", 0);
+    m_quadProgram->setUniform("sceneDepth", 1);
+    m_quadProgram->setUniform("waterDepth", 2);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
 }
@@ -62,15 +78,16 @@ void Renderer::operator()(const glowutils::Camera & camera)
 {
     glow::DebugMessageOutput::enable();
 
-    assert(m_colorFbo);
+    assert(m_sceneFbo);
 
-    colorStep(camera);
+    sceneStep(camera);
+    particleWaterStep(camera);
     flushStep();
 }
 
-void Renderer::colorStep(const glowutils::Camera & camera)
+void Renderer::sceneStep(const glowutils::Camera & camera)
 {
-    m_colorFbo->bind();
+    m_sceneFbo->bind();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -78,9 +95,20 @@ void Renderer::colorStep(const glowutils::Camera & camera)
 
     m_world.terrain->draw(camera);
 
+    m_sceneFbo->unbind();
+}
+
+void Renderer::particleWaterStep(const glowutils::Camera & camera)
+{
+    m_particleWaterFbo->bind();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+
     ParticleDrawable::drawParticles(camera);
 
-    m_colorFbo->unbind();
+    m_particleWaterFbo->unbind();
 }
 
 void Renderer::flushStep()
@@ -88,11 +116,15 @@ void Renderer::flushStep()
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    m_colorTex->bind(GL_TEXTURE0);
+    m_sceneColor->bind(GL_TEXTURE0);
+    m_sceneDepth->bind(GL_TEXTURE1);
+    m_particleWaterDepth->bind(GL_TEXTURE2);
 
     m_quad->draw();
 
-    m_colorTex->unbind(GL_TEXTURE0);
+    m_sceneColor->unbind(GL_TEXTURE0);
+    m_sceneDepth->unbind(GL_TEXTURE1);
+    m_particleWaterDepth->unbind(GL_TEXTURE2);
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -100,6 +132,8 @@ void Renderer::flushStep()
 
 void Renderer::resize(int width, int height)
 {
-    m_colorTex->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-    m_depthBuffer->storage(GL_DEPTH_COMPONENT32F, width, height);
+    m_sceneColor->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    m_sceneDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+    m_particleWaterDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 }
