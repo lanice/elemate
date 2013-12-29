@@ -25,7 +25,11 @@ PhysicsWrapper::PhysicsWrapper():
     Elements::initialize(*m_physics);
 }
 
-PhysicsWrapper::~PhysicsWrapper(){
+PhysicsWrapper::~PhysicsWrapper()
+{
+    Elements::clear();
+    m_emitters.clear();
+
     m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
     m_scene->release();
     m_physics->release();

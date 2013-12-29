@@ -5,6 +5,7 @@
 #include <glow/Program.h>
 
 #include <PxPhysics.h>
+#include <PxMaterial.h>
 
 bool Elements::s_isInitialized = false;
 std::unordered_map<std::string, physx::PxMaterial*>	Elements::s_pxMaterials;
@@ -52,6 +53,15 @@ void Elements::initialize(physx::PxPhysics & physxSdk)
         assert(pair.second);
 
     s_isInitialized = true;
+}
+
+void Elements::clear()
+{
+    for (auto mat : s_pxMaterials)
+        mat.second->release();
+
+    s_pxMaterials.clear();
+    s_shadingMatices.clear();
 }
 
 void Elements::setAllUniforms(glow::Program & program)
