@@ -58,7 +58,8 @@ protected:
     std::shared_ptr<glow::Vec3Array> m_vertices;
     glow::ref_ptr<glow::Program> m_program;
 
-private:
+public:
     ParticleDrawable() = delete;
+    ParticleDrawable(ParticleDrawable&) = delete;
     void operator=(ParticleDrawable&) = delete;
 };

@@ -89,7 +89,7 @@ protected:
     * @return whether the world position is in range of the terrain. The tileID does only reference a valid tile if the function returns true. */
     bool normalizePosition(float x, float z, TileID & tileID, float & normX, float & normZ) const;
 
-private:
+public:
     Terrain() = delete;
     void operator=(Terrain&) = delete;
 

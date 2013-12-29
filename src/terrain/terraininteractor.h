@@ -40,5 +40,8 @@ private:
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;
 
+public:
+    TerrainInteractor(TerrainInteractor&) = delete;
+    void operator=(TerrainInteractor&) = delete;
     TerrainInteractor() = delete;
 };

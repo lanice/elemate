@@ -16,7 +16,7 @@ protected:
 
     virtual physx::PxU8 pxMaterialIndexAt(unsigned int row, unsigned int column) const override;
 
-private:
+public:
     WaterTile() = delete;
-    void operator()(WaterTile&) = delete;
+    void operator=(WaterTile&) = delete;
 };

@@ -73,7 +73,7 @@ protected:
 
     std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
 
-private:
+public:
     PhysicsWrapper(PhysicsWrapper&) = delete;
     void operator=(PhysicsWrapper&) = delete;
 };

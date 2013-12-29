@@ -45,7 +45,7 @@ protected:
     Manipulator m_manipulator;
 
 
-private:
+public:
     Game() = delete;
     void operator=(Game &) = delete;
 };

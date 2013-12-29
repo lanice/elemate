@@ -21,5 +21,7 @@ protected:
     GLFWwindow & m_window;
     Game & m_game;
 
+public:
+    EventHandler() = delete;
     void operator=(EventHandler&) = delete;
 };

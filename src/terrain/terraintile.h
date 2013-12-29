@@ -85,7 +85,7 @@ protected: // interaction specific functions (see class TerrainInteractor)
     std::forward_list<std::pair<GLintptr, GLsizeiptr>> m_bufferUpdateList;
     virtual void updateGlBuffers();
 
-private:
+public:
     TerrainTile() = delete;
     void operator=(TerrainTile&) = delete;
 };

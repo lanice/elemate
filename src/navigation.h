@@ -43,5 +43,7 @@ protected:
     glm::quat m_rotation;
     double m_distanceEyeCenter;
 
+public:
+    Navigation() = delete;
     void operator= (Navigation&) = delete;
 };

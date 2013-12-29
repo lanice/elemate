@@ -42,6 +42,7 @@ protected:
 
     physx::PxParticleSystem*            m_particleSystem; // or fluid?
 
-private:
+public:
+    ParticleEmitter(ParticleEmitter&) = delete;
     void operator=(ParticleEmitter&) = delete;
 };
