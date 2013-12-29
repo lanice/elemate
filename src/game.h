@@ -30,6 +30,7 @@ public:
     Navigation * navigation();
     Manipulator * manipulator();
     glowutils::Camera * camera();
+    Renderer * renderer();
 
 
 protected:

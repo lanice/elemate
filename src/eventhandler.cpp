@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game.h"
+#include "renderer.h"
 
 
 EventHandler::EventHandler(GLFWwindow & window, Game & game) :
@@ -50,4 +51,12 @@ void EventHandler::handleScrollEvent(double xoffset, double yoffset)
     // or something like this...
 
     m_game.navigation()->handleScrollEvent(xoffset, yoffset);
+}
+
+void EventHandler::handeResizeEvent(int width, int height)
+{
+    glViewport(0, 0, width, height);
+    m_game.camera()->setViewport(width, height);
+
+    m_game.renderer()->resize(width, height);
 }

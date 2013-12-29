@@ -12,6 +12,8 @@ public:
 
     void operator()(const glowutils::Camera & camera);
 
+    void resize(int width, int height);
+
 protected:
     const World & m_world;
 

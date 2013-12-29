@@ -113,3 +113,8 @@ glowutils::Camera * Game::camera()
 {
     return & m_camera;
 }
+
+Renderer * Game::renderer()
+{
+    return &m_renderer;
+}

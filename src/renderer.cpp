@@ -24,3 +24,5 @@ void Renderer::operator()(const glowutils::Camera & camera)
 
     ParticleDrawable::drawParticles(camera);
 }
+
+void Renderer::resize(int, int) {}

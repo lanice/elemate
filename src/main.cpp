@@ -42,10 +42,17 @@ static void scrollCallback(GLFWwindow* /*window*/, double xoffset, double yoffse
         eventHandler->handleScrollEvent(xoffset, yoffset);
 }
 
+static void resizeCallback(GLFWwindow* /*window*/, int width, int height)
+{
+    if (eventHandler)
+        eventHandler->handeResizeEvent(width, height);
+}
+
 void setCallbacks(GLFWwindow * window)
 {
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetWindowSizeCallback(window, resizeCallback);
 }
 
 
