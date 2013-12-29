@@ -5,9 +5,10 @@
 
 #include <glow/logging.h>
 
+#include "PxPhysicsAPI.h"
+
 #include "elements.h"
 #include "particleemitter.h"
-// #include "particledrawable.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;

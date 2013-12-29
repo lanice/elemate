@@ -3,11 +3,7 @@
 #include <thread>
 #include <cassert>
 
-#include <glow/VertexArrayObject.h>
-#include <glow/VertexAttributeBinding.h>
-#include <glow/Buffer.h>
-#include <glow/Array.h>
-#include <glow/Program.h>
+#include <glow/global.h>
 
 #include <GLFW/glfw3.h>
 

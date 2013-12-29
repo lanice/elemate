@@ -2,8 +2,12 @@
 
 #include <memory>
 
-#include "PxPhysicsAPI.h"
+#include <foundation/PxSimpleTypes.h>
+#include <foundation/PxVec3.h>
 
+namespace physx {
+    class PxParticleSystem;
+}
 class ParticleDrawable;
 
 typedef long double t_longf;

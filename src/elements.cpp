@@ -1,7 +1,6 @@
 #include "elements.h"
 
 #include <cassert>
-#include <iostream>
 
 #include <glow/Program.h>
 

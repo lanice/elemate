@@ -1,8 +1,8 @@
 #include "particledrawable.h"
 
-#include <iostream>
 #include <cassert>
 
+#include <glow/logging.h>
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
@@ -119,7 +119,7 @@ void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readDat
 
     // assert(numParticles <= m_maxParticleCount);
     if (numParticles > m_maxParticleCount) {
-        std::cerr << "ParticleDrawable::updateParticles: recieving more valid new particles than expected (" << numParticles << ")" << std::endl;
+        glow::warning("ParticleDrawable::updateParticles: recieving more valid new particles than expected (%;)", numParticles);
         numParticles = m_maxParticleCount;
     }
 

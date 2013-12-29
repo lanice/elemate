@@ -1,9 +1,10 @@
 #include "particleemitter.h"
 
-#include "particledrawable.h"
-
 #include <cassert>
-#include <iostream>
+
+#include "PxPhysicsAPI.h"
+
+#include "particledrawable.h"
 
 ParticleEmitter::ParticleEmitter(const physx::PxVec3& position):
     m_position(position),

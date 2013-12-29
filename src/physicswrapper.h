@@ -1,14 +1,22 @@
 #pragma once
 
-
 #include <string>
-#include <unordered_map>
+#include <list>
 #include <memory>
 
-#include "PxPhysicsAPI.h"
+#include <foundation/PxVec3.h>
+#include <foundation/PxSimpleTypes.h>
 
+namespace physx {
+    class PxPhysics;
+    class PxFoundation;
+    class PxScene;
+    class PxSceneDesc;
+    class PxDefaultCpuDispatcher;
+    class PxCooking;
+    class PxProfileZoneManager;
+}
 class ParticleEmitter;
-class ParticleDrawable;
 
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -19,8 +27,7 @@ class ParticleDrawable;
  */
 class PhysicsWrapper{
 public:
-    /** Explicit Constructor because Copying and Assignments are disabled. */
-    explicit PhysicsWrapper();
+    PhysicsWrapper();
     ~PhysicsWrapper();
 
     /** Proceeds with simulation for amount of given time delta. */
@@ -64,9 +71,9 @@ protected:
     physx::PxScene*                                 m_scene;
     physx::PxCooking*                               m_cooking;
 
-    //std::list<DrawableAndPhysXObject>   m_objects;
     std::list<ParticleEmitter*>         m_emitters;
 
 private:
+    PhysicsWrapper(PhysicsWrapper&) = delete;
     void operator=(PhysicsWrapper&) = delete;
 };
