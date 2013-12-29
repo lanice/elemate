@@ -66,7 +66,9 @@ int main()
 
     glfwSetErrorCallback(errorCallback);
 
-    GLFWwindow * window = glfwCreateWindow(640, 480, "Elemate", NULL, NULL);
+    const int initialWidth = 640;
+    const int initialHeight = 480;
+    GLFWwindow * window = glfwCreateWindow(initialWidth, initialHeight, "Elemate", NULL, NULL);
     if (!window)
     {
         glow::fatal("glfw window creation failed.");
@@ -91,6 +93,7 @@ int main()
 
     Game game(*window);
     eventHandler = new EventHandler(*window, game);
+    eventHandler->handeResizeEvent(initialWidth, initialHeight);
 
     game.start();
 
