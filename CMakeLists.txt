@@ -57,6 +57,8 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
+    src/renderer.h
+    src/renderer.cpp
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/soundmanager.cpp
