@@ -36,10 +36,6 @@ public:
     /** Creates a particle emitter */
     void makeParticleEmitter(const physx::PxVec3& position);
 
-    /** Creates a ball. */
-    void makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
-
-
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
 
