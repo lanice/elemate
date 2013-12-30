@@ -44,8 +44,8 @@ set(SOURCES
     src/game.h
     src/world.cpp
     src/world.h
-    # src/hand.cpp
-    # src/hand.h
+    src/hand.cpp
+    src/hand.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h

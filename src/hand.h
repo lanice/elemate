@@ -1,16 +1,17 @@
-
 #pragma once
 
-#include <osg/ref_ptr>
-#include <osg/Matrixd>
-#include <osg/Vec3>
+#include <glow/ref_ptr.h>
 
+#include <glm/glm.hpp>
 
-namespace osg {
-    class MatrixTransform;
-    class Group;
+namespace glow {
+    class VertexArrayObject;
+    class Buffer;
+    class Program;
 }
-
+namespace glowutils {
+    class Camera;
+}
 
 class Hand 
 {
@@ -19,15 +20,25 @@ public:
     Hand();
     ~Hand();
 
-    osg::MatrixTransform * transform();
-    osg::Matrixd defaultTransform();
+    void draw(const glowutils::Camera & camera);
 
-    osg::Vec3 position();
+    glm::mat4 transform();
+    glm::mat4 defaultTransform();
+
+    glm::vec3 position();
 
 protected:
+    glow::ref_ptr<glow::VertexArrayObject> m_vao;
+    glow::ref_ptr<glow::Buffer> m_vbo;
+    glow::ref_ptr<glow::Buffer> m_indexBuffer;
+    glow::ref_ptr<glow::Buffer> m_normalBuffer;
 
-    osg::ref_ptr<osg::MatrixTransform> m_transform;
-    osg::ref_ptr<osg::Group> m_hand;
+    glow::ref_ptr<glow::Program> m_program;
 
-    osg::Matrixd _defaultTransform;
+    unsigned int m_numVertices;
+
+
+    glm::mat4 m_transform;
+
+    glm::mat4 _defaultTransform;
 };

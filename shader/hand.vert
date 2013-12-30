@@ -1,16 +1,10 @@
-#version 330
+#version 330 core
 
-out vec3 worldPos;
-out vec3 normal;
-out vec3 viewPos;
+layout(location = 0)in vec3 _vertex;
 
-uniform mat4 osg_ModelViewMatrix;
-uniform mat4 osg_ModelViewProjectionMatrix;
+uniform mat4 modelViewProjection;
 
 void main()
 {
-    vec4 viewPos4 = osg_ModelViewMatrix * gl_Vertex;
-    viewPos = viewPos4.xyz / viewPos4.w;
-    normal = normalize(gl_Normal);
-    gl_Position = osg_ModelViewProjectionMatrix * gl_Vertex;
+    gl_Position = modelViewProjection * vec4(_vertex, 1.0) + vec4(0.0, 5.0, 0.0, 1.0);
 }
