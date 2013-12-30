@@ -27,6 +27,8 @@ Renderer::Renderer(const World & world)
 
 void Renderer::initialize()
 {
+    glow::DebugMessageOutput::enable();
+
     glClearColor(1, 1, 1, 1);
 
     m_sceneColor = new glow::Texture(GL_TEXTURE_2D);
@@ -76,8 +78,6 @@ void Renderer::initialize()
 
 void Renderer::operator()(const glowutils::Camera & camera)
 {
-    glow::DebugMessageOutput::enable();
-
     assert(m_sceneFbo);
 
     sceneStep(camera);
@@ -130,10 +130,19 @@ void Renderer::flushStep()
     glDepthMask(GL_TRUE);
 }
 
+const glow::FrameBufferObject *  Renderer::sceneFbo() const
+{
+    return m_sceneFbo.get();
+}
+
 void Renderer::resize(int width, int height)
 {
     m_sceneColor->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     m_sceneDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_sceneFbo->printStatus(true);
+    assert(m_sceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_particleWaterDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_particleWaterFbo->printStatus(true);
+    assert(m_particleWaterFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 }

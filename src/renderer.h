@@ -23,6 +23,8 @@ public:
 
     void resize(int width, int height);
 
+    const glow::FrameBufferObject * sceneFbo() const;
+
 protected:
     // drawing steps
     void sceneStep(const glowutils::Camera & camera);

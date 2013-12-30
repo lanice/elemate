@@ -1,12 +1,14 @@
 #include "manipulator.h"
 
 #include <glow/logging.h>
+#include <glow/FrameBufferObject.h>
 #include <glowutils/Camera.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/swizzle.hpp>
 
 #include "world.h"
+#include "renderer.h"
 #include "terrain/terraininteractor.h"
 
 
@@ -15,7 +17,8 @@ m_window(window),
 m_camera(camera),
 m_world(world),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
-m_grabbedTerrain(false)
+m_grabbedTerrain(false),
+m_renderer(nullptr)
 {
 }
 
@@ -32,8 +35,8 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS && !altPressed)
     {
-        m_world.makeStandardBall(glm::vec3(0, 1, 0));
-        m_world.createFountainSound(glm::vec3(0, 1, 0));
+        m_world.makeStandardBall(handPosition);
+        m_world.createFountainSound(handPosition);
     }
     if (key == GLFW_KEY_I && action == GLFW_PRESS)
         m_world.toggleBackgroundSound(0);
@@ -78,9 +81,17 @@ void Manipulator::updateHandPosition()
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
 }
 
+void Manipulator::setRenderer(Renderer & renderer)
+{
+    m_renderer = &renderer;
+}
+
 const float Manipulator::depthAt(const glm::ivec2 & windowCoordinates)
 {
-    return AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_renderer->sceneFbo()->id());
+    const float depth =  AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    return depth;
 }
 
 const glm::vec3 Manipulator::objAt(const glm::ivec2 & windowCoordinates, const float depth)

@@ -12,6 +12,7 @@ namespace glowutils { class Camera; }
 
 class World;
 class TerrainInteractor;
+class Renderer;
 
 class Manipulator : public glowutils::AbstractCoordinateProvider
 {
@@ -22,6 +23,8 @@ public:
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
 
     void updateHandPosition();
+
+    void setRenderer(Renderer & renderer);
 
     virtual const float depthAt(const glm::ivec2 & windowCoordinates) override;
 
@@ -39,6 +42,7 @@ protected:
     World & m_world;
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;
     bool m_grabbedTerrain;
+    Renderer * m_renderer;
 
 public:
     Manipulator() = delete;

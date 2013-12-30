@@ -25,6 +25,7 @@ m_manipulator(window, m_camera, *m_world),
 m_renderer(*m_world)
 {
     m_world->setNavigation(m_navigation);
+    m_manipulator.setRenderer(m_renderer);
 }
 
 Game::~Game()
