@@ -60,8 +60,8 @@ void World::togglePause()
     m_time->isRunning() ? m_time->pause() : m_time->start();
 
     // Pause/resume all sounds except the background sounds.
-    for (auto i = m_sounds.begin(); i != m_sounds.end(); ++i)
-        m_soundManager->setPaused(*i, !m_time->isRunning());
+    for (const auto sound : m_sounds)
+        m_soundManager->setPaused(sound, !m_time->isRunning());
 }
 
 void World::stopSimulation()
