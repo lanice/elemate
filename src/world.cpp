@@ -58,6 +58,10 @@ World::~World()
 void World::togglePause()
 {
     m_time->isRunning() ? m_time->pause() : m_time->start();
+
+    // Pause/resume all sounds except the background sounds.
+    for (auto i = m_sounds.begin(); i != m_sounds.end(); ++i)
+        m_soundManager->setPaused(*i, !m_time->isRunning());
 }
 
 void World::stopSimulation()
@@ -82,7 +86,8 @@ void World::makeStandardBall(const glm::vec3& position)
 
 void World::createFountainSound(const glm::vec3& position)
 {
-    m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { position.x, position.y, position.z });
+    int id = m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), { position.x, position.y, position.z });
+    m_sounds.push_back(id);
 }
 
 void World::toggleBackgroundSound(int id){
