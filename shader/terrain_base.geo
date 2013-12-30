@@ -1,4 +1,4 @@
-#version 330
+#version 330 core
 
 in vec2 v_vertex[3];
 in vec3 v_viewPos[3];
