@@ -32,8 +32,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
     m_soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
     //set volume (make quieter)
-    m_soundManager->setVolume(0, 0.14f);
-    m_soundManager->setVolume(1, 0.3f);
+    m_soundManager->setVolume(0, 0.25f);
+    m_soundManager->setVolume(1, 0.5f);
 
     initShader();
 
