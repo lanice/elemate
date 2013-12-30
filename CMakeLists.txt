@@ -117,6 +117,7 @@ find_package( GLFW REQUIRED )
 find_package( GLOW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
+find_package( ASSIMP REQUIRED )
 
 list(APPEND SOURCES ${SHADER})
 
@@ -156,3 +157,4 @@ config_project( ${PROJECT_NAME} GLOW 0 )
 config_project( ${PROJECT_NAME} GLOW_UTILS 0 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
+config_project( ${PROJECT_NAME} ASSIMP 0 )
