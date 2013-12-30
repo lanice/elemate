@@ -2,8 +2,12 @@
 
 #include <memory>
 
-#include "PxPhysicsAPI.h"
+#include <foundation/PxSimpleTypes.h>
+#include <foundation/PxVec3.h>
 
+namespace physx {
+    class PxParticleSystem;
+}
 class ParticleDrawable;
 
 typedef long double t_longf;
@@ -38,6 +42,7 @@ protected:
 
     physx::PxParticleSystem*            m_particleSystem; // or fluid?
 
-private:
+public:
+    ParticleEmitter(ParticleEmitter&) = delete;
     void operator=(ParticleEmitter&) = delete;
 };

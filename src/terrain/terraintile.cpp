@@ -13,6 +13,7 @@
 #include <PxPhysics.h>
 #include <PxRigidStatic.h>
 #include <PxShape.h>
+#include <PxMaterial.h>
 #include <geometry/PxHeightField.h>
 #include <geometry/PxHeightFieldSample.h>
 #include <geometry/PxHeightFieldDesc.h>
@@ -24,7 +25,7 @@
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
-, m_terrain(&terrain)
+, m_terrain(terrain)
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
@@ -56,7 +57,6 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     if (!m_bufferUpdateList.empty())
         updateGlBuffers();
 
-    assert(m_terrain);
     assert(m_program);
     assert(m_heightField);
     assert(m_heightTex);
@@ -71,7 +71,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
 
-    m_terrain->setUpLighting(*m_program);
+    m_terrain.setUpLighting(*m_program);
 
 }
 
@@ -96,7 +96,7 @@ void TerrainTile::initialize()
 
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
-    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain->settings.rows, m_terrain->settings.columns));
+    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain.settings.rows, m_terrain.settings.columns));
 }
 
 using namespace physx;
@@ -109,12 +109,12 @@ PxShape * TerrainTile::pxShape() const
 
 void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 {
-    const unsigned int numSamples = m_terrain->settings.rows * m_terrain->settings.columns;
+    const unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
 
     // scale height so that we use the full range of PxI16=short
-    PxReal heightScaleToWorld = m_terrain->settings.maxHeight / std::numeric_limits<PxI16>::max();
+    PxReal heightScaleToWorld = m_terrain.settings.maxHeight / std::numeric_limits<PxI16>::max();
     assert(heightScaleToWorld >= PX_MIN_HEIGHTFIELD_Y_SCALE);
-    float heightScaleToPx = std::numeric_limits<PxI16>::max() / m_terrain->settings.maxHeight;
+    float heightScaleToPx = std::numeric_limits<PxI16>::max() / m_terrain.settings.maxHeight;
 
     PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
     PxMaterial ** materials = nullptr;
@@ -123,18 +123,18 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;
-    hfDesc.nbRows = m_terrain->settings.rows;
-    hfDesc.nbColumns = m_terrain->settings.columns;
+    hfDesc.nbRows = m_terrain.settings.rows;
+    hfDesc.nbColumns = m_terrain.settings.columns;
     hfDesc.samples.data = hfSamples;
     hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
     PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
-    assert(m_terrain->settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
-    assert(m_terrain->settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(m_terrain.settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(m_terrain.settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     // create height field geometry and set scale
     PxHeightFieldGeometry pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
-        heightScaleToWorld, m_terrain->settings.intervalX(), m_terrain->settings.intervalZ());
+        heightScaleToWorld, m_terrain.settings.intervalX(), m_terrain.settings.intervalZ());
     m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
 
     assert(m_pxShape);
@@ -145,15 +145,13 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
 float TerrainTile::heightAt(unsigned int row, unsigned int column) const
 {
-    assert(m_terrain);
     assert(m_heightField);
-    return m_heightField->at(column + row * m_terrain->settings.columns);
+    return m_heightField->at(column + row * m_terrain.settings.columns);
 }
 
 bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height) const
 {
-    assert(m_terrain);
-    if (row >= m_terrain->settings.rows || column >= m_terrain->settings.columns)
+    if (row >= m_terrain.settings.rows || column >= m_terrain.settings.columns)
         return false;
 
     height = heightAt(row, column);
@@ -162,17 +160,16 @@ bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height
 
 void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
 {
-    assert(m_terrain);
     assert(m_heightField);
-    m_heightField->at(column + row * m_terrain->settings.columns) = value;
+    m_heightField->at(column + row * m_terrain.settings.columns) = value;
 }
 
 // mostly from OpenSceneGraph: osgTerrain/Layer
 float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
 {
     double row_r, column_r;
-    double rowFraction = std::modf(normX * m_terrain->settings.rows, &row_r);
-    double columnFraction = std::modf(normZ * m_terrain->settings.columns, &column_r);
+    double rowFraction = std::modf(normX * m_terrain.settings.rows, &row_r);
+    double columnFraction = std::modf(normZ * m_terrain.settings.columns, &column_r);
 
     unsigned int row = static_cast<unsigned int>(row_r);
     unsigned int column = static_cast<unsigned int>(column_r);

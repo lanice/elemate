@@ -3,15 +3,12 @@
 #include <thread>
 #include <cassert>
 
-#include <glow/VertexArrayObject.h>
-#include <glow/VertexAttributeBinding.h>
-#include <glow/Buffer.h>
-#include <glow/Array.h>
-#include <glow/Program.h>
+#include <glow/global.h>
 
 #include <GLFW/glfw3.h>
 
 // Own Classes
+#include "physicswrapper.h"
 #include "world.h"
 #include "particledrawable.h"
 #include "terrain/terrain.h"
@@ -19,7 +16,8 @@
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
-m_world(std::make_shared<World>()),
+m_physicsWrapper(new PhysicsWrapper),
+m_world(new World(*m_physicsWrapper)),
 m_camera(),
 m_navigation(window, &m_camera, m_world->terrain),
 m_manipulator(window, *m_world)
@@ -28,7 +26,10 @@ m_manipulator(window, *m_world)
 }
 
 Game::~Game()
-{}
+{
+    delete m_world;
+    delete m_physicsWrapper;
+}
 
 void Game::start()
 {

@@ -20,7 +20,7 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
 
 
 set(WIN32_COMPILE_FLAGS
-    "/nologo /Zc:wchar_t /Zc:forScope /GF /GR /Zi /fp:precise /MP /arch:AVX /W4 /wd4201 /wd4251"
+    "/nologo /Zc:wchar_t /Zc:forScope /GF /GR /Zi /fp:precise /MP /arch:AVX /W4 /wd4201 /wd4251 /wd4505"
     # nologo       -> no logo
     # Zc:wchar_t   -> treat wchar_t as built-in type: yes
     # Zc:forScope  -> force conformance in for loop scope: Yes
@@ -39,6 +39,7 @@ set(WIN32_COMPILE_FLAGS
     #   wd4201     -> nonstandard extension used : nameless struct/union
     #   wd4251     -> 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     #   wd4267     -> 'var' : conversion from 'size_t' to 'type', possible loss of data
+    #   wd4505     -> 'function' : unreferenced local function has been removed
     # W4           -> warning level 4
     # WX           -> treat warnings as errors
 
@@ -63,14 +64,14 @@ set(WIN32_COMPILE_FLAGS
 
 set(DEFAULT_COMPILE_FLAGS ${WIN32_COMPILE_FLAGS})
 
-set(DEFAULT_COMPILE_FLAGS_DEBUG "/MDd /RTC1c /Od /GS" )
+set(DEFAULT_COMPILE_FLAGS_DEBUG "/MDd /RTC1 /RTCc /Od /GS /sdl" )
 
 set(DEFAULT_COMPILE_FLAGS_RELEASE "/MD /Ot /Ob2 /Ox /GS- /GL" )
 
 
 
 set(WIN32_LINKER_FLAGS
-    "/NOLOGO /NXCOMPAT /NODEFAULTLIB:libcmt.lib"
+    "/NOLOGO /NXCOMPAT"
     # NOLOGO                                            -> suppress logo
     # INCREMENTAL:NO                                    -> enable incremental linking: no
     # MANIFEST                                          -> generate manifest: yes
@@ -82,12 +83,12 @@ set(WIN32_LINKER_FLAGS
 )
 
 set(DEFAULT_LINKER_FLAGS_DEBUG
-    "${WIN32_LINKER_FLAGS} /DEBUG /DYNAMICBASE:NO"
+    "${WIN32_LINKER_FLAGS} /DEBUG /DYNAMICBASE:NO /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcmt.lib /ignore:4099"
     # DEBUG        -> create debug info
 )
 
 set(DEFAULT_LINKER_FLAGS_RELEASE
-    "${WIN32_LINKER_FLAGS} /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO"
+    "${WIN32_LINKER_FLAGS} /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO /NODEFAULTLIB:libcmt.lib"
     # OPT:REF      -> references: eliminate unreferenced data
     # OPT:ICF      -> enable comdat folding: remove redundant comdats
     # LTCG         -> link time code generation: use link time code generation

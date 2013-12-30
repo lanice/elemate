@@ -58,6 +58,4 @@ private:
     /** adds a river bed to the heightField
       * @return terrain type id storage in row major order */
     glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField) const;
-
-    void operator=(TerrainGenerator& ) = delete;
 };

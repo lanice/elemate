@@ -29,5 +29,7 @@ protected:
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;
     bool m_grabbedTerrain;
 
+public:
+    Manipulator() = delete;
     void operator= (Manipulator&) = delete;
 };

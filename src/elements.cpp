@@ -1,11 +1,11 @@
 #include "elements.h"
 
 #include <cassert>
-#include <iostream>
 
 #include <glow/Program.h>
 
 #include <PxPhysics.h>
+#include <PxMaterial.h>
 
 bool Elements::s_isInitialized = false;
 std::unordered_map<std::string, physx::PxMaterial*>	Elements::s_pxMaterials;
@@ -49,10 +49,22 @@ void Elements::initialize(physx::PxPhysics & physxSdk)
         0.5f, 0.7f, 0.9f, 1.0f,    //specular
         0.0f, 0.0f, 0.0f, 0.0f));  //emission
 
-    for (const auto & pair : s_pxMaterials)
+    for (const auto & pair : s_pxMaterials) {
         assert(pair.second);
+        if (!pair.second)
+            glow::warning("Elements::initialize could not create PhysX material: %;", pair.first);
+    }
 
     s_isInitialized = true;
+}
+
+void Elements::clear()
+{
+    for (auto mat : s_pxMaterials)
+        mat.second->release();
+
+    s_pxMaterials.clear();
+    s_shadingMatices.clear();
 }
 
 void Elements::setAllUniforms(glow::Program & program)

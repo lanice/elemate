@@ -17,8 +17,11 @@ namespace physx {
 class PhysicsWrapper;
 
 struct Elements {
+    Elements() = delete;
+
     /** Call this function once before calling for the elements. */
     static void initialize(physx::PxPhysics & physxSdk);
+    static void clear();
 
     static void setAllUniforms(glow::Program & program);
 

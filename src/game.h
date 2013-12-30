@@ -1,12 +1,11 @@
 #pragma once
 
-#include <memory>
-
 #include <glowutils/Camera.h>
 
 #include "navigation.h"
 #include "manipulator.h"
 
+class PhysicsWrapper;
 class World;
 namespace std {         class thread; }
 struct GLFWwindow;
@@ -38,14 +37,15 @@ protected:
       * @param delta specifies the time between each logic update in seconds.*/
     void loop(double delta = 1.0/100.0);
 
-    std::shared_ptr<World>      m_world;
+    PhysicsWrapper * m_physicsWrapper;
+    World * m_world;
 
     glowutils::Camera m_camera;
     Navigation m_navigation;
     Manipulator m_manipulator;
 
 
-private:
+public:
     Game() = delete;
     void operator=(Game &) = delete;
 };

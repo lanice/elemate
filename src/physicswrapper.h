@@ -1,14 +1,22 @@
 #pragma once
 
-
 #include <string>
-#include <unordered_map>
+#include <list>
 #include <memory>
 
-#include "PxPhysicsAPI.h"
+#include <foundation/PxVec3.h>
+#include <foundation/PxSimpleTypes.h>
 
+namespace physx {
+    class PxPhysics;
+    class PxFoundation;
+    class PxScene;
+    class PxSceneDesc;
+    class PxDefaultCpuDispatcher;
+    class PxCooking;
+    class PxProfileZoneManager;
+}
 class ParticleEmitter;
-class ParticleDrawable;
 
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -19,8 +27,7 @@ class ParticleDrawable;
  */
 class PhysicsWrapper{
 public:
-    /** Explicit Constructor because Copying and Assignments are disabled. */
-    explicit PhysicsWrapper();
+    PhysicsWrapper();
     ~PhysicsWrapper();
 
     /** Proceeds with simulation for amount of given time delta. */
@@ -28,10 +35,6 @@ public:
     
     /** Creates a particle emitter */
     void makeParticleEmitter(const physx::PxVec3& position);
-
-    /** Creates a ball. */
-    void makeStandardBall(const physx::PxVec3& global_position, physx::PxReal radius, const physx::PxVec3& linear_velocity, const physx::PxVec3& angular_velocity);
-
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
@@ -62,11 +65,11 @@ protected:
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
-    physx::PxCooking*                               m_cooking;
+    //physx::PxCooking*                               m_cooking;
 
-    //std::list<DrawableAndPhysXObject>   m_objects;
-    std::list<ParticleEmitter*>         m_emitters;
+    std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
 
-private:
+public:
+    PhysicsWrapper(PhysicsWrapper&) = delete;
     void operator=(PhysicsWrapper&) = delete;
 };

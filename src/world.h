@@ -20,7 +20,7 @@ class Terrain;
 class World {
 public:
 
-    World();
+    World(PhysicsWrapper & physicsWrapper);
     ~World();
 
     /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
@@ -48,12 +48,16 @@ public:
     std::shared_ptr<SoundManager>               m_soundManager;
 
 protected:
-    std::shared_ptr<PhysicsWrapper>             m_physicsWrapper;
+    PhysicsWrapper & m_physicsWrapper;
 
     Navigation * m_navigation;
-    CyclicTime * m_time;
+    std::shared_ptr<CyclicTime> m_time;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
     void setUpLighting(glow::Program & program);
     void initShader();
+
+public:
+    World(World&) = delete;
+    void operator=(World&) = delete;
 };

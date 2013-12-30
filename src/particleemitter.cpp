@@ -1,9 +1,12 @@
 #include "particleemitter.h"
 
-#include "particledrawable.h"
-
 #include <cassert>
-#include <iostream>
+
+#include <glow/logging.h>
+
+#include "PxPhysicsAPI.h"
+
+#include "particledrawable.h"
 
 ParticleEmitter::ParticleEmitter(const physx::PxVec3& position):
     m_position(position),
@@ -76,6 +79,10 @@ void ParticleEmitter::createParticles(int number_of_particles){
 
     bool result = m_particleSystem->createParticles(particleCreationData);
     assert(result);
+    if (!result) {
+        glow::warning("ParticleEmitter::createParticles creation of %; physx particles failed", number_of_particles);
+        return;
+    }
 
     m_particleDrawable->addParticles(number_of_particles, m_particle_position_buffer);
 }

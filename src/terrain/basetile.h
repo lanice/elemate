@@ -24,7 +24,7 @@ protected:
 
     friend class TerrainGenerator;
 
-private:
+public:
     BaseTile() = delete;
-    void operator()(BaseTile&) = delete;
+    void operator=(BaseTile&) = delete;
 };
