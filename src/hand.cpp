@@ -34,13 +34,46 @@ Hand::Hand()
         return;
     }
 
+    assert(scene->mNumMeshes == 1);
     aiMesh * mesh = scene->mMeshes[0];
 
     m_numVertices = mesh->mNumVertices;
+    glow::UIntArray * indices = new glow::UIntArray;
+    for (unsigned face = 0; face < mesh->mNumFaces; ++face) {
+        assert(mesh->mFaces[face].mNumIndices == 3);     // using triangles
+        for (unsigned int i = 0; i < 3; ++i) {
+            indices->push_back(mesh->mFaces[face].mIndices[i]);
+        }
+    }
+    m_numIndices = static_cast<int>(indices->size());
+    m_indexBuffer = new glow::Buffer(GL_ELEMENT_ARRAY_BUFFER);
+    m_indexBuffer->setData(*indices, GL_STATIC_DRAW);
+    m_indexBuffer->unbind();
+    delete indices;
+
+    glow::Vec3Array * vertices = new glow::Vec3Array;
+    for (unsigned v = 0; v < mesh->mNumVertices; ++v) {
+        vertices->push_back(glm::vec3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z));
+    }
+    m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
+    m_vbo->setData(*vertices, GL_STATIC_DRAW);
+    m_vbo->unbind();
+    delete vertices;
+
+    glow::Vec3Array * normals = new glow::Vec3Array;
+    for (unsigned n = 0; n < mesh->mNumVertices; ++n) {
+        normals->push_back(glm::vec3(mesh->mNormals[n].x, mesh->mNormals[n].y, mesh->mNormals[n].z));
+    }
+    m_normalBuffer = new glow::Buffer(GL_ARRAY_BUFFER);
+    m_normalBuffer->setData(*normals, GL_STATIC_DRAW);
+    m_normalBuffer->unbind();
+    delete normals;
+
 
     m_vao = new glow::VertexArrayObject;
-    m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_vbo->setData(m_numVertices, mesh->mVertices, GL_STATIC_DRAW);
+    m_vao->bind();
+
+    m_indexBuffer->bind();
 
     glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
     vertexBinding->setAttribute(0);
@@ -48,7 +81,14 @@ Hand::Hand()
     vertexBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
     m_vao->enable(0);
 
+    glow::VertexAttributeBinding * normalBinding = m_vao->binding(1);
+    normalBinding->setAttribute(1);
+    normalBinding->setBuffer(m_normalBuffer, 0, sizeof(glm::vec3));
+    normalBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
+    m_vao->enable(1);
+
     m_vao->unbind();
+
 
     m_program = new glow::Program();
     m_program->attach(
@@ -71,7 +111,7 @@ void Hand::draw(const glowutils::Camera & camera)
     m_vao->bind();
 
     glPointSize(10.0f);
-    m_vao->drawArrays(GL_POINTS, 0, m_numVertices);
+    m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 
     m_vao->unbind();
 

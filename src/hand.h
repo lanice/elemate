@@ -36,7 +36,8 @@ protected:
 
     glow::ref_ptr<glow::Program> m_program;
 
-    unsigned int m_numVertices;
+    int m_numVertices;
+    int m_numIndices;
 
     glm::vec3 m_position;
     glm::mat4 m_translate;
