@@ -41,7 +41,7 @@ public:
 
     void setNavigation(Navigation & navigation);
 
-    void setUniforms(glow::Program & program);
+    void setUpLighting(glow::Program & program) const;
 
     glow::Program * programByName(const std::string & name);
     
@@ -56,7 +56,6 @@ protected:
     std::shared_ptr<CyclicTime> m_time;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
-    void setUpLighting(glow::Program & program);
     void initShader();
 
 public:

@@ -12,23 +12,24 @@ namespace glow {
 namespace glowutils {
     class Camera;
 }
+class World;
 
 class Hand 
 {
 public:
-
-    Hand();
+    Hand(const World & world);
     ~Hand();
 
     void draw(const glowutils::Camera & camera);
 
     glm::mat4 transform() const;
-    glm::mat4 defaultTransform() const;
 
     glm::vec3 position() const;
     void setPosition(const glm::vec3 & position);
 
 protected:
+    const World & m_world;
+
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Buffer> m_vbo;
     glow::ref_ptr<glow::Buffer> m_indexBuffer;
@@ -41,7 +42,10 @@ protected:
 
     glm::vec3 m_position;
     glm::mat4 m_translate;
+    glm::mat4 m_rotate;
+    glm::mat4 m_scale;
     glm::mat4 m_transform;
 
-    glm::mat4 m_defaultTransform;
+public:
+    void operator=(Hand&) = delete;
 };

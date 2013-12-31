@@ -13,8 +13,11 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "world.h"
 
-Hand::Hand()
+
+Hand::Hand(const World & world)
+: m_world(world)
 {
     /*m_hand->addChild( osgDB::readNodeFile("data/models/hand.3DS") );
     m_transform->addChild( m_hand );
@@ -23,8 +26,10 @@ Hand::Hand()
 
     m_transform->setMatrix( _defaultTransform );*/
 
-    m_defaultTransform = glm::mat4(0.0005f);
-    m_defaultTransform[3][3] = 1.0f;
+    m_scale = glm::mat4(0.0005f);
+    m_scale[3][3] = 1.0f;
+
+    setPosition(glm::vec3());
 
     Assimp::Importer importer;
     const aiScene * scene = importer.ReadFile("data/models/hand.3DS", aiPostProcessSteps::aiProcess_Triangulate);
@@ -93,8 +98,8 @@ Hand::Hand()
     m_program = new glow::Program();
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
-
 }
 
 
@@ -106,8 +111,12 @@ Hand::~Hand()
 void Hand::draw(const glowutils::Camera & camera)
 {
     m_program->use();
+    m_program->setUniform("modelView", camera.view() * m_transform);
     m_program->setUniform("modelViewProjection", camera.viewProjection() * m_transform);
-
+    m_program->setUniform("rotate", m_rotate);
+    m_program->setUniform("cameraposition", camera.eye());
+    m_world.setUpLighting(*m_program);
+    
     m_vao->bind();
 
     glPointSize(10.0f);
@@ -122,11 +131,6 @@ void Hand::draw(const glowutils::Camera & camera)
 glm::mat4 Hand::transform() const
 {
     return m_transform;
-}
-
-glm::mat4 Hand::defaultTransform() const
-{
-    return m_defaultTransform;
 }
 
 glm::vec3 Hand::position() const
@@ -144,6 +148,6 @@ void Hand::setPosition(const glm::vec3 & position)
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
         position.x, position.y, position.z, 1.0f);
-    m_transform = m_translate * m_defaultTransform;
+    m_transform = m_translate * m_rotate * m_scale;
     // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
 }

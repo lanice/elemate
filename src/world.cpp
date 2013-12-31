@@ -24,7 +24,7 @@
 
 World::World(PhysicsWrapper & physicsWrapper)
 : m_physicsWrapper(physicsWrapper)
-, hand(new Hand())
+, hand(new Hand(*this))
 , m_soundManager(std::make_shared<SoundManager>())
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
@@ -111,7 +111,7 @@ void World::initShader()
 {
 }
 
-void World::setUpLighting(glow::Program & program)
+void World::setUpLighting(glow::Program & program) const
 {
     static glm::vec4 lightambientglobal(0, 0, 0, 0);
     static glm::vec3 lightdir1(0.0, 6.5, 7.5);
@@ -134,18 +134,6 @@ void World::setUpLighting(glow::Program & program)
     program.setUniform("lightdir2", lightdir2);
     program.setUniform("light1", lightMat1);
     program.setUniform("light2", lightMat2);
-}
-
-void World::setUniforms(glow::Program & program)
-{
-    assert(m_navigation);
-    program.setUniform("view", m_navigation->camera()->view());
-    program.setUniform("viewProjection", m_navigation->camera()->viewProjection());
-    program.setUniform("cameraposition", m_navigation->camera()->eye());
-    
-    setUpLighting(program);
-
-    Elements::setAllUniforms(program);
 }
 
 glow::Program * World::programByName(const std::string & name)
