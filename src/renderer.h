@@ -28,6 +28,7 @@ public:
 protected:
     // drawing steps
     void sceneStep(const glowutils::Camera & camera);
+    void handStep(const glowutils::Camera & camera);
     void particleWaterStep(const glowutils::Camera & camera);
     void flushStep();
 
@@ -42,6 +43,9 @@ protected:
     glow::ref_ptr<glow::FrameBufferObject> m_sceneFbo;
     glow::ref_ptr<glow::Texture> m_sceneColor;
     glow::ref_ptr<glow::Texture> m_sceneDepth;
+
+    glow::ref_ptr<glow::FrameBufferObject> m_handFbo;
+    glow::ref_ptr<glow::RenderBufferObject> m_handDepth;
 
     glow::ref_ptr<glow::FrameBufferObject> m_particleWaterFbo;
     glow::ref_ptr<glow::Texture> m_particleWaterColor;
