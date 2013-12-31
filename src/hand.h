@@ -22,10 +22,11 @@ public:
 
     void draw(const glowutils::Camera & camera);
 
-    glm::mat4 transform();
-    glm::mat4 defaultTransform();
+    glm::mat4 transform() const;
+    glm::mat4 defaultTransform() const;
 
-    glm::vec3 position();
+    glm::vec3 position() const;
+    void setPosition(const glm::vec3 & position);
 
 protected:
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
@@ -37,8 +38,9 @@ protected:
 
     unsigned int m_numVertices;
 
-
+    glm::vec3 m_position;
+    glm::mat4 m_translate;
     glm::mat4 m_transform;
 
-    glm::mat4 _defaultTransform;
+    glm::mat4 m_defaultTransform;
 };

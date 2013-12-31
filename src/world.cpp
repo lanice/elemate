@@ -17,12 +17,14 @@
 #include "soundmanager.h"
 #include "navigation.h"
 #include "elements.h"
+#include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
 
 
 World::World(PhysicsWrapper & physicsWrapper)
 : m_physicsWrapper(physicsWrapper)
+, hand(new Hand())
 , m_soundManager(std::make_shared<SoundManager>())
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))

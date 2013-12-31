@@ -23,8 +23,8 @@ Hand::Hand()
 
     m_transform->setMatrix( _defaultTransform );*/
 
-    _defaultTransform = glm::mat4(0.0005f);
-    _defaultTransform[3][3] = 1.0f;
+    m_defaultTransform = glm::mat4(0.0005f);
+    m_defaultTransform[3][3] = 1.0f;
 
     Assimp::Importer importer;
     const aiScene * scene = importer.ReadFile("data/models/hand.3DS", aiPostProcessSteps::aiProcess_Triangulate);
@@ -66,7 +66,7 @@ Hand::~Hand()
 void Hand::draw(const glowutils::Camera & camera)
 {
     m_program->use();
-    m_program->setUniform("modelViewProjection", camera.viewProjection() * _defaultTransform);
+    m_program->setUniform("modelViewProjection", camera.viewProjection() * m_transform);
 
     m_vao->bind();
 
@@ -79,21 +79,31 @@ void Hand::draw(const glowutils::Camera & camera)
 }
 
 
-glm::mat4 Hand::transform()
+glm::mat4 Hand::transform() const
 {
     return m_transform;
 }
 
-
-glm::mat4 Hand::defaultTransform()
+glm::mat4 Hand::defaultTransform() const
 {
-    return _defaultTransform;
+    return m_defaultTransform;
 }
 
-
-glm::vec3 Hand::position()
+glm::vec3 Hand::position() const
 {
-    return glm::vec3();
+    return m_position;
     /*osg::Matrix matrix = m_transform.get()->getMatrix();
     return osg::Vec3( matrix(3, 0), matrix(3, 1), matrix(3, 2) );*/
+}
+
+void Hand::setPosition(const glm::vec3 & position)
+{
+    m_position = position;
+    m_translate = glm::mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        position.x, position.y, position.z, 1.0f);
+    m_transform = m_translate * m_defaultTransform;
+    // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
 }

@@ -11,6 +11,7 @@
 namespace glowutils { class Camera; }
 
 class World;
+class Hand;
 class TerrainInteractor;
 class Renderer;
 
@@ -40,6 +41,7 @@ protected:
     GLFWwindow & m_window;
     const glowutils::Camera & m_camera;
     World & m_world;
+    Hand & m_hand;
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;
     bool m_grabbedTerrain;
     Renderer * m_renderer;

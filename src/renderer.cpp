@@ -20,8 +20,6 @@ namespace glow {
 #include "particledrawable.h"
 #include "hand.h"
 
-Hand * hand;
-
 Renderer::Renderer(const World & world)
 : m_world(world)
 {
@@ -77,8 +75,6 @@ void Renderer::initialize()
     m_quadProgram->setUniform("waterDepth", 2);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
-
-    hand = new Hand();
 }
 
 void Renderer::operator()(const glowutils::Camera & camera)
@@ -99,7 +95,7 @@ void Renderer::sceneStep(const glowutils::Camera & camera)
     glEnable(GL_DEPTH_TEST);
 
     m_world.terrain->draw(camera);
-    hand->draw(camera);
+    m_world.hand->draw(camera);
 
     m_sceneFbo->unbind();
 }
