@@ -29,10 +29,8 @@ void main()
 {
     uint id = texelFetch(terrainTypeID, g_texIndex).x;
     
-    vec4 textureColor = texture(rockSampler, g_worldPos.xz);
+    vec4 textureColor = texture(rockSampler, g_worldPos.xz * 0.1);
     vec4 lightColor;
-    fragColor = textureColor;
-    return;
     
     switch(id) {
     case 1u:
@@ -46,5 +44,5 @@ void main()
         break;
     }
     
-    fragColor = mix(lightColor, textureColor, 0.7);    
+    fragColor = mix(lightColor, textureColor, 0.5);
 }

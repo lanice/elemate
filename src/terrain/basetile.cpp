@@ -51,14 +51,20 @@ void BaseTile::initialize()
     TerrainTile::initialize();
 
     m_rockTexture = new glow::Texture(GL_TEXTURE_2D);
-    m_rockTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_rockTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     m_rockTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     m_rockTexture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
     m_rockTexture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     RawImage rockImage("data/textures/rock.raw", 1024, 1024);
 
-    m_rockTexture->image2D(0, GL_RGB8, rockImage.width(), rockImage.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, rockImage.rawData());
+    m_rockTexture->bind();
+    m_rockTexture->storage2D(8, GL_RGB8, rockImage.width(), rockImage.height());
+    CheckGLError();
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rockImage.width(), rockImage.height(), GL_RGB, GL_UNSIGNED_BYTE, rockImage.rawData());
+    CheckGLError();
+    glGenerateMipmap(GL_TEXTURE_2D);
+    CheckGLError();
 }
 
 void BaseTile::initializeProgram()

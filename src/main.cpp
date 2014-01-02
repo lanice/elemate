@@ -83,6 +83,8 @@ int main()
 
     checkVersion();
 
+    glow::DebugMessageOutput::enable();
+
     // GLOW takes care of initializing GLEW correctly.
     if (!glow::init())
     {
