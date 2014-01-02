@@ -7,21 +7,20 @@ class RawImage
 {
 public:
     RawImage(size_t size = 0);
-    RawImage(const std::string & filename);
+    RawImage(const std::string & filename, uint32_t width, uint32_t height);
     ~RawImage();
 
     enum class Status {
         Success,
         InvalidFile,
-        UnknownImageType,
-        OutOfMemory
+        InvalidFileSize,
+        ReadError
     };
 
-    bool readPngFromFile(const std::string & filename);
-
     Status status() const;
-    uint8_t * data();
-    uint8_t * const data() const;
+    char * rawData();
+    char * const rawData() const;
+    /** @return allocated size in bytes */
     size_t size() const;
 
     uint32_t width() const;
@@ -30,7 +29,7 @@ public:
 protected:
     Status m_status;
 
-    uint8_t * m_data;
+    char * m_data;
     size_t m_size;
     uint32_t m_width;
     uint32_t m_height;

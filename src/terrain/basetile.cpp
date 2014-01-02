@@ -57,12 +57,9 @@ void BaseTile::initialize()
     m_rockTexture->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_rockTexture->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    RawImage rockImage("data/rock.png");
+    RawImage rockImage("data/textures/rock.raw", 1024, 1024);
 
-    if (rockImage.status() != RawImage::Status::Success)
-        glow::warning("Could not load texture data/rock.png");
-
-    m_rockTexture->image2D(0, GL_RGB32F, rockImage.width(), rockImage.height(), 0, GL_RGB, GL_FLOAT, rockImage.data());
+    m_rockTexture->image2D(0, GL_RGB, rockImage.width(), rockImage.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, rockImage.rawData());
 }
 
 void BaseTile::initializeProgram()
