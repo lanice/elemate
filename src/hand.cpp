@@ -9,6 +9,8 @@
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -19,15 +21,10 @@
 Hand::Hand(const World & world)
 : m_world(world)
 {
-    /*m_hand->addChild( osgDB::readNodeFile("data/models/hand.3DS") );
-    m_transform->addChild( m_hand );
+    m_rotate = glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f));
+    m_rotate = glm::rotate(m_rotate, 180.0f, glm::vec3(.0f, 1.0f, .0f));
 
-    _defaultTransform = (  osg::Matrixd::scale( 0.0005,0.0005,0.0005 ) * osg::Matrixd::rotate( 3.1415926f * 1.5, osg::Vec3(1.0, .0, .0) ) * osg::Matrixd::rotate( 3.1415926f * 1., osg::Vec3(.0, 1.0, .0) ) );
-
-    m_transform->setMatrix( _defaultTransform );*/
-
-    m_scale = glm::mat4(0.0005f);
-    m_scale[3][3] = 1.0f;
+    m_scale = glm::scale(glm::mat4(), glm::vec3(0.0005f));
 
     setPosition(glm::vec3());
 
@@ -136,8 +133,6 @@ glm::mat4 Hand::transform() const
 glm::vec3 Hand::position() const
 {
     return m_position;
-    /*osg::Matrix matrix = m_transform.get()->getMatrix();
-    return osg::Vec3( matrix(3, 0), matrix(3, 1), matrix(3, 2) );*/
 }
 
 void Hand::setPosition(const glm::vec3 & position)
@@ -149,5 +144,4 @@ void Hand::setPosition(const glm::vec3 & position)
         0.0f, 0.0f, 1.0f, 0.0f,
         position.x, position.y, position.z, 1.0f);
     m_transform = m_translate * m_rotate * m_scale;
-    // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
 }
