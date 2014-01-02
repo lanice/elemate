@@ -12,6 +12,7 @@ public:
     virtual void unbind() override;
 
 protected:
+    virtual void initialize() override;
     virtual void initializeProgram() override;
     virtual void pxSamplesAndMaterials(physx::PxHeightFieldSample * hfSamples, physx::PxReal heightScale, physx::PxMaterial ** &materials) override;
     virtual void createTerrainTypeTexture();
@@ -21,6 +22,8 @@ protected:
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;
     glow::UByteArray * m_terrainTypeData;
+
+    glow::ref_ptr<glow::Texture> m_rockTexture;
 
     friend class TerrainGenerator;
 

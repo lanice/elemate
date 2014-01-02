@@ -46,6 +46,8 @@ set(SOURCES
     src/world.h
     src/hand.cpp
     src/hand.h
+    src/imagereader.h
+    src/imagereader.cpp
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h

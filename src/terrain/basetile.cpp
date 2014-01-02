@@ -11,12 +11,14 @@
 
 #include "terrain.h"
 #include "elements.h"
+#include "imagereader.h"
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID)
 : TerrainTile(terrain, tileID)
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
 , m_terrainTypeData(nullptr)
+, m_rockTexture(nullptr)
 {
 }
 
@@ -27,18 +29,40 @@ BaseTile::~BaseTile()
 
 void BaseTile::bind(const glowutils::Camera & camera)
 {
+    TerrainTile::bind(camera);
+
     if (!m_terrainTypeTex)
         createTerrainTypeTexture();
 
-    glActiveTexture(GL_TEXTURE0 + 1);
+    glActiveTexture(GL_TEXTURE1);
     m_terrainTypeTex->bind();
 
-    TerrainTile::bind(camera);
+    glActiveTexture(GL_TEXTURE2);
+    m_rockTexture->bind();
 }
 
 void BaseTile::unbind()
 {
     TerrainTile::unbind();
+}
+
+void BaseTile::initialize()
+{
+    TerrainTile::initialize();
+
+    m_rockTexture = new glow::Texture(GL_TEXTURE_2D);
+    m_rockTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_rockTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_rockTexture->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_rockTexture->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_rockTexture->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    RawImage rockImage("data/rock.png");
+
+    if (rockImage.status() != RawImage::Status::Success)
+        glow::warning("Could not load texture data/rock.png");
+
+    m_rockTexture->image2D(0, GL_RGB32F, rockImage.width(), rockImage.height(), 0, GL_RGB, GL_FLOAT, rockImage.data());
 }
 
 void BaseTile::initializeProgram()
