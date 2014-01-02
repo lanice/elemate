@@ -3,10 +3,12 @@
 layout(location = 0)in vec2 _vertex;
 
 out vec2 v_vertex;
+out vec3 v_worldPos;
 out vec3 v_viewPos;
 out vec4 v_projPos;
 out vec3 v_normal;
 
+uniform mat4 modelTransform;
 uniform mat4 modelView;
 uniform mat4 modelViewProjection;
 uniform samplerBuffer heightField;
@@ -21,6 +23,8 @@ void main()
     v_vertex = _vertex;
     
     vec4 vertex = vec4(_vertex.x, height, _vertex.y, 1.0);
+    
+    v_worldPos = (modelTransform * vertex).xyz;
     
     vec4 viewPos4 = modelView * vertex;
     v_viewPos = viewPos4.xyz / viewPos4.w;

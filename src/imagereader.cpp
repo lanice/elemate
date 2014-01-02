@@ -4,12 +4,14 @@
 
 #include <glow/logging.h>
 
-RawImage::RawImage(size_t size /*= 0*/)
+RawImage::RawImage(uint32_t width, uint32_t height)
 : m_data(nullptr)
-, m_size(size)
+, m_size(width * height * 3)
+, m_width(width)
+, m_height(height)
 {
-    if (size > 0)
-        m_data = new char[size];
+    if (m_size > 0)
+        m_data = new char[m_size];
 }
 
 RawImage::~RawImage()
@@ -18,7 +20,7 @@ RawImage::~RawImage()
 }
 
 RawImage::RawImage(const std::string & filename, uint32_t width, uint32_t height)
-: RawImage(width * height * 3)
+: RawImage(width, height)
 {
     std::ifstream file(filename, std::ios_base::binary);
 

@@ -6,7 +6,7 @@
 class RawImage
 {
 public:
-    RawImage(size_t size = 0);
+    RawImage(uint32_t width, uint32_t height);
     RawImage(const std::string & filename, uint32_t width, uint32_t height);
     ~RawImage();
 
