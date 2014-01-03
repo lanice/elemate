@@ -68,6 +68,14 @@ int main()
 
     const int initialWidth = 640;
     const int initialHeight = 480;
+
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, MajorVersionRequire);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, MinorVersionRequire);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    if (MajorVersionRequire >= 3 && MinorVersionRequire >= 2)
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     GLFWwindow * window = glfwCreateWindow(initialWidth, initialHeight, "Elemate", NULL, NULL);
     if (!window)
     {

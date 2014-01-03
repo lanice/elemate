@@ -44,7 +44,6 @@ void Renderer::initialize()
     m_sceneDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_sceneDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_sceneDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    m_sceneDepth->setParameter(GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
     m_sceneFbo = new glow::FrameBufferObject();
     m_sceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
@@ -69,7 +68,6 @@ void Renderer::initialize()
     m_particleWaterDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_particleWaterDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_particleWaterDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    m_particleWaterDepth->setParameter(GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
     m_particleWaterFbo = new glow::FrameBufferObject();
     m_particleWaterFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_particleWaterDepth);
