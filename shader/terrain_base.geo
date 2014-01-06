@@ -1,6 +1,7 @@
 #version 330 core
 
 in vec2 v_vertex[3];
+in vec3 v_worldPos[3];
 in vec3 v_viewPos[3];
 in vec4 v_projPos[3];
 in vec3 v_normal[3];
@@ -8,6 +9,7 @@ in vec3 v_normal[3];
 flat out int g_texIndex;
 out vec3 g_viewPos;
 out vec3 g_normal;
+out vec3 g_worldPos;
 
 uniform uvec2 tileRowsColumns;
 
@@ -28,6 +30,8 @@ void main()
         g_texIndex = texIndex;
         
         g_normal = v_normal[i];
+        
+        g_worldPos = v_worldPos[i];
         
         g_viewPos = v_viewPos[i];
         gl_Position = v_projPos[i];

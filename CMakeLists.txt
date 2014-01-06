@@ -37,8 +37,10 @@ set(SOURCES
     src/game.h
     src/world.cpp
     src/world.h
-    # src/hand.cpp
-    # src/hand.h
+    src/hand.cpp
+    src/hand.h
+    src/imagereader.h
+    src/imagereader.cpp
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h
@@ -110,6 +112,7 @@ find_package( GLFW REQUIRED )
 find_package( GLOW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
+find_package( ASSIMP REQUIRED )
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
@@ -156,3 +159,4 @@ config_project( ${PROJECT_NAME} GLOW 0 )
 config_project( ${PROJECT_NAME} GLOW_UTILS 0 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
+config_project( ${PROJECT_NAME} ASSIMP 0 )

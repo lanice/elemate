@@ -15,6 +15,7 @@ class Navigation;
 class PhysicsWrapper;
 class SoundManager;
 class CyclicTime;
+class Hand;
 class Terrain;
 
 class World {
@@ -40,10 +41,11 @@ public:
 
     void setNavigation(Navigation & navigation);
 
-    void setUniforms(glow::Program & program);
+    void setUpLighting(glow::Program & program) const;
 
     glow::Program * programByName(const std::string & name);
     
+    std::shared_ptr<Hand>                       hand;
     std::shared_ptr<Terrain>                    terrain;
     std::shared_ptr<SoundManager>               m_soundManager;
 
@@ -56,7 +58,6 @@ protected:
 
     std::vector<int> m_sounds;
 
-    void setUpLighting(glow::Program & program);
     void initShader();
 
 public:

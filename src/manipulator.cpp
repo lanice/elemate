@@ -2,20 +2,23 @@
 
 #include <glow/logging.h>
 #include <glow/FrameBufferObject.h>
-#include <glowutils/Camera.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/swizzle.hpp>
 
 #include "world.h"
+#include "navigation.h"
+#include "hand.h"
 #include "renderer.h"
 #include "terrain/terraininteractor.h"
 
 
-Manipulator::Manipulator(GLFWwindow & window, const glowutils::Camera & camera, World & world) :
+Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
 m_window(window),
-m_camera(camera),
+m_navigation(navigation),
+m_camera(*navigation.camera()),
 m_world(world),
+m_hand(*world.hand),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
 m_grabbedTerrain(false),
 m_renderer(nullptr)
@@ -26,17 +29,14 @@ Manipulator::~Manipulator()
 {
 }
 
-// until we have a hand
-static glm::vec3 handPosition;
-
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
 {
     bool altPressed = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS && !altPressed)
     {
-        m_world.makeStandardBall(handPosition);
-        m_world.createFountainSound(handPosition);
+        m_world.makeStandardBall(m_hand.position());
+        m_world.createFountainSound(m_hand.position());
     }
     if (key == GLFW_KEY_I && action == GLFW_PRESS)
         m_world.toggleBackgroundSound(0);
@@ -50,20 +50,20 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
     // Terrain interaction
     if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS) {
         m_grabbedTerrain = true;
-        m_terrainInteractor->heightGrab(handPosition.x, handPosition.z, TerrainLevel::BaseLevel);
+        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
     }
     if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE) {
         m_grabbedTerrain = false;
     }
 
     if (key == GLFW_KEY_R && action == GLFW_PRESS && altPressed) {
-        m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, TerrainLevel::BaseLevel, 0.1f);
-        m_terrainInteractor->heightGrab(handPosition.x, handPosition.z, TerrainLevel::BaseLevel);
+        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
+        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
     }
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS && altPressed) {
-        m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, TerrainLevel::BaseLevel, -0.1f);
-        m_terrainInteractor->heightGrab(handPosition.x, handPosition.z, TerrainLevel::BaseLevel);
+        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
+        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
     }
 }
 
@@ -72,13 +72,13 @@ void Manipulator::updateHandPosition()
     double xpos, ypos;
     glfwGetCursorPos(&m_window, &xpos, &ypos);
 
-    handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos))) + glm::vec3(0.0f, 0.5f, 0.0f);
+    glm::vec3 handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos))) + glm::vec3(0.0f, 0.5f, 0.0f);
 
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
 
-    // Final step, as soon as we have the Hand.
-    // m_hand->transform()->setMatrix( m_hand->defaultTransform()/* * rotationMatrix*/ * glm::translate( pos ) );
+    m_hand.setPosition(handPosition);
+    m_hand.rotate(m_navigation.rotationAngle());
 }
 
 void Manipulator::setRenderer(Renderer & renderer)

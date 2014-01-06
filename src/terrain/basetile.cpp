@@ -11,12 +11,14 @@
 
 #include "terrain.h"
 #include "elements.h"
+#include "imagereader.h"
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID)
 : TerrainTile(terrain, tileID)
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
 , m_terrainTypeData(nullptr)
+, m_rockTexture(nullptr)
 {
 }
 
@@ -27,18 +29,42 @@ BaseTile::~BaseTile()
 
 void BaseTile::bind(const glowutils::Camera & camera)
 {
+    TerrainTile::bind(camera);
+
     if (!m_terrainTypeTex)
         createTerrainTypeTexture();
 
-    glActiveTexture(GL_TEXTURE0 + 1);
+    glActiveTexture(GL_TEXTURE1);
     m_terrainTypeTex->bind();
 
-    TerrainTile::bind(camera);
+    glActiveTexture(GL_TEXTURE2);
+    m_rockTexture->bind();
 }
 
 void BaseTile::unbind()
 {
     TerrainTile::unbind();
+}
+
+void BaseTile::initialize()
+{
+    TerrainTile::initialize();
+
+    m_rockTexture = new glow::Texture(GL_TEXTURE_2D);
+    m_rockTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    m_rockTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_rockTexture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    m_rockTexture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    RawImage rockImage("data/textures/rock.raw", 1024, 1024);
+
+    m_rockTexture->bind();
+    m_rockTexture->storage2D(8, GL_RGB8, rockImage.width(), rockImage.height());
+    CheckGLError();
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rockImage.width(), rockImage.height(), GL_RGB, GL_UNSIGNED_BYTE, rockImage.rawData());
+    CheckGLError();
+    glGenerateMipmap(GL_TEXTURE_2D);
+    CheckGLError();
 }
 
 void BaseTile::initializeProgram()
@@ -52,6 +78,8 @@ void BaseTile::initializeProgram()
     m_program->attach(vertex, geo, fragment, phongLightingFrag);
 
     m_program->setUniform("terrainTypeID", 1);
+    m_program->setUniform("rockSampler", 2);
+    m_program->setUniform("modelTransform", m_transform);
 
     Elements::setAllUniforms(*m_program);
 }

@@ -18,6 +18,7 @@ namespace glow {
 #include "world.h"
 #include "terrain/terrain.h"
 #include "particledrawable.h"
+#include "hand.h"
 
 Renderer::Renderer(const World & world)
 : m_world(world)
@@ -43,7 +44,6 @@ void Renderer::initialize()
     m_sceneDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_sceneDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_sceneDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    m_sceneDepth->setParameter(GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
     m_sceneFbo = new glow::FrameBufferObject();
     m_sceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
@@ -51,13 +51,23 @@ void Renderer::initialize()
     m_sceneFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
     m_sceneFbo->unbind();
 
+
+    m_handDepth = new glow::RenderBufferObject();
+
+    // draw the hand into the scene color texture, but do not change the scene depth
+    m_handFbo = new glow::FrameBufferObject();
+    m_handFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
+    m_handFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_handDepth);
+    m_handFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_handFbo->unbind();
+
+
     m_particleWaterDepth = new glow::Texture(GL_TEXTURE_2D);
     m_particleWaterDepth->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     m_particleWaterDepth->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_particleWaterDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_particleWaterDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_particleWaterDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    m_particleWaterDepth->setParameter(GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
     m_particleWaterFbo = new glow::FrameBufferObject();
     m_particleWaterFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_particleWaterDepth);
@@ -81,6 +91,7 @@ void Renderer::operator()(const glowutils::Camera & camera)
     assert(m_sceneFbo);
 
     sceneStep(camera);
+    handStep(camera);
     particleWaterStep(camera);
     flushStep();
 }
@@ -96,6 +107,22 @@ void Renderer::sceneStep(const glowutils::Camera & camera)
     m_world.terrain->draw(camera);
 
     m_sceneFbo->unbind();
+}
+
+void Renderer::handStep(const glowutils::Camera & camera)
+{
+    m_handFbo->bind();
+
+    // reuse the depth data from scene step
+    // ... there are probably more performant ways for the hand depth test than copying the whole buffer...
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_sceneFbo->id());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_handFbo->id());
+    glBlitFramebuffer(0, 0, camera.viewport().x, camera.viewport().y, 0, 0, camera.viewport().x, camera.viewport().y,
+        GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+    m_world.hand->draw(camera);
+    
+    m_handFbo->unbind();
 }
 
 void Renderer::particleWaterStep(const glowutils::Camera & camera)
@@ -141,6 +168,9 @@ void Renderer::resize(int width, int height)
     m_sceneDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_sceneFbo->printStatus(true);
     assert(m_sceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+
+    m_handDepth->storage(GL_DEPTH_COMPONENT32F, width, height);
+    assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_particleWaterDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_particleWaterFbo->printStatus(true);
