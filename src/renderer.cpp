@@ -160,13 +160,13 @@ void Renderer::particleWaterStep(const glowutils::Camera & camera)
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    m_particleWaterNormalsFbo->bind();
+    //m_particleWaterNormalsFbo->bind();
     m_particleWaterDepth->bind(GL_TEXTURE0);
 
     m_particleWaterQuad->draw();
 
     m_particleWaterDepth->unbind(GL_TEXTURE0);
-    m_particleWaterNormalsFbo->unbind();
+    //m_particleWaterNormalsFbo->unbind();
 }
 
 void Renderer::flushStep()
@@ -175,7 +175,7 @@ void Renderer::flushStep()
     m_sceneDepth->bind(GL_TEXTURE1);
     m_particleWaterDepth->bind(GL_TEXTURE2);
 
-    m_quad->draw();
+    //m_quad->draw();
 
     m_sceneColor->unbind(GL_TEXTURE0);
     m_sceneDepth->unbind(GL_TEXTURE1);
