@@ -204,7 +204,9 @@ void Renderer::resize(int width, int height)
     m_particleWaterFbo->printStatus(true);
     assert(m_particleWaterFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_particleWaterNormals->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    m_particleWaterNormals->image2D(0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
     m_particleWaterNormalsFbo->printStatus(true);
     assert(m_particleWaterFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+
+    m_particleWaterProgram->setUniform("viewport", glm::ivec2(width, height));
 }
