@@ -34,8 +34,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
     m_soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
     //set volume (make quieter)
-    m_soundManager->setVolume(0, 0.14f);
-    m_soundManager->setVolume(1, 0.3f);
+    m_soundManager->setVolume(0, 0.25f);
+    m_soundManager->setVolume(1, 0.5f);
 
     initShader();
 
@@ -60,6 +60,10 @@ World::~World()
 void World::togglePause()
 {
     m_time->isRunning() ? m_time->pause() : m_time->start();
+
+    // Pause/resume all sounds except the background sounds.
+    for (const auto sound : m_sounds)
+        m_soundManager->setPaused(sound, !m_time->isRunning());
 }
 
 void World::stopSimulation()
@@ -84,7 +88,8 @@ void World::makeStandardBall(const glm::vec3& position)
 
 void World::createFountainSound(const glm::vec3& position)
 {
-    m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, false, { position.x, position.y, position.z });
+    int id = m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), { position.x, position.y, position.z });
+    m_sounds.push_back(id);
 }
 
 void World::toggleBackgroundSound(int id){
