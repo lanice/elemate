@@ -51,6 +51,12 @@ protected:
     glow::ref_ptr<glow::Texture> m_particleWaterColor;
     glow::ref_ptr<glow::Texture> m_particleWaterDepth;
 
+    glow::ref_ptr<glow::FrameBufferObject> m_particleWaterNormalsFbo;
+    glow::ref_ptr<glow::Texture> m_particleWaterNormals;
+
+    glow::ref_ptr<glowutils::ScreenAlignedQuad> m_particleWaterQuad;
+    glow::ref_ptr<glow::Program> m_particleWaterProgram;
+
 public:
     Renderer() = delete;
     Renderer(Renderer&) = delete;

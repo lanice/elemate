@@ -74,6 +74,24 @@ void Renderer::initialize()
     m_particleWaterFbo->setDrawBuffer(GL_NONE);
     m_particleWaterFbo->unbind();
 
+    m_particleWaterNormals = new glow::Texture(GL_TEXTURE_2D);
+    m_particleWaterNormals->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_particleWaterNormals->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_particleWaterNormals->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_particleWaterNormals->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    m_particleWaterNormalsFbo = new glow::FrameBufferObject();
+    m_particleWaterNormalsFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_particleWaterNormals);
+    m_particleWaterNormalsFbo->setDrawBuffers({GL_COLOR_ATTACHMENT0});
+    m_particleWaterNormalsFbo->unbind();
+
+    m_particleWaterProgram = new glow::Program();
+    m_particleWaterProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_normals.frag"));
+    m_particleWaterProgram->setUniform("waterDepth", 0);
+    m_particleWaterQuad = new glowutils::ScreenAlignedQuad(m_particleWaterProgram);
+
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
@@ -136,13 +154,23 @@ void Renderer::particleWaterStep(const glowutils::Camera & camera)
     ParticleDrawable::drawParticles(camera);
 
     m_particleWaterFbo->unbind();
+
+    // render the water surface normals
+
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+
+    m_particleWaterNormalsFbo->bind();
+    m_particleWaterDepth->bind(GL_TEXTURE0);
+
+    m_particleWaterQuad->draw();
+
+    m_particleWaterDepth->unbind(GL_TEXTURE0);
+    m_particleWaterNormalsFbo->unbind();
 }
 
 void Renderer::flushStep()
 {
-    glDisable(GL_DEPTH_TEST);
-    glDepthMask(GL_FALSE);
-
     m_sceneColor->bind(GL_TEXTURE0);
     m_sceneDepth->bind(GL_TEXTURE1);
     m_particleWaterDepth->bind(GL_TEXTURE2);
@@ -174,5 +202,9 @@ void Renderer::resize(int width, int height)
 
     m_particleWaterDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_particleWaterFbo->printStatus(true);
+    assert(m_particleWaterFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+
+    m_particleWaterNormals->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    m_particleWaterNormalsFbo->printStatus(true);
     assert(m_particleWaterFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 }
