@@ -116,7 +116,6 @@ void Hand::draw(const glowutils::Camera & camera)
     
     m_vao->bind();
 
-    glPointSize(10.0f);
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 
     m_vao->unbind();
