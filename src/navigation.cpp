@@ -142,3 +142,14 @@ const glowutils::Camera * Navigation::camera() const
 {
     return m_camera;
 }
+
+const float Navigation::rotationAngle() const
+{
+    glm::vec3 eulerAngles = glm::eulerAngles(m_rotation);
+
+    // return eulerAngles.y;
+    if (eulerAngles.x > 0)
+        return eulerAngles.y >= 0 ? eulerAngles.y : 360.f + eulerAngles.y;
+    else
+        return 180.f - eulerAngles.y;
+}

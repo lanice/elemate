@@ -11,6 +11,7 @@
 namespace glowutils { class Camera; }
 
 class World;
+class Navigation;
 class Hand;
 class TerrainInteractor;
 class Renderer;
@@ -18,7 +19,7 @@ class Renderer;
 class Manipulator : public glowutils::AbstractCoordinateProvider
 {
 public:
-    Manipulator(GLFWwindow & window, const glowutils::Camera & camera, World & world);
+    Manipulator(GLFWwindow & window, const Navigation & navigation, World & world);
     virtual ~Manipulator();
 
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
@@ -39,6 +40,7 @@ public:
 
 protected:
     GLFWwindow & m_window;
+    const Navigation & m_navigation;
     const glowutils::Camera & m_camera;
     World & m_world;
     Hand & m_hand;

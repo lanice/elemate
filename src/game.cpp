@@ -21,7 +21,7 @@ m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
 m_camera(),
 m_navigation(window, m_camera, m_world->terrain),
-m_manipulator(window, m_camera, *m_world),
+m_manipulator(window, m_navigation, *m_world),
 m_renderer(*m_world)
 {
     m_world->setNavigation(m_navigation);

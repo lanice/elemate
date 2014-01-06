@@ -27,6 +27,8 @@ public:
     glm::vec3 position() const;
     void setPosition(const glm::vec3 & position);
 
+    void rotate(const float angle);
+
 protected:
     const World & m_world;
 

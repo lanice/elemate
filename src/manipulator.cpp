@@ -2,20 +2,21 @@
 
 #include <glow/logging.h>
 #include <glow/FrameBufferObject.h>
-#include <glowutils/Camera.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/swizzle.hpp>
 
 #include "world.h"
+#include "navigation.h"
 #include "hand.h"
 #include "renderer.h"
 #include "terrain/terraininteractor.h"
 
 
-Manipulator::Manipulator(GLFWwindow & window, const glowutils::Camera & camera, World & world) :
+Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
 m_window(window),
-m_camera(camera),
+m_navigation(navigation),
+m_camera(*navigation.camera()),
 m_world(world),
 m_hand(*world.hand),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
@@ -77,6 +78,7 @@ void Manipulator::updateHandPosition()
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
 
     m_hand.setPosition(handPosition);
+    m_hand.rotate(m_navigation.rotationAngle());
 }
 
 void Manipulator::setRenderer(Renderer & renderer)

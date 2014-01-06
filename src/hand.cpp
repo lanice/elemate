@@ -18,11 +18,12 @@
 #include "world.h"
 
 
+static const glm::mat4 c_defaultRotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
+
 Hand::Hand(const World & world)
 : m_world(world)
 {
-    m_rotate = glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f));
-    m_rotate = glm::rotate(m_rotate, 180.0f, glm::vec3(.0f, 1.0f, .0f));
+    m_rotate = c_defaultRotate;
 
     m_scale = glm::scale(glm::mat4(), glm::vec3(0.0005f));
 
@@ -142,5 +143,11 @@ void Hand::setPosition(const glm::vec3 & position)
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
         position.x, position.y, position.z, 1.0f);
+    m_transform = m_translate * m_rotate * m_scale;
+}
+
+void Hand::rotate(const float angle)
+{
+    m_rotate = glm::rotate(c_defaultRotate, angle, glm::vec3(0.0f, 0.0f, 1.0f));
     m_transform = m_translate * m_rotate * m_scale;
 }
