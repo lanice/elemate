@@ -101,15 +101,16 @@ int main()
     }
     
 
-    Game game(*window);
-    eventHandler = new EventHandler(*window, game);
+    Game * game = new Game(*window);
+    eventHandler = new EventHandler(*window, *game);
     eventHandler->handeResizeEvent(initialWidth, initialHeight);
 
-    game.start();
-
-    glfwTerminate();
+    game->start();
 
     delete eventHandler;
+    delete game;
+
+    glfwTerminate();
 
     return 0;
 }
