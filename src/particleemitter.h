@@ -46,7 +46,7 @@ protected:
     size_t                   youngest_particle_index;
 
 
-    physx::PxParticleSystem*            m_particle_system; // or fluid?
+    physx::PxParticleBase*            m_particle_system; // or fluid?
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticleEmitter);

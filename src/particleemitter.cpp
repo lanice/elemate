@@ -8,7 +8,6 @@
 #include <osg/MatrixTransform>
 
 #include <cassert>
-#include <iostream>
 
 ParticleEmitter::ParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position):
     m_parent(parent),
@@ -31,8 +30,9 @@ ParticleEmitter::~ParticleEmitter(){
 void ParticleEmitter::initializeParticleSystem(){
     m_particle_group = m_parent;
 
-    m_particle_system = PxGetPhysics().createParticleSystem(kMaxParticleCount, false);
+    m_particle_system = PxGetPhysics().createParticleFluid(kMaxParticleCount, false);
     assert(m_particle_system);
+    //m_particle_system->setRestOffset(5.0F);
 
     physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
     PxGetPhysics().getScenes(&scene_buffer, 1);
@@ -63,8 +63,6 @@ void ParticleEmitter::update(t_longf elapsed_Time){
     physx::PxParticleReadData * read_data = m_particle_system->lockParticleReadData();
     assert(read_data);
 
-    std::cout << this << " " << read_data->positionBuffer[0].x << std::endl;
-
     m_particle_drawable->updateParticles(read_data);
 
     read_data->unlock();
@@ -94,7 +92,6 @@ void ParticleEmitter::createParticles(int number_of_particles){
     }
     youngest_particle_index = (youngest_particle_index + number_of_particles) % kMaxParticleCount;
 
-    
     particleCreationData.indexBuffer = physx::PxStrideIterator<const physx::PxU32>(m_particle_index_buffer);
     particleCreationData.positionBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_position_buffer);
     particleCreationData.velocityBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_velocity_buffer);
