@@ -56,6 +56,8 @@ protected:
     std::shared_ptr<CyclicTime> m_time;
     std::unordered_map<std::string, glow::ref_ptr<glow::Program>> m_programsByName;
 
+    std::vector<int> m_sounds;
+
     void initShader();
 
 public:
