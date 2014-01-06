@@ -2,13 +2,17 @@
 
 #include <memory>
 
-#include "elemateterrain.h"
+#include "terrainsettings.h"
 
-class ElemateHeightFieldTerrain;
+class Terrain;
+class TerrainTile;
 
 class TerrainInteractor {
 public:
-    TerrainInteractor(std::shared_ptr<ElemateHeightFieldTerrain>& terrain);
+    TerrainInteractor(std::shared_ptr<Terrain>& terrain);
+
+    float heightAt(float worldX, float worldZ) const;
+    float heightAt(float worldX, float worldZ, TerrainLevel level) const;
 
     /** Set the terrain height at a specified world position to value.
       * @param value the new height value. Will be clamped to terrain's [-maxHeight, maxHeight] if necessary.
@@ -24,15 +28,20 @@ public:
     /** pulls the terrain at worldXZ, setting the height to the grabbed value */
     void heightPull(float worldX, float worldZ);
 
-    std::shared_ptr<ElemateHeightFieldTerrain> terrain() const;
-    void setTerrain(std::shared_ptr<ElemateHeightFieldTerrain>& terrain);
+    std::shared_ptr<const Terrain> terrain() const;
+    void setTerrain(std::shared_ptr<Terrain>& terrain);
 
 private:
-    std::shared_ptr<ElemateHeightFieldTerrain> m_terrain;
+    std::shared_ptr<Terrain> m_terrain;
 
-    float setHeight(osgTerrain::TerrainTile & tile, unsigned physxRow, unsigned physxColumn, float value);
-    void setPxHeight(const osgTerrain::TileID & tileID, unsigned physxRow, unsigned physxColumn, float value);
+    float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value);
+    void setPxHeight(TerrainTile & tile, unsigned row, unsigned column, float value);
 
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;
+
+public:
+    TerrainInteractor(TerrainInteractor&) = delete;
+    void operator=(TerrainInteractor&) = delete;
+    TerrainInteractor() = delete;
 };

@@ -1,8 +1,9 @@
-#version 330
+#version 330 core
 
-uniform mat4 osg_ModelViewProjectionMatrix;
+layout(location = 0)in vec3 _vertex;
+out vec3 v_vertex;
 
 void main()
 {
-    gl_Position = osg_ModelViewProjectionMatrix * vec4(gl_Vertex.xyz, 1.0);
+    v_vertex = _vertex;
 }

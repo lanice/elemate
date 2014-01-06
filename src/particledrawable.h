@@ -1,51 +1,65 @@
 #pragma once
 
-#include <vector>
+#include <list>
+#include <memory>
 
-#include <osg/Drawable>
+#include <glow/ref_ptr.h>
+#include <glow/Array.h>
+
+#include <glm/glm.hpp>
+
+namespace glow {
+    class VertexArrayObject;
+    class Buffer;
+    class Program;
+}
+namespace glowutils {
+    class Camera;
+}
 
 namespace physx {
     class PxVec3;
     class PxParticleReadData;
 }
 
-class ParticleDrawable : public osg::Drawable
+class ParticleDrawable
 {
 public:
     /** creates a new drawable with fixed maximum number of particles */
     ParticleDrawable(unsigned int maxParticleCount);
 
+    virtual ~ParticleDrawable();
+
+    void initialize();
+    
     /** adds numParticles particles from particlePositionBuffer to the internal buffer */
     void addParticles(unsigned int numParticles, const physx::PxVec3 * particlePositionBuffer);
 
     /** fetches the number of valid particles and the particle positions from readData and updates interal buffers */
     void updateParticles(const physx::PxParticleReadData * readData);
 
-    /** drawing implementation called during rendering */
-    virtual void drawImplementation(osg::RenderInfo& renderInfo) const override;
+    /** draw all instances of this drawable */
+    static void drawParticles(const glowutils::Camera & camera);
 
-    /** @return bouding box of currently stored particles */
-    virtual osg::BoundingBox computeBound() const override;
+    /** drawing implementation called during rendering */
+    virtual void draw(const glowutils::Camera & camera);
 
 protected:
+    static std::list<ParticleDrawable*> s_instances;
+
     const unsigned int m_maxParticleCount;
     unsigned int m_currentNumParticles;
 
-    std::vector<osg::Vec3f> m_vertices;
+    bool m_needBufferUpdate;
+    void updateBuffers();
 
-    mutable bool m_needGLUpdate;
-    mutable GLuint m_vbo;
-    void updateGLObjects(osg::RenderInfo& renderInfo) const;
+    glow::ref_ptr<glow::VertexArrayObject> m_vao;
+    glow::ref_ptr<glow::Buffer> m_vbo;
+    std::shared_ptr<glow::Vec3Array> m_vertices;
+    glow::ref_ptr<glow::Program> m_program;
 
-    virtual void releaseGLObjects(osg::State* state) const override;
-
-
+public:
     ParticleDrawable() = delete;
-    virtual inline osg::Object * clone(const osg::CopyOp& /*copyop*/) const override {
-        return nullptr;
-    }
-    virtual inline osg::Object * cloneType() const override {
-        return nullptr;
-    }
-
+    ParticleDrawable(ParticleDrawable&) = delete;
+    void operator=(ParticleDrawable&) = delete;
 };

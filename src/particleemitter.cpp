@@ -1,17 +1,14 @@
 #include "particleemitter.h"
 
+#include <cassert>
+
+#include <glow/logging.h>
+
+#include "PxPhysicsAPI.h"
+
 #include "particledrawable.h"
 
-#include <osg/Point>
-#include <osg/ShapeDrawable>
-#include <osgViewer/View>
-#include <osg/MatrixTransform>
-
-#include <cassert>
-#include <iostream>
-
-ParticleEmitter::ParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position):
-    m_parent(parent),
+ParticleEmitter::ParticleEmitter(const physx::PxVec3& position):
     m_position(position),
     m_emitting(false),
     akkumulator(1.0f/60.0f),
@@ -19,36 +16,20 @@ ParticleEmitter::ParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::P
     m_particles_per_second(kDefaultEmittedParticles)
 {
 }
-ParticleEmitter::ParticleEmitter(osg::ref_ptr<osg::Group> parent):
-    ParticleEmitter(parent,physx::PxVec3(0,0,0))
-{
-}
 
 ParticleEmitter::~ParticleEmitter(){
-    m_particle_system->releaseParticles();
+    m_particleSystem->releaseParticles();
 }
 
 void ParticleEmitter::initializeParticleSystem(){
-    m_particle_group = m_parent;
-
-    m_particle_system = PxGetPhysics().createParticleSystem(kMaxParticleCount, false);
-    assert(m_particle_system);
+    m_particleSystem = PxGetPhysics().createParticleSystem(kMaxParticleCount, false);
+    assert(m_particleSystem);
 
     physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
     PxGetPhysics().getScenes(&scene_buffer, 1);
-    scene_buffer->addActor(*m_particle_system);
+    scene_buffer->addActor(*m_particleSystem);
 
-    osg::ref_ptr<ParticleDrawable> waterDrawable = new ParticleDrawable(kMaxParticleCount);
-    osg::ref_ptr<osg::Geode> waterGeode = new osg::Geode;
-    waterGeode->addDrawable(waterDrawable);
-
-    m_particle_drawable = waterDrawable.get();
-
-    assert(m_particle_group.valid());
-    m_particle_group->addChild(waterGeode.get());
-
-    m_particle_group->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f), osg::StateAttribute::ON);
-
+    m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
 }
 
 void ParticleEmitter::update(t_longf elapsed_Time){
@@ -60,10 +41,10 @@ void ParticleEmitter::update(t_longf elapsed_Time){
         createParticles(m_particles_per_second);
     }
     
-    physx::PxParticleReadData * read_data = m_particle_system->lockParticleReadData();
+    physx::PxParticleReadData * read_data = m_particleSystem->lockParticleReadData();
     assert(read_data);
 
-    m_particle_drawable->updateParticles(read_data);
+    m_particleDrawable->updateParticles(read_data);
 
     read_data->unlock();
 }
@@ -73,7 +54,6 @@ void ParticleEmitter::startEmit(){
 }
 
 void ParticleEmitter::createParticles(int number_of_particles){
-    assert(m_particle_group.valid());
 
     if (number_of_particles > kMaxParticleCount)
         number_of_particles = kMaxParticleCount;
@@ -97,11 +77,14 @@ void ParticleEmitter::createParticles(int number_of_particles){
     particleCreationData.positionBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_position_buffer);
     particleCreationData.velocityBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_velocity_buffer);
 
-    bool result = m_particle_system->createParticles(particleCreationData);
+    bool result = m_particleSystem->createParticles(particleCreationData);
     assert(result);
+    if (!result) {
+        glow::warning("ParticleEmitter::createParticles creation of %; physx particles failed", number_of_particles);
+        return;
+    }
 
-    osg::ref_ptr<ParticleDrawable> waterDrawable = m_particle_drawable.get();
-    waterDrawable->addParticles(number_of_particles, m_particle_position_buffer);
+    m_particleDrawable->addParticles(number_of_particles, m_particle_position_buffer);
 }
 
 void ParticleEmitter::stopEmit(){

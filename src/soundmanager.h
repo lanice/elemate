@@ -1,19 +1,15 @@
-# pragma once
+#pragma once
 
-#include <vector>
-#include <string>
 #include <map>
 
 #include "fmod.hpp"
 
 class SoundManager{
 public:
-    /** constructor */
     SoundManager(FMOD_VECTOR startPosition = { 0.f, 0.f, 0.f });
-    /** destructor */
     ~SoundManager();
     /** creates a new channel and returns the channelId */
-    int createNewChannel(std::string soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
+    int createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
     /** deletes a channel */
     void deleteChannel(int channelId);
     /** unpauses a loop-channel; unpauses a paused non-loop-channel, otherwise plays it from the beginning */
@@ -43,7 +39,7 @@ public:
     /** changes volume of a specific channel by dVol (should be between -1.f and 1.f) */
     void changeVolume(int channelId, float dVol);
     /** changes the played file of a channel */
-    void changeFile(int channelId, std::string filePath);
+    void changeFile(int channelId, const std::string & filePath);
     /** updates 3D positions */
     void update();
     

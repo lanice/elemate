@@ -3,8 +3,12 @@
 #include <iostream>
 #include <cassert>
 
-#include "hpicgs/CyclicTime.h"
+#include <glow/logging.h>
+
+#include "PxPhysicsAPI.h"
+
 #include "elements.h"
+#include "particleemitter.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
@@ -13,21 +17,54 @@ PhysicsWrapper::PhysicsWrapper():
         m_foundation(nullptr),
         m_physics(nullptr),
         //m_profile_zone_manager(nullptr),
-        m_cyclic_time(nullptr),
         m_scene(nullptr),
-        m_cpu_dispatcher(nullptr),
-        m_elapsed(0.0f)
+        m_cpu_dispatcher(nullptr)
 {
     initializePhysics();
     initializeScene();
-    initializeTime();
     Elements::initialize(*m_physics);
 }
 
-PhysicsWrapper::~PhysicsWrapper(){
-    shutdown();
-    if (m_cyclic_time)
-        delete m_cyclic_time;
+PhysicsWrapper::~PhysicsWrapper()
+{
+    Elements::clear();
+    m_emitters.clear();
+
+    m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
+    m_scene->release();
+    m_cpu_dispatcher->release();
+    m_physics->release();
+    PxCloseExtensions();
+    //Please don't forget if you activate this feature.
+    //m_profile_zone_manager->release();
+    m_foundation->release();
+}
+
+bool PhysicsWrapper::step(long double delta){
+
+    if (delta == 0)
+        return false;
+    
+    m_scene->simulate(static_cast<physx::PxReal>(delta));
+
+    updateAllObjects(delta);
+    
+    return true;
+}
+
+void PhysicsWrapper::updateAllObjects(long double delta)
+{
+    m_scene->fetchResults(true);
+
+    for (auto& emitter : m_emitters){
+        emitter->update(delta);
+    }
+}
+
+void PhysicsWrapper::makeParticleEmitter(const physx::PxVec3& position){
+    m_emitters.push_back(std::make_shared<ParticleEmitter>(position));
+    m_emitters.back()->initializeParticleSystem();
+    m_emitters.back()->startEmit();
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -86,75 +123,19 @@ void PhysicsWrapper::initializeScene(){
         fatalError("createScene failed!");
 }
 
-void PhysicsWrapper::initializeTime(){
-    if (m_cyclic_time)
-        delete m_cyclic_time;
-    m_cyclic_time = new CyclicTime(0.0L, 1.0L);
-}
-
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
     scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
 
-bool PhysicsWrapper::step(){
-    static t_longf last_time = m_cyclic_time->getNonModf();
-    
-    t_longf now = m_cyclic_time->getNonModf(true);
-
-    m_elapsed = now - last_time;
-
-    if (m_elapsed == 0)
-        return false;
-    
-    last_time = now;
-
-    m_scene->simulate(static_cast<physx::PxReal>(elapsedTime()));
-    m_scene->fetchResults();
-    return true;
-}
-
-void PhysicsWrapper::shutdown(){
-    m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
-    m_scene->release();
-    m_physics->release();
-    m_cpu_dispatcher->release();
-    //Please don't forget if you activate this feature.
-    //m_profile_zone_manager->release();
-    m_foundation->release();
-}
-
 void PhysicsWrapper::fatalError(std::string error_message){
-    std::cerr << "PhysX Error occured:" << std::endl;
-    std::cerr << error_message << std::endl;
-    std::cerr << "Press Enter to close the Application" << std::endl;
+    glow::fatal("PhysX Error occured:\n%;\nPress Enter to close the Application.", error_message);
     std::string temp;
     std::getline(std::cin, temp);
     exit(1);
 }
 
-void PhysicsWrapper::startSimulation(){
-    m_cyclic_time->start();
-}
-
-void PhysicsWrapper::pauseSimulation(){
-    m_cyclic_time->pause();
-}
-
-void PhysicsWrapper::stopSimulation(){
-    m_cyclic_time->stop();
-    m_cyclic_time->reset();
-}
-
-
-t_longf PhysicsWrapper::elapsedTime()const{
-    return m_elapsed;
-}
-
-t_longf PhysicsWrapper::currentTime() const
+physx::PxScene* PhysicsWrapper::scene() const
 {
-    return m_cyclic_time->getNonModf();
-}
-
-physx::PxScene* PhysicsWrapper::scene()const{
+    assert(m_scene);
     return m_scene;
 }
