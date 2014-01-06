@@ -1,11 +1,9 @@
-#version 330
+#version 330 core
 
-layout(location = 0)in vec3 vertex;
-
-uniform mat4 viewProjection;
+layout(location = 0)in vec3 _vertex;
+out vec3 v_vertex;
 
 void main()
 {
-    gl_PointSize = 10.0;
-    gl_Position = viewProjection * vec4(vertex, 1.0);
+    v_vertex = _vertex;
 }

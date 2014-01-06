@@ -12,6 +12,7 @@
 #include "world.h"
 #include "particledrawable.h"
 #include "terrain/terrain.h"
+#include "renderer.h"
 
 
 Game::Game(GLFWwindow & window) :
@@ -19,10 +20,12 @@ m_window(window),
 m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
 m_camera(),
-m_navigation(window, &m_camera, m_world->terrain),
-m_manipulator(window, *m_world)
+m_navigation(window, m_camera, m_world->terrain),
+m_manipulator(window, m_camera, *m_world),
+m_renderer(*m_world)
 {
     m_world->setNavigation(m_navigation);
+    m_manipulator.setRenderer(m_renderer);
 }
 
 Game::~Game()
@@ -74,10 +77,10 @@ void Game::loop(double delta)
                 m_navigation.update(deltaTime);
                 m_navigation.apply();
 
-                m_manipulator.updateHandPosition(*m_navigation.camera());
+                m_manipulator.updateHandPosition();
                 m_world->updateListener();
 
-                draw();
+                m_renderer(m_camera);
 
                 glfwSwapBuffers(&m_window);
 
@@ -112,19 +115,7 @@ glowutils::Camera * Game::camera()
     return & m_camera;
 }
 
-
-
-void Game::draw()
+Renderer * Game::renderer()
 {
-
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-
-
-    m_world->terrain->draw(*m_navigation.camera());
-
-    ParticleDrawable::drawParticles(*m_navigation.camera());
-
+    return &m_renderer;
 }

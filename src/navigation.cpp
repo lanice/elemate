@@ -14,9 +14,9 @@ static const double c_distanceEyeCenterDefault = 5.;
 static const float c_speedScale = 0.05f;
 
 
-Navigation::Navigation(GLFWwindow & window, glowutils::Camera * camera, std::shared_ptr<Terrain>& terrain) :
+Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain) :
     m_window(window),
-    m_camera(camera),
+    m_camera(&camera),
     m_distanceEyeCenter(c_distanceEyeCenterDefault),
     m_terrain(terrain)
 {

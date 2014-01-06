@@ -1,9 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include <glowutils/Camera.h>
 
 #include "navigation.h"
 #include "manipulator.h"
+#include "renderer.h"
 
 class PhysicsWrapper;
 class World;
@@ -27,10 +30,10 @@ public:
     Navigation * navigation();
     Manipulator * manipulator();
     glowutils::Camera * camera();
+    Renderer * renderer();
+
 
 protected:
-    void draw();
-
     GLFWwindow & m_window;
 
     /** The Game's loop containing drawing and triggering physics is placed right here.
@@ -44,6 +47,7 @@ protected:
     Navigation m_navigation;
     Manipulator m_manipulator;
 
+    Renderer m_renderer;
 
 public:
     Game() = delete;

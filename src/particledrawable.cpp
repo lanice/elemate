@@ -50,10 +50,14 @@ void ParticleDrawable::draw(const glowutils::Camera & camera)
 
     m_program->use();
     m_program->setUniform("viewProjection", camera.viewProjection());
+    glm::vec3 viewDir = camera.center() - camera.eye();
+    glm::vec3 lookAtRight = glm::normalize(glm::cross(viewDir, camera.up()));
+    glm::vec3 lookAtUp = glm::normalize(glm::cross(lookAtRight, viewDir));
+    m_program->setUniform("lookAtUp", lookAtUp);
+    m_program->setUniform("lookAtRight", lookAtRight);
 
     m_vao->bind();
 
-    glEnable(GL_PROGRAM_POINT_SIZE);
     m_vao->drawArrays(GL_POINTS, 0, m_currentNumParticles);
 
     m_vao->unbind();
@@ -80,11 +84,11 @@ void ParticleDrawable::initialize()
 
     m_vao->unbind();
 
-    glow::ref_ptr<glow::Shader> particleWaterVert = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert");
-    glow::ref_ptr<glow::Shader> particleWaterFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag");
-
     m_program = new glow::Program();
-    m_program->attach(particleWaterFrag, particleWaterVert);
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert"),
+        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
 }
 
 void ParticleDrawable::updateBuffers()

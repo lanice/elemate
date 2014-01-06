@@ -42,10 +42,17 @@ static void scrollCallback(GLFWwindow* /*window*/, double xoffset, double yoffse
         eventHandler->handleScrollEvent(xoffset, yoffset);
 }
 
+static void resizeCallback(GLFWwindow* /*window*/, int width, int height)
+{
+    if (eventHandler)
+        eventHandler->handeResizeEvent(width, height);
+}
+
 void setCallbacks(GLFWwindow * window)
 {
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetWindowSizeCallback(window, resizeCallback);
 }
 
 
@@ -59,7 +66,9 @@ int main()
 
     glfwSetErrorCallback(errorCallback);
 
-    GLFWwindow * window = glfwCreateWindow(640, 480, "Elemate", NULL, NULL);
+    const int initialWidth = 640;
+    const int initialHeight = 480;
+    GLFWwindow * window = glfwCreateWindow(initialWidth, initialHeight, "Elemate", NULL, NULL);
     if (!window)
     {
         glow::fatal("glfw window creation failed.");
@@ -74,6 +83,8 @@ int main()
 
     checkVersion();
 
+    glow::DebugMessageOutput::enable();
+        
     // GLOW takes care of initializing GLEW correctly.
     if (!glow::init())
     {
@@ -82,14 +93,16 @@ int main()
     }
     
 
-    Game game(*window);
-    eventHandler = new EventHandler(*window, game);
+    Game * game = new Game(*window);
+    eventHandler = new EventHandler(*window, *game);
+    eventHandler->handeResizeEvent(initialWidth, initialHeight);
 
-    game.start();
-
-    glfwTerminate();
+    game->start();
 
     delete eventHandler;
+    delete game;
+
+    glfwTerminate();
 
     return 0;
 }

@@ -15,6 +15,7 @@ public:
 
     void handleKeyEvent(int key, int scancode, int action, int mods);
     void handleScrollEvent(double xoffset, double yoffset);
+    void handeResizeEvent(int width, int height);
 
 
 protected:
