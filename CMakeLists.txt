@@ -27,13 +27,6 @@ include(cmake/Custom.cmake)
 set(ELEMATE_SOURCE_GROUP "Source Files")
 set(ELEMATE_SHADER_GROUP "Shader Files")
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src
-    ${GLOW_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIR}
-    ${GLFW_INCLUDE_DIR}
-)
-
 set(SOURCES
     src/main.cpp
     src/elements.h
@@ -117,6 +110,13 @@ find_package( GLFW REQUIRED )
 find_package( GLOW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
+
+include_directories(
+    ${CMAKE_SOURCE_DIR}/src
+    ${GLOW_INCLUDE_DIR}
+    ${GLM_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIR}
+)
 
 list(APPEND SOURCES ${SHADER})
 
