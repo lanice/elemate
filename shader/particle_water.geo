@@ -10,6 +10,8 @@ uniform vec3 lookAtRight;
 layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
+out vec2 g_vertex;
+
 void main()
 {
     float size = 0.1;
@@ -23,16 +25,20 @@ void main()
     
     float factorX = size * diffx;
 	float factorY = size * diffy;
-
+	
+	g_vertex = vec2(-1,-1);
     gl_Position = projPos + vec4(-factorX, -factorY, 0.0, 0.0);
     EmitVertex();
     
+	g_vertex = vec2(-1,1);
     gl_Position = projPos + vec4(-factorX, factorY, 0.0, 0.0);
     EmitVertex();
     
+	g_vertex = vec2(1,-1);
     gl_Position = projPos + vec4(factorX, -factorY, 0.0, 0.0);
     EmitVertex();
     
+	g_vertex = vec2(1,1);
     gl_Position = projPos + vec4(factorX, factorY, 0.0, 0.0);
     EmitVertex();
     

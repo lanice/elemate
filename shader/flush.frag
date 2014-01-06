@@ -12,8 +12,9 @@ void main()
 {
     float sceneZ = texture(sceneDepth, v_uv).r;
     float waterZ = texture(waterDepth, v_uv).r;
-    if (sceneZ > waterZ)
-        fragColor = vec4(0.2, 0.3, 0.8, 0.8);
-    else
-        fragColor = texture(sceneColor, v_uv);
+	fragColor = mix(
+		vec4(0.2, 0.3, 0.8, 0.8),
+		texture(sceneColor, v_uv),
+		step(sceneZ,waterZ)
+	);
 }
