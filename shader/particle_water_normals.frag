@@ -16,34 +16,36 @@ void main()
 
     float height_left = (
           texelFetch(waterDepth, uv+ivec2(-1, 0), 0).x
-        + texelFetch(waterDepth, uv+ivec2(-2, 0), 0).x
+        + texelFetch(waterDepth, uv+ivec2(-1, 0), 0).x
         )/2;
 
     float height_right = (
           texelFetch(waterDepth, uv+ivec2(1, 0), 0).x
-        + texelFetch(waterDepth, uv+ivec2(2, 0), 0).x
+        + texelFetch(waterDepth, uv+ivec2(1, 0), 0).x
         )/2;
 
     float height_front = (
           texelFetch(waterDepth, uv+ivec2(0, -1), 0).x
-        + texelFetch(waterDepth, uv+ivec2(0, -2), 0).x
+        + texelFetch(waterDepth, uv+ivec2(0, -1), 0).x
         )/2;
 
     float height_back = (
           texelFetch(waterDepth, uv+ivec2(0, 1), 0).x
-        + texelFetch(waterDepth, uv+ivec2(0, 2), 0).x
+        + texelFetch(waterDepth, uv+ivec2(0, 1), 0).x
         )/2;
     vec3 va,vb;
 
     if(abs(height_right-depth) < abs(height_left-depth))
         va = vec3(1.0/viewport.x, height_right - depth, 0.0);
     else
-        va = vec3(1.0/viewport.x, height_left - depth, 0.0);
+        va = vec3(1.0/viewport.x, depth - height_left, 0.0);
 
     if(abs(height_front-depth) < abs(height_back-depth))
         vb = vec3(0.0, height_front - depth, 1.0/viewport.y);
     else
-        vb = vec3(0.0, height_back - depth, 1.0/viewport.y);
+        vb = vec3(0.0, depth - height_back, 1.0/viewport.y);
 
     normal = normalize(cross(vb, va));
+
+    //normal = texture(waterDepth, v_uv).x;
 }
