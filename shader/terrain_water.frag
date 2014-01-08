@@ -2,6 +2,7 @@
 
 in vec3 v_viewPos;
 in vec3 v_normal;
+in float v_heightDiff;
 
 uniform vec3 cameraposition;
 
@@ -20,7 +21,10 @@ vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3
 layout(location = 0)out vec4 fragColor;
 
 void main()
-{    
+{ 
+	if (v_heightDiff < 0)
+		discard;
+	
     fragColor = vec4(
         phongLighting(v_normal, v_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_water).rgb,
         0.5);
