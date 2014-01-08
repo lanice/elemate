@@ -15,6 +15,8 @@ set(LINUX_COMPILE_DEFS
 	LINUX	                  # Linux system
 	PIC		                  # Position-independent code
 	_REENTRANT                # Reentrant code
+	PX_CHECKED
+	PX_SUPPORT_VISUAL_DEBUGGER
 )
 set(DEFAULT_COMPILE_DEFS_DEBUG
     ${LINUX_COMPILE_DEFS}
@@ -25,7 +27,9 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
     NDEBUG	                  # Release build
 )
 
-set(LINUX_COMPILE_FLAGS "-pthread -pipe -fPIC -Wreturn-type -Wall -w -pedantic -Wextra -Wtrampolines -Wfloat-equal -Wshadow -Wcast-qual -Wcast-align -Wconversion -Werror -fexceptions")
+set(PHYSX_COMPILE_FLAGS " -MMD -m64 -msse2 -mfpmath=sse -ffast-math")
+
+set(LINUX_COMPILE_FLAGS "-pthread -pipe -fPIC -Wreturn-type -Wall -w -pedantic -Wextra -Wtrampolines -Wfloat-equal -Wshadow -Wcast-qual -Wcast-align -Wconversion -Werror -fexceptions -MMD -m64 -msse2 -mfpmath=sse -ffast-math")
 # pthread       -> use pthread library
 # no-rtti       -> disable c++ rtti
 # no-exceptions -> disable exception handling

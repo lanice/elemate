@@ -11,6 +11,7 @@
 
 #include "pxcompilerfix.h"
 #include <PxRigidStatic.h>
+#include <PxPhysics.h>
 
 #include "terrain.h"
 #include "basetile.h"

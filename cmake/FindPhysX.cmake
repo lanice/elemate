@@ -65,19 +65,24 @@ else()
     ADD_PHYSX_LIBRARY( SceneQuery )
     ADD_PHYSX_LIBRARY( LowLevel )
     ADD_PHYSX_LIBRARY( LowLevelCloth )
-    ADD_PHYSX_LIBRARY( PhysX3 )
     ADD_PHYSX_LIBRARY( PhysX3Vehicle )
     ADD_PHYSX_LIBRARY( PhysX3Cooking )
     ADD_PHYSX_LIBRARY( PhysX3Extensions )
     ADD_PHYSX_LIBRARY( PhysX3CharacterKinematic )
-    ADD_PHYSX_LIBRARY( RepX3 )
     ADD_PHYSX_LIBRARY( PhysXProfileSDK )
-    ADD_PHYSX_LIBRARY( RepXUpgrader3 )
     ADD_PHYSX_LIBRARY( PhysXVisualDebuggerSDK )
-    ADD_PHYSX_LIBRARY( PhysX3Common )
     ADD_PHYSX_LIBRARY( PxTask )
-    #ADD_PHYSX_LIBRARY( GeomUtils )
+    ADD_PHYSX_LIBRARY( PhysX3 )
+    ADD_PHYSX_LIBRARY( PhysX3Common )
 endif()
+
+set(PHYSX_LIBRARY ${PHYSX_LIBRARY}
+    GL
+    GLU
+    glut
+    X11
+    rt
+    pthread)
 
 #IF (${CMAKE_SYSTEM} MATCHES "Linux")
     #ADD_DEFINITIONS(-DLINUX -DNX_DISABLE_FLUIDS)
