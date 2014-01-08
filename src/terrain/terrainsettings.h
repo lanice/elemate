@@ -18,14 +18,12 @@ struct TileID {
     TerrainLevel level;
     unsigned int x;
     unsigned int z;
-
-    bool operator==(const TileID & other) const;
 };
 
 namespace std {
-    template<> class hash<TileID> {
-    public:
-        size_t operator()(const TileID& id) const;
+    /** lever precedes x, precedes z */
+    template<> struct less<TileID> {
+        bool operator()(const TileID& lhs, const TileID& rhs) const;
     };
 }
 
