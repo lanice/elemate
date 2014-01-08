@@ -32,7 +32,7 @@ public:
     ~PhysicsWrapper();
 
     /** Proceeds with simulation for amount of given time delta. */
-    bool step(long double delta);
+    bool step(double delta);
     
     /** Creates a particle emitter */
     void makeParticleEmitter(const glm::vec3& position);
@@ -49,7 +49,7 @@ protected:
     static const int            kNumberOfThreads;
 
     /** Sets and rotates every object according to its representation in PhysX. */
-    void updateAllObjects(long double delta);
+    void updateAllObjects(double delta);
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();

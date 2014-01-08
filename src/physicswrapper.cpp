@@ -42,7 +42,7 @@ PhysicsWrapper::~PhysicsWrapper()
     m_foundation->release();
 }
 
-bool PhysicsWrapper::step(long double delta){
+bool PhysicsWrapper::step(double delta){
 
     if (delta == 0)
         return false;
@@ -54,7 +54,7 @@ bool PhysicsWrapper::step(long double delta){
     return true;
 }
 
-void PhysicsWrapper::updateAllObjects(long double delta)
+void PhysicsWrapper::updateAllObjects(double delta)
 {
     m_scene->fetchResults(true);
 

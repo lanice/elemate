@@ -70,15 +70,17 @@ else()
     ADD_PHYSX_LIBRARY( PhysX3Common )
 endif()
 
-set(PHYSX_LIBRARY
-    pthread
-    rt
-    ${PHYSX_LIBRARY}
-    rt
-    GL
-    GLU
-    glut
-    X11)
+if (LINUX)
+    set(PHYSX_LIBRARY
+        pthread
+        rt
+        ${PHYSX_LIBRARY}
+        rt
+        GL
+        GLU
+        glut
+        X11)
+endif()
 
 #IF (${CMAKE_SYSTEM} MATCHES "Linux")
     #ADD_DEFINITIONS(-DLINUX -DNX_DISABLE_FLUIDS)

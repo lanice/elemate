@@ -75,8 +75,8 @@ void World::stopSimulation()
 void World::update()
 {
     // Retrieve time delta from last World update to now.
-    long double delta = m_time->getNonModf();
-    delta = m_time->getNonModf(true) - delta;
+    double delta = static_cast<double>(m_time->getNonModf());
+    delta = static_cast<double>(m_time->getNonModf(true)) - delta;
 
     // update physic
     m_physicsWrapper.step(delta);
