@@ -1,6 +1,7 @@
 #include "terraingenerator.h"
 
 #include <random>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <ctime>
@@ -118,7 +119,7 @@ glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightFiel
 {
     std::function<float(float, float)> riverCourse = [](float normRow, float normColumn)
     {
-        return abs(5 * powf(normRow, 3.0) - normColumn);
+        return std::abs(5.0f * std::pow(normRow, 3) - normColumn);
     };
 
     static const float riverScale = 0.15f;
