@@ -5,13 +5,12 @@
 
 #include <GLFW/glfw3.h>
 
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "terrain/terrain.h"
 
 
-static const float c_distanceEyeCenterDefault = 5.f;
+static const float c_distanceEyeCenterDefault = 15.f;
 static const float c_speedScale = 0.05f;
 
 
@@ -71,7 +70,7 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
         glm::vec3 eye = m_camera->eye();
         if (yoffset < 0)
         {
-            if (eye.y <= (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
+            if (eye.y <= m_terrain->heightAt(eye.x, eye.z) + 1.f) return;
             pitch(2.f);
         } else {
             if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
@@ -129,8 +128,7 @@ void Navigation::update(double delta)
 
 void Navigation::apply()
 {
-    // glm::vec3 eye = m_center + m_rotation * glm::vec3(0, m_distanceEyeCenter, 0);
-    glm::vec3 eye = m_center - m_lookAtVector * m_distanceEyeCenter;
+    glm::vec3 eye = m_center - glm::normalize(m_lookAtVector) * m_distanceEyeCenter;
 
     m_camera->setEye(eye);
     m_camera->setCenter(m_center);
@@ -152,7 +150,7 @@ void Navigation::rotate(const float & angle)
 
 void Navigation::pitch(const float & angle)
 {
-    m_lookAtVector = glm::rotateX(m_lookAtVector, angle);
+    m_lookAtVector = glm::rotate(m_lookAtVector, angle, glm::cross(m_lookAtVector, glm::vec3(0, 1, 0)));
 }
 
 const glowutils::Camera * Navigation::camera() const
