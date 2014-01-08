@@ -59,11 +59,6 @@ char * RawImage::rawData()
     return m_data;
 }
 
-char * const RawImage::rawData() const
-{
-    return m_data;
-}
-
 uint32_t RawImage::width() const
 {
     return m_width;

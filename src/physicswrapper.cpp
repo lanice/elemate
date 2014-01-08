@@ -14,12 +14,13 @@
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
 
-PhysicsWrapper::PhysicsWrapper():
-        m_foundation(nullptr),
-        m_physics(nullptr),
+PhysicsWrapper::PhysicsWrapper()
+: m_foundation(nullptr)
+, m_cpu_dispatcher(nullptr)
+, m_physics(nullptr)
+, m_scene(nullptr)
+, m_emitters()
         //m_profile_zone_manager(nullptr),
-        m_scene(nullptr),
-        m_cpu_dispatcher(nullptr)
 {
     initializePhysics();
     initializeScene();

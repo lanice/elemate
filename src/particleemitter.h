@@ -10,8 +10,6 @@ namespace physx {
 }
 class ParticleDrawable;
 
-typedef long double t_longf;
-
 class ParticleEmitter
 {
 public:
@@ -19,12 +17,12 @@ public:
     ~ParticleEmitter();
 
     void initializeParticleSystem();
-    void update(t_longf elapsed_Time);
+    void update(double elapsed_Time);
 
     void startEmit();
     void stopEmit();
 
-    void createParticles(int number_of_particles);
+    void createParticles(physx::PxU32 number_of_particles);
 
 protected:
     static const physx::PxU32	kMaxParticleCount;
@@ -36,8 +34,8 @@ protected:
     bool                     m_emitting;
     int                      m_particles_per_second;
 
-    t_longf                  akkumulator;
-    size_t                   youngest_particle_index;
+    float                    m_akkumulator;
+    physx::PxU32             m_youngest_particle_index;
 
 
     physx::PxParticleSystem*            m_particleSystem; // or fluid?
