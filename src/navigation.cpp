@@ -10,7 +10,7 @@
 #include "terrain/terrain.h"
 
 
-static const double c_distanceEyeCenterDefault = 5.;
+static const double c_distanceEyeCenterDefault = 15.;
 static const float c_speedScale = 0.05f;
 
 
@@ -20,7 +20,7 @@ Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::sha
     m_distanceEyeCenter(c_distanceEyeCenterDefault),
     m_terrain(terrain)
 {
-    setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); // eye, center, up
+    setTransformation(glm::vec3(0, 3, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); // eye, center, up
 }
 
 Navigation::~Navigation()
@@ -147,7 +147,6 @@ const float Navigation::rotationAngle() const
 {
     glm::vec3 eulerAngles = glm::eulerAngles(m_rotation);
 
-    // return eulerAngles.y;
     if (eulerAngles.x > 0)
         return eulerAngles.y >= 0 ? eulerAngles.y : 360.f + eulerAngles.y;
     else
