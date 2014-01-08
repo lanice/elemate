@@ -82,10 +82,7 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
 void Navigation::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    {
-        setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-        m_distanceEyeCenter = c_distanceEyeCenterDefault;
-    }
+        setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
 }
 
 void Navigation::update(double delta)
