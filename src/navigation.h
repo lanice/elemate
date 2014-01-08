@@ -20,6 +20,7 @@ public:
     virtual ~Navigation();
 
     void setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up);
+    void setTransformation(const glm::vec3 & center, const glm::vec3 & lookAtVector, const float & distance);
 
     void handleScrollEvent(const double & xoffset, const double & yoffset);
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
@@ -42,8 +43,9 @@ protected:
     std::shared_ptr<Terrain> m_terrain;
 
     glm::vec3 m_center;
+    glm::vec3 m_lookAtVector;
     glm::quat m_rotation;
-    double m_distanceEyeCenter;
+    float m_distanceEyeCenter;
 
 public:
     Navigation() = delete;
