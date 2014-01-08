@@ -27,8 +27,8 @@ public:
     void createParticles(int number_of_particles);
 
 protected:
-    static const physx::PxU32	kMaxParticleCount = 100;
-    static const physx::PxU32   kDefaultEmittedParticles = 1;
+    static const physx::PxU32	kMaxParticleCount;
+    static const physx::PxU32   kDefaultEmittedParticles;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

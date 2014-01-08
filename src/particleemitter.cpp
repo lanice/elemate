@@ -8,6 +8,10 @@
 
 #include "particledrawable.h"
 
+
+const physx::PxU32 ParticleEmitter::kMaxParticleCount = 100;
+const physx::PxU32 ParticleEmitter::kDefaultEmittedParticles = 1;
+
 ParticleEmitter::ParticleEmitter(const physx::PxVec3& position):
     m_position(position),
     m_emitting(false),
