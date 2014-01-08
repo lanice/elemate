@@ -8,8 +8,6 @@
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
 
-#include "PxPhysicsAPI.h"
-
 #include <glm/glm.hpp>
 
 #include "hpicgs/CyclicTime.h"
@@ -49,7 +47,7 @@ World::World(PhysicsWrapper & physicsWrapper)
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
     for (const auto actor : terrain->pxActorMap())
-        m_physicsWrapper.scene()->addActor(*actor.second);
+        m_physicsWrapper.addActor(*actor.second);
 }
 
 World::~World()
@@ -83,7 +81,7 @@ void World::update()
 
 void World::makeStandardBall(const glm::vec3& position)
 {
-    m_physicsWrapper.makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    m_physicsWrapper.makeParticleEmitter(position);
 }
 
 void World::createFountainSound(const glm::vec3& position)

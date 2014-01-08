@@ -10,6 +10,7 @@
 
 #include <glm/glm.hpp>
 
+#include "pxcompilerfix.h"
 #include <PxPhysics.h>
 #include <PxRigidStatic.h>
 #include <PxShape.h>

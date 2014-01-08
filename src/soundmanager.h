@@ -64,7 +64,7 @@ private:
     FMOD_RESULT         _result;
     FMOD::System        *_system;
     /** checks errors */
-    void SoundManager::ERRCHECK(FMOD_RESULT);
+    void ERRCHECK(FMOD_RESULT);
     /** returns the next free channelId */
     int getNextFreeId();
     /** inits the SoundManager with optional start position */

@@ -10,6 +10,7 @@
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
 
+#include "pxcompilerfix.h"
 #include <foundation/PxVec3.h>
 #include <particles/PxParticleReadData.h>
 

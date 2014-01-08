@@ -9,6 +9,7 @@
 #include <glow/Array.h>
 #include <glow/logging.h>
 
+#include "pxcompilerfix.h"
 #include <PxRigidStatic.h>
 
 #include "terrain.h"
@@ -173,9 +174,9 @@ float TerrainGenerator::zExtens() const
 void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
 {
     assert(xzSamplesPerCoord > 0.0f);
-    unsigned int xSamplesui = unsigned int(ceil(m_settings.sizeX * xzSamplesPerCoord));
+    unsigned int xSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeX * xzSamplesPerCoord)));
     m_settings.rows = xSamplesui >= 2 ? xSamplesui : 2;
-    unsigned int zSamplesui = unsigned int(ceil(m_settings.sizeZ * xzSamplesPerCoord));
+    unsigned int zSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeZ * xzSamplesPerCoord)));
     m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
 }
 
