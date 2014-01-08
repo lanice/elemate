@@ -1,9 +1,7 @@
 
 set(VERSION_SUFFIX_FOR_PATH
-   v3.2.1
-   v3.2.4
-   3.2.1
-   3.2.4
+   v3.3.0
+   v3.3.0
 )
 
 set(PHYSX_ROOT $ENV{PHYSX_ROOT} CACHE PATH
@@ -20,7 +18,7 @@ set(PHYSX_INCLUDE_SEARCH_DIR
 
 find_path(PHYSX_INCLUDE_DIR PxPhysicsAPI.h PATH_SUFFIXES ${VERSION_SUFFIX_FOR_PATH}
     PATHS ${PHYSX_INCLUDE_SEARCH_DIR}
-    DOC " The Base directory containing the PhysX include files."
+    DOC "Base directory containing PhysX include files."
 )
 
 set(PHYSX_LIB_SEARCH_DIR
@@ -48,10 +46,6 @@ MACRO(ADD_PHYSX_LIBRARY LIBNAME)
             ${LIBNAME}${PHYSX_LIBRARY_TYPE}_x64
         PATHS ${PHYSX_LIB_SEARCH_DIR}
     )
-    message (${LIBNAME} : ${${LIBNAME}_LIBRARY} )
-    #ADD_LIBRARY(${LIBNAME} STATIC IMPORTED)
-    #SET_TARGET_PROPERTIES( ${LIBNAME} PROPERTIES
-    #    IMPORTED_LOCATION ${${LIBNAME}_LIBRARY} )
     set(PHYSX_LIBRARY ${PHYSX_LIBRARY} ${${LIBNAME}_LIBRARY})
 ENDMACRO()
 
@@ -76,13 +70,15 @@ else()
     ADD_PHYSX_LIBRARY( PhysX3Common )
 endif()
 
-set(PHYSX_LIBRARY ${PHYSX_LIBRARY}
+set(PHYSX_LIBRARY
+    pthread
+    rt
+    ${PHYSX_LIBRARY}
+    rt
     GL
     GLU
     glut
-    X11
-    rt
-    pthread)
+    X11)
 
 #IF (${CMAKE_SYSTEM} MATCHES "Linux")
     #ADD_DEFINITIONS(-DLINUX -DNX_DISABLE_FLUIDS)

@@ -174,13 +174,6 @@ set_target_properties(${PROJECT_NAME}
     LINK_FLAGS_RELEASE          "${DEFAULT_LINKER_FLAGS_RELEASE}"
 )
 
-if (LINUX)
-    target_link_libraries(${PROJECT_NAME}
-        rt
-        pthread
-    )
-endif()
-
 config_project( ${PROJECT_NAME} OPENGL 0 )
 config_project( ${PROJECT_NAME} GLEW 0 )
 config_project( ${PROJECT_NAME} GLFW 0 )

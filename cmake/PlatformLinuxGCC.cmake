@@ -27,9 +27,7 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
     NDEBUG	                  # Release build
 )
 
-set(PHYSX_COMPILE_FLAGS " -MMD -m64 -msse2 -mfpmath=sse -ffast-math")
-
-set(LINUX_COMPILE_FLAGS "-pthread -pipe -fPIC -Wreturn-type -Wall -w -pedantic -Wextra -Wtrampolines -Wfloat-equal -Wshadow -Wcast-qual -Wcast-align -Wconversion -Werror -fexceptions -MMD -m64 -msse2 -mfpmath=sse -ffast-math")
+set(LINUX_COMPILE_FLAGS "-pthread -pipe -fPIC -Wreturn-type -Wall -Wextra -Wtrampolines -Wcast-qual -Wcast-align -fexceptions -MMD -m64 -march=core-avx-i -mfpmath=sse -ffast-math")
 # pthread       -> use pthread library
 # no-rtti       -> disable c++ rtti
 # no-exceptions -> disable exception handling
