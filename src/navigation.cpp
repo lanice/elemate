@@ -147,12 +147,12 @@ void Navigation::move(glm::vec3 & position, const glm::vec3 & direction)
 
 void Navigation::rotate(const float & angle)
 {
-    m_rotation = glm::angleAxis(angle, glm::vec3(0, 1, 0)) * m_rotation;
+    m_lookAtVector = glm::rotateY(m_lookAtVector, angle);
 }
 
 void Navigation::pitch(const float & angle)
 {
-    m_rotation = glm::angleAxis(angle, m_rotation * glm::vec3(1, 0, 0)) * m_rotation;
+    m_lookAtVector = glm::rotateX(m_lookAtVector, angle);
 }
 
 const glowutils::Camera * Navigation::camera() const
