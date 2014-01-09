@@ -19,6 +19,8 @@ ParticleEmitter::ParticleEmitter(const physx::PxVec3& position)
 , m_particles_per_second(kDefaultEmittedParticles)
 , m_akkumulator(1.0f/60.0f)
 , m_youngest_particle_index(0)
+, m_reuses_old_particle(false)
+, m_reuse_limitation(0)
 {
 }
 
@@ -63,6 +65,10 @@ void ParticleEmitter::createParticles(physx::PxU32 number_of_particles){
     if (number_of_particles > kMaxParticleCount)
         number_of_particles = kMaxParticleCount;
 
+    number_of_particles = number_of_particles + m_youngest_particle_index > kMaxParticleCount ? kMaxParticleCount - m_youngest_particle_index : number_of_particles;
+
+    m_reuse_limitation = m_youngest_particle_index;
+    
     physx::PxParticleCreationData particleCreationData;
     particleCreationData.numParticles = number_of_particles;
     physx::PxU32    m_particle_index_buffer[kMaxParticleCount];
@@ -77,10 +83,13 @@ void ParticleEmitter::createParticles(physx::PxU32 number_of_particles){
     }
     m_youngest_particle_index = (m_youngest_particle_index + number_of_particles) % kMaxParticleCount;
 
-    
     particleCreationData.indexBuffer = physx::PxStrideIterator<const physx::PxU32>(m_particle_index_buffer);
     particleCreationData.positionBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_position_buffer);
     particleCreationData.velocityBuffer = physx::PxStrideIterator<const physx::PxVec3>(m_particle_velocity_buffer);
+
+    if (m_reuses_old_particle)
+        m_particleSystem->releaseParticles(number_of_particles, particleCreationData.indexBuffer);
+    m_reuses_old_particle |= m_reuse_limitation > m_youngest_particle_index;
 
     bool result = m_particleSystem->createParticles(particleCreationData);
     assert(result);
