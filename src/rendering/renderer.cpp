@@ -20,6 +20,7 @@ namespace glow {
 #include "particledrawable.h"
 #include "hand.h"
 #include "particlewaterstep.h"
+#include "shadowmappingstep.h"
 
 Renderer::Renderer(const World & world)
 : m_world(world)
@@ -53,6 +54,10 @@ void Renderer::initialize()
     m_sceneFbo->unbind();
 
     m_particleWaterStep = std::make_shared<ParticleWaterStep>();
+    m_shadowMappingStep = std::make_shared<ShadowMappingStep>(this->m_world);
+
+    m_steps.push_back(m_particleWaterStep.get());
+    m_steps.push_back(m_shadowMappingStep.get());
 
     m_handDepth = new glow::RenderBufferObject();
     // draw the hand into the scene color texture, but do not change the scene depth
@@ -61,18 +66,6 @@ void Renderer::initialize()
     m_handFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_handDepth);
     m_handFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
     m_handFbo->unbind();
-
-    m_shadowDepthTex = new glow::Texture(GL_TEXTURE_2D);
-    m_shadowDepthTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_shadowDepthTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_shadowDepthTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_shadowDepthTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_shadowDepthTex->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
-    m_shadowFbo = new glow::FrameBufferObject();
-    m_shadowFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_shadowDepthTex);
-    m_shadowFbo->setDrawBuffer(GL_NONE);
-    m_shadowFbo->unbind();
 
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
@@ -95,7 +88,7 @@ void Renderer::operator()(const glowutils::Camera & camera)
     sceneStep(camera);
     handStep(camera);
     m_particleWaterStep->draw(camera);
-    shadowStep(camera
+    m_shadowMappingStep->draw(camera
         //glowutils::Camera(glm::vec3(0.0, 6.5, 7.5))
         );
     flushStep();
@@ -130,20 +123,6 @@ void Renderer::handStep(const glowutils::Camera & camera)
     m_handFbo->unbind();
 }
 
-void Renderer::shadowStep(const glowutils::Camera & lightSource)
-{
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-
-    m_shadowFbo->bind();
-
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    m_world.terrain->drawShadow(lightSource);
-
-    m_shadowFbo->unbind();
-}
-
 void Renderer::flushStep()
 {
     glDisable(GL_DEPTH_TEST);
@@ -153,7 +132,7 @@ void Renderer::flushStep()
     m_sceneDepth->bind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->bind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->bind(GL_TEXTURE3);
-    m_shadowDepthTex->bind(GL_TEXTURE4);
+    m_shadowMappingStep->result()->bind(GL_TEXTURE4);
 
     m_quad->draw();
 
@@ -161,7 +140,7 @@ void Renderer::flushStep()
     m_sceneDepth->unbind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
-    m_shadowDepthTex->unbind(GL_TEXTURE4);
+    m_shadowMappingStep->result()->unbind(GL_TEXTURE4);
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -182,10 +161,8 @@ void Renderer::resize(int width, int height)
     m_handDepth->storage(GL_DEPTH_COMPONENT32F, width, height);
     assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    assert(m_particleWaterStep);
-    m_particleWaterStep->resize(width, height);
-
-    m_shadowDepthTex->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    m_shadowFbo->printStatus(true);
-    assert(m_shadowFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    for (auto step : m_steps) {
+        assert(step);
+        step->resize(width, height);
+    }
 }

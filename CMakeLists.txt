@@ -112,6 +112,8 @@ set(SOURCES
     src/rendering/renderingstep.cpp
     src/rendering/particlewaterstep.h
     src/rendering/particlewaterstep.cpp
+    src/rendering/shadowmappingstep.cpp
+    src/rendering/shadowmappingstep.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
