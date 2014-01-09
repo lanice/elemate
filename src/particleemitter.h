@@ -36,6 +36,7 @@ protected:
 
     float                    m_akkumulator;
     physx::PxU32             m_youngest_particle_index;
+    bool                     m_reuses_old_particle;
 
 
     physx::PxParticleSystem*            m_particleSystem; // or fluid?
