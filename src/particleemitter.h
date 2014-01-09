@@ -28,11 +28,17 @@ public:
     void startEmit();
     void stopEmit();
 
+    void setPosition(const physx::PxVec3& position);
+    physx::PxVec3 position()const;
+
+    //void setEmittingRate(const physx::PxU32& particle_per_emit);
+    //void setMaxParticles(const physx::PxU32& particle_count);
+
     void createParticles(int number_of_particles);
 
 protected:
-    static const physx::PxU32	kMaxParticleCount = 100;
-    static const physx::PxU32   kDefaultEmittedParticles = 1;
+    static const physx::PxU32	kMaxParticleCount = 1000;
+    static const physx::PxU32   kDefaultEmittedParticles = 3;
 
     osg::ref_ptr<osg::Group> m_parent;
     osg::ref_ptr<osg::Group> m_particle_group;
@@ -46,7 +52,7 @@ protected:
     size_t                   youngest_particle_index;
 
 
-    physx::PxParticleBase*            m_particle_system; // or fluid?
+    physx::PxParticleFluid*            m_particle_system; // or fluid?
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticleEmitter);

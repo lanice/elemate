@@ -32,7 +32,7 @@ void ParticleEmitter::initializeParticleSystem(){
 
     m_particle_system = PxGetPhysics().createParticleFluid(kMaxParticleCount, false);
     assert(m_particle_system);
-    //m_particle_system->setRestOffset(5.0F);
+    m_particle_system->setRestParticleDistance(0.3F);
 
     physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
     PxGetPhysics().getScenes(&scene_buffer, 1);
