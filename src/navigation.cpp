@@ -129,6 +129,14 @@ void Navigation::apply()
 {
     glm::vec3 eye = m_center - glm::normalize(m_lookAtVector) * m_distanceEyeCenter;
 
+    float eyeHeight = m_terrain->heightAt(eye.x, eye.z);
+    if (eye.y < eyeHeight + 1.f)
+    {
+        eye.y = eyeHeight + 1.f;
+        m_lookAtVector = m_center - eye;
+        m_distanceEyeCenter = glm::length(m_lookAtVector);
+    }
+
     m_camera->setEye(eye);
     m_camera->setCenter(m_center);
     m_camera->setUp(glm::vec3(0, 1, 0));
