@@ -95,6 +95,8 @@ set(SHADER
     shader/hand.frag
     shader/hand.vert
     shader/phongLighting.frag
+    shader/shadow_terrain.vert
+    shader/shadow_terrain.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

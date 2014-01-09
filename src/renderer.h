@@ -30,6 +30,7 @@ protected:
     void sceneStep(const glowutils::Camera & camera);
     void handStep(const glowutils::Camera & camera);
     void particleWaterStep(const glowutils::Camera & camera);
+    void shadowStep(const glowutils::Camera & lightSource);
     void flushStep();
 
 
@@ -50,6 +51,9 @@ protected:
     glow::ref_ptr<glow::FrameBufferObject> m_particleWaterFbo;
     glow::ref_ptr<glow::Texture> m_particleWaterColor;
     glow::ref_ptr<glow::Texture> m_particleWaterDepth;
+
+    glow::ref_ptr<glow::FrameBufferObject> m_shadowFbo;
+    glow::ref_ptr<glow::Texture> m_shadowDepthTex;
 
 public:
     Renderer() = delete;

@@ -5,11 +5,14 @@ in vec2 v_uv;
 uniform sampler2D sceneColor;
 uniform sampler2D sceneDepth;
 uniform sampler2D waterDepth;
+uniform sampler2D shadowMap;
 
 layout(location = 0)out vec4 fragColor;
 
 void main()
 {
+    fragColor = texture(shadowMap, v_uv)*0.2;
+    return;
     float sceneZ = texture(sceneDepth, v_uv).r;
     float waterZ = texture(waterDepth, v_uv).r;
     if (sceneZ > waterZ)

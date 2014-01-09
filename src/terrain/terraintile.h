@@ -42,6 +42,7 @@ public:
 
     friend class TerrainGenerator;
     friend class TerrainInteractor;
+    friend class Terrain;
 
 protected:
     const TileID m_tileID;

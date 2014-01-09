@@ -7,6 +7,8 @@
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
+#include <glowutils/Camera.h>
+#include <glowutils/File.h>
 
 #include "terraintile.h"
 
@@ -17,6 +19,7 @@ Terrain::Terrain(const TerrainSettings & settings)
 , m_vbo(nullptr)
 , m_vertices(nullptr)
 , m_indices(nullptr)
+, m_shadowProgram(nullptr)
 {
 }
 
@@ -56,6 +59,45 @@ void Terrain::draw(const glowutils::Camera & camera)
     m_vao->unbind();
 }
 
+void Terrain::drawShadow(const glowutils::Camera & lightSource)
+{
+    // we probably don't want to draw an empty terrain
+    assert(m_tiles.size() > 0);
+
+    if (!m_vao)
+        initialize();
+
+    if (!m_shadowProgram)
+        initShadowProgram();
+
+    assert(m_vao);
+    assert(m_indexBuffer);
+    assert(m_vbo);
+
+    m_vao->bind();
+
+    glEnable(GL_PRIMITIVE_RESTART);
+
+    m_shadowProgram->use();
+
+    m_shadowProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+
+    // TODO: generalize for more tiles...
+
+    m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_heightTex->bind(GL_TEXTURE0);
+    m_tiles.at(TileID(TerrainLevel::WaterLevel))->m_heightTex->bind(GL_TEXTURE1);
+
+    glPrimitiveRestartIndex(restartIndex);
+    m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
+
+    m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_heightTex->unbind(GL_TEXTURE0);
+    m_tiles.at(TileID(TerrainLevel::WaterLevel))->m_heightTex->unbind(GL_TEXTURE1);
+
+    m_shadowProgram->release();
+
+    m_vao->unbind();
+}
+
 void Terrain::initialize()
 {
     generateVertices();
@@ -80,6 +122,18 @@ void Terrain::initialize()
     m_indexBuffer->bind();
 
     m_vao->unbind();
+}
+
+void Terrain::initShadowProgram()
+{
+    m_shadowProgram = new glow::Program();
+
+    m_shadowProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadow_terrain.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadow_terrain.frag"));
+
+    m_shadowProgram->setUniform("heightField0", 0);
+    m_shadowProgram->setUniform("heightField0", 1);
 }
 
 void Terrain::generateVertices()
