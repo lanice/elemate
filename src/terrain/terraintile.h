@@ -40,6 +40,8 @@ public:
     /** @return interpolated height (y value) at specified normalized in tile position. */
     float interpolatedHeightAt(float normX, float normZ) const;
 
+    glm::mat4 transform() const;
+
     friend class TerrainGenerator;
     friend class TerrainInteractor;
     friend class Terrain;

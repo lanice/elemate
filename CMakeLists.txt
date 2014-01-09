@@ -130,14 +130,16 @@ set(SHADER
     shader/terrain_water.frag
     shader/hand.frag
     shader/hand.vert
-    shader/phongLighting.frag
-    shader/shadow_terrain.vert
-    shader/shadow_terrain.frag
     shader/particle_water.vert
     shader/particle_water.geo
     shader/particle_water.frag
     shader/particle_water_normals.frag
-    shader/depth_util.frag
+    shader/phongLighting.frag
+    shader/shadows/lightmap_terrain.vert
+    shader/shadows/lightmap_terrain.frag
+    shader/shadows/shadow_terrain.vert
+    shader/shadows/shadow_terrain.frag
+    shader/shadows/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

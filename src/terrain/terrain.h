@@ -30,7 +30,8 @@ public:
 
     virtual void draw(const glowutils::Camera & camera);
     /** writes the linearized depth into the current depth attachment */
-    virtual void drawShadow(const glowutils::Camera & lightSource);
+    virtual void drawLightMap(const glowutils::Camera & lightSource);
+    virtual void drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & lightSource);
 
     /** PhysX shape containing height field geometry for one tile.
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
@@ -80,8 +81,10 @@ protected:
     glow::UIntArray * m_indices;
 
     /** light map and shadow mapping */
-    void initShadowProgram();
-    glow::ref_ptr<glow::Program> m_shadowProgram;
+    void initLightMapProgram();
+    glow::ref_ptr<glow::Program> m_lightMapProgram;
+    void initShadowMappingProgram();
+    glow::ref_ptr<glow::Program> m_shadowMappingProgram;
 
 protected:
 

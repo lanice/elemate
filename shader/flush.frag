@@ -14,8 +14,8 @@ void main()
 {
     fragColor = texture(shadowMap, v_uv).xxxx * 5.0 - 4.0;
     return;
-    fragColor = texture(sceneColor, v_uv);
-    return;
+    // fragColor = texture(sceneColor, v_uv);
+    // return;
     float sceneZ = texture(sceneDepth, v_uv).r;
     float waterZ = texture(waterDepth, v_uv).r;
 	fragColor = mix(

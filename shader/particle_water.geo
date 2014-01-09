@@ -12,7 +12,7 @@ layout (triangle_strip, max_vertices = 4) out;
 
 out vec2 g_relPos;
 out vec4 g_absPos;
-out vec2 g_size;
+out float g_size;
 
 void main()
 {

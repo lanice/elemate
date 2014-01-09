@@ -225,6 +225,11 @@ float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
     return 0.0f;
 }
 
+glm::mat4 TerrainTile::transform() const
+{
+    return m_transform;
+}
+
 void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
 {
     m_bufferUpdateList.push_front(std::pair<GLintptr, GLsizeiptr>(offset, length));

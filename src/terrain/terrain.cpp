@@ -10,6 +10,8 @@
 #include <glowutils/Camera.h>
 #include <glowutils/File.h>
 
+#include <glm/gtc/random.hpp>
+
 #include "terraintile.h"
 
 Terrain::Terrain(const TerrainSettings & settings)
@@ -19,7 +21,7 @@ Terrain::Terrain(const TerrainSettings & settings)
 , m_vbo(nullptr)
 , m_vertices(nullptr)
 , m_indices(nullptr)
-, m_shadowProgram(nullptr)
+, m_lightMapProgram(nullptr)
 {
 }
 
@@ -61,7 +63,7 @@ void Terrain::draw(const glowutils::Camera & camera)
     m_vao->unbind();
 }
 
-void Terrain::drawShadow(const glowutils::Camera & lightSource)
+void Terrain::drawLightMap(const glowutils::Camera & lightSource)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
@@ -69,8 +71,8 @@ void Terrain::drawShadow(const glowutils::Camera & lightSource)
     if (!m_vao)
         initialize();
 
-    if (!m_shadowProgram)
-        initShadowProgram();
+    if (!m_lightMapProgram)
+        initLightMapProgram();
 
     assert(m_vao);
     assert(m_indexBuffer);
@@ -80,12 +82,12 @@ void Terrain::drawShadow(const glowutils::Camera & lightSource)
 
     glEnable(GL_PRIMITIVE_RESTART);
 
-    m_shadowProgram->use();
+    m_lightMapProgram->use();
 
-    m_shadowProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_shadowProgram->setUniform("viewport", lightSource.viewport());
-    m_shadowProgram->setUniform("znear", lightSource.zNear());
-    m_shadowProgram->setUniform("zfar", lightSource.zFar());
+    m_lightMapProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_lightMapProgram->setUniform("viewport", lightSource.viewport());
+    m_lightMapProgram->setUniform("znear", lightSource.zNear());
+    m_lightMapProgram->setUniform("zfar", lightSource.zFar());
 
     // TODO: generalize for more tiles...
 
@@ -98,7 +100,58 @@ void Terrain::drawShadow(const glowutils::Camera & lightSource)
     m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_heightTex->unbind(GL_TEXTURE0);
     m_tiles.at(TileID(TerrainLevel::WaterLevel))->m_heightTex->unbind(GL_TEXTURE1);
 
-    m_shadowProgram->release();
+    m_lightMapProgram->release();
+
+    m_vao->unbind();
+}
+
+glow::Vec2Array m_shadowSamples;
+
+void initShadowSamples() {
+    m_shadowSamples.resize(128);
+    for (int i = 0; i < m_shadowSamples.size(); ++i) {
+        m_shadowSamples[i] = glm::vec2(
+            glm::linearRand(-1.0f, 1.0f),
+            glm::linearRand(-1.0f, 1.0f));
+    }
+}
+
+void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & lightSource)
+{
+    if (!m_shadowMappingProgram)
+        initShadowMappingProgram();
+
+    if (m_shadowSamples.empty())
+        initShadowSamples();
+
+    m_vao->bind();
+
+    glEnable(GL_PRIMITIVE_RESTART);
+
+    // TODO: generalize for more tiles...
+
+    auto baseTile = m_tiles.at(TileID(TerrainLevel::BaseLevel));
+    auto waterTile = m_tiles.at(TileID(TerrainLevel::WaterLevel));
+
+    m_shadowMappingProgram->use();
+
+    m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
+    m_shadowMappingProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_shadowMappingProgram->setUniform("lightSourceView", lightSource.view());
+    m_shadowMappingProgram->setUniform("invView", camera.viewInverted());
+    m_shadowMappingProgram->setUniform("viewport", lightSource.viewport());
+    m_shadowMappingProgram->setUniform("shadowSamples", m_shadowSamples);
+
+    baseTile->m_heightTex->bind(GL_TEXTURE1);
+    waterTile->m_heightTex->bind(GL_TEXTURE2);
+
+    glPrimitiveRestartIndex(restartIndex);
+    m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
+
+    baseTile->m_heightTex->unbind(GL_TEXTURE1);
+    waterTile->m_heightTex->unbind(GL_TEXTURE2);
+
+    m_lightMapProgram->release();
 
     m_vao->unbind();
 }
@@ -129,19 +182,35 @@ void Terrain::initialize()
     m_vao->unbind();
 }
 
-void Terrain::initShadowProgram()
+void Terrain::initLightMapProgram()
 {
-    m_shadowProgram = new glow::Program();
+    m_lightMapProgram = new glow::Program();
 
-    m_shadowProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadow_terrain.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadow_terrain.frag"));
+    m_lightMapProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER,   "shader/shadows/lightmap_terrain.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap_terrain.frag"));
 
-    m_shadowProgram->setUniform("heightField0", 0);
-    m_shadowProgram->setUniform("heightField0", 1);
+    m_lightMapProgram->setUniform("heightField0", 0);
+    m_lightMapProgram->setUniform("heightField1", 1);
 
-    m_shadowProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_lightMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+}
+
+void Terrain::initShadowMappingProgram()
+{
+    m_shadowMappingProgram = new glow::Program();
+
+    m_shadowMappingProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadow_terrain.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadow_terrain.frag"));
+
+    m_shadowMappingProgram->setUniform("lightMap", 0);
+    m_shadowMappingProgram->setUniform("heightField0", 1);
+    m_shadowMappingProgram->setUniform("heightField1", 2);
+
+    m_shadowMappingProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
 }
 
 void Terrain::generateVertices()

@@ -99,12 +99,12 @@ void Renderer::operator()(const glowutils::Camera & camera)
 
 void Renderer::sceneStep(const glowutils::Camera & camera)
 {
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
     m_sceneFbo->bind();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
 
     m_world.terrain->draw(camera);
 
