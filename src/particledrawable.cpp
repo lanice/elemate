@@ -10,6 +10,7 @@
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
 
+#include "pxcompilerfix.h"
 #include <foundation/PxVec3.h>
 #include <particles/PxParticleReadData.h>
 
@@ -20,10 +21,10 @@ std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
 : m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
-, m_vertices(std::make_shared<glow::Vec3Array>())
 , m_needBufferUpdate(true)
 , m_vao(nullptr)
 , m_vbo(nullptr)
+, m_vertices(std::make_shared<glow::Vec3Array>())
 , m_program(nullptr)
 {
     s_instances.push_back(this);
@@ -116,7 +117,7 @@ void ParticleDrawable::addParticles(unsigned int numParticles, const physx::PxVe
 
 void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readData)
 {
-    unsigned numParticles = readData->numValidParticles;
+    unsigned numParticles = readData->nbValidParticles;
 
     if (numParticles == 0)
         return;

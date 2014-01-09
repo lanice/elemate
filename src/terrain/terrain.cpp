@@ -22,7 +22,9 @@ Terrain::Terrain(const TerrainSettings & settings)
 
 Terrain::~Terrain()
 {
+    m_vertices->clear();
     delete m_vertices;
+    m_indices->clear();
     delete m_indices;
 }
 
@@ -130,7 +132,7 @@ void Terrain::registerTile(const TileID & tileID, TerrainTile & tile)
     m_tiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
 }
 
-const std::unordered_map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
+const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
 {
     return m_pxActors;
 }

@@ -5,6 +5,7 @@
 
 #include <glow/logging.h>
 
+#include "pxcompilerfix.h"
 #include "PxPhysicsAPI.h"
 
 #include "elements.h"
@@ -13,12 +14,13 @@
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
 
-PhysicsWrapper::PhysicsWrapper():
-        m_foundation(nullptr),
-        m_physics(nullptr),
+PhysicsWrapper::PhysicsWrapper()
+: m_foundation(nullptr)
+, m_cpu_dispatcher(nullptr)
+, m_physics(nullptr)
+, m_scene(nullptr)
+, m_emitters()
         //m_profile_zone_manager(nullptr),
-        m_scene(nullptr),
-        m_cpu_dispatcher(nullptr)
 {
     initializePhysics();
     initializeScene();
@@ -40,7 +42,7 @@ PhysicsWrapper::~PhysicsWrapper()
     m_foundation->release();
 }
 
-bool PhysicsWrapper::step(long double delta){
+bool PhysicsWrapper::step(double delta){
 
     if (delta == 0)
         return false;
@@ -52,7 +54,7 @@ bool PhysicsWrapper::step(long double delta){
     return true;
 }
 
-void PhysicsWrapper::updateAllObjects(long double delta)
+void PhysicsWrapper::updateAllObjects(double delta)
 {
     m_scene->fetchResults(true);
 
@@ -61,8 +63,9 @@ void PhysicsWrapper::updateAllObjects(long double delta)
     }
 }
 
-void PhysicsWrapper::makeParticleEmitter(const physx::PxVec3& position){
-    m_emitters.push_back(std::make_shared<ParticleEmitter>(position));
+void PhysicsWrapper::makeParticleEmitter(const glm::vec3& position){
+    m_emitters.push_back(std::make_shared<ParticleEmitter>(
+        physx::PxVec3(position.x, position.y, position.z)));
     m_emitters.back()->initializeParticleSystem();
     m_emitters.back()->startEmit();
 }
@@ -138,4 +141,14 @@ physx::PxScene* PhysicsWrapper::scene() const
 {
     assert(m_scene);
     return m_scene;
+}
+
+void PhysicsWrapper::addActor(physx::PxActor & actor)
+{
+    scene()->addActor(actor);
+}
+
+void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
+{
+    scene()->addActor(actor);
 }

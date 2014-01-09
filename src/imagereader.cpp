@@ -33,8 +33,8 @@ RawImage::RawImage(const std::string & filename, uint32_t width, uint32_t height
     try {
         file.read(m_data, m_size);
     }
-    catch (std::ios_base::failure & e) {
-        glow::critical("RawImage: could not read from file %; (error %;)", filename, e.code());
+    catch (std::ios_base::failure & /*e*/) {
+        glow::critical("RawImage: could not read from file %;", filename);
         m_status = Status::ReadError;
         return;
     }
@@ -55,11 +55,6 @@ RawImage::RawImage(const std::string & filename, uint32_t width, uint32_t height
 }
 
 char * RawImage::rawData()
-{
-    return m_data;
-}
-
-char * const RawImage::rawData() const
 {
     return m_data;
 }

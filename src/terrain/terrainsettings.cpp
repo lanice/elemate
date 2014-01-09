@@ -22,16 +22,13 @@ TileID::TileID(TerrainLevel level /*= TerrainLevel::BaseLevel*/, int xID /*= 0*/
 : level(level), x(xID), z(zID)
 {}
 
-bool TileID::operator==(const TileID & other) const {
-    return (level == other.level)
-        && (x == other.x)
-        && (z == other.z);
-}
-
-size_t std::hash<TileID>::operator()(const TileID& id) const
+bool std::less<TileID>::operator()(const TileID& lhs, const TileID& rhs) const
 {
     return
-        std::hash<int>()(static_cast<int>(id.level))
-        ^ std::hash<unsigned int>()(static_cast<unsigned int>(id.x))
-        ^ std::hash<unsigned int>()(static_cast<unsigned int>(id.z));
+    (lhs.level != rhs.level)
+     ? static_cast<unsigned int>(lhs.level)
+        < static_cast<unsigned int>(rhs.level)
+     : (lhs.x != rhs.x)
+     	? (lhs.x < rhs.x)
+     	: (lhs.z < rhs.z);
 }

@@ -52,6 +52,7 @@ Hand::Hand(const World & world)
     m_indexBuffer = new glow::Buffer(GL_ELEMENT_ARRAY_BUFFER);
     m_indexBuffer->setData(*indices, GL_STATIC_DRAW);
     m_indexBuffer->unbind();
+    indices->clear();
     delete indices;
 
     glow::Vec3Array * vertices = new glow::Vec3Array;
@@ -61,6 +62,7 @@ Hand::Hand(const World & world)
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
     m_vbo->setData(*vertices, GL_STATIC_DRAW);
     m_vbo->unbind();
+    vertices->clear();
     delete vertices;
 
     glow::Vec3Array * normals = new glow::Vec3Array;
@@ -70,6 +72,7 @@ Hand::Hand(const World & world)
     m_normalBuffer = new glow::Buffer(GL_ARRAY_BUFFER);
     m_normalBuffer->setData(*normals, GL_STATIC_DRAW);
     m_normalBuffer->unbind();
+    normals->clear();
     delete normals;
 
 

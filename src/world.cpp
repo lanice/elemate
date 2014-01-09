@@ -8,8 +8,6 @@
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
 
-#include "PxPhysicsAPI.h"
-
 #include <glm/glm.hpp>
 
 #include "hpicgs/CyclicTime.h"
@@ -23,11 +21,14 @@
 
 
 World::World(PhysicsWrapper & physicsWrapper)
-: m_physicsWrapper(physicsWrapper)
-, hand(new Hand(*this))
+: hand(new Hand(*this))
+, terrain(nullptr)
 , m_soundManager(std::make_shared<SoundManager>())
+, m_physicsWrapper(physicsWrapper)
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
+, m_programsByName()
+, m_sounds()
 {    
     // Create two non-3D channels (paino and rain)
     //initialise as paused
@@ -49,7 +50,7 @@ World::World(PhysicsWrapper & physicsWrapper)
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
     for (const auto actor : terrain->pxActorMap())
-        m_physicsWrapper.scene()->addActor(*actor.second);
+        m_physicsWrapper.addActor(*actor.second);
 }
 
 World::~World()
@@ -74,8 +75,8 @@ void World::stopSimulation()
 void World::update()
 {
     // Retrieve time delta from last World update to now.
-    long double delta = m_time->getNonModf();
-    delta = m_time->getNonModf(true) - delta;
+    double delta = static_cast<double>(m_time->getNonModf());
+    delta = static_cast<double>(m_time->getNonModf(true)) - delta;
 
     // update physic
     m_physicsWrapper.step(delta);
@@ -83,7 +84,7 @@ void World::update()
 
 void World::makeStandardBall(const glm::vec3& position)
 {
-    m_physicsWrapper.makeParticleEmitter(physx::PxVec3(position.x, position.y, position.z));
+    m_physicsWrapper.makeParticleEmitter(position);
 }
 
 void World::createFountainSound(const glm::vec3& position)
