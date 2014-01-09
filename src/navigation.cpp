@@ -20,7 +20,6 @@ Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::sha
 , m_camera(&camera)
 , m_terrain(terrain)
 , m_center()
-, m_rotation()
 , m_distanceEyeCenter(c_distanceEyeCenterDefault)  
 {
     setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
