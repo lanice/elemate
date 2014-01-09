@@ -24,7 +24,7 @@ class CyclicTime
 	};
 
 public:
-	static const long utcOffset();
+	static long utcOffset();
 
 	CyclicTime(
 		t_longf time = 0.0
@@ -47,44 +47,44 @@ public:
 	void reset(bool update = false); ///< Resets the time to initial value (secondsPerCycle remain unchanged).
 	void stop (bool update = false); ///< Stops and resets the time.
 
-    inline const t_longf getSecondsPerCycle() const;
+    inline t_longf getSecondsPerCycle() const;
 
-	const t_longf setSecondsPerCycle(const t_longf secondsPerCycle);
+	t_longf setSecondsPerCycle(t_longf secondsPerCycle);
 
 
 	/** Float time in the intervall [0;1]
     */
-    inline const t_longf getf() const;
+    inline t_longf getf() const;
 
-	const t_longf getf(bool updateFirst);
+	t_longf getf(bool updateFirst);
 
 	// Sets only time, date remains unchanged.
-	const t_longf setf(
+	t_longf setf(
 		t_longf time
     ,   const bool update = false);
 
 	// Elapsed float time from initialized time.
-	const t_longf getNonModf(bool update = false);
+	t_longf getNonModf(bool update = false);
 
 	/** Time in seconds from initial time.
     */
-    inline const time_t gett() const;
+    inline time_t gett() const;
 
-	const time_t gett(bool update);
-	const time_t sett(
+	time_t gett(bool update);
+	time_t sett(
 		const time_t &time
     ,   const bool update = false);
 
-	const time_t getUtcOffset() const;
-	const time_t setUtcOffset(const time_t & utcOffset /* In Seconds. */);
+	time_t getUtcOffset() const;
+	time_t setUtcOffset(const time_t & utcOffset /* In Seconds. */);
 
 	// 
 
-	const bool isRunning() const;
+	bool isRunning() const;
 
 protected:
-	static inline const t_longf secondsTof(const time_t & time);
-	static inline const time_t fToSeconds(const t_longf time);
+	static inline t_longf secondsTof(const time_t & time);
+	static inline time_t fToSeconds(t_longf time);
 
 	void initialize();
 

@@ -49,6 +49,9 @@ protected:
     const Terrain & m_terrain;
 
     virtual void initialize();
+    bool isInitialized;
+    /** subclass has to override this method to create the program.
+      * Afterward, call this function to set some uniforms. */
     virtual void initializeProgram() = 0;
     virtual void createPxObjects(physx::PxRigidStatic & pxActor);
     virtual void pxSamplesAndMaterials(
@@ -63,6 +66,9 @@ protected:
     /** Contains the height field values in row major order.
       * Initially created by the TerrainGenerator. */
     glow::FloatArray * m_heightField;
+    /** Used by terrain generator to set the height field.
+      * Allocates gpu memory and initializes the associated texture. */
+    void setHeightField(glow::FloatArray & heightField);
 
     physx::PxShape * m_pxShape;
 

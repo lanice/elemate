@@ -10,6 +10,7 @@
 
 #include <glm/glm.hpp>
 
+#include "pxcompilerfix.h"
 #include <PxPhysics.h>
 #include <PxRigidStatic.h>
 #include <PxShape.h>
@@ -26,6 +27,7 @@
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
 , m_terrain(terrain)
+, isInitialized(false)
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
@@ -50,10 +52,10 @@ TerrainTile::~TerrainTile()
 
 void TerrainTile::bind(const glowutils::Camera & camera)
 {
+    if (!isInitialized)
+        initialize();
     if (!m_program)
         initializeProgram();
-    if (!m_heightTex)
-        initialize();
     if (!m_bufferUpdateList.empty())
         updateGlBuffers();
 
@@ -61,8 +63,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     assert(m_heightField);
     assert(m_heightTex);
 
-    glActiveTexture(GL_TEXTURE0 + 0);
-    m_heightTex->bind();
+    m_heightTex->bind(GL_TEXTURE0);
 
     m_program->use();
     m_program->setUniform("cameraposition", camera.eye());
@@ -79,12 +80,12 @@ void TerrainTile::unbind()
 {
     m_program->release();
 
-    m_heightTex->unbind();
+    m_heightTex->unbind(GL_TEXTURE0);
 }
 
-void TerrainTile::initialize()
+void TerrainTile::setHeightField(glow::FloatArray & heightField)
 {
-    assert(m_heightField);
+    m_heightField = &heightField;
 
     m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
@@ -93,10 +94,19 @@ void TerrainTile::initialize()
     m_heightTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
     m_heightBuffer->unbind();
+}
 
+void TerrainTile::initialize()
+{
+}
+
+void TerrainTile::initializeProgram()
+{
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
     m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain.settings.rows, m_terrain.settings.columns));
+
+    Elements::setAllUniforms(*m_program);
 }
 
 using namespace physx;

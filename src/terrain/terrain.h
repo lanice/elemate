@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <memory>
 
 #include <glow/ref_ptr.h>
@@ -38,7 +38,7 @@ public:
     physx::PxRigidStatic * pxActor(const TileID & tileID) const;
     /** Map of static PhysX actors. TileID's level is always BaseLevel.
       * One actor owns the shapes for all terain levels at its x/z-ID. */
-    const std::unordered_map<TileID, physx::PxRigidStatic*> pxActorMap() const;
+    const std::map<TileID, physx::PxRigidStatic*> pxActorMap() const;
     /** @return interpolated height at specific world position */
     float heightAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
@@ -57,9 +57,9 @@ protected:
     /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);
 
-    std::unordered_map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
+    std::map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
     /** holds one physx actor per tile x/z-ID. TileId.level is always BaseLevel */
-    std::unordered_map<TileID, physx::PxRigidStatic*> m_pxActors;
+    std::map<TileID, physx::PxRigidStatic*> m_pxActors;
 
     /** lowest tile id in x direction */
     unsigned minTileXID;

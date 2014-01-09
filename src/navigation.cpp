@@ -5,38 +5,54 @@
 
 #include <GLFW/glfw3.h>
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include "terrain/terrain.h"
 
 
-static const double c_distanceEyeCenterDefault = 5.;
+static const float c_distanceEyeCenterDefault = 15.f;
 static const float c_speedScale = 0.05f;
 
 
-Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain) :
-    m_window(window),
-    m_camera(&camera),
-    m_distanceEyeCenter(c_distanceEyeCenterDefault),
-    m_terrain(terrain)
+Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain)
+: m_window(window)
+, m_camera(&camera)
+, m_terrain(terrain)
+, m_center()
+, m_distanceEyeCenter(c_distanceEyeCenterDefault)  
 {
-    setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); // eye, center, up
+    setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
 }
 
 Navigation::~Navigation()
 {
 }
 
-void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up)
+void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & /*up*/)
 {
     glm::vec3 center_terrainHeight = glm::vec3(
         center.x,
         m_terrain->heightAt(center.x, center.z),
         center.z);
 
-    glm::mat4 lookAtMatrix(glm::lookAt(eye, center_terrainHeight, up));
     m_center = center_terrainHeight;
-    m_rotation = glm::toQuat(lookAtMatrix);
+    m_lookAtVector = center_terrainHeight - eye;
+    m_distanceEyeCenter = glm::length(m_lookAtVector);
+
+    apply();
+}
+
+void Navigation::setTransformation(const glm::vec3 & center, const glm::vec3 & lookAtVector, const float & distance)
+{
+    glm::vec3 center_terrainHeight = glm::vec3(
+        center.x,
+        m_terrain->heightAt(center.x, center.z),
+        center.z);
+
+    m_center = center_terrainHeight;
+    m_lookAtVector = lookAtVector;
+    m_distanceEyeCenter = distance;
 
     apply();
 }
@@ -47,20 +63,20 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
     {
         if (yoffset > 0)
         {
-            if (m_distanceEyeCenter <= 2.) return;
-            m_distanceEyeCenter -= 0.5;
+            if (m_distanceEyeCenter <= 2.f) return;
+            m_distanceEyeCenter -= 0.5f;
         } else {
-            m_distanceEyeCenter += 0.5;
+            m_distanceEyeCenter += 0.5f;
         }
     } else {
         glm::vec3 eye = m_camera->eye();
         if (yoffset < 0)
         {
-            if (eye.y <= (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
-            pitch(2.);
+            if (eye.y <= m_terrain->heightAt(eye.x, eye.z) + 1.f) return;
+            pitch(2.f);
         } else {
             if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
-            pitch(-2.);
+            pitch(-2.f);
         }
     }
 }
@@ -68,10 +84,7 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
 void Navigation::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    {
-        setTransformation(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-        m_distanceEyeCenter = c_distanceEyeCenterDefault;
-    }
+        setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
 }
 
 void Navigation::update(double delta)
@@ -114,7 +127,15 @@ void Navigation::update(double delta)
 
 void Navigation::apply()
 {
-    glm::vec3 eye = m_center + m_rotation * glm::vec3(0, m_distanceEyeCenter, 0);
+    glm::vec3 eye = m_center - glm::normalize(m_lookAtVector) * m_distanceEyeCenter;
+
+    float eyeHeight = m_terrain->heightAt(eye.x, eye.z);
+    if (eye.y < eyeHeight + 1.f)
+    {
+        eye.y = eyeHeight + 1.f;
+        m_lookAtVector = m_center - eye;
+        m_distanceEyeCenter = glm::length(m_lookAtVector);
+    }
 
     m_camera->setEye(eye);
     m_camera->setCenter(m_center);
@@ -123,19 +144,20 @@ void Navigation::apply()
 
 void Navigation::move(glm::vec3 & position, const glm::vec3 & direction)
 {
-    glm::vec3 playerDirection = m_rotation * direction;
+    glm::vec3 moveDirection = glm::rotateY(m_lookAtVector, -90 * direction.x);
+    moveDirection += -2.f * moveDirection * direction.z;
 
-    position += glm::vec3(playerDirection.x, 0, playerDirection.z);
+    position += glm::vec3(moveDirection.x, 0, moveDirection.z);
 }
 
 void Navigation::rotate(const float & angle)
 {
-    m_rotation = glm::angleAxis(angle, glm::vec3(0, 1, 0)) * m_rotation;
+    m_lookAtVector = glm::rotateY(m_lookAtVector, angle);
 }
 
 void Navigation::pitch(const float & angle)
 {
-    m_rotation = glm::angleAxis(angle, m_rotation * glm::vec3(1, 0, 0)) * m_rotation;
+    m_lookAtVector = glm::rotate(m_lookAtVector, angle, glm::cross(m_lookAtVector, glm::vec3(0, 1, 0)));
 }
 
 const glowutils::Camera * Navigation::camera() const
@@ -143,13 +165,9 @@ const glowutils::Camera * Navigation::camera() const
     return m_camera;
 }
 
-const float Navigation::rotationAngle() const
+float Navigation::rotationAngle() const
 {
-    glm::vec3 eulerAngles = glm::eulerAngles(m_rotation);
+    float angle = glm::angle(glm::normalize(glm::vec3(m_lookAtVector.x, 0.f, m_lookAtVector.z)), glm::vec3(0.f, 0.f, -1.f));
 
-    // return eulerAngles.y;
-    if (eulerAngles.x > 0)
-        return eulerAngles.y >= 0 ? eulerAngles.y : 360.f + eulerAngles.y;
-    else
-        return 180.f - eulerAngles.y;
+    return m_lookAtVector.x <= 0.f ? angle : 360.f - angle;
 }

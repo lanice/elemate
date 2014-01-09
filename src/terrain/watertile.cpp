@@ -20,6 +20,9 @@ void WaterTile::bind(const glowutils::Camera & camera)
 {
     TerrainTile::bind(camera);
 
+    assert(m_baseHeightTex);
+    m_baseHeightTex->bind(GL_TEXTURE1);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 }
@@ -27,6 +30,8 @@ void WaterTile::bind(const glowutils::Camera & camera)
 void WaterTile::unbind()
 {
     glDisable(GL_BLEND);
+
+    m_baseHeightTex->unbind(GL_TEXTURE1);
 }
 
 void WaterTile::initializeProgram()
@@ -38,7 +43,9 @@ void WaterTile::initializeProgram()
     m_program = new glow::Program();
     m_program->attach(vertex, fragment, phongLightingFrag);
 
-    Elements::setAllUniforms(*m_program);
+    m_program->setUniform("baseHeightField", 1);
+
+    TerrainTile::initializeProgram();
 }
 
 using namespace physx;
