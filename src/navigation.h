@@ -27,16 +27,16 @@ public:
     void update(double delta);
     void apply();
 
-    void move(glm::vec3 & position, const glm::vec3 & direction);
-    void rotate(const float & degree);
-    void pitch(const float & degree);
-
     const glowutils::Camera * camera() const;
 
     float rotationAngle() const;
 
 
 protected:
+    void move(glm::vec3 & position, const glm::vec3 & direction);
+    void rotate(const float & degree);
+    void pitch(const float & degree);
+
     GLFWwindow & m_window;
     glowutils::Camera * m_camera;
     std::shared_ptr<Terrain> m_terrain;
