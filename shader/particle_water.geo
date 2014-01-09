@@ -12,8 +12,7 @@ layout (triangle_strip, max_vertices = 4) out;
 
 out vec2 g_relPos;
 out vec4 g_absPos;
-out vec2 g_center;
-out vec2 factor;
+out float g_factor;
 
 void main()
 {
@@ -32,29 +31,25 @@ void main()
     gl_Position = projPos + vec4(-factorX, -factorY, 0.0, 0.0);
 	g_relPos = vec2(-1,-1);
     g_absPos = gl_Position;
-    g_center = projPos.xy;
-    factor = vec2(factorX, factorY);
+    g_factor = factorX;
     EmitVertex();
     
     gl_Position = projPos + vec4(-factorX, factorY, 0.0, 0.0);
 	g_relPos = vec2(-1,1);
     g_absPos = gl_Position;
-    g_center = projPos.xy;
-    factor = vec2(factorX, factorY);
+    g_factor = factorX;
     EmitVertex();
     
     gl_Position = projPos + vec4(factorX, -factorY, 0.0, 0.0);
 	g_relPos = vec2(1,-1);
     g_absPos = gl_Position;
-    g_center = projPos.xy;
-    factor = vec2(factorX, factorY);
+    g_factor = factorX;
     EmitVertex();
     
     gl_Position = projPos + vec4(factorX, factorY, 0.0, 0.0);
 	g_relPos = vec2(1,1);
     g_absPos = gl_Position;
-    g_center = projPos.xy;
-    factor = vec2(factorX, factorY);
+    g_factor = factorX;
     EmitVertex();
     
     EndPrimitive();
