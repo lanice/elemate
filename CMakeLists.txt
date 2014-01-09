@@ -82,8 +82,6 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
-    src/renderer.h
-    src/renderer.cpp
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/soundmanager.cpp
@@ -108,6 +106,12 @@ set(SOURCES
     src/terrain/watertile.cpp
     src/terrain/terraingenerator.h
     src/terrain/terraingenerator.cpp
+    src/rendering/renderer.h
+    src/rendering/renderer.cpp
+    src/rendering/renderingstep.h
+    src/rendering/renderingstep.cpp
+    src/rendering/particlewaterstep.h
+    src/rendering/particlewaterstep.cpp
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <glow/ref_ptr.h>
 
 namespace glow {
@@ -13,6 +15,7 @@ namespace glowutils {
     class ScreenAlignedQuad;
 }
 class World;
+class ParticleWaterStep;
 
 class Renderer
 {
@@ -29,7 +32,7 @@ protected:
     // drawing steps
     void sceneStep(const glowutils::Camera & camera);
     void handStep(const glowutils::Camera & camera);
-    void particleWaterStep(const glowutils::Camera & camera);
+    std::shared_ptr<ParticleWaterStep> m_particleWaterStep;
     void flushStep();
 
 
@@ -46,16 +49,6 @@ protected:
 
     glow::ref_ptr<glow::FrameBufferObject> m_handFbo;
     glow::ref_ptr<glow::RenderBufferObject> m_handDepth;
-
-    glow::ref_ptr<glow::FrameBufferObject> m_particleWaterFbo;
-    glow::ref_ptr<glow::Texture> m_particleWaterColor;
-    glow::ref_ptr<glow::Texture> m_particleWaterDepth;
-
-    glow::ref_ptr<glow::FrameBufferObject> m_particleWaterNormalsFbo;
-    glow::ref_ptr<glow::Texture> m_particleWaterNormals;
-
-    glow::ref_ptr<glowutils::ScreenAlignedQuad> m_particleWaterQuad;
-    glow::ref_ptr<glow::Program> m_particleWaterProgram;
 
 public:
     Renderer() = delete;

@@ -4,6 +4,7 @@ in vec2 v_uv;
 
 uniform sampler2D sceneColor;
 uniform sampler2D sceneDepth;
+uniform sampler2D waterNormals;
 uniform sampler2D waterDepth;
 
 layout(location = 0)out vec4 fragColor;
