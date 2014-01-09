@@ -6,7 +6,7 @@
 
 #include "navigation.h"
 #include "manipulator.h"
-#include "renderer.h"
+#include "rendering/renderer.h"
 
 class PhysicsWrapper;
 class World;

@@ -28,10 +28,11 @@ void SoundManager::ERRCHECK(FMOD_RESULT _result)
     }
 }
 
-int SoundManager::getNextFreeId(){
-    int i = 0;
+unsigned int SoundManager::getNextFreeId(){
+    unsigned int i = 0;
     while (i < _channels.size()){
-        if (_channels.find(i) == _channels.end()) return i;
+        if (_channels.find(i) == _channels.end())
+            return i;
         ++i;
     }
     return i;
@@ -49,7 +50,7 @@ void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR u
         exit(-1);
     }
 
-    _result = _system->getNumDrivers(&_numdrivers);
+    _result = _system->getNumDrivers(reinterpret_cast<int*>(&_numdrivers));
     ERRCHECK(_result);
 
     if (_numdrivers == 0){
@@ -100,10 +101,10 @@ void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR u
     ERRCHECK(_result);
 }
 
-int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, FMOD_VECTOR pos, FMOD_VECTOR vel){
+unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, FMOD_VECTOR pos, FMOD_VECTOR vel){
     FMOD::Sound *_sound;
     FMOD::Channel *_channel = 0;
-    int _id = getNextFreeId();
+    unsigned int _id = getNextFreeId();
     FMOD_MODE _mode;
 
     if (is3D){
@@ -148,13 +149,13 @@ int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoo
     return _id;
 }
 
-void SoundManager::deleteChannel(int channelId){
+void SoundManager::deleteChannel(unsigned int channelId){
     _channels[channelId].sound->release();
     ERRCHECK(_result);
     _channels.erase(channelId);
 }
 
-void SoundManager::play(int channelId){
+void SoundManager::play(unsigned int channelId){
     bool _play;
     bool _paused;
     _channels[channelId].channel->isPlaying(&_play);
@@ -179,17 +180,17 @@ void SoundManager::play(int channelId){
     ERRCHECK(_result);
 }
 
-void SoundManager::setPaused(int channelId, bool paused){
+void SoundManager::setPaused(unsigned int channelId, bool paused){
     _channels[channelId].channel->setPaused(paused);
 }
 
-bool SoundManager::isPaused(int channelId){
+bool SoundManager::isPaused(unsigned int channelId){
     bool p;
     _channels[channelId].channel->getPaused(&p);
     return p;
 }
 
-void SoundManager::togglePause(int channelId){
+void SoundManager::togglePause(unsigned int channelId){
     bool p;
     _channels[channelId].channel->getPaused(&p);
     _channels[channelId].channel->setPaused(!p);
@@ -200,7 +201,7 @@ void SoundManager::setListenerAttributes(FMOD_VECTOR pos, FMOD_VECTOR forward, F
     ERRCHECK(_result);
 }
 
-void SoundManager::setSoundPos(int channelId, FMOD_VECTOR pos){
+void SoundManager::setSoundPos(unsigned int channelId, FMOD_VECTOR pos){
     FMOD_VECTOR _vel = _channels[channelId].velocity;
 
     bool p;
@@ -212,7 +213,7 @@ void SoundManager::setSoundPos(int channelId, FMOD_VECTOR pos){
     _channels[channelId].position = pos;
 }
 
-void SoundManager::setSoundVel(int channelId, FMOD_VECTOR vel){
+void SoundManager::setSoundVel(unsigned int channelId, FMOD_VECTOR vel){
     FMOD_VECTOR _pos = _channels[channelId].position;
 
     bool p;
@@ -224,7 +225,7 @@ void SoundManager::setSoundVel(int channelId, FMOD_VECTOR vel){
     _channels[channelId].velocity = vel;
 }
 
-void SoundManager::setSoundPosAndVel(int channelId, FMOD_VECTOR pos, FMOD_VECTOR vel){
+void SoundManager::setSoundPosAndVel(unsigned int channelId, FMOD_VECTOR pos, FMOD_VECTOR vel){
     bool p;
     _channels[channelId].channel->isPlaying(&p);
     if (p){
@@ -234,31 +235,31 @@ void SoundManager::setSoundPosAndVel(int channelId, FMOD_VECTOR pos, FMOD_VECTOR
     _channels[channelId].velocity = vel;
 }
 
-void SoundManager::setMute(int channelId, bool mute){
+void SoundManager::setMute(unsigned int channelId, bool mute){
     _channels[channelId].channel->setMute(mute);
 }
 
-bool SoundManager::isMute(int channelId){
+bool SoundManager::isMute(unsigned int channelId){
     bool mute;
     _channels[channelId].channel->getMute(&mute);
     return mute;
 }
 
-void SoundManager::setVolume(int channelId, float vol){
+void SoundManager::setVolume(unsigned int channelId, float vol){
     _channels[channelId].channel->setVolume(vol);
 }
 
-float SoundManager::getVolume(int channelId){
+float SoundManager::getVolume(unsigned int channelId){
     float vol;
     _channels[channelId].channel->getVolume(&vol);
     return vol;
 }
 
-void SoundManager::changeVolume(int channelId, float dVol){
+void SoundManager::changeVolume(unsigned int channelId, float dVol){
     _channels[channelId].channel->setVolume(getVolume(channelId) + dVol);
 }
 
-void SoundManager::changeFile(int channelId, const std::string & filePath){
+void SoundManager::changeFile(unsigned int channelId, const std::string & filePath){
     FMOD_MODE _mode;
     bool _ispaused;
     // get current sound properties

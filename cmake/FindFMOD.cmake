@@ -30,7 +30,7 @@ if (WIN32)
 else()
 
     find_library(FMOD_LIBRARY
-        NAMES fmodex
+        NAMES fmodex64
         PATHS
         /usr/lib64
         /usr/local/lib64

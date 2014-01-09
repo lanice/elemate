@@ -34,9 +34,11 @@ void BaseTile::bind(const glowutils::Camera & camera)
     if (!m_terrainTypeTex)
         createTerrainTypeTexture();
 
+    assert(m_terrainTypeTex);
     glActiveTexture(GL_TEXTURE1);
     m_terrainTypeTex->bind();
 
+    assert(m_rockTexture);
     glActiveTexture(GL_TEXTURE2);
     m_rockTexture->bind();
 }
@@ -81,7 +83,7 @@ void BaseTile::initializeProgram()
     m_program->setUniform("rockSampler", 2);
     m_program->setUniform("modelTransform", m_transform);
 
-    Elements::setAllUniforms(*m_program);
+    TerrainTile::initializeProgram();
 }
 
 using namespace physx;

@@ -24,6 +24,35 @@ endif()
 
 include(cmake/Custom.cmake)
 
+
+# PLATFORM AND ARCHITECTURE
+
+# Architecture (32/64 bit)
+set(X64 OFF)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(X64 ON)
+endif()
+
+# Check for linux
+if(UNIX AND NOT APPLE)
+    set(LINUX 1)
+endif()
+
+# Setup platform specifics (compile flags, etc., ...)
+if(MSVC)
+    message(STATUS "Configuring for platform Windows/MSVC.")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PlatformWindowsMSVC.cmake)
+elseif(LINUX AND CMAKE_COMPILER_IS_GNUCXX)
+    message(STATUS "Configuring for platform Linux/GCC.")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PlatformLinuxGCC.cmake)
+else()
+    # Unsupported system/compiler
+    message(WARNING "Unsupported platform/compiler combination")
+endif()
+
+
+# SOURCES AND TARGET CONFIGURATION
+
 set(ELEMATE_SOURCE_GROUP "Source Files")
 set(ELEMATE_SHADER_GROUP "Shader Files")
 
@@ -31,6 +60,7 @@ set(SOURCES
     src/main.cpp
     src/elements.h
     src/elements.cpp
+    src/pxcompilerfix.h
     src/physicswrapper.cpp
     src/physicswrapper.h
     src/game.cpp
@@ -52,8 +82,6 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
-    src/renderer.h
-    src/renderer.cpp
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/soundmanager.cpp
@@ -78,6 +106,12 @@ set(SOURCES
     src/terrain/watertile.cpp
     src/terrain/terraingenerator.h
     src/terrain/terraingenerator.cpp
+    src/rendering/renderer.h
+    src/rendering/renderer.cpp
+    src/rendering/renderingstep.h
+    src/rendering/renderingstep.cpp
+    src/rendering/particlewaterstep.h
+    src/rendering/particlewaterstep.cpp
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -97,15 +131,23 @@ set(SHADER
     shader/phongLighting.frag
     shader/shadow_terrain.vert
     shader/shadow_terrain.frag
+    shader/particle_water.vert
+    shader/particle_water.geo
+    shader/particle_water.frag
+    shader/particle_water_normals.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
 
 set( GLOW_DIR $ENV{GLOW_DIR} )
-STRING(REGEX REPLACE "\\\\" "/" GLOW_DIR ${GLOW_DIR})
+if (GLOW_DIR)
+    STRING(REGEX REPLACE "\\\\" "/" GLOW_DIR ${GLOW_DIR})
+endif()
     
-include(findPackageHandleStandardArgs)
+if (WIN32)
+    include(findPackageHandleStandardArgs)
+endif()
 
 find_package( OpenGL REQUIRED )
 find_package( GLM REQUIRED )
@@ -118,31 +160,20 @@ find_package( ASSIMP REQUIRED )
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
-    ${GLOW_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIR}
-    ${GLFW_INCLUDE_DIR}
+    SYSTEM ${GLOW_INCLUDE_DIR}
+    SYSTEM ${GLM_INCLUDE_DIR}
+    SYSTEM ${GLFW_INCLUDE_DIR}
+    SYSTEM ${PHYSX_INCLUDE_DIR}
 )
 
 list(APPEND SOURCES ${SHADER})
 
 add_executable( ${PROJECT_NAME} ${SOURCES})
 
-# PLATFORM AND ARCHITECTURE
-
-# Setup platform specifics (compile flags, etc., ...)
-if(MSVC)
-    message(STATUS "Configuring for platform Windows/MSVC.")
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PlatformWindowsMSVC.cmake)
-else()
-    # Unsupported system/compiler
-    message(WARNING "Unsupported platform/compiler combination")
-endif()
-
 
 # set c++ compiler options globally
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_RELEASE}" )
 set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_DEBUG}" )
-
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
