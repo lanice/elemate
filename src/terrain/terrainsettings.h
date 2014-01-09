@@ -3,6 +3,7 @@
 #include <cassert>
 #include <initializer_list>
 #include <limits>
+#include <functional>
 
 
 enum class TerrainLevel {
@@ -17,15 +18,14 @@ struct TileID {
     TerrainLevel level;
     unsigned int x;
     unsigned int z;
-
-    bool operator==(const TileID & other) const;
 };
 
-template<>
-class std::hash<TileID> {
-public:
-    size_t operator()(const TileID& id) const;
-};
+namespace std {
+    /** lever precedes x, precedes z */
+    template<> struct less<TileID> {
+        bool operator()(const TileID& lhs, const TileID& rhs) const;
+    };
+}
 
 struct TerrainSettings {
     TerrainSettings();

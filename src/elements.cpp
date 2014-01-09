@@ -4,6 +4,7 @@
 
 #include <glow/Program.h>
 
+#include "pxcompilerfix.h"
 #include <PxPhysics.h>
 #include <PxMaterial.h>
 

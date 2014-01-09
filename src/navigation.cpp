@@ -15,11 +15,13 @@ static const float c_distanceEyeCenterDefault = 15.f;
 static const float c_speedScale = 0.05f;
 
 
-Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain) :
-    m_window(window),
-    m_camera(&camera),
-    m_distanceEyeCenter(c_distanceEyeCenterDefault),
-    m_terrain(terrain)
+Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain)
+: m_window(window)
+, m_camera(&camera)
+, m_terrain(terrain)
+, m_center()
+, m_rotation()
+, m_distanceEyeCenter(c_distanceEyeCenterDefault)  
 {
     setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
 }
@@ -156,7 +158,7 @@ const glowutils::Camera * Navigation::camera() const
     return m_camera;
 }
 
-const float Navigation::rotationAngle() const
+float Navigation::rotationAngle() const
 {
     float angle = glm::angle(glm::normalize(glm::vec3(m_lookAtVector.x, 0.f, m_lookAtVector.z)), glm::vec3(0.f, 0.f, -1.f));
 

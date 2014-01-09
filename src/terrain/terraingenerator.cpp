@@ -1,6 +1,7 @@
 #include "terraingenerator.h"
 
 #include <random>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <ctime>
@@ -9,7 +10,9 @@
 #include <glow/Array.h>
 #include <glow/logging.h>
 
+#include "pxcompilerfix.h"
 #include <PxRigidStatic.h>
+#include <PxPhysics.h>
 
 #include "terrain.h"
 #include "basetile.h"
@@ -60,7 +63,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
 
         /** create terrain object and pass terrain data */
         BaseTile * baseTile = new BaseTile(*terrain, tileIDBase);
-        baseTile->m_heightField = baseHeightField;
+        baseTile->setHeightField(*baseHeightField);
         baseTile->m_terrainTypeData = baseTerrainTypeIDs;
 
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
@@ -68,7 +71,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         glow::FloatArray * waterHeightField = createBasicHeightField(0);
         assert(waterHeightField);
         WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
-        waterTile->m_heightField = waterHeightField;
+        waterTile->setHeightField(*waterHeightField);
+        waterTile->m_baseHeightTex = baseTile->m_heightTex;
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
@@ -116,7 +120,7 @@ glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightFiel
 {
     std::function<float(float, float)> riverCourse = [](float normRow, float normColumn)
     {
-        return abs(5 * powf(normRow, 3.0) - normColumn);
+        return std::abs(5.0f * std::pow(normRow, 3) - normColumn);
     };
 
     static const float riverScale = 0.15f;
@@ -173,9 +177,9 @@ float TerrainGenerator::zExtens() const
 void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
 {
     assert(xzSamplesPerCoord > 0.0f);
-    unsigned int xSamplesui = unsigned int(ceil(m_settings.sizeX * xzSamplesPerCoord));
+    unsigned int xSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeX * xzSamplesPerCoord)));
     m_settings.rows = xSamplesui >= 2 ? xSamplesui : 2;
-    unsigned int zSamplesui = unsigned int(ceil(m_settings.sizeZ * xzSamplesPerCoord));
+    unsigned int zSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeZ * xzSamplesPerCoord)));
     m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
 }
 

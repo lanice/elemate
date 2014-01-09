@@ -9,9 +9,9 @@
 #include "renderer.h"
 
 
-EventHandler::EventHandler(GLFWwindow & window, Game & game) :
-    m_window(window),
-    m_game(game)
+EventHandler::EventHandler(GLFWwindow & window, Game & game)
+: m_window(window)
+, m_game(game)
 {
      glfwSetInputMode(&window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }

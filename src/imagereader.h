@@ -19,7 +19,6 @@ public:
 
     Status status() const;
     char * rawData();
-    char * const rawData() const;
     /** @return allocated size in bytes */
     size_t size() const;
 

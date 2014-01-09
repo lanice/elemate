@@ -4,8 +4,7 @@
 #include <list>
 #include <memory>
 
-#include <foundation/PxVec3.h>
-#include <foundation/PxSimpleTypes.h>
+#include <glm/glm.hpp>
 
 namespace physx {
     class PxPhysics;
@@ -15,6 +14,8 @@ namespace physx {
     class PxDefaultCpuDispatcher;
     class PxCooking;
     class PxProfileZoneManager;
+    class PxActor;
+    class PxRigidStatic;
 }
 class ParticleEmitter;
 
@@ -31,20 +32,24 @@ public:
     ~PhysicsWrapper();
 
     /** Proceeds with simulation for amount of given time delta. */
-    bool step(long double delta);
+    bool step(double delta);
     
     /** Creates a particle emitter */
-    void makeParticleEmitter(const physx::PxVec3& position);
+    void makeParticleEmitter(const glm::vec3& position);
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
+
+    /** add the actor to the current physx scene */
+    void addActor(physx::PxActor& actor);
+    void addActor(physx::PxRigidStatic& actor);
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
     static const int            kNumberOfThreads;
 
     /** Sets and rotates every object according to its representation in PhysX. */
-    void updateAllObjects(long double delta);
+    void updateAllObjects(double delta);
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();

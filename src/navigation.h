@@ -33,7 +33,7 @@ public:
 
     const glowutils::Camera * camera() const;
 
-    const float rotationAngle() const;
+    float rotationAngle() const;
 
 
 protected:

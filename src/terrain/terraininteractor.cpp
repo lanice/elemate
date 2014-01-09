@@ -2,6 +2,7 @@
 
 #include <glow/logging.h>
 
+#include "pxcompilerfix.h"
 #include <PxPhysics.h>
 #include <PxScene.h>
 #include <PxShape.h>
