@@ -18,7 +18,8 @@ protected:
     const World & m_world;
 
     glow::ref_ptr<glow::FrameBufferObject> m_fbo;
-    glow::ref_ptr<glow::Texture> m_tex;
+    glow::ref_ptr<glow::RenderBufferObject> m_depthBuffer;
+    glow::ref_ptr<glow::Texture> m_lightTex;
 
 public:
     void operator=(ShadowMappingStep&) = delete;

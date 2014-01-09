@@ -83,6 +83,9 @@ void Terrain::drawShadow(const glowutils::Camera & lightSource)
     m_shadowProgram->use();
 
     m_shadowProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_shadowProgram->setUniform("viewport", lightSource.viewport());
+    m_shadowProgram->setUniform("znear", lightSource.zNear());
+    m_shadowProgram->setUniform("zfar", lightSource.zFar());
 
     // TODO: generalize for more tiles...
 
@@ -132,6 +135,7 @@ void Terrain::initShadowProgram()
 
     m_shadowProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadow_terrain.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadow_terrain.frag"));
 
     m_shadowProgram->setUniform("heightField0", 0);

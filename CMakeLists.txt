@@ -137,6 +137,7 @@ set(SHADER
     shader/particle_water.geo
     shader/particle_water.frag
     shader/particle_water_normals.frag
+    shader/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

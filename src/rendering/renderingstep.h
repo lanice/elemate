@@ -6,6 +6,7 @@ namespace glow {
     class FrameBufferObject;
     class Program;
     class Texture;
+    class RenderBufferObject;
 }
 namespace glowutils {
     class Camera;

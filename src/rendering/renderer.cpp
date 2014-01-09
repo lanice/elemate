@@ -34,6 +34,9 @@ void Renderer::initialize()
 
     glClearColor(1, 1, 1, 1);
 
+    glDepthFunc(GL_LEQUAL);
+    glClearDepth(1.0);
+
     m_sceneColor = new glow::Texture(GL_TEXTURE_2D);
     m_sceneColor->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     m_sceneColor->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -101,6 +104,7 @@ void Renderer::sceneStep(const glowutils::Camera & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
 
     m_world.terrain->draw(camera);
 
@@ -141,9 +145,6 @@ void Renderer::flushStep()
     m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
     m_shadowMappingStep->result()->unbind(GL_TEXTURE4);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const

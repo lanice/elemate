@@ -1,6 +1,10 @@
 #version 330 core
 
+layout(location = 0)out float depthValue;
+
+float linearize(float depth);
+
 void main()
 {
-    gl_FragDepth = gl_FragCoord.z; // todo: linearize...
+    depthValue = linearize(gl_FragCoord.z);
 }
