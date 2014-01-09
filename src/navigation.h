@@ -7,7 +7,6 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 
 namespace glowutils { class Camera; }
@@ -44,7 +43,6 @@ protected:
 
     glm::vec3 m_center;
     glm::vec3 m_lookAtVector;
-    glm::quat m_rotation;
     float m_distanceEyeCenter;
 
 public:

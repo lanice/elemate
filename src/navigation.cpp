@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include "terrain/terrain.h"
 
@@ -157,10 +158,7 @@ const glowutils::Camera * Navigation::camera() const
 
 const float Navigation::rotationAngle() const
 {
-    glm::vec3 eulerAngles = glm::eulerAngles(m_rotation);
+    float angle = glm::angle(glm::normalize(glm::vec3(m_lookAtVector.x, 0.f, m_lookAtVector.z)), glm::vec3(0.f, 0.f, -1.f));
 
-    if (eulerAngles.x > 0)
-        return eulerAngles.y >= 0 ? eulerAngles.y : 360.f + eulerAngles.y;
-    else
-        return 180.f - eulerAngles.y;
+    return m_lookAtVector.x <= 0.f ? angle : 360.f - angle;
 }
