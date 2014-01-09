@@ -24,15 +24,16 @@ public:
 
     void setPosition(const physx::PxVec3& position);
     physx::PxVec3 position()const;
-
-    //void setEmittingRate(const physx::PxU32& particle_per_emit);
-    //void setMaxParticles(const physx::PxU32& particle_count);
+    void setEmittingRate(const physx::PxU32& particle_per_emit);
 
     void createParticles(physx::PxU32 number_of_particles);
 
 protected:
     static const physx::PxU32	kMaxParticleCount;
     static const physx::PxU32   kDefaultEmittedParticles;
+    static const physx::PxReal  kDefaultParticleRestDistance;
+    static const physx::PxReal  kDefaultInitialParticleSpeed;
+    static const int            kDefaultParticleSpreading;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

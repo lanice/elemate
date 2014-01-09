@@ -82,10 +82,12 @@ void World::update()
     m_physicsWrapper.step(delta);
 }
 
-void World::makeStandardBall(const glm::vec3& position)
+void World::makeSource(const glm::vec3& position)
 {
     m_physicsWrapper.makeParticleEmitter(position);
 }
+
+
 
 void World::createFountainSound(const glm::vec3& position)
 {
@@ -151,4 +153,29 @@ glow::Program * World::programByName(const std::string & name)
         glow::critical("trying to use unloaded shader %;", name);
         return nullptr;
     }
+}
+
+void World::updateEmitterPosition(const glm::vec3& position)
+{
+    m_physicsWrapper.updateEmitterPosition(position);
+    //FMOD_VECTOR pos;
+    //pos.x = position.x; 
+    //pos.y = position.y;
+    //pos.z = position.z;
+    //m_soundManager->setSoundPos(0,pos); // Not good .... just for testing reasons
+}
+
+void World::selectNextEmitter()
+{
+    m_physicsWrapper.selectNextEmitter();
+}
+
+void World::startEmitting()
+{
+    m_physicsWrapper.startEmitting();
+}
+
+void World::stopEmitting()
+{
+    m_physicsWrapper.stopEmitting();
 }

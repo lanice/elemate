@@ -67,7 +67,6 @@ void PhysicsWrapper::makeParticleEmitter(const glm::vec3& position){
     m_emitters.push_back(std::make_shared<ParticleEmitter>(
         physx::PxVec3(position.x, position.y, position.z)));
     m_emitters.back()->initializeParticleSystem();
-    m_emitters.back()->startEmit();
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -151,4 +150,27 @@ void PhysicsWrapper::addActor(physx::PxActor & actor)
 void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
 {
     scene()->addActor(actor);
+}
+
+void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
+{
+    m_emitters.front()->setPosition(physx::PxVec3(position.x, position.y, position.z));
+}
+
+void PhysicsWrapper::selectNextEmitter()
+{
+    physx::PxVec3 current_hand_position = m_emitters.front()->position();
+    m_emitters.front()->stopEmit();
+    m_emitters.splice(m_emitters.end(), m_emitters, m_emitters.begin()); //Move first to last place
+    m_emitters.front()->setPosition(current_hand_position);
+}
+
+void PhysicsWrapper::startEmitting()
+{
+    m_emitters.front()->startEmit();
+}
+
+void PhysicsWrapper::stopEmitting()
+{
+    m_emitters.front()->stopEmit();
 }

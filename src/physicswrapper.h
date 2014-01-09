@@ -37,6 +37,14 @@ public:
     /** Creates a particle emitter */
     void makeParticleEmitter(const glm::vec3& position);
 
+    void updateEmitterPosition(const glm::vec3& position);
+
+    void selectNextEmitter();
+
+    void startEmitting();
+
+    void stopEmitting();
+
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
 
