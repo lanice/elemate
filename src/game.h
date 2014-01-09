@@ -1,22 +1,17 @@
 #pragma once
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)  \
-    TypeName(const TypeName&);              \
-    void operator=(const TypeName&);
+#include <memory>
 
-#include <memory> //shared_ptr
-#include <map>
-#include <osg/ref_ptr>
+#include <glowutils/Camera.h>
 
+#include "navigation.h"
+#include "manipulator.h"
+#include "renderer.h"
+
+class PhysicsWrapper;
 class World;
-class GodNavigation;
-class CyclicTime;
 namespace std {         class thread; }
-namespace osgViewer {   class Viewer; }
-namespace osg {
-    class Camera;
-    class Texture2D;
-}
+struct GLFWwindow;
 
 /** The Game Class that invokes a game loop and initializes PhysX.
  *  To receive the initialized physics, call getPhysicsWrapper(). See for its usage the documentation of PhysicsWrapper class.
@@ -24,44 +19,37 @@ namespace osg {
  */
 class Game{
 public:
-    /** Explicit Constructor because Copying and Assignments are disabled. */
-    Game() = delete;
-    explicit Game(osgViewer::Viewer& viewer);
+    Game(GLFWwindow & window);
 
     ~Game();
 
     /** Starts the Game Loop until end() is called.  */
     void start();
 
-    /** True if the game loop is running. */
-    bool isRunning() const;
 
-    /** Ending the loop. */
-    void end();
+    Navigation * navigation();
+    Manipulator * manipulator();
+    glowutils::Camera * camera();
+    Renderer * renderer();
+
+
 protected:
+    GLFWwindow & m_window;
 
     /** The Game's loop containing drawing and triggering physics is placed right here.
       * @param delta specifies the time between each logic update in seconds.*/
-    void loop(long double delta = 1.0L/100.0L);
+    void loop(double delta = 1.0/100.0);
 
-    /** Initializes the rendering pipeline. Call after World::reloadShaders for access to the flush program. */
-    void initRendering();
-    void setupNavigation();
-    void setLightSource();
-    void generateTerrain();
+    PhysicsWrapper * m_physicsWrapper;
+    World * m_world;
 
-    osgViewer::Viewer&          m_viewer;
-    osg::ref_ptr<osg::Camera>   m_mainCamera;
-    osg::ref_ptr<osg::Camera>   m_flushCamera;
-    std::map<std::string, osg::ref_ptr<osg::Texture2D>> m_renderBuffers;
-    std::shared_ptr<World>      m_world;
-    std::shared_ptr<CyclicTime> m_cyclicTime;
+    glowutils::Camera m_camera;
+    Navigation m_navigation;
+    Manipulator m_manipulator;
 
-    bool                        m_interrupted;
-    osg::ref_ptr<GodNavigation> m_navigation;
+    Renderer m_renderer;
 
-    friend struct GameResizeCallback;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(Game);
+public:
+    Game() = delete;
+    void operator=(Game &) = delete;
 };

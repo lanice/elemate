@@ -10,14 +10,14 @@
 
 SimpleConfigReader::SimpleConfigReader():
     m_values(),
-    m_auto_update(true),
-    m_filename("")
+    m_filename(""),
+    m_auto_update(true)
 {}
 
 SimpleConfigReader::SimpleConfigReader(const std::string& filename):
     m_values(),
-    m_auto_update(true),
-    m_filename(filename)
+    m_filename(filename),
+    m_auto_update(true)
 {
     readConfig();
 }
@@ -39,9 +39,8 @@ bool SimpleConfigReader::readConfig()
             setValue(line.substr(0,pos),line.substr(pos+1));
         }
     }
-    catch (int error_number)
+    catch (int /*error_number*/)
     {
-        error_number; //To Suppress unnecessary warning
         return false;
     }
     file.close();
@@ -59,9 +58,8 @@ bool SimpleConfigReader::writeConfig()
             file << pair.first << "=" << pair.second << std::endl;
         }
     }
-    catch(int error_number)
+    catch(int /*error_number*/)
     {
-        error_number; //To Suppress unnecessary warning
         return false;
     }
     file.close();

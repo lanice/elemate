@@ -6,18 +6,18 @@ class ChronoTimer
 {
 public:
     ChronoTimer(
-        const bool start = true
-    ,   const bool autoUpdate = true);
+        bool start = true
+    ,   bool autoUpdate = true);
 
     virtual ~ChronoTimer();
 
-    void setAutoUpdating(const bool autoUpdate);
-    const bool autoUpdating() const;
+    void setAutoUpdating(bool autoUpdate);
+    bool autoUpdating() const;
 
-    const bool paused() const;
+    bool paused() const;
 
     void update() const;
-    const long double elapsed() const;
+    long double elapsed() const;
 
     void start();
     void pause();

@@ -1,58 +1,102 @@
 #include "particledrawable.h"
 
-#include <iostream>
 #include <cassert>
 
+#include <glow/logging.h>
+#include <glow/VertexArrayObject.h>
+#include <glow/VertexAttributeBinding.h>
+#include <glow/Buffer.h>
+#include <glow/Program.h>
+#include <glowutils/File.h>
+#include <glowutils/Camera.h>
+
+#include "pxcompilerfix.h"
 #include <foundation/PxVec3.h>
 #include <particles/PxParticleReadData.h>
+
+#include <glm/glm.hpp>
+
+std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
 ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
 : m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
-, m_vertices(std::vector<osg::Vec3>(maxParticleCount, osg::Vec3(0, 0, 0)))
-, m_needGLUpdate(true)
-, m_vbo(UINT_MAX)
+, m_needBufferUpdate(true)
+, m_vao(nullptr)
+, m_vbo(nullptr)
+, m_vertices(std::make_shared<glow::Vec3Array>())
+, m_program(nullptr)
 {
-    setUseDisplayList(false);
-    //setUseVertexBufferObjects(true);
+    s_instances.push_back(this);
+    m_vertices->resize(m_maxParticleCount);
 }
 
-void ParticleDrawable::drawImplementation(osg::RenderInfo& renderInfo) const
+ParticleDrawable::~ParticleDrawable()
 {
-    if (m_needGLUpdate)
-        updateGLObjects(renderInfo);
-
-    osg::State & state = *renderInfo.getState();
-    Extensions & ext = *getExtensions(renderInfo.getContextID(), true);
-
-    ext.glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo);
-    state.setVertexPointer(3, GL_FLOAT, 0, 0);
-
-    state.glDrawArraysInstanced(GL_POINTS, 0, m_currentNumParticles, 0);
-
-    state.disableAllVertexArrays();
-
-    return;
+    s_instances.remove(this);
 }
 
-void ParticleDrawable::updateGLObjects(osg::RenderInfo& renderInfo) const
+void ParticleDrawable::drawParticles(const glowutils::Camera & camera)
 {
-    Extensions & ext = *getExtensions(renderInfo.getContextID(), true);
-
-    if (m_vbo == UINT_MAX) {
-        ext.glGenBuffers(1, &m_vbo);
-    }
-
-    // copy vertex data to the gpu
-    ext.glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo);
-    ext.glBufferData(GL_ARRAY_BUFFER_ARB, m_vertices.size() * sizeof(osg::Vec3f), m_vertices.data(), GL_DYNAMIC_DRAW);
-    ext.glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-
-    m_needGLUpdate = false;
+    for (auto & instance : s_instances)
+        instance->draw(camera);
 }
 
-void ParticleDrawable::releaseGLObjects(osg::State* /*state*/) const
+void ParticleDrawable::draw(const glowutils::Camera & camera)
 {
+    if (!m_vao)
+        initialize();
+    if (m_needBufferUpdate)
+        updateBuffers();
+
+    m_program->use();
+    m_program->setUniform("viewProjection", camera.viewProjection());
+    glm::vec3 viewDir = camera.center() - camera.eye();
+    glm::vec3 lookAtRight = glm::normalize(glm::cross(viewDir, camera.up()));
+    glm::vec3 lookAtUp = glm::normalize(glm::cross(lookAtRight, viewDir));
+    m_program->setUniform("lookAtUp", lookAtUp);
+    m_program->setUniform("lookAtRight", lookAtRight);
+
+    m_vao->bind();
+
+    m_vao->drawArrays(GL_POINTS, 0, m_currentNumParticles);
+
+    m_vao->unbind();
+
+    m_program->release();
+}
+
+void ParticleDrawable::initialize()
+{
+    assert(m_vertices);
+
+    m_vao = new glow::VertexArrayObject;
+
+    m_vao->bind();
+    
+    m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
+    m_vbo->setData(*m_vertices, GL_DYNAMIC_DRAW);
+
+    glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
+    vertexBinding->setAttribute(0);
+    vertexBinding->setBuffer(m_vbo, 0, sizeof(glm::vec3));
+    vertexBinding->setFormat(3, GL_FLOAT, GL_FALSE, 0);
+    m_vao->enable(0);
+
+    m_vao->unbind();
+
+    m_program = new glow::Program();
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert"),
+        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
+}
+
+void ParticleDrawable::updateBuffers()
+{
+    m_vbo->setData(*m_vertices, GL_DYNAMIC_DRAW);
+
+    m_needBufferUpdate = false;
 }
 
 void ParticleDrawable::addParticles(unsigned int numParticles, const physx::PxVec3 * particlePositionBuffer)
@@ -65,23 +109,22 @@ void ParticleDrawable::addParticles(unsigned int numParticles, const physx::PxVe
     
     for (unsigned i = 0; i < numParticles; ++i) {
         const physx::PxVec3 & vertex = particlePositionBuffer[i];
-        m_vertices[i] = osg::Vec3(vertex.x, vertex.y, vertex.z);
+        m_vertices->at(i) = glm::vec3(vertex.x, vertex.y, vertex.z);
     }
 
-    m_needGLUpdate = true;
-    dirtyBound();
+    m_needBufferUpdate = true;
 }
 
 void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readData)
 {
-    unsigned numParticles = readData->numValidParticles;
+    unsigned numParticles = readData->nbValidParticles;
 
     if (numParticles == 0)
         return;
 
-    //assert(numParticles <= m_maxParticleCount);
+    // assert(numParticles <= m_maxParticleCount);
     if (numParticles > m_maxParticleCount) {
-        std::cerr << "ParticleDrawable::updateParticles: recieving more valid new particles than expected (" << numParticles << ")" << std::endl;
+        glow::warning("ParticleDrawable::updateParticles: recieving more valid new particles than expected (%;)", numParticles);
         numParticles = m_maxParticleCount;
     }
 
@@ -90,19 +133,8 @@ void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readDat
     for (unsigned i = 0; i < numParticles; ++i, ++pxPositionIt) {
         assert(pxPositionIt.ptr());
         const physx::PxVec3 & vertex = *pxPositionIt.ptr();
-        m_vertices[i] = osg::Vec3(vertex.x, vertex.y, vertex.z);
+        m_vertices->at(i) = glm::vec3(vertex.x, vertex.y, vertex.z);
     }
 
-    m_needGLUpdate = true;
-    dirtyBound();
-}
-
-osg::BoundingBox ParticleDrawable::computeBound() const
-{
-    osg::BoundingBox bb;
-
-    for (const osg::Vec3 & vertex : m_vertices)
-        bb.expandBy(vertex);
-
-    return bb;
+    m_needBufferUpdate = true;
 }

@@ -1,29 +1,23 @@
 #pragma once
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)  \
-    TypeName(const TypeName&);              \
-    void operator=(const TypeName&);
+#include <memory>
 
-#include "PxPhysicsAPI.h"
-#include <osg/ref_ptr> // ref_ptr
+#include <foundation/PxSimpleTypes.h>
+#include <foundation/PxVec3.h>
 
-namespace osg {
-    class MatrixTransform;
-    class Group;
+namespace physx {
+    class PxParticleFluid;
 }
 class ParticleDrawable;
-
-typedef long double t_longf;
 
 class ParticleEmitter
 {
 public:
-    ParticleEmitter(osg::ref_ptr<osg::Group> parent, const physx::PxVec3& position);
-    ParticleEmitter(osg::ref_ptr<osg::Group> parent);
+    ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
     void initializeParticleSystem();
-    void update(t_longf elapsed_Time);
+    void update(double elapsed_Time);
 
     void startEmit();
     void stopEmit();
@@ -34,26 +28,27 @@ public:
     //void setEmittingRate(const physx::PxU32& particle_per_emit);
     //void setMaxParticles(const physx::PxU32& particle_count);
 
-    void createParticles(int number_of_particles);
+    void createParticles(physx::PxU32 number_of_particles);
 
 protected:
-    static const physx::PxU32	kMaxParticleCount = 1000;
-    static const physx::PxU32   kDefaultEmittedParticles = 3;
+    static const physx::PxU32	kMaxParticleCount;
+    static const physx::PxU32   kDefaultEmittedParticles;
 
-    osg::ref_ptr<osg::Group> m_parent;
-    osg::ref_ptr<osg::Group> m_particle_group;
-    osg::ref_ptr<ParticleDrawable> m_particle_drawable;
+    std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
     physx::PxVec3            m_position;
     bool                     m_emitting;
     int                      m_particles_per_second;
 
-    t_longf                  akkumulator;
-    size_t                   youngest_particle_index;
+    float                    m_akkumulator;
+    physx::PxU32             m_youngest_particle_index;
+    bool                     m_reuses_old_particle;
+    physx::PxU32             m_reuse_limitation;
 
 
-    physx::PxParticleFluid*            m_particle_system; // or fluid?
+    physx::PxParticleFluid*  m_particleSystem; // or fluid?
 
-private:
-    DISALLOW_COPY_AND_ASSIGN(ParticleEmitter);
+public:
+    ParticleEmitter(ParticleEmitter&) = delete;
+    void operator=(ParticleEmitter&) = delete;
 };

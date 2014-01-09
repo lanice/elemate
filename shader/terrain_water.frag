@@ -1,10 +1,8 @@
-#version 330
+#version 330 core
 
-// lightning partly from http://www.opengl.org/sdk/docs/tutorials/TyphoonLabs/Chapter_4.pdf
-//      ... and https://github.com/hpicgs/cgsee
-
-in vec3 normal;
-in vec3 viewPos;
+in vec3 v_viewPos;
+in vec3 v_normal;
+in float v_heightDiff;
 
 uniform vec3 cameraposition;
 
@@ -19,12 +17,15 @@ uniform mat4 material_water;
 
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 cameraposition, vec3 lightdir1, vec3 lightdir2, mat4 light1, mat4 light2, vec4 lightambientglobal, mat4 material);
 
+
 layout(location = 0)out vec4 fragColor;
 
 void main()
-{    
+{ 
+	if (v_heightDiff < 0)
+		discard;
+	
     fragColor = vec4(
-        phongLighting(normal, viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal,
-            material_water).rgb,
+        phongLighting(v_normal, v_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_water).rgb,
         0.5);
 }
