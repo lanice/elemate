@@ -18,6 +18,14 @@ set(LINUX_COMPILE_DEFS
 	PX_CHECKED
 	PX_SUPPORT_VISUAL_DEBUGGER
 )
+
+if(BUMBLEBEE)
+    set(LINUX_COMPILE_DEFS
+        ${LINUX_COMPILE_DEFS}
+        BUMBLEBEE
+    )
+endif()
+
 set(DEFAULT_COMPILE_DEFS_DEBUG
     ${LINUX_COMPILE_DEFS}
     _DEBUG	                  # Debug build

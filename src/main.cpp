@@ -73,7 +73,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, MajorVersionRequire);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, MinorVersionRequire);
 
-#ifndef LINUX // Running with bumblebee causes the following commands to crash.
+#ifndef BUMBLEBEE // Running with bumblebee causes the following commands to crash.
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     if (MajorVersionRequire >= 3 && MinorVersionRequire >= 2)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
