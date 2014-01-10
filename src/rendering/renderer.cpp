@@ -80,6 +80,7 @@ void Renderer::initialize()
     m_quadProgram->setUniform("waterNormals", 2);
     m_quadProgram->setUniform("waterDepth", 3);
     m_quadProgram->setUniform("shadowMap", 4);
+    m_quadProgram->setUniform("lightMap", 5);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
 }
@@ -91,9 +92,7 @@ void Renderer::operator()(const glowutils::Camera & camera)
     sceneStep(camera);
     handStep(camera);
     m_particleWaterStep->draw(camera);
-    m_shadowMappingStep->draw(camera
-        //glowutils::Camera(glm::vec3(0.0, 6.5, 7.5))
-        );
+    m_shadowMappingStep->draw(camera);
     flushStep();
 }
 
@@ -137,6 +136,7 @@ void Renderer::flushStep()
     m_particleWaterStep->normalsTex()->bind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->bind(GL_TEXTURE3);
     m_shadowMappingStep->result()->bind(GL_TEXTURE4);
+    m_shadowMappingStep->lightMap()->bind(GL_TEXTURE5);
 
     m_quad->draw();
 
@@ -145,6 +145,7 @@ void Renderer::flushStep()
     m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
     m_shadowMappingStep->result()->unbind(GL_TEXTURE4);
+    m_shadowMappingStep->lightMap()->unbind(GL_TEXTURE5);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const

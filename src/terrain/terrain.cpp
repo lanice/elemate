@@ -11,6 +11,7 @@
 #include <glowutils/File.h>
 
 #include <glm/gtc/random.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "terraintile.h"
 
@@ -63,7 +64,19 @@ void Terrain::draw(const glowutils::Camera & camera)
     m_vao->unbind();
 }
 
-void Terrain::drawLightMap(const glowutils::Camera & lightSource)
+
+//http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+glm::vec3 lightInvDir(1.00, 00.5, 00.0);
+
+//// Compute the MVP matrix from the light's point of view
+float zNear = -10;
+float zFar = 20;
+glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, zNear, zFar);
+glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+//glm::mat4 depthModelMatrix = glm::mat4(1.0);
+//glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+void Terrain::drawLightMap(const glowutils::Camera & /*lightSource*/)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
@@ -84,10 +97,10 @@ void Terrain::drawLightMap(const glowutils::Camera & lightSource)
 
     m_lightMapProgram->use();
 
-    m_lightMapProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_lightMapProgram->setUniform("viewport", lightSource.viewport());
-    m_lightMapProgram->setUniform("znear", lightSource.zNear());
-    m_lightMapProgram->setUniform("zfar", lightSource.zFar());
+    m_lightMapProgram->setUniform("depthMVP", depthProjectionMatrix * depthViewMatrix * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_lightMapProgram->setUniform("viewport", glm::ivec2(1024, 1024));
+    m_lightMapProgram->setUniform("znear", zNear);
+    m_lightMapProgram->setUniform("zfar", zFar);
 
     // TODO: generalize for more tiles...
 
@@ -115,8 +128,15 @@ void initShadowSamples() {
             glm::linearRand(-1.0f, 1.0f));
     }
 }
+glm::mat4 biasMatrix(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0
+    );
+//glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
 
-void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & lightSource)
+void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & /*lightSource*/)
 {
     if (!m_shadowMappingProgram)
         initShadowMappingProgram();
@@ -135,12 +155,15 @@ void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutil
 
     m_shadowMappingProgram->use();
 
+    glm::mat4 depthBiasMVP = biasMatrix * depthProjectionMatrix * depthViewMatrix * baseTile->transform();
+
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
-    m_shadowMappingProgram->setUniform("modelViewProjection", lightSource.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_shadowMappingProgram->setUniform("lightSourceView", lightSource.view());
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_shadowMappingProgram->setUniform("lightSourceView", depthViewMatrix);
     m_shadowMappingProgram->setUniform("invView", camera.viewInverted());
-    m_shadowMappingProgram->setUniform("viewport", lightSource.viewport());
+    m_shadowMappingProgram->setUniform("viewport", camera.viewport());
     m_shadowMappingProgram->setUniform("shadowSamples", m_shadowSamples);
+    m_shadowMappingProgram->setUniform("depthBiasMVP", depthBiasMVP);
 
     baseTile->m_heightTex->bind(GL_TEXTURE1);
     waterTile->m_heightTex->bind(GL_TEXTURE2);

@@ -7,6 +7,8 @@ uniform mat4 modelViewProjection;
 uniform mat4 lightSourceView;
 uniform mat4 invView;
 
+uniform mat4 depthBiasMVP;
+
 uniform samplerBuffer heightField0;
 uniform samplerBuffer heightField1;
 
@@ -24,5 +26,5 @@ void main()
     
     gl_Position = modelViewProjection * vertex;
     
-    v_shadowCoord = lightSourceView * invView * modelTransform * vertex;
+    v_shadowCoord = depthBiasMVP * vertex;
 }

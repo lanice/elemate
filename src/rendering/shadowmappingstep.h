@@ -16,6 +16,7 @@ public:
     virtual void draw(const glowutils::Camera & camera) override;
     virtual void resize(int width, int height) override;
 
+    glow::Texture * lightMap();
     glow::Texture * result();
 
     struct Definitions {
@@ -30,10 +31,11 @@ protected:
     const World & m_world;
 
     glow::ref_ptr<glow::FrameBufferObject> m_lightFbo;
-    glow::ref_ptr<glow::RenderBufferObject> m_depthBuffer;
+    glow::ref_ptr<glow::RenderBufferObject> m_lightDepthBuffer;
     glow::ref_ptr<glow::Texture> m_lightTex;
 
     glow::ref_ptr<glow::FrameBufferObject> m_shadowFbo;
+    glow::ref_ptr<glow::RenderBufferObject> m_shadowDepthBuffer;
     glow::ref_ptr<glow::Texture> m_shadowTex;
 
 public:
