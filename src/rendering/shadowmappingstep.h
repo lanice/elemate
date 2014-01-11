@@ -31,7 +31,6 @@ protected:
     const World & m_world;
 
     glow::ref_ptr<glow::FrameBufferObject> m_lightFbo;
-    glow::ref_ptr<glow::RenderBufferObject> m_lightDepthBuffer;
     glow::ref_ptr<glow::Texture> m_lightTex;
 
     glow::ref_ptr<glow::FrameBufferObject> m_shadowFbo;

@@ -2,7 +2,6 @@
 
 // from https://github.com/hpicgs/cgsee
 
-uniform ivec2 viewport;
 uniform float znear;
 uniform float zfar;
 

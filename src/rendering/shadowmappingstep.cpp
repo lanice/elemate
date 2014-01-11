@@ -21,18 +21,11 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_lightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_lightTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_lightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_lightTex->setParameter(GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    m_lightTex->setParameter(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-    m_lightDepthBuffer = new glow::RenderBufferObject();
+    m_lightTex->image2D(0, GL_DEPTH_COMPONENT32F, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
     m_lightFbo = new glow::FrameBufferObject();
-    m_lightFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_lightTex);
-    m_lightFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_lightDepthBuffer);
-    m_lightFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
-
-    m_lightTex->image2D(0, GL_R32F, 1024, 1024, 0, GL_RED, GL_FLOAT, nullptr);
-    m_lightDepthBuffer->storage(GL_DEPTH_COMPONENT32F, 1024, 1024);
+    m_lightFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_lightTex);
+    m_lightFbo->setDrawBuffer(GL_NONE);
     m_lightFbo->printStatus(true);
     assert(m_lightFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
     m_lightFbo->unbind();

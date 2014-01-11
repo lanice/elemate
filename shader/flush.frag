@@ -21,7 +21,7 @@ void main()
     float sceneZ = texture(sceneDepth, v_uv).r;
     float waterZ = texture(waterDepth, v_uv).r;
 	fragColor = 
-    texture(shadowMap, v_uv).x * 
+    (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
     mix(
 		vec4(0.2, 0.3, 0.8, 0.8),
 		texture(sceneColor, v_uv),

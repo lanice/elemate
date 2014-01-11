@@ -66,7 +66,7 @@ void Terrain::draw(const glowutils::Camera & camera)
 
 
 //http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-glm::vec3 lightInvDir(1.00, 00.5, 00.0);
+glm::vec3 lightInvDir(0.0, 2.0, 3.0);
 
 //// Compute the MVP matrix from the light's point of view
 float zNear = -10;
@@ -118,16 +118,6 @@ void Terrain::drawLightMap(const glowutils::Camera & /*lightSource*/)
     m_vao->unbind();
 }
 
-glow::Vec2Array m_shadowSamples;
-
-void initShadowSamples() {
-    m_shadowSamples.resize(128);
-    for (int i = 0; i < m_shadowSamples.size(); ++i) {
-        m_shadowSamples[i] = glm::vec2(
-            glm::linearRand(-1.0f, 1.0f),
-            glm::linearRand(-1.0f, 1.0f));
-    }
-}
 glm::mat4 biasMatrix(
     0.5, 0.0, 0.0, 0.0,
     0.0, 0.5, 0.0, 0.0,
@@ -136,13 +126,12 @@ glm::mat4 biasMatrix(
     );
 //glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
 
+glow::FloatArray depthSamples;
+
 void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & /*lightSource*/)
 {
     if (!m_shadowMappingProgram)
         initShadowMappingProgram();
-
-    if (m_shadowSamples.empty())
-        initShadowSamples();
 
     m_vao->bind();
 
@@ -162,7 +151,8 @@ void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutil
     m_shadowMappingProgram->setUniform("lightSourceView", depthViewMatrix);
     m_shadowMappingProgram->setUniform("invView", camera.viewInverted());
     m_shadowMappingProgram->setUniform("viewport", camera.viewport());
-    m_shadowMappingProgram->setUniform("shadowSamples", m_shadowSamples);
+    m_shadowMappingProgram->setUniform("znear", camera.zNear());
+    m_shadowMappingProgram->setUniform("zfar", camera.zFar());
     m_shadowMappingProgram->setUniform("depthBiasMVP", depthBiasMVP);
 
     baseTile->m_heightTex->bind(GL_TEXTURE1);
@@ -222,6 +212,9 @@ void Terrain::initLightMapProgram()
 
 void Terrain::initShadowMappingProgram()
 {
+    for (int i = 0; i < 128; ++i)
+        depthSamples.push_back(glm::linearRand(-1.0f, 1.0f));
+
     m_shadowMappingProgram = new glow::Program();
 
     m_shadowMappingProgram->attach(
@@ -232,6 +225,7 @@ void Terrain::initShadowMappingProgram()
     m_shadowMappingProgram->setUniform("lightMap", 0);
     m_shadowMappingProgram->setUniform("heightField0", 1);
     m_shadowMappingProgram->setUniform("heightField1", 2);
+    m_shadowMappingProgram->setUniform("depthSamples", depthSamples);
 
     m_shadowMappingProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
 }
