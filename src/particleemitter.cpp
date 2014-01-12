@@ -35,6 +35,7 @@ void ParticleEmitter::initializeParticleSystem(){
     assert(PxGetPhysics().getNbScenes() == 1);
     physx::PxScene* scene_buffer[1];
     PxGetPhysics().getScenes(scene_buffer, 1);
+    //m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, true);
     scene_buffer[0]->addActor(*m_particleSystem);
 
     m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);

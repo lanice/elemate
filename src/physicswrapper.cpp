@@ -6,13 +6,14 @@
 #include <glow/logging.h>
 
 #include "pxcompilerfix.h"
-#include "PxPhysicsAPI.h"
+#include <PxPhysicsAPI.h>
 
 #include "elements.h"
 #include "particleemitter.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
+PhysicsWrapper * PhysicsWrapper::s_instance = nullptr;
 
 PhysicsWrapper::PhysicsWrapper()
 : m_foundation(nullptr)
@@ -25,10 +26,14 @@ PhysicsWrapper::PhysicsWrapper()
     initializePhysics();
     initializeScene();
     Elements::initialize(*m_physics);
+
+    s_instance = this;
 }
 
 PhysicsWrapper::~PhysicsWrapper()
 {
+    s_instance = nullptr;
+
     Elements::clear();
     m_emitters.clear();
 
@@ -40,6 +45,12 @@ PhysicsWrapper::~PhysicsWrapper()
     //Please don't forget if you activate this feature.
     //m_profile_zone_manager->release();
     m_foundation->release();
+}
+
+PhysicsWrapper * PhysicsWrapper::getInstance()
+{
+    assert(s_instance);
+    return s_instance;
 }
 
 bool PhysicsWrapper::step(double delta){
@@ -81,6 +92,12 @@ void PhysicsWrapper::initializePhysics(){
     if (!m_physics)
         fatalError("PxCreatePhysics failed!");
 
+#ifdef PX_WINDOWS
+    // create cuda context manager
+    physx::PxCudaContextManagerDesc cudaContextManagerDesc;
+    m_cudaContextManager = physx::PxCreateCudaContextManager(*m_foundation, cudaContextManagerDesc, nullptr);
+#endif
+
     /* ... we still have to think about those:
     //For Debugging Lab ....
     m_profile_zone_manager = &physx::PxProfileZoneManager::createProfileZoneManager(m_foundation);
@@ -121,6 +138,11 @@ void PhysicsWrapper::initializeScene(){
     if (!sceneDesc.filterShader)
         sceneDesc.filterShader = &physx::PxDefaultSimulationFilterShader;
 
+#ifdef PX_WINDOWS
+    if (m_cudaContextManager)
+        sceneDesc.gpuDispatcher = m_cudaContextManager->getGpuDispatcher();
+#endif
+
     m_scene = m_physics->createScene(sceneDesc);
     if (!m_scene)
         fatalError("createScene failed!");
@@ -141,6 +163,12 @@ physx::PxScene* PhysicsWrapper::scene() const
 {
     assert(m_scene);
     return m_scene;
+}
+
+physx::PxCudaContextManager * PhysicsWrapper::cudaContextManager() const
+{
+    assert(m_cudaContextManager);
+    return m_cudaContextManager;
 }
 
 void PhysicsWrapper::addActor(physx::PxActor & actor)

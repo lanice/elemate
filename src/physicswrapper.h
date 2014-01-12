@@ -16,6 +16,7 @@ namespace physx {
     class PxProfileZoneManager;
     class PxActor;
     class PxRigidStatic;
+    class PxCudaContextManager;
 }
 class ParticleEmitter;
 
@@ -31,6 +32,9 @@ public:
     PhysicsWrapper();
     ~PhysicsWrapper();
 
+    /** return the current PhysicsWrapper object */
+    static PhysicsWrapper * getInstance();
+
     /** Proceeds with simulation for amount of given time delta. */
     bool step(double delta);
     
@@ -39,6 +43,8 @@ public:
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
+
+    physx::PxCudaContextManager * cudaContextManager() const;
 
     /** add the actor to the current physx scene */
     void addActor(physx::PxActor& actor);
@@ -71,8 +77,11 @@ protected:
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
     //physx::PxCooking*                               m_cooking;
+    physx::PxCudaContextManager*                    m_cudaContextManager;
 
     std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
+
+    static PhysicsWrapper * s_instance;
 
 public:
     PhysicsWrapper(PhysicsWrapper&) = delete;

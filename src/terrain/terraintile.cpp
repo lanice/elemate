@@ -20,9 +20,11 @@
 #include <geometry/PxHeightFieldDesc.h>
 #include <geometry/PxHeightFieldGeometry.h>
 #include <foundation/PxMat44.h>
+#include <gpu/PxParticleGpu.h>
 
 #include "terrain.h"
 #include "elements.h"
+#include "physicswrapper.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
@@ -148,6 +150,8 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
 
     assert(m_pxShape);
+
+    PxParticleGpu::createHeightFieldMirror(*pxHeightField, *PhysicsWrapper::getInstance()->cudaContextManager());
 
     delete[] hfSamples;
     delete[] materials;
