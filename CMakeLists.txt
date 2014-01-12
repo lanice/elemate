@@ -94,6 +94,7 @@ set(SOURCES
     src/manipulator.h
     src/terrain/terrain.h
     src/terrain/terrain.cpp
+    src/terrain/terrainshadows.cpp
     src/terrain/terrainsettings.h
     src/terrain/terrainsettings.cpp
     src/terrain/terraininteractor.h

@@ -86,6 +86,8 @@ protected:
     void initShadowMappingProgram();
     glow::ref_ptr<glow::Program> m_shadowMappingProgram;
 
+    static const GLuint s_restartIndex;
+
 protected:
 
     /** Fetch the tile corresponding to the xz world coordinates and the terrain level and sets the row/column position in this tile.
