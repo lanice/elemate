@@ -27,13 +27,17 @@ void LuaWrapper::luaError()
     }
 }
 
-void LuaWrapper::callScript()
+void LuaWrapper::loadScript(std::string script)
 {
-    if ((m_err = luaL_dofile(m_lua, "scripts/luascript.lua")) == LUA_OK)
-    {
-        lua_pushstring(m_lua, "helloWorld");
-        lua_getglobal(m_lua, "helloWorld");
-        lua_pcall(m_lua, 0, 0, 0);
-    }
+    m_err = luaL_dofile(m_lua, script.c_str());
+    luaError();
+}
+
+void LuaWrapper::callFunc(std::string func)
+{
+    lua_pushstring(m_lua, func.c_str());
+    lua_getglobal(m_lua, func.c_str());
+    
+    m_err = lua_pcall(m_lua, 0, 0, 0);
     luaError();
 }

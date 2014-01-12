@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 
 class lua_State;
 
@@ -9,7 +11,8 @@ public:
     LuaWrapper();
     ~LuaWrapper();
 
-    void callScript();
+    void loadScript(std::string script);
+    void callFunc(std::string func);
 
 
 protected:
