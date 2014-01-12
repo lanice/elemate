@@ -9,6 +9,8 @@
 #include "game.h"
 #include "eventhandler.h"
 
+#include "lua.hpp"
+
 static GLint MajorVersionRequire = 3;
 static GLint MinorVersionRequire = 3;
 
@@ -58,6 +60,21 @@ void setCallbacks(GLFWwindow * window)
 
 int main()
 {
+    glow::debug("---------- lua ----------");
+    int iErr = 0;
+    lua_State *lua = luaL_newstate();
+    luaL_openlibs(lua);
+    if ((iErr = luaL_loadfile(lua, "scripts/luascript.lua")) == 0)
+    {
+        if ((iErr = lua_pcall(lua, 0, LUA_MULTRET, 0)) == 0)
+        {
+            lua_pushstring(lua, "helloWorld");
+            lua_getglobal(lua, "helloWorld");
+            lua_pcall(lua, 0, 0, 0);
+        }
+    }
+    lua_close(lua);
+    glow::debug("---------- lua ----------");
     
     if (!glfwInit()) {
         glow::fatal("Could not initialize glfw.");
