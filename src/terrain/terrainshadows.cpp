@@ -20,7 +20,7 @@ glm::vec3 lightInvDir(0.0, 2.0, 3.0);
 //// Compute the MVP matrix from the light's point of view
 float zNear = -10;
 float zFar = 20;
-glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, zNear, zFar);
+glm::mat4 depthProjectionMatrix /*= glm::ortho<float>(-10, 10, -10, 10, zNear, zFar)*/;
 glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 //glm::mat4 depthModelMatrix = glm::mat4(1.0);
 //glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
@@ -75,7 +75,7 @@ glm::mat4 biasMatrix(
     );
 //glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
 
-glow::FloatArray depthSamples;
+glow::Vec2Array depthSamples;
 
 void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & /*lightSource*/)
 {
@@ -131,12 +131,16 @@ void Terrain::initLightMapProgram()
     m_lightMapProgram->setUniform("heightField1", 1);
 
     m_lightMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+
+    float right = settings.sizeX * 0.5f;
+    float top = settings.maxHeight;
+    depthProjectionMatrix = glm::ortho<float>(-right, right, -top, top, -right, right);
 }
 
 void Terrain::initShadowMappingProgram()
 {
-    for (int i = 0; i < 128; ++i)
-        depthSamples.push_back(glm::linearRand(-1.0f, 1.0f));
+    for (int i = 0; i < 32; ++i)
+        depthSamples.push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
 
     m_shadowMappingProgram = new glow::Program();
 

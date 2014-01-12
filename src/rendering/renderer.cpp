@@ -53,7 +53,7 @@ void Renderer::initialize()
     m_sceneFbo = new glow::FrameBufferObject();
     m_sceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
     m_sceneFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_sceneDepth);
-    m_sceneFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_sceneFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_sceneFbo->unbind();
 
     m_particleWaterStep = std::make_shared<ParticleWaterStep>();
@@ -67,7 +67,7 @@ void Renderer::initialize()
     m_handFbo = new glow::FrameBufferObject();
     m_handFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
     m_handFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_handDepth);
-    m_handFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_handFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_handFbo->unbind();
 
     m_quadProgram = new glow::Program();

@@ -3,6 +3,7 @@
 namespace glow {
     class Buffer; // missing forward declaration in FrameBufferObject.h
 }
+#include <glow/DebugMessageOutput.h> // for error handling of missing glTexParameterfv
 #include <glow/FrameBufferObject.h>
 #include <glow/Texture.h>
 #include <glow/RenderBufferObject.h>
@@ -25,7 +26,7 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
 
     m_lightFbo = new glow::FrameBufferObject();
     m_lightFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_lightTex);
-    m_lightFbo->setDrawBuffer(GL_NONE);
+    m_lightFbo->setDrawBuffers({ GL_NONE });
     m_lightFbo->printStatus(true);
     assert(m_lightFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
     m_lightFbo->unbind();
@@ -42,7 +43,7 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_shadowFbo = new glow::FrameBufferObject();
     m_shadowFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_shadowTex);
     m_shadowFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_shadowDepthBuffer);
-    m_shadowFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_shadowFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_shadowFbo->unbind();
 }
 
@@ -67,6 +68,8 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
     m_lightFbo->unbind();
 
     glViewport(0, 0, camera.viewport().x, camera.viewport().y);
+
+
 
     // create the shadow map
 
