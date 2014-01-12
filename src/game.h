@@ -4,8 +4,8 @@
 
 #include <glowutils/Camera.h>
 
-#include "navigation.h"
-#include "manipulator.h"
+#include "ui/navigation.h"
+#include "ui/manipulator.h"
 #include "renderer.h"
 
 class PhysicsWrapper;

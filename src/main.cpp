@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game.h"
-#include "eventhandler.h"
+#include "ui/eventhandler.h"
 
 static GLint MajorVersionRequire = 3;
 static GLint MinorVersionRequire = 3;
