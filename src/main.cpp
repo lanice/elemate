@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game.h"
-#include "eventhandler.h"
+#include "ui/eventhandler.h"
 
 #include "lua.hpp"
 
