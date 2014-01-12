@@ -88,6 +88,8 @@ set(SOURCES
     src/simpleconfigreader.h
     src/soundmanager.cpp
     src/soundmanager.h
+    src/luawrapper.cpp
+    src/luawrapper.h
     src/ui/eventhandler.cpp
     src/ui/eventhandler.h
     src/ui/navigation.cpp
