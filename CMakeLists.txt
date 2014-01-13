@@ -86,12 +86,12 @@ set(SOURCES
     src/simpleconfigreader.h
     src/soundmanager.cpp
     src/soundmanager.h
-    src/eventhandler.cpp
-    src/eventhandler.h
-    src/navigation.cpp
-    src/navigation.h
-    src/manipulator.cpp
-    src/manipulator.h
+    src/ui/eventhandler.cpp
+    src/ui/eventhandler.h
+    src/ui/navigation.cpp
+    src/ui/navigation.h
+    src/ui/manipulator.cpp
+    src/ui/manipulator.h
     src/cameraex.h
     src/cameraex.cpp
     src/terrain/terrain.h
