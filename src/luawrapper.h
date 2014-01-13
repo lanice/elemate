@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 
 
 class lua_State;
@@ -34,7 +35,11 @@ protected:
     template<typename T, typename... TArgs>
     void pushArguments(const T & head, const TArgs & ... tail)
     {
-        pushArgument(head);
+        std::stringstream ss;
+        std::string argument;
+        ss << head;
+        ss >> argument;
+        pushArgument(argument);
         pushArguments(tail...);
     };
 
