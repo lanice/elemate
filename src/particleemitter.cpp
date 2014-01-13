@@ -32,9 +32,10 @@ void ParticleEmitter::initializeParticleSystem(){
     m_particleSystem = PxGetPhysics().createParticleSystem(kMaxParticleCount, false);
     assert(m_particleSystem);
 
-    physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
-    PxGetPhysics().getScenes(&scene_buffer, 1);
-    scene_buffer->addActor(*m_particleSystem);
+    assert(PxGetPhysics().getNbScenes() == 1);
+    physx::PxScene* scene_buffer[1];
+    PxGetPhysics().getScenes(scene_buffer, 1);
+    scene_buffer[0]->addActor(*m_particleSystem);
 
     m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
 }

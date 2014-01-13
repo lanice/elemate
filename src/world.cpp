@@ -13,7 +13,7 @@
 #include "hpicgs/CyclicTime.h"
 #include "physicswrapper.h"
 #include "soundmanager.h"
-#include "navigation.h"
+#include "ui/navigation.h"
 #include "elements.h"
 #include "hand.h"
 #include "terrain/terraingenerator.h"
