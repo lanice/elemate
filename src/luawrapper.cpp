@@ -54,8 +54,63 @@ void LuaWrapper::pushArgument(const std::string & arg)
     lua_pushstring(m_lua, arg.c_str());
 }
 
-void LuaWrapper::callFunction(const int & argCount)
+void LuaWrapper::callFunction(const int & argCount, const int & resultCount)
 {
-    m_err = lua_pcall(m_lua, argCount, 0, 0);
+    m_err = lua_pcall(m_lua, argCount, resultCount, 0);
     luaError();
+}
+
+void LuaWrapper::fetchResult(std::string & result)
+{
+    if (!lua_isstring(m_lua, -1))
+    {
+        glow::critical("LuaWrapper: Return value not a string.");
+        return;
+    }
+    result = lua_tostring(m_lua, -1);
+    lua_pop(m_lua, 1);
+}
+
+void LuaWrapper::fetchResult(double & result)
+{
+    if (!lua_isnumber(m_lua, -1))
+    {
+        glow::critical("LuaWrapper: Return value not a number.");
+        return;
+    }
+    result = lua_tonumber(m_lua, -1);
+    lua_pop(m_lua, 1);
+}
+
+void LuaWrapper::fetchResult(int & result)
+{
+    if (!lua_isnumber(m_lua, -1))
+    {
+        glow::critical("LuaWrapper: Return value not a number.");
+        return;
+    }
+    result = lua_tointeger(m_lua, -1);
+    lua_pop(m_lua, 1);
+}
+
+void LuaWrapper::fetchResult(unsigned long & result)
+{
+    if (!lua_isnumber(m_lua, -1))
+    {
+        glow::critical("LuaWrapper: Return value not a number.");
+        return;
+    }
+    result = lua_tounsigned(m_lua, -1);
+    lua_pop(m_lua, 1);
+}
+
+void LuaWrapper::fetchResult(bool & result)
+{
+    if (!lua_isboolean(m_lua, -1))
+    {
+        glow::critical("LuaWrapper: Return value not a boolean.");
+        return;
+    }
+    result = lua_toboolean(m_lua, -1);
+    lua_pop(m_lua, 1);
 }

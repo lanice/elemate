@@ -17,11 +17,19 @@ public:
     void reloadScripts();
 
     template<typename... TArgs>
-    void callFunc(const std::string & func, const TArgs & ... args)
+    void callFunc(const std::string & func, const int & resultCount, const TArgs & ... args)
     {
         pushFunc(func);
         pushArguments(args...);
-        callFunction(sizeof...(args));
+        callFunction(sizeof...(args), resultCount);
+    };
+
+    void fetchResults(){};
+    template<typename T, typename... TResults>
+    void fetchResults(T & result, TResults & ... results)
+    {
+        fetchResults(results...);
+        fetchResult(result);
     };
 
 
@@ -30,10 +38,9 @@ protected:
 
     void pushFunc(const std::string & func);
     void pushArgument(const std::string & arg);
-    void callFunction(const int & argCount);
+    void callFunction(const int & argCount, const int & resultCount);
 
     void pushArguments(){};
-
     template<typename T, typename... TArgs>
     void pushArguments(const T & head, const TArgs & ... tail)
     {
@@ -44,6 +51,13 @@ protected:
         pushArgument(argument);
         pushArguments(tail...);
     };
+
+    void fetchResult(std::string & result);
+    void fetchResult(int & result);
+    void fetchResult(double & result);
+    void fetchResult(unsigned long & result);
+    void fetchResult(bool & result);
+
 
     lua_State * m_lua;
 
