@@ -15,6 +15,8 @@ namespace glow {
 #include "hand.h"
 #include "cameraex.h"
 
+#undef far  // that's for windows (minwindef.h)
+
 ShadowMappingStep::ShadowMappingStep(const World & world)
 : m_world(world)
 {
@@ -63,8 +65,6 @@ void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
     m_lightFbo->bind();
     glClear(GL_DEPTH_BUFFER_BIT);
 
-#undef far  // that's for windows (minwindef.h)
-
     const TerrainSettings & ts = m_world.terrain->settings;
     const float right = ts.sizeX * 0.5f;
     const float top = ts.maxHeight;
@@ -94,6 +94,7 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->drawShadowMapping(camera, lightCam);
+    m_world.hand->drawShadowMapping(camera, lightCam);
 
     m_shadowFbo->unbind();
     m_lightTex->unbind(GL_TEXTURE0);

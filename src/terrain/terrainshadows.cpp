@@ -54,16 +54,16 @@ void Terrain::drawLightMap(const CameraEx & lightSource)
 
     m_vao->unbind();
 }
+namespace {
+    glm::mat4 biasMatrix(
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.0,
+        0.5, 0.5, 0.5, 1.0
+        );
+}
 
-glm::mat4 biasMatrix(
-    0.5, 0.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0
-    );
-//glm::mat4 lightBiasMVP = biasMatrix*lightMVP;
-
-glow::Vec2Array depthSamples;
+glow::Vec2Array s_depthSamples;
 
 void Terrain::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource)
 {
@@ -124,19 +124,19 @@ void Terrain::initLightMapProgram()
 void Terrain::initShadowMappingProgram()
 {
     for (int i = 0; i < 32; ++i)
-        depthSamples.push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
+        s_depthSamples.push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
 
     m_shadowMappingProgram = new glow::Program();
 
     m_shadowMappingProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadow_terrain.vert"),
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_terrain.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadow_terrain.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     m_shadowMappingProgram->setUniform("lightMap", 0);
     m_shadowMappingProgram->setUniform("heightField0", 1);
     m_shadowMappingProgram->setUniform("heightField1", 2);
-    m_shadowMappingProgram->setUniform("depthSamples", depthSamples);
+    m_shadowMappingProgram->setUniform("depthSamples", s_depthSamples);
 
     m_shadowMappingProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
 }

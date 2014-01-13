@@ -24,7 +24,7 @@ public:
     void draw(const glowutils::Camera & camera);
     /** writes the linearized depth into the current depth attachment */
     virtual void drawLightMap(const CameraEx & lightSource);
-    //virtual void drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & lightSource);
+    virtual void drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource);
 
     glm::mat4 transform() const;
 
@@ -54,6 +54,8 @@ protected:
 
     // Shadowing
     glow::ref_ptr<glow::Program> m_lightMapProgram;
+    void initShadowMappingProgram();
+    glow::ref_ptr<glow::Program> m_shadowMappingProgram;
 
 public:
     void operator=(Hand&) = delete;

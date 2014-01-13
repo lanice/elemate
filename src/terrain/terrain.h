@@ -24,6 +24,8 @@ namespace physx {
 class TerrainTile;
 class CameraEx;
 
+extern glow::Vec2Array s_depthSamples;  // global object, until we have an Drawable object hierarchy
+
 class Terrain {
 public:
     Terrain(const TerrainSettings & settings);

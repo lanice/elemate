@@ -18,6 +18,7 @@
 #include "world.h"
 #include "cameraex.h"
 
+#include "terrain/terrain.h" // hack for depth samples, 'till Drawables class..
 
 static const glm::mat4 c_defaultRotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
 
@@ -134,7 +135,6 @@ void Hand::draw(const glowutils::Camera & camera)
     m_program->release();
 }
 
-
 glm::mat4 Hand::transform() const
 {
     return m_transform;
@@ -174,4 +174,49 @@ void Hand::drawLightMap(const CameraEx & lightSource)
     m_vao->unbind();
 
     m_lightMapProgram->release();
+}
+namespace{
+    glm::mat4 biasMatrix(
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.0,
+        0.5, 0.5, 0.5, 1.0
+        );
+}
+
+void Hand::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource)
+{
+    if (!m_shadowMappingProgram)
+        initShadowMappingProgram();
+
+    m_vao->bind();
+
+    m_shadowMappingProgram->use();
+
+    glm::mat4 lightBiasMVP = biasMatrix * lightSource.viewProjectionOrthographic() * transform();
+
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
+    m_shadowMappingProgram->setUniform("viewport", camera.viewport());
+    m_shadowMappingProgram->setUniform("znear", camera.zNear());
+    m_shadowMappingProgram->setUniform("zfar", camera.zFar());
+    m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
+
+    m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+
+    m_lightMapProgram->release();
+
+    m_vao->unbind();
+}
+
+void Hand::initShadowMappingProgram()
+{
+    m_shadowMappingProgram = new glow::Program();
+
+    m_shadowMappingProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
+
+    m_shadowMappingProgram->setUniform("lightMap", 0);
+    m_shadowMappingProgram->setUniform("depthSamples", s_depthSamples);
 }

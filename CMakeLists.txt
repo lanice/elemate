@@ -139,10 +139,11 @@ set(SHADER
     shader/particle_water_normals.frag
     shader/phongLighting.frag
     shader/shadows/lightmap_terrain.vert
-    shader/shadows/shadow_terrain.vert
-    shader/shadows/shadow_terrain.frag
     shader/shadows/lightmap_hand.vert
     shader/shadows/lightmap.frag
+    shader/shadows/shadowmapping_terrain.vert
+    shader/shadows/shadowmapping_hand.vert
+    shader/shadows/shadowmapping.frag
     shader/shadows/depth_util.frag
 )
 
