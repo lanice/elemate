@@ -141,6 +141,7 @@ set(SHADER
     shader/shadows/lightmap_terrain.vert
     shader/shadows/shadow_terrain.vert
     shader/shadows/shadow_terrain.frag
+    shader/shadows/lightmap_hand.vert
     shader/shadows/lightmap.frag
     shader/shadows/depth_util.frag
 )

@@ -13,6 +13,7 @@ namespace glowutils {
     class Camera;
 }
 class World;
+class CameraEx;
 
 class Hand 
 {
@@ -21,6 +22,9 @@ public:
     ~Hand();
 
     void draw(const glowutils::Camera & camera);
+    /** writes the linearized depth into the current depth attachment */
+    virtual void drawLightMap(const CameraEx & lightSource);
+    //virtual void drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & lightSource);
 
     glm::mat4 transform() const;
 
@@ -47,6 +51,9 @@ protected:
     glm::mat4 m_rotate;
     glm::mat4 m_scale;
     glm::mat4 m_transform;
+
+    // Shadowing
+    glow::ref_ptr<glow::Program> m_lightMapProgram;
 
 public:
     void operator=(Hand&) = delete;

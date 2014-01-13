@@ -12,6 +12,7 @@ namespace glow {
 
 #include "world.h"
 #include "terrain/terrain.h"
+#include "hand.h"
 #include "cameraex.h"
 
 ShadowMappingStep::ShadowMappingStep(const World & world)
@@ -77,6 +78,7 @@ void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
     lightCam.setZNearOtho(-far);
 
     m_world.terrain->drawLightMap(lightCam);
+    m_world.hand->drawLightMap(lightCam);
 
     m_lightFbo->unbind();
 

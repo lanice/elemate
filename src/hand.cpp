@@ -16,6 +16,7 @@
 #include <assimp/scene.h>
 
 #include "world.h"
+#include "cameraex.h"
 
 
 static const glm::mat4 c_defaultRotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
@@ -101,6 +102,12 @@ Hand::Hand(const World & world)
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
+
+    m_lightMapProgram = new glow::Program();
+    m_lightMapProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 }
 
 
@@ -153,4 +160,18 @@ void Hand::rotate(const float angle)
 {
     m_rotate = glm::rotate(c_defaultRotate, angle, glm::vec3(0.0f, 0.0f, 1.0f));
     m_transform = m_translate * m_rotate * m_scale;
+}
+
+void Hand::drawLightMap(const CameraEx & lightSource)
+{
+    m_lightMapProgram->use();
+    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * m_transform);
+
+    m_vao->bind();
+
+    m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+
+    m_vao->unbind();
+
+    m_lightMapProgram->release();
 }
