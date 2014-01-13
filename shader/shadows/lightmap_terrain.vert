@@ -2,7 +2,7 @@
 
 layout(location = 0)in vec2 _vertex;
 
-uniform mat4 depthMVP;
+uniform mat4 lightMVP;
 
 uniform samplerBuffer heightField0;
 uniform samplerBuffer heightField1;
@@ -15,5 +15,5 @@ void main()
     float height = max(texelFetch(heightField0, texIndex).x,
                        texelFetch(heightField1, texIndex).x);
     
-    gl_Position = depthMVP * vec4(_vertex.x, height, _vertex.y, 1.0);
+    gl_Position = lightMVP * vec4(_vertex.x, height, _vertex.y, 1.0);
 }

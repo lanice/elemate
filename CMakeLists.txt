@@ -92,6 +92,8 @@ set(SOURCES
     src/navigation.h
     src/manipulator.cpp
     src/manipulator.h
+    src/cameraex.h
+    src/cameraex.cpp
     src/terrain/terrain.h
     src/terrain/terrain.cpp
     src/terrain/terrainshadows.cpp
@@ -137,9 +139,9 @@ set(SHADER
     shader/particle_water_normals.frag
     shader/phongLighting.frag
     shader/shadows/lightmap_terrain.vert
-    shader/shadows/lightmap_terrain.frag
     shader/shadows/shadow_terrain.vert
     shader/shadows/shadow_terrain.frag
+    shader/shadows/lightmap.frag
     shader/shadows/depth_util.frag
 )
 

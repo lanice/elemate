@@ -5,27 +5,15 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include <glowutils/Camera.h>
 
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 
 #include "terraintile.h"
+#include "cameraex.h"
 
-
-//http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-glm::vec3 lightInvDir(0.0, 2.0, 3.0);
-
-//// Compute the MVP matrix from the light's point of view
-float zNear = -10;
-float zFar = 20;
-glm::mat4 depthProjectionMatrix /*= glm::ortho<float>(-10, 10, -10, 10, zNear, zFar)*/;
-glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-//glm::mat4 depthModelMatrix = glm::mat4(1.0);
-//glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-
-void Terrain::drawLightMap(const glowutils::Camera & /*lightSource*/)
+void Terrain::drawLightMap(const CameraEx & lightSource)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
@@ -46,10 +34,10 @@ void Terrain::drawLightMap(const glowutils::Camera & /*lightSource*/)
 
     m_lightMapProgram->use();
 
-    m_lightMapProgram->setUniform("depthMVP", depthProjectionMatrix * depthViewMatrix * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
     m_lightMapProgram->setUniform("viewport", glm::ivec2(1024, 1024));
-    m_lightMapProgram->setUniform("znear", zNear);
-    m_lightMapProgram->setUniform("zfar", zFar);
+    m_lightMapProgram->setUniform("znear", lightSource.zNearOrtho());
+    m_lightMapProgram->setUniform("zfar", lightSource.zFar());
 
     // TODO: generalize for more tiles...
 
@@ -73,11 +61,11 @@ glm::mat4 biasMatrix(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0
     );
-//glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+//glm::mat4 lightBiasMVP = biasMatrix*lightMVP;
 
 glow::Vec2Array depthSamples;
 
-void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & /*lightSource*/)
+void Terrain::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource)
 {
     if (!m_shadowMappingProgram)
         initShadowMappingProgram();
@@ -93,16 +81,16 @@ void Terrain::drawShadowMapping(const glowutils::Camera & camera, const glowutil
 
     m_shadowMappingProgram->use();
 
-    glm::mat4 depthBiasMVP = biasMatrix * depthProjectionMatrix * depthViewMatrix * baseTile->transform();
+    glm::mat4 lightBiasMVP = biasMatrix * lightSource.viewProjectionOrthographic() * baseTile->transform();
 
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_shadowMappingProgram->setUniform("lightSourceView", depthViewMatrix);
+    m_shadowMappingProgram->setUniform("lightSourceView", lightSource.view());
     m_shadowMappingProgram->setUniform("invView", camera.viewInverted());
     m_shadowMappingProgram->setUniform("viewport", camera.viewport());
     m_shadowMappingProgram->setUniform("znear", camera.zNear());
     m_shadowMappingProgram->setUniform("zfar", camera.zFar());
-    m_shadowMappingProgram->setUniform("depthBiasMVP", depthBiasMVP);
+    m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     baseTile->m_heightTex->bind(GL_TEXTURE1);
     waterTile->m_heightTex->bind(GL_TEXTURE2);
@@ -125,16 +113,12 @@ void Terrain::initLightMapProgram()
     m_lightMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_terrain.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap_terrain.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 
     m_lightMapProgram->setUniform("heightField0", 0);
     m_lightMapProgram->setUniform("heightField1", 1);
 
     m_lightMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
-
-    float right = settings.sizeX * 0.5f;
-    float top = settings.maxHeight;
-    depthProjectionMatrix = glm::ortho<float>(-right, right, -top, top, -right, right);
 }
 
 void Terrain::initShadowMappingProgram()

@@ -7,12 +7,12 @@ namespace glow {
 #include <glow/FrameBufferObject.h>
 #include <glow/Texture.h>
 #include <glow/RenderBufferObject.h>
-#include <glowutils/Camera.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "world.h"
 #include "terrain/terrain.h"
+#include "cameraex.h"
 
 ShadowMappingStep::ShadowMappingStep(const World & world)
 : m_world(world)
@@ -47,7 +47,11 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_shadowFbo->unbind();
 }
 
-void ShadowMappingStep::draw(const glowutils::Camera & camera)
+// TODO: get the global sunlight defintion
+static const glm::vec3 lightInvDir(0.0, 2.0, 3.0);
+static CameraEx lightCam(lightInvDir);
+
+void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -56,22 +60,32 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
 
     // draw the scene into the light map
     m_lightFbo->bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    // TODO: get the global sunlight defintion
-    static glowutils::Camera lightCam;
+#undef far  // that's for windows (minwindef.h)
 
-    // TODO : glowutils::camera seem to support perspective projections, not ortho...
+    const TerrainSettings & ts = m_world.terrain->settings;
+    const float right = ts.sizeX * 0.5f;
+    const float top = ts.maxHeight;
+    const float far = ts.sizeZ * 0.5f;
+
+    lightCam.setLeft(-right);
+    lightCam.setRight(right);
+    lightCam.setTop(top);
+    lightCam.setBottom(-top);
+    lightCam.setZFar(far);
+    lightCam.setZNearOtho(-far);
 
     m_world.terrain->drawLightMap(lightCam);
 
     m_lightFbo->unbind();
 
     glViewport(0, 0, camera.viewport().x, camera.viewport().y);
+}
 
-
-
-    // create the shadow map
+void ShadowMappingStep::draw(const glowutils::Camera & camera)
+{
+    drawLightMap(camera);
 
     m_lightTex->bind(GL_TEXTURE0);
     m_shadowFbo->bind();

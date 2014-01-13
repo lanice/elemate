@@ -22,6 +22,7 @@ namespace physx {
 }
 
 class TerrainTile;
+class CameraEx;
 
 class Terrain {
 public:
@@ -30,8 +31,8 @@ public:
 
     virtual void draw(const glowutils::Camera & camera);
     /** writes the linearized depth into the current depth attachment */
-    virtual void drawLightMap(const glowutils::Camera & lightSource);
-    virtual void drawShadowMapping(const glowutils::Camera & camera, const glowutils::Camera & lightSource);
+    virtual void drawLightMap(const CameraEx & lightSource);
+    virtual void drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource);
 
     /** PhysX shape containing height field geometry for one tile.
     * Terrain tile in origin is identified by TileId(0, 0, 0) */

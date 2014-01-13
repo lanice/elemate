@@ -30,6 +30,8 @@ public:
 protected:
     const World & m_world;
 
+    virtual void drawLightMap(const glowutils::Camera & camera);
+
     glow::ref_ptr<glow::FrameBufferObject> m_lightFbo;
     glow::ref_ptr<glow::Texture> m_lightTex;
 
