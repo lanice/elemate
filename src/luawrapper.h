@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <sstream>
 
 
 class lua_State;
@@ -37,20 +36,22 @@ protected:
     void luaError();
 
     void pushFunc(const std::string & func);
-    void pushArgument(const std::string & arg);
     void callFunction(const int & argCount, const int & resultCount);
 
     void pushArguments(){};
     template<typename T, typename... TArgs>
     void pushArguments(const T & head, const TArgs & ... tail)
     {
-        std::stringstream ss;
-        std::string argument;
-        ss << head;
-        ss >> argument;
-        pushArgument(argument);
+        pushArgument(head);
         pushArguments(tail...);
     };
+
+    void pushArgument(const char * arg);
+    void pushArgument(const std::string & arg);
+    void pushArgument(const int & arg);
+    void pushArgument(const double & arg);
+    void pushArgument(const unsigned long & arg);
+    void pushArgument(const bool & arg);
 
     void fetchResult(std::string & result);
     void fetchResult(int & result);

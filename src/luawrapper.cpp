@@ -49,15 +49,40 @@ void LuaWrapper::pushFunc(const std::string & func)
     lua_getglobal(m_lua, func.c_str());
 }
 
+void LuaWrapper::callFunction(const int & argCount, const int & resultCount)
+{
+    m_err = lua_pcall(m_lua, argCount, resultCount, 0);
+    luaError();
+}
+
 void LuaWrapper::pushArgument(const std::string & arg)
 {
     lua_pushstring(m_lua, arg.c_str());
 }
 
-void LuaWrapper::callFunction(const int & argCount, const int & resultCount)
+void LuaWrapper::pushArgument(const char * arg)
 {
-    m_err = lua_pcall(m_lua, argCount, resultCount, 0);
-    luaError();
+    lua_pushstring(m_lua, arg);
+}
+
+void LuaWrapper::pushArgument(const int & arg)
+{
+    lua_pushinteger(m_lua, arg);
+}
+
+void LuaWrapper::pushArgument(const double & arg)
+{
+    lua_pushnumber(m_lua, arg);
+}
+
+void LuaWrapper::pushArgument(const unsigned long & arg)
+{
+    lua_pushunsigned(m_lua, arg);
+}
+
+void LuaWrapper::pushArgument(const bool & arg)
+{
+    lua_pushboolean(m_lua, arg);
 }
 
 void LuaWrapper::fetchResult(std::string & result)
@@ -71,17 +96,6 @@ void LuaWrapper::fetchResult(std::string & result)
     lua_pop(m_lua, 1);
 }
 
-void LuaWrapper::fetchResult(double & result)
-{
-    if (!lua_isnumber(m_lua, -1))
-    {
-        glow::critical("LuaWrapper: Return value not a number.");
-        return;
-    }
-    result = lua_tonumber(m_lua, -1);
-    lua_pop(m_lua, 1);
-}
-
 void LuaWrapper::fetchResult(int & result)
 {
     if (!lua_isnumber(m_lua, -1))
@@ -90,6 +104,17 @@ void LuaWrapper::fetchResult(int & result)
         return;
     }
     result = lua_tointeger(m_lua, -1);
+    lua_pop(m_lua, 1);
+}
+
+void LuaWrapper::fetchResult(double & result)
+{
+    if (!lua_isnumber(m_lua, -1))
+    {
+        glow::critical("LuaWrapper: Return value not a number.");
+        return;
+    }
+    result = lua_tonumber(m_lua, -1);
     lua_pop(m_lua, 1);
 }
 
