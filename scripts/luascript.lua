@@ -1,4 +1,4 @@
 -- Lua Hello World (luascript.lua)
-function helloWorld ()
-   io.write ("hello World\n")
+function helloWorld (argument)
+   io.write (argument, " - hello World\n")
 end
