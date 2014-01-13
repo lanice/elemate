@@ -34,6 +34,12 @@ void LuaWrapper::loadScript(const std::string & script)
     m_scripts.push_back(script);
 }
 
+void LuaWrapper::removeScript(const std::string & script)
+{
+    for (std::vector<std::string>::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it)
+        if (*it == script) it = m_scripts.erase(it) - 1;
+}
+
 void LuaWrapper::reloadScripts()
 {
     for (auto script : m_scripts)
