@@ -8,5 +8,5 @@ void main()
 {
 	if(length(g_relPos) > 1)
 		discard;
-    gl_FragDepth = (g_absPos.z - 2*size*sqrt(1.0 - dot(g_relPos.xy, g_relPos.xy)))/g_absPos.w;
+    gl_FragDepth = (g_absPos.z - size*sqrt(1.0 - dot(g_relPos.xy, g_relPos.xy)))/g_absPos.w;
 }
