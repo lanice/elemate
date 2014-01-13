@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <sstream>
 
 
@@ -13,6 +14,7 @@ public:
     ~LuaWrapper();
 
     void loadScript(const std::string & script);
+    void reloadScripts();
 
     template<typename... TArgs>
     void callFunc(const std::string & func, const TArgs & ... args)
@@ -45,6 +47,7 @@ protected:
 
     lua_State * m_lua;
 
+    std::vector<std::string> m_scripts;
     int m_err;
 
 public:

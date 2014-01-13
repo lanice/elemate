@@ -31,6 +31,16 @@ void LuaWrapper::loadScript(const std::string & script)
 {
     m_err = luaL_dofile(m_lua, script.c_str());
     luaError();
+    m_scripts.push_back(script);
+}
+
+void LuaWrapper::reloadScripts()
+{
+    for (auto script : m_scripts)
+    {
+        m_err = luaL_dofile(m_lua, script.c_str());
+        luaError();
+    }
 }
 
 void LuaWrapper::pushFunc(const std::string & func)

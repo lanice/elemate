@@ -39,6 +39,7 @@ public:
     void toggleBackgroundSound(int id);
 
     void updateListener();
+    void reloadLua();
 
     void setNavigation(Navigation & navigation);
 

@@ -18,6 +18,7 @@ namespace physx {
     class PxRigidStatic;
 }
 class ParticleEmitter;
+class LuaWrapper;
 
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -43,6 +44,8 @@ public:
     /** add the actor to the current physx scene */
     void addActor(physx::PxActor& actor);
     void addActor(physx::PxRigidStatic& actor);
+
+    void reloadLua();
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
@@ -73,6 +76,8 @@ protected:
     //physx::PxCooking*                               m_cooking;
 
     std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
+
+    LuaWrapper * m_lua;
 
 public:
     PhysicsWrapper(PhysicsWrapper&) = delete;
