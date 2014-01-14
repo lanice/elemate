@@ -7,6 +7,7 @@
 #include "renderingstep.h"
 
 class World;
+class CameraEx;
 
 class ShadowMappingStep : public RenderingStep
 {
@@ -29,6 +30,8 @@ public:
 
 protected:
     const World & m_world;
+
+    CameraEx * m_lightCam;
 
     virtual void drawLightMap(const glowutils::Camera & camera);
 

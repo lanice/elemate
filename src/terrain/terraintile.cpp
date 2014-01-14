@@ -23,6 +23,7 @@
 
 #include "terrain.h"
 #include "elements.h"
+#include "world.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
@@ -72,8 +73,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
 
-    m_terrain.setUpLighting(*m_program);
-
+    m_terrain.m_world.setUpLighting(*m_program);
 }
 
 void TerrainTile::unbind()

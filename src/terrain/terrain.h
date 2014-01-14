@@ -38,9 +38,6 @@ public:
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
-    /** sets the lighting uniforms for terrain tile shaders - copy paste from World */
-    void setUpLighting(glow::Program & program) const;
-
     friend class TerrainGenerator;
     friend class TerrainTile;
     friend class TerrainInteractor;

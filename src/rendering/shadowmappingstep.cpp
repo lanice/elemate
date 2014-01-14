@@ -19,6 +19,7 @@ namespace glow {
 
 ShadowMappingStep::ShadowMappingStep(const World & world)
 : m_world(world)
+, m_lightCam(new CameraEx())
 {
     m_lightTex = new glow::Texture(GL_TEXTURE_2D);
     m_lightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -48,14 +49,25 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_shadowFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_shadowDepthBuffer);
     m_shadowFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_shadowFbo->unbind();
-}
 
-// TODO: get the global sunlight defintion
-static const glm::vec3 lightInvDir(0.0, 2.0, 3.0);
-static CameraEx lightCam(lightInvDir);
+
+    const TerrainSettings & ts = m_world.terrain->settings;
+    const float right = ts.sizeX * 0.5f;
+    const float top = ts.maxHeight;
+    const float far = ts.sizeZ * 0.5f;
+
+    m_lightCam->setLeft(-right);
+    m_lightCam->setRight(right);
+    m_lightCam->setTop(top);
+    m_lightCam->setBottom(-top);
+    m_lightCam->setZFar(far);
+    m_lightCam->setZNearOtho(-far);
+}
 
 void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
 {
+    m_lightCam->setEye(m_world.sunlightInvDirection());
+
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
@@ -65,20 +77,8 @@ void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
     m_lightFbo->bind();
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    const TerrainSettings & ts = m_world.terrain->settings;
-    const float right = ts.sizeX * 0.5f;
-    const float top = ts.maxHeight;
-    const float far = ts.sizeZ * 0.5f;
-
-    lightCam.setLeft(-right);
-    lightCam.setRight(right);
-    lightCam.setTop(top);
-    lightCam.setBottom(-top);
-    lightCam.setZFar(far);
-    lightCam.setZNearOtho(-far);
-
-    m_world.terrain->drawLightMap(lightCam);
-    m_world.hand->drawLightMap(lightCam);
+    m_world.terrain->drawLightMap(*m_lightCam);
+    m_world.hand->drawLightMap(*m_lightCam);
 
     m_lightFbo->unbind();
 
@@ -93,8 +93,8 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
     m_shadowFbo->bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->drawShadowMapping(camera, lightCam);
-    m_world.hand->drawShadowMapping(camera, lightCam);
+    m_world.terrain->drawShadowMapping(camera, *m_lightCam);
+    m_world.hand->drawShadowMapping(camera, *m_lightCam);
 
     m_shadowFbo->unbind();
     m_lightTex->unbind(GL_TEXTURE0);

@@ -131,31 +131,6 @@ const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
     return m_pxActors;
 }
 
-void Terrain::setUpLighting(glow::Program & program) const
-{
-    static glm::vec4 lightambientglobal(0, 0, 0, 0);
-    static glm::vec3 lightdir1(0.0, 6.5, 7.5);
-    static glm::vec3 lightdir2(0.0, -8.0, 7.5);
-
-    static glm::mat4 lightMat1;
-    lightMat1[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
-    lightMat1[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
-    lightMat1[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
-    lightMat1[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
-
-    static glm::mat4 lightMat2;
-    lightMat2[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
-    lightMat2[1] = glm::vec4(0.1, 0.1, 0.1, 1.0);        //diffuse
-    lightMat2[2] = glm::vec4(0.1, 0.1, 0.1, 1.0);        //specular
-    lightMat2[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
-
-    program.setUniform("lightambientglobal", lightambientglobal);
-    program.setUniform("lightdir1", lightdir1);
-    program.setUniform("lightdir2", lightdir2);
-    program.setUniform("light1", lightMat1);
-    program.setUniform("light2", lightMat2);
-}
-
 float Terrain::heightAt(float x, float z) const
 {
     float height = std::numeric_limits<float>::lowest();
