@@ -14,6 +14,7 @@ namespace physx {
 
 class Terrain;
 class TerrainTile;
+class World;
 
 /** Generator for height field terrains
   * Terrains are oriented in the xz-plane, using the default PhysX coordinate system for heightfields.
@@ -21,8 +22,9 @@ class TerrainTile;
   * rows = x axis, height = y axis, columns = z axis */
 class TerrainGenerator {
 public:
-    /** applies all settings and creates the height field landscape */
-    std::shared_ptr<Terrain> generate() const;
+    /** applies all settings and creates the height field landscape
+      * all drawable have to know the world, give me the world, so that i can give it to my creations */
+    std::shared_ptr<Terrain> generate(const World & world) const;
 
     /** terrain size in world coordinates */
     void setExtentsInWorld(float x, float z);

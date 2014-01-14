@@ -1,30 +1,20 @@
 #pragma once
 
-#include <glow/ref_ptr.h>
+#include "rendering/drawable.h"
 
 #include <glm/glm.hpp>
 
 namespace glow {
     class VertexArrayObject;
     class Buffer;
-    class Program;
-}
-namespace glowutils {
-    class Camera;
 }
 class World;
-class CameraEx;
 
-class Hand 
+class Hand : public Drawable
 {
 public:
     Hand(const World & world);
     ~Hand();
-
-    void draw(const glowutils::Camera & camera);
-    /** writes the linearized depth into the current depth attachment */
-    virtual void drawLightMap(const CameraEx & lightSource);
-    virtual void drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource);
 
     glm::mat4 transform() const;
 
@@ -34,11 +24,10 @@ public:
     void rotate(const float angle);
 
 protected:
-    const World & m_world;
+    virtual void drawImplementation(const glowutils::Camera & camera) override;
+    virtual void drawLightMapImpl(const CameraEx & lightSource) override;
+    virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
 
-    glow::ref_ptr<glow::VertexArrayObject> m_vao;
-    glow::ref_ptr<glow::Buffer> m_vbo;
-    glow::ref_ptr<glow::Buffer> m_indexBuffer;
     glow::ref_ptr<glow::Buffer> m_normalBuffer;
 
     glow::ref_ptr<glow::Program> m_program;
@@ -52,10 +41,8 @@ protected:
     glm::mat4 m_scale;
     glm::mat4 m_transform;
 
-    // Shadowing
-    glow::ref_ptr<glow::Program> m_lightMapProgram;
-    void initShadowMappingProgram();
-    glow::ref_ptr<glow::Program> m_shadowMappingProgram;
+    virtual void initLightMappingProgram() override;
+    virtual void initShadowMappingProgram() override;
 
 public:
     void operator=(Hand&) = delete;

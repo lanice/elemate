@@ -47,7 +47,7 @@ World::World(PhysicsWrapper & physicsWrapper)
     terrainGen.setMaxHeight(20.0f);
     terrainGen.setMaxBasicHeightVariance(0.05f);
 
-    terrain = std::shared_ptr<Terrain>(terrainGen.generate());
+    terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
 
     for (const auto actor : terrain->pxActorMap())
         m_physicsWrapper.addActor(*actor.second);

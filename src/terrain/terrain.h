@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rendering/drawable.h"
+
 #include <map>
 #include <memory>
 
@@ -8,33 +10,17 @@
 
 #include "terrainsettings.h"
 
-namespace glow {
-    class VertexArrayObject;
-    class Buffer;
-    class Program;
-}
-namespace glowutils {
-    class Camera;
-}
 namespace physx {
     class PxShape;
     class PxRigidStatic;
 }
-
 class TerrainTile;
-class CameraEx;
 
-extern glow::Vec2Array s_depthSamples;  // global object, until we have an Drawable object hierarchy
-
-class Terrain {
+class Terrain : public Drawable
+{
 public:
-    Terrain(const TerrainSettings & settings);
-    virtual ~Terrain();
-
-    virtual void draw(const glowutils::Camera & camera);
-    /** writes the linearized depth into the current depth attachment */
-    virtual void drawLightMap(const CameraEx & lightSource);
-    virtual void drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource);
+    Terrain(const World & world, const TerrainSettings & settings);
+    virtual ~Terrain() override;
 
     /** PhysX shape containing height field geometry for one tile.
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
@@ -60,6 +46,10 @@ public:
     friend class TerrainInteractor;
 
 protected:
+    virtual void drawImplementation(const glowutils::Camera & camera) override;
+    virtual void drawLightMapImpl(const CameraEx & lightSource) override;
+    virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
+
     /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);
 
@@ -72,22 +62,16 @@ protected:
     /** lowest tile id in z direction */
     unsigned minTileZID;
 
-    void initialize();
+    virtual void initialize() override;
     void generateVertices();
     void generateIndices();
-
-    glow::ref_ptr<glow::VertexArrayObject> m_vao;
-    glow::ref_ptr<glow::Buffer> m_indexBuffer;
-    glow::ref_ptr<glow::Buffer> m_vbo;
 
     glow::Vec2Array * m_vertices;
     glow::UIntArray * m_indices;
 
     /** light map and shadow mapping */
-    void initLightMapProgram();
-    glow::ref_ptr<glow::Program> m_lightMapProgram;
-    void initShadowMappingProgram();
-    glow::ref_ptr<glow::Program> m_shadowMappingProgram;
+    virtual void initLightMappingProgram() override;
+    virtual void initShadowMappingProgram() override;
 
     static const GLuint s_restartIndex;
 
@@ -104,7 +88,6 @@ protected:
     bool normalizePosition(float x, float z, TileID & tileID, float & normX, float & normZ) const;
 
 public:
-    Terrain() = delete;
     void operator=(Terrain&) = delete;
 
 };

@@ -34,9 +34,9 @@ namespace {
     bool didRngInit = initRng();
 }
 
-std::shared_ptr<Terrain> TerrainGenerator::generate() const
+std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
 {
-    std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(m_settings);
+    std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(world, m_settings);
 
     // The tileID determines the position of the current tile in the grid of tiles.
     // Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.

@@ -18,12 +18,12 @@
 #include "world.h"
 #include "cameraex.h"
 
-#include "terrain/terrain.h" // hack for depth samples, 'till Drawables class..
 
 static const glm::mat4 c_defaultRotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
 
 Hand::Hand(const World & world)
-: m_world(world)
+: Drawable(world)
+, m_normalBuffer(nullptr)
 {
     m_rotate = c_defaultRotate;
 
@@ -103,12 +103,6 @@ Hand::Hand(const World & world)
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
-
-    m_lightMapProgram = new glow::Program();
-    m_lightMapProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 }
 
 
@@ -117,7 +111,7 @@ Hand::~Hand()
 }
 
 
-void Hand::draw(const glowutils::Camera & camera)
+void Hand::drawImplementation(const glowutils::Camera & camera)
 {
     m_program->use();
     m_program->setUniform("modelView", camera.view() * m_transform);
@@ -125,12 +119,8 @@ void Hand::draw(const glowutils::Camera & camera)
     m_program->setUniform("rotate", m_rotate);
     m_program->setUniform("cameraposition", camera.eye());
     m_world.setUpLighting(*m_program);
-    
-    m_vao->bind();
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
-
-    m_vao->unbind();
 
     m_program->release();
 }
@@ -162,38 +152,16 @@ void Hand::rotate(const float angle)
     m_transform = m_translate * m_rotate * m_scale;
 }
 
-void Hand::drawLightMap(const CameraEx & lightSource)
+void Hand::drawLightMapImpl(const CameraEx & lightSource)
 {
-    m_lightMapProgram->use();
     m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * m_transform);
 
-    m_vao->bind();
-
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
-
-    m_vao->unbind();
-
-    m_lightMapProgram->release();
-}
-namespace{
-    glm::mat4 biasMatrix(
-        0.5, 0.0, 0.0, 0.0,
-        0.0, 0.5, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.0,
-        0.5, 0.5, 0.5, 1.0
-        );
 }
 
-void Hand::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource)
+void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
 {
-    if (!m_shadowMappingProgram)
-        initShadowMappingProgram();
-
-    m_vao->bind();
-
-    m_shadowMappingProgram->use();
-
-    glm::mat4 lightBiasMVP = biasMatrix * lightSource.viewProjectionOrthographic() * transform();
+    glm::mat4 lightBiasMVP = s_biasMatrix * lightSource.viewProjectionOrthographic() * transform();
 
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
     m_shadowMappingProgram->setUniform("viewport", camera.viewport());
@@ -202,21 +170,26 @@ void Hand::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & 
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+}
 
-    m_lightMapProgram->release();
+void Hand::initLightMappingProgram()
+{
+    m_lightMapProgram = new glow::Program();
+    m_lightMapProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 
-    m_vao->unbind();
+    Drawable::initLightMappingProgram();
 }
 
 void Hand::initShadowMappingProgram()
 {
     m_shadowMappingProgram = new glow::Program();
-
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
-    m_shadowMappingProgram->setUniform("lightMap", 0);
-    m_shadowMappingProgram->setUniform("depthSamples", s_depthSamples);
+    Drawable::initShadowMappingProgram();
 }

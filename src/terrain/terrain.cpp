@@ -15,14 +15,11 @@
 
 #include "terraintile.h"
 
-Terrain::Terrain(const TerrainSettings & settings)
-: settings(settings)
-, m_vao(nullptr)
-, m_indexBuffer(nullptr)
-, m_vbo(nullptr)
+Terrain::Terrain(const World & world, const TerrainSettings & settings)
+: Drawable(world)
+, settings(settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
-, m_lightMapProgram(nullptr)
 {
 }
 
@@ -36,32 +33,23 @@ Terrain::~Terrain()
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
 
-void Terrain::draw(const glowutils::Camera & camera)
+void Terrain::drawImplementation(const glowutils::Camera & camera)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
-    if (!m_vao)
-        initialize();
-
-    assert(m_vao);
     assert(m_indexBuffer);
-    assert(m_vbo);
-
-    m_vao->bind();
 
     glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(s_restartIndex);
 
     for (auto & pair : m_tiles) {
         pair.second->bind(camera);
-        glPrimitiveRestartIndex(s_restartIndex);
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
-        //m_vao->drawArrays(GL_TRIANGLE_STRIP_ADJACENCY, 0, m_vertices->size());
-
         pair.second->unbind();
     }
 
-    m_vao->unbind();
+    glDisable(GL_PRIMITIVE_RESTART);
 }
 
 void Terrain::initialize()
