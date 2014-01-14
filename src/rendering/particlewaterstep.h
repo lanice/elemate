@@ -1,5 +1,8 @@
 #pragma once
 
+#include <list>
+#include <string>
+
 #include "renderingstep.h"
 
 class ParticleWaterStep : public RenderingStep
@@ -14,16 +17,36 @@ public:
     glow::Texture * depthTex();
 
 protected:
+    // for geometry drawing step
+
     glow::ref_ptr<glow::FrameBufferObject> m_depthFbo;
     glow::ref_ptr<glow::Texture> m_depthTex;
 
-    glow::ref_ptr<glow::FrameBufferObject> m_blurredDepthFbo;
-    glow::ref_ptr<glow::Texture> m_blurredDepthTex;
-    glow::ref_ptr<glowutils::ScreenAlignedQuad> m_blurringQuad;
-    glow::ref_ptr<glow::Program> m_blurringProgram;
+    // for postprocessing: use two texture buffers and swap them between the steps
 
-    glow::ref_ptr<glow::FrameBufferObject> m_normalsFbo;
-    glow::ref_ptr<glow::Texture> m_normalsTex;
-    glow::ref_ptr<glowutils::ScreenAlignedQuad> m_normalsQuad;
-    glow::ref_ptr<glow::Program> m_normalsProgram;
+    glow::ref_ptr<glow::Texture> m_postTexA;
+    glow::ref_ptr<glow::Texture> m_postTexB;
+
+    // references to the two result textures
+
+    glow::Texture * m_normalsResultTex;
+    glow::Texture * m_depthResultTex;
+
+    class PostProcess {
+    public:
+        PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program);
+        void draw();
+
+        glow::Texture & m_source;
+        glow::Texture * m_target;
+        glow::ref_ptr<glow::FrameBufferObject> m_fbo;
+        glow::ref_ptr<glow::Program> m_program;
+        glow::ref_ptr<glowutils::ScreenAlignedQuad> m_quad;
+
+        void operator=(PostProcess&) = delete;
+    };
+
+    void addProcess(glow::Texture & source, glow::Texture * target, glow::Program & program);
+
+    std::list<PostProcess> m_processes;    
 };
