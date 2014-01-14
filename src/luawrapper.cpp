@@ -102,7 +102,7 @@ void LuaWrapper::fetchResult(std::string & result)
     lua_pop(m_lua, 1);
 }
 
-void LuaWrapper::fetchResult(int & result)
+void LuaWrapper::fetchResult(int64_t & result)
 {
     if (!lua_isnumber(m_lua, -1))
     {
@@ -142,6 +142,6 @@ void LuaWrapper::fetchResult(bool & result)
         glow::critical("LuaWrapper: Return value not a boolean.");
         return;
     }
-    result = lua_toboolean(m_lua, -1);
+    result = lua_toboolean(m_lua, -1) != 0;
     lua_pop(m_lua, 1);
 }
