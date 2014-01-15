@@ -7,8 +7,38 @@
 
 namespace physx {
     class PxParticleFluid;
+    struct PxFilterData;
+    class PxVec3;
 }
 class ParticleDrawable;
+
+class EmitterDescriptionData{
+public:
+// immutable properties
+    //PxParticleBase (Fluid and System)
+    
+    physx::PxReal maxMotionDistance = 1.0F; // The maximum distance a particle can travel during one simulation step.High values may hurt performance, while low values may restrict the particle velocity too much.
+    physx::PxReal gridSize = 0.0F;          // A hint for the PhysX SDK to choose the particle grouping granularity for proximity tests and parallelization.See particleGrid.
+    physx::PxReal restOffset = 0.3F;        // Defines the minimum distance between particles and the surface of rigid actors that is maintained by the collision system.
+    physx::PxReal contactOffset = 0.3F;     // Defines the distance at which contacts between particles and rigid actors are created.The contacts are internally used to avoid jitter and sticking.It needs to be larger than restOffset.
+    
+    //PxParticleFluids only                        
+    physx::PxReal restParticleDistance = 0.3F; // Defines the resolution of the particle fluid.
+
+// mutable properties
+    //PxParticleBase (Fluid and System)
+    physx::PxReal restitution           = 0.5F; //Restitution used for particle collision with shapes between 0 and 1.
+    physx::PxReal dynamicFriction       = 0.5F; // Dynamic friction used for particle collision.
+    physx::PxReal staticFriction        = 0.5F; //Static friction used for particle collision.
+    physx::PxReal damping               = 0.5F; //Velocity damping constant, which is globally applied to each particle.
+    physx::PxVec3 externalAcceleration  = physx:: PxVec3(0.0F, 0.0F, 0.0F); //Acceleration applied to each particle at each time step.The scene gravity which is added to the external acceleration by default can be disabled using PxActorFlag::eDISABLE_GRAVITY.
+    physx::PxReal particleMass          = 0.5F; //Mass used for two way interaction with rigid bodies.
+    physx::PxFilterData* simulationFilterData  = nullptr; //Filter data used to filter collisions between particles and rigid bodies.See collisionFiltering.
+
+    //PxParticleFluid only
+    physx::PxReal viscosity = 5.0F; //From Water to goo ... between 5 and 300 is reasonable
+    physx::PxReal stiffness = 8.134F; //Gas constant
+};
 
 class ParticleEmitter
 {
@@ -16,7 +46,7 @@ public:
     ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
-    void initializeParticleSystem();
+    void initializeParticleSystem(EmitterDescriptionData* descriptionData);
     void update(double elapsed_Time);
 
     void startEmit();
@@ -31,9 +61,10 @@ public:
 protected:
     static const physx::PxU32	kMaxParticleCount;
     static const physx::PxU32   kDefaultEmittedParticles;
-    static const physx::PxReal  kDefaultParticleRestDistance;
     static const physx::PxReal  kDefaultInitialParticleSpeed;
     static const int            kDefaultParticleSpreading;
+
+    void applyDescriptionData(EmitterDescriptionData* descriptionData);
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

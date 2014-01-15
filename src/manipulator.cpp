@@ -23,16 +23,14 @@ m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
 m_grabbedTerrain(false),
 m_renderer(nullptr)
 {
-    m_world.makeSource(m_hand.position());
-    m_world.makeSource(m_hand.position());
-    m_world.makeSource(m_hand.position());
+    m_world.makeElements(m_hand.position());
     m_world.createFountainSound(m_hand.position());
 }
 
 Manipulator::~Manipulator()
 {
 }
-void Manipulator::handleMouseButtonEvent(int button, int action, int mods)
+void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
     //Emitter Interaction
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)

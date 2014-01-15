@@ -9,9 +9,8 @@
 #include "particledrawable.h"
 
 
-const physx::PxU32  ParticleEmitter::kMaxParticleCount = 100;
+const physx::PxU32  ParticleEmitter::kMaxParticleCount = 2000;
 const physx::PxU32  ParticleEmitter::kDefaultEmittedParticles = 1;
-const physx::PxReal ParticleEmitter::kDefaultParticleRestDistance = 0.3F;
 const physx::PxReal ParticleEmitter::kDefaultInitialParticleSpeed = 0.5F;
 const int           ParticleEmitter::kDefaultParticleSpreading = 50;
 
@@ -31,17 +30,23 @@ ParticleEmitter::~ParticleEmitter(){
     m_particleSystem->releaseParticles();
 }
 
-void ParticleEmitter::initializeParticleSystem(){
-    m_particleSystem = PxGetPhysics().createParticleFluid(kMaxParticleCount, false);
-    assert(m_particleSystem);
-
-    m_particleSystem->setRestParticleDistance(kDefaultParticleRestDistance);
+void ParticleEmitter::initializeParticleSystem(EmitterDescriptionData* descriptionData){
+    applyDescriptionData(descriptionData);
 
     physx::PxScene* scene_buffer = static_cast<physx::PxScene*>(malloc(sizeof(physx::PxScene)));
     PxGetPhysics().getScenes(&scene_buffer, 1);
     scene_buffer->addActor(*m_particleSystem);
 
     m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
+}
+
+void ParticleEmitter::applyDescriptionData(EmitterDescriptionData* descriptionData){
+    m_particleSystem = PxGetPhysics().createParticleFluid(kMaxParticleCount, false);
+    assert(m_particleSystem);
+
+    m_particleSystem->setViscosity(descriptionData->viscosity);
+    m_particleSystem->setStiffness(descriptionData->stiffness);
+    m_particleSystem->setRestParticleDistance(descriptionData->restParticleDistance);
 }
 
 void ParticleEmitter::update(double elapsed_Time){

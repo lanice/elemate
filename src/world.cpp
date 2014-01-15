@@ -19,7 +19,6 @@
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
 
-
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(new Hand(*this))
 , terrain(nullptr)
@@ -82,9 +81,13 @@ void World::update()
     m_physicsWrapper.step(delta);
 }
 
-void World::makeSource(const glm::vec3& position)
+void World::makeElements(const glm::vec3& position)
 {
-    m_physicsWrapper.makeParticleEmitter(position);
+    m_physicsWrapper.clearEmitters();
+    m_currentElements = Elements::availableElements();
+    for (const auto& element_name: m_currentElements)
+        m_physicsWrapper.makeParticleEmitter(element_name, position);
+    selectNextEmitter();
 }
 
 
@@ -167,7 +170,8 @@ void World::updateEmitterPosition(const glm::vec3& position)
 
 void World::selectNextEmitter()
 {
-    m_physicsWrapper.selectNextEmitter();
+    m_currentElements.splice(m_currentElements.end(), m_currentElements, m_currentElements.begin());
+    m_physicsWrapper.selectEmitter(m_currentElements.front());
 }
 
 void World::startEmitting()

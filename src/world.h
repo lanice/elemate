@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <list>
 
 #include <glm/glm.hpp>
 
@@ -32,7 +33,7 @@ public:
     void update();
 
     /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
-    void makeSource(const glm::vec3& position);
+    void makeElements(const glm::vec3& position);
     void createFountainSound(const glm::vec3& position);
     
     void updateEmitterPosition(const glm::vec3& position);
@@ -57,6 +58,7 @@ public:
 
 protected:
     PhysicsWrapper & m_physicsWrapper;
+    std::list<std::string> m_currentElements;
 
     Navigation * m_navigation;
     std::shared_ptr<CyclicTime> m_time;

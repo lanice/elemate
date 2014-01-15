@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <list>
+#include <unordered_map>
 #include <memory>
 
 #include <glm/glm.hpp>
@@ -35,15 +35,17 @@ public:
     bool step(double delta);
     
     /** Creates a particle emitter */
-    void makeParticleEmitter(const glm::vec3& position);
+    void makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position);
 
     void updateEmitterPosition(const glm::vec3& position);
 
-    void selectNextEmitter();
+    void selectEmitter(const std::string& emitter_name);
 
     void startEmitting();
 
     void stopEmitting();
+
+    void clearEmitters();
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
@@ -80,7 +82,8 @@ protected:
     physx::PxScene*                                 m_scene;
     //physx::PxCooking*                               m_cooking;
 
-    std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
+    std::unordered_map<std::string, ParticleEmitter*>     m_emitters;
+    std::string m_activeEmitter;
 
 public:
     PhysicsWrapper(PhysicsWrapper&) = delete;

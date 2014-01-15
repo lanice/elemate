@@ -58,6 +58,8 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
+    src/element.h
+    src/element.cpp
     src/elements.h
     src/elements.cpp
     src/pxcompilerfix.h
