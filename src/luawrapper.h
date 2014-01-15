@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -56,7 +55,7 @@ protected:
     void pushArgument(const bool & arg);
 
     void fetchResult(std::string & result);
-    void fetchResult(int64_t & result);
+    void fetchResult(int & result);
     void fetchResult(double & result);
     void fetchResult(unsigned long & result);
     void fetchResult(bool & result);

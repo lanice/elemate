@@ -1,5 +1,7 @@
 #include "luawrapper.h"
 
+#include <cstdint>
+
 #include <glow/logging.h>
 
 #include "lua.hpp"
@@ -102,14 +104,15 @@ void LuaWrapper::fetchResult(std::string & result)
     lua_pop(m_lua, 1);
 }
 
-void LuaWrapper::fetchResult(int64_t & result)
+void LuaWrapper::fetchResult(int & result)
 {
     if (!lua_isnumber(m_lua, -1))
     {
         glow::critical("LuaWrapper: Return value not a number.");
         return;
     }
-    result = lua_tointeger(m_lua, -1);
+    assert( static_cast<int>(lua_tointeger(m_lua, -1)) == lua_tointeger(m_lua, -1));
+    result = static_cast<int>(lua_tointeger(m_lua, -1));
     lua_pop(m_lua, 1);
 }
 
