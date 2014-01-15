@@ -16,12 +16,14 @@
 #include <assimp/scene.h>
 
 #include "world.h"
+#include "cameraex.h"
 
 
 static const glm::mat4 c_defaultRotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
 
 Hand::Hand(const World & world)
-: m_world(world)
+: Drawable(world)
+, m_normalBuffer(nullptr)
 {
     m_rotate = c_defaultRotate;
 
@@ -109,7 +111,7 @@ Hand::~Hand()
 }
 
 
-void Hand::draw(const glowutils::Camera & camera)
+void Hand::drawImplementation(const glowutils::Camera & camera)
 {
     m_program->use();
     m_program->setUniform("modelView", camera.view() * m_transform);
@@ -117,16 +119,11 @@ void Hand::draw(const glowutils::Camera & camera)
     m_program->setUniform("rotate", m_rotate);
     m_program->setUniform("cameraposition", camera.eye());
     m_world.setUpLighting(*m_program);
-    
-    m_vao->bind();
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 
-    m_vao->unbind();
-
     m_program->release();
 }
-
 
 glm::mat4 Hand::transform() const
 {
@@ -153,4 +150,46 @@ void Hand::rotate(const float angle)
 {
     m_rotate = glm::rotate(c_defaultRotate, angle, glm::vec3(0.0f, 0.0f, 1.0f));
     m_transform = m_translate * m_rotate * m_scale;
+}
+
+void Hand::drawLightMapImpl(const CameraEx & lightSource)
+{
+    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * m_transform);
+
+    m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+}
+
+void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
+{
+    glm::mat4 lightBiasMVP = s_biasMatrix * lightSource.viewProjectionOrthographic() * transform();
+
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
+    m_shadowMappingProgram->setUniform("viewport", camera.viewport());
+    m_shadowMappingProgram->setUniform("znear", camera.zNear());
+    m_shadowMappingProgram->setUniform("zfar", camera.zFar());
+    m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
+
+    m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+}
+
+void Hand::initLightMappingProgram()
+{
+    m_lightMapProgram = new glow::Program();
+    m_lightMapProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
+
+    Drawable::initLightMappingProgram();
+}
+
+void Hand::initShadowMappingProgram()
+{
+    m_shadowMappingProgram = new glow::Program();
+    m_shadowMappingProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
+
+    Drawable::initShadowMappingProgram();
 }

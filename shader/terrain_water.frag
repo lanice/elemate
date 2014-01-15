@@ -7,10 +7,10 @@ in float v_heightDiff;
 uniform vec3 cameraposition;
 
 uniform vec4 lightambientglobal;
-uniform vec3 lightdir1;
+uniform vec3 sunlightInvDir;
 uniform vec3 lightdir2;
 
-uniform mat4 light1;
+uniform mat4 sunlighting;
 uniform mat4 light2;
 
 uniform mat4 material_water;
@@ -26,6 +26,6 @@ void main()
 		discard;
 	
     fragColor = vec4(
-        phongLighting(v_normal, v_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_water).rgb,
+        phongLighting(v_normal, v_viewPos, cameraposition, sunlightInvDir, lightdir2, sunlighting, light2, lightambientglobal, material_water).rgb,
         0.5);
 }

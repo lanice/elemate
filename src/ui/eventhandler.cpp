@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game.h"
-#include "renderer.h"
+#include "rendering/renderer.h"
 
 
 EventHandler::EventHandler(GLFWwindow & window, Game & game)

@@ -6,10 +6,10 @@ in vec3 v_viewPos;
 uniform vec3 cameraposition;
 
 uniform vec4 lightambientglobal;
-uniform vec3 lightdir1;
+uniform vec3 sunlightInvDir;
 uniform vec3 lightdir2;
 
-uniform mat4 light1;
+uniform mat4 sunlighting;
 uniform mat4 light2;
 
 layout(location = 0)out vec4 fragColor;
@@ -23,5 +23,5 @@ mat4 material = mat4(vec4(0.0, 0.0, 0.0, 1.0),    //ambient
 
 void main()
 {
-    fragColor = phongLighting(v_normal, v_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material);
+    fragColor = phongLighting(v_normal, v_viewPos, cameraposition, sunlightInvDir, lightdir2, sunlighting, light2, lightambientglobal, material);
 }

@@ -8,10 +8,10 @@ flat in int g_texIndex;
 uniform vec3 cameraposition;
 
 uniform vec4 lightambientglobal;
-uniform vec3 lightdir1;
+uniform vec3 sunlightInvDir;
 uniform vec3 lightdir2;
 
-uniform mat4 light1;
+uniform mat4 sunlighting;
 uniform mat4 light2;
 
 uniform mat4 material_bedrock;
@@ -34,10 +34,10 @@ void main()
     
     switch(id) {
     case 1u:
-        lightColor = phongLighting(g_normal, g_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_bedrock);
+        lightColor = phongLighting(g_normal, g_viewPos, cameraposition, sunlightInvDir, lightdir2, sunlighting, light2, lightambientglobal, material_bedrock);
         break;
     case 2u:
-        lightColor = phongLighting(g_normal, g_viewPos, cameraposition, lightdir1, lightdir2, light1, light2, lightambientglobal, material_dirt);
+        lightColor = phongLighting(g_normal, g_viewPos, cameraposition, sunlightInvDir, lightdir2, sunlighting, light2, lightambientglobal, material_dirt);
         break;
     default:
         lightColor = vec4(1.0, 0.0, 0.0, 1.0); // just to check that the terrainTypeID texture contains valid data

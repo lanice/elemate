@@ -82,8 +82,6 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
-    src/renderer.h
-    src/renderer.cpp
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/soundmanager.cpp
@@ -96,8 +94,11 @@ set(SOURCES
     src/ui/navigation.h
     src/ui/manipulator.cpp
     src/ui/manipulator.h
+    src/cameraex.h
+    src/cameraex.cpp
     src/terrain/terrain.h
     src/terrain/terrain.cpp
+    src/terrain/terrainshadows.cpp
     src/terrain/terrainsettings.h
     src/terrain/terrainsettings.cpp
     src/terrain/terraininteractor.h
@@ -110,6 +111,16 @@ set(SOURCES
     src/terrain/watertile.cpp
     src/terrain/terraingenerator.h
     src/terrain/terraingenerator.cpp
+    src/rendering/drawable.h
+    src/rendering/drawable.cpp
+    src/rendering/renderer.h
+    src/rendering/renderer.cpp
+    src/rendering/renderingstep.h
+    src/rendering/renderingstep.cpp
+    src/rendering/particlewaterstep.h
+    src/rendering/particlewaterstep.cpp
+    src/rendering/shadowmappingstep.cpp
+    src/rendering/shadowmappingstep.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -126,7 +137,18 @@ set(SHADER
     shader/terrain_water.frag
     shader/hand.frag
     shader/hand.vert
+    shader/particle_water.vert
+    shader/particle_water.geo
+    shader/particle_water.frag
+    shader/particle_water_normals.frag
     shader/phongLighting.frag
+    shader/shadows/lightmap_terrain.vert
+    shader/shadows/lightmap_hand.vert
+    shader/shadows/lightmap.frag
+    shader/shadows/shadowmapping_terrain.vert
+    shader/shadows/shadowmapping_hand.vert
+    shader/shadows/shadowmapping.frag
+    shader/shadows/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
