@@ -7,21 +7,19 @@ uniform ivec2 viewport;
 
 layout(location = 0)out float depthValue;
 
-void main()
-{
+void main(){
     ivec2 uv = ivec2(v_uv*vec2(viewport));
-
+    
+    int coeffSize = 31;
+    int used = 0;
     float sum = 0;
-    float blurSize = 1.0;
-    sum += texelFetch(source, ivec2(uv.x - 4.0*blurSize, uv.y), 0).r * 0.05;
-    sum += texelFetch(source, ivec2(uv.x - 3.0*blurSize, uv.y), 0).r * 0.09;
-    sum += texelFetch(source, ivec2(uv.x - 2.0*blurSize, uv.y), 0).r * 0.12;
-    sum += texelFetch(source, ivec2(uv.x - blurSize, uv.y), 0).r * 0.15;
-    sum += texelFetch(source, ivec2(uv.x, uv.y), 0).r * 0.16;
-    sum += texelFetch(source, ivec2(uv.x + blurSize, uv.y), 0).r * 0.15;
-    sum += texelFetch(source, ivec2(uv.x + 2.0*blurSize, uv.y), 0).r * 0.12;
-    sum += texelFetch(source, ivec2(uv.x + 3.0*blurSize, uv.y), 0).r * 0.09;
-    sum += texelFetch(source, ivec2(uv.x + 4.0*blurSize, uv.y), 0).r * 0.05;
+    for(int i=-coeffSize; i<=coeffSize; ++i){
+        float depth = texelFetch(source, uv + ivec2(i, 0), 0).r;
+        if(depth < 100.0){
+            sum += depth;
+            used += 1;
+        }
+    }
 
-    depthValue = sum;
+    depthValue = sum/max(used,1.0);
 }

@@ -15,7 +15,7 @@ void main()
     float waterZ = texture(waterDepth, v_uv).r;
 	fragColor = mix(
 		//vec4(0.2, 0.3, 0.8, 0.8),
-		vec4(vec3(texture(waterDepth, v_uv).r), 1.0),
+		vec4(vec3(texture(waterNormals, v_uv).rgb),1),
 		texture(sceneColor, v_uv),
 		step(sceneZ,waterZ)
 	);

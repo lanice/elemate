@@ -14,25 +14,11 @@ void main()
     ivec2 uv = ivec2(v_uv*vec2(viewport));
     float depth = texelFetch(source, uv, 0).r;
 
-    float height_left = (
-          texelFetch(source, uv+ivec2(-1, 0), 0).x
-        + texelFetch(source, uv+ivec2(-1, 0), 0).x
-        )/2;
+    float height_left = texelFetch(source, uv+ivec2(-1, 0), 0).x;
+    float height_right = texelFetch(source, uv+ivec2(1, 0), 0).x;
+    float height_front = texelFetch(source, uv+ivec2(0, -1), 0).x;
+    float height_back = texelFetch(source, uv+ivec2(0, 1), 0).x;
 
-    float height_right = (
-          texelFetch(source, uv+ivec2(1, 0), 0).x
-        + texelFetch(source, uv+ivec2(1, 0), 0).x
-        )/2;
-
-    float height_front = (
-          texelFetch(source, uv+ivec2(0, -1), 0).x
-        + texelFetch(source, uv+ivec2(0, -1), 0).x
-        )/2;
-
-    float height_back = (
-          texelFetch(source, uv+ivec2(0, 1), 0).x
-        + texelFetch(source, uv+ivec2(0, 1), 0).x
-        )/2;
     vec3 va,vb;
 
     if(abs(height_right-depth) < abs(height_left-depth))
@@ -46,6 +32,4 @@ void main()
         vb = vec3(0.0, depth - height_back, 1.0/viewport.y);
 
     normal = normalize(cross(vb, va));
-
-    //normal = texture(source, v_uv).x;
 }
