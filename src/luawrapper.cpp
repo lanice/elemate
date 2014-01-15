@@ -9,7 +9,7 @@
 
 LuaWrapper::LuaWrapper()
 : m_lua(luaL_newstate())
-, m_err(0)
+, m_err(LUA_OK)
 {
     luaL_openlibs(m_lua);
 }
