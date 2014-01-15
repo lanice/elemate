@@ -88,6 +88,8 @@ set(SOURCES
     src/simpleconfigreader.h
     src/soundmanager.cpp
     src/soundmanager.h
+    src/luawrapper.cpp
+    src/luawrapper.h
     src/ui/eventhandler.cpp
     src/ui/eventhandler.h
     src/ui/navigation.cpp
@@ -147,6 +149,7 @@ find_package( GLOW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
 find_package( ASSIMP REQUIRED )
+find_package( LUA REQUIRED )
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
@@ -154,6 +157,7 @@ include_directories(
     SYSTEM ${GLM_INCLUDE_DIR}
     SYSTEM ${GLFW_INCLUDE_DIR}
     SYSTEM ${PHYSX_INCLUDE_DIR}
+    SYSTEM ${LUA_INCLUDE_DIR}
 )
 
 list(APPEND SOURCES ${SHADER})
@@ -183,3 +187,8 @@ config_project( ${PROJECT_NAME} GLOW_UTILS 0 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
 config_project( ${PROJECT_NAME} ASSIMP 0 )
+config_project( ${PROJECT_NAME} LUA 0 )
+
+if(LINUX)
+    target_link_libraries( ${PROJECT_NAME} dl)
+endif()

@@ -27,6 +27,8 @@ public:
     void start();
 
 
+    void reloadLua();
+
     Navigation * navigation();
     Manipulator * manipulator();
     glowutils::Camera * camera();

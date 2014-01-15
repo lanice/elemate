@@ -100,6 +100,11 @@ void Game::loop(double delta)
     m_world->stopSimulation();
 }
 
+void Game::reloadLua()
+{
+    m_world->reloadLua();
+}
+
 Navigation * Game::navigation()
 {
     return & m_navigation;

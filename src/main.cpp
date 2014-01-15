@@ -58,7 +58,6 @@ void setCallbacks(GLFWwindow * window)
 
 int main()
 {
-    
     if (!glfwInit()) {
         glow::fatal("Could not initialize glfw.");
         return -1;
