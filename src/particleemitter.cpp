@@ -12,8 +12,9 @@
 const physx::PxU32 ParticleEmitter::kMaxParticleCount = 100;
 const physx::PxU32 ParticleEmitter::kDefaultEmittedParticles = 1;
 
-ParticleEmitter::ParticleEmitter(const physx::PxVec3& position)
+ParticleEmitter::ParticleEmitter(bool gpuParticles, const physx::PxVec3& position)
 : m_particleDrawable(nullptr)
+, m_gpuParticles(gpuParticles)
 , m_position(position)
 , m_emitting(false)
 , m_particles_per_second(kDefaultEmittedParticles)
@@ -35,7 +36,7 @@ void ParticleEmitter::initializeParticleSystem(){
     assert(PxGetPhysics().getNbScenes() == 1);
     physx::PxScene* scene_buffer[1];
     PxGetPhysics().getScenes(scene_buffer, 1);
-    //m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, true);
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
     scene_buffer[0]->addActor(*m_particleSystem);
 
     m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
@@ -105,5 +106,22 @@ void ParticleEmitter::createParticles(physx::PxU32 number_of_particles){
 
 void ParticleEmitter::stopEmit(){
     m_emitting = false;
+}
+
+void ParticleEmitter::setGPUAccelerated(bool enable)
+{
+    m_gpuParticles = enable;
+
+    assert(m_particleSystem);
+
+    assert(PxGetPhysics().getNbScenes() == 1);
+    physx::PxScene* scene_buffer[1];
+    PxGetPhysics().getScenes(scene_buffer, 1);
+
+    scene_buffer[0]->removeActor(*m_particleSystem);
+
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+
+    scene_buffer[0]->addActor(*m_particleSystem);
 }
 

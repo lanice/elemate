@@ -21,7 +21,8 @@ PhysicsWrapper::PhysicsWrapper()
 , m_physics(nullptr)
 , m_scene(nullptr)
 , m_emitters()
-        //m_profile_zone_manager(nullptr),
+, m_gpuParticles(false)
+//m_profile_zone_manager(nullptr)
 {
     initializePhysics();
     initializeScene();
@@ -44,6 +45,8 @@ PhysicsWrapper::~PhysicsWrapper()
     PxCloseExtensions();
     //Please don't forget if you activate this feature.
     //m_profile_zone_manager->release();
+    if (m_cudaContextManager)
+        m_cudaContextManager->release();
     m_foundation->release();
 }
 
@@ -76,6 +79,7 @@ void PhysicsWrapper::updateAllObjects(double delta)
 
 void PhysicsWrapper::makeParticleEmitter(const glm::vec3& position){
     m_emitters.push_back(std::make_shared<ParticleEmitter>(
+        m_gpuParticles,
         physx::PxVec3(position.x, position.y, position.z)));
     m_emitters.back()->initializeParticleSystem();
     m_emitters.back()->startEmit();
@@ -179,4 +183,16 @@ void PhysicsWrapper::addActor(physx::PxActor & actor)
 void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
 {
     scene()->addActor(actor);
+}
+
+void PhysicsWrapper::setUseGpuParticles(bool useGPU)
+{
+    m_gpuParticles = useGPU;
+    for (auto emitter : m_emitters)
+        emitter->setGPUAccelerated(m_gpuParticles);
+}
+
+bool PhysicsWrapper::useGpuParticles() const
+{
+    return m_gpuParticles;
 }

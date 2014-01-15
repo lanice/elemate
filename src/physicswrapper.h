@@ -50,6 +50,9 @@ public:
     void addActor(physx::PxActor& actor);
     void addActor(physx::PxRigidStatic& actor);
 
+    void setUseGpuParticles(bool useGPU);
+    bool useGpuParticles() const;
+
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
     static const int            kNumberOfThreads;
@@ -80,6 +83,7 @@ protected:
     physx::PxCudaContextManager*                    m_cudaContextManager;
 
     std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
+    bool                                            m_gpuParticles;
 
     static PhysicsWrapper * s_instance;
 

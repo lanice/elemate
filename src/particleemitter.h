@@ -13,7 +13,7 @@ class ParticleDrawable;
 class ParticleEmitter
 {
 public:
-    ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
+    ParticleEmitter(bool gpuParticles, const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
     void initializeParticleSystem();
@@ -24,12 +24,16 @@ public:
 
     void createParticles(physx::PxU32 number_of_particles);
 
+    /** enable/disable GPU acceleration. Will cause errors if not running on nvidia gpu. */
+    void setGPUAccelerated(bool enable);
+
 protected:
     static const physx::PxU32	kMaxParticleCount;
     static const physx::PxU32   kDefaultEmittedParticles;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
+    bool                     m_gpuParticles;
     physx::PxVec3            m_position;
     bool                     m_emitting;
     int                      m_particles_per_second;

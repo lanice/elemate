@@ -31,7 +31,7 @@ public:
     Manipulator * manipulator();
     glowutils::Camera * camera();
     Renderer * renderer();
-
+    PhysicsWrapper * physicsWrapper();
 
 protected:
     GLFWwindow & m_window;

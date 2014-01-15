@@ -7,6 +7,7 @@
 
 #include "game.h"
 #include "renderer.h"
+#include "physicswrapper.h"
 
 
 EventHandler::EventHandler(GLFWwindow & window, Game & game)
@@ -30,6 +31,14 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
         glow::info("Updating shader...");
         glowutils::FileRegistry::instance().reloadAll();
         glow::info("Updating shader done.");
+    }
+    if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+        bool useGPU = !m_game.physicsWrapper()->useGpuParticles();
+        if (useGPU)
+            glow::info("Enabling particle simulation on GPU...");
+        else
+            glow::info("Disabling particle simulation on GPU...");
+        m_game.physicsWrapper()->setUseGpuParticles(useGPU);
     }
 
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);
