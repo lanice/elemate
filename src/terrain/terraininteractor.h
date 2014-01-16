@@ -11,7 +11,7 @@ class TerrainInteractor {
 public:
     TerrainInteractor(std::shared_ptr<Terrain>& terrain);
 
-    float heightAt(float worldX, float worldZ) const;
+    float heightTotalAt(float worldX, float worldZ) const;
     float heightAt(float worldX, float worldZ, TerrainLevel level) const;
 
     /** Set the terrain height at a specified world position to value.

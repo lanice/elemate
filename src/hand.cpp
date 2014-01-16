@@ -8,6 +8,7 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 #include <glowutils/Camera.h>
+#include <glowutils/AxisAlignedBoundingBox.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,22 +18,33 @@
 
 #include "world.h"
 #include "cameraex.h"
+#include "terrain/terraininteractor.h"
 
-
-static const glm::mat4 c_defaultRotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
+const std::string Hand::s_modelFilename = "data/models/hand.3DS";
 
 Hand::Hand(const World & world)
 : Drawable(world)
-, m_normalBuffer(nullptr)
 {
-    m_rotate = c_defaultRotate;
-
-    m_scale = glm::scale(glm::mat4(), glm::vec3(0.0005f));
+    m_rotate = glm::mat4();
 
     setPosition(glm::vec3());
 
+    loadModel();
+}
+
+void Hand::loadModel()
+{
+    // the model is much too large
+    const glm::mat4 scale = glm::scale(glm::mat4(), glm::vec3(0.0005f));
+    // the hand should "lay" on the ground
+    const glm::mat4 rotate = glm::rotate(glm::rotate(glm::mat4(), 90.0f, glm::vec3(1.0f, .0f, .0f)), 180.0f, glm::vec3(.0f, 1.0f, .0f));
+    // set the center ~ to the middle of the fingers
+    const glm::mat4 translate = glm::translate(glm::mat4(), glm::vec3(0, 0, 1.2f));
+
+    const glm::mat4 initTransform = translate * rotate * scale;
+
     Assimp::Importer importer;
-    const aiScene * scene = importer.ReadFile("data/models/hand.3DS", aiPostProcessSteps::aiProcess_Triangulate);
+    const aiScene * scene = importer.ReadFile(s_modelFilename, aiPostProcessSteps::aiProcess_Triangulate);
     assert(scene);
     if (!scene) {
         glow::fatal("Could not load hand model!");
@@ -42,7 +54,6 @@ Hand::Hand(const World & world)
     assert(scene->mNumMeshes == 1);
     aiMesh * mesh = scene->mMeshes[0];
 
-    m_numVertices = mesh->mNumVertices;
     glow::UIntArray * indices = new glow::UIntArray;
     for (unsigned face = 0; face < mesh->mNumFaces; ++face) {
         assert(mesh->mFaces[face].mNumIndices == 3);     // using triangles
@@ -57,19 +68,32 @@ Hand::Hand(const World & world)
     indices->clear();
     delete indices;
 
+    glowutils::AxisAlignedBoundingBox bbox;
     glow::Vec3Array * vertices = new glow::Vec3Array;
+
     for (unsigned v = 0; v < mesh->mNumVertices; ++v) {
-        vertices->push_back(glm::vec3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z));
+        const glm::vec3 scaledVertex = 
+            glm::vec3(initTransform * glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0));
+        vertices->push_back(scaledVertex);
+        bbox.extend(scaledVertex);
     }
+
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
     m_vbo->setData(*vertices, GL_STATIC_DRAW);
     m_vbo->unbind();
     vertices->clear();
     delete vertices;
 
+    // use four lower coners of the bouding box as compare/checkpoints with terrain height
+    m_heightCheckPoints.push_back(bbox.llf());
+    m_heightCheckPoints.push_back(glm::vec3(bbox.llf().x, bbox.llf().y, bbox.urb().z));
+    m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.llf().z));
+    m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.urb().z));
+
     glow::Vec3Array * normals = new glow::Vec3Array;
     for (unsigned n = 0; n < mesh->mNumVertices; ++n) {
-        normals->push_back(glm::vec3(mesh->mNormals[n].x, mesh->mNormals[n].y, mesh->mNormals[n].z));
+        glm::vec3 rotatedNormal = glm::vec3(rotate * glm::vec4(mesh->mNormals[n].x, mesh->mNormals[n].y, mesh->mNormals[n].z, 1.0));
+        normals->push_back(rotatedNormal);
     }
     m_normalBuffer = new glow::Buffer(GL_ARRAY_BUFFER);
     m_normalBuffer->setData(*normals, GL_STATIC_DRAW);
@@ -105,17 +129,26 @@ Hand::Hand(const World & world)
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
 }
 
-
-Hand::~Hand()
+float Hand::heightCheck(float worldX, float worldZ, const TerrainInteractor & interactor)
 {
-}
+    float maxHeight = std::numeric_limits<float>::lowest();
 
+    for (const glm::vec3 & checkPoint : m_heightCheckPoints) {
+        const glm::vec3 worldPos = glm::vec3(worldX, 0, worldZ) + glm::vec3(transform() * glm::vec4(checkPoint, 1.0));
+
+        float heightAt = interactor.heightTotalAt(worldX + checkPoint.x, worldZ + checkPoint.z) + checkPoint.y;
+        if (heightAt > maxHeight)
+            maxHeight = heightAt;
+    }
+
+    return maxHeight;
+}
 
 void Hand::drawImplementation(const glowutils::Camera & camera)
 {
     m_program->use();
-    m_program->setUniform("modelView", camera.view() * m_transform);
-    m_program->setUniform("modelViewProjection", camera.viewProjection() * m_transform);
+    m_program->setUniform("modelView", camera.view() * transform());
+    m_program->setUniform("modelViewProjection", camera.viewProjection() * transform());
     m_program->setUniform("rotate", m_rotate);
     m_program->setUniform("cameraposition", camera.eye());
     m_world.setUpLighting(*m_program);
@@ -125,12 +158,15 @@ void Hand::drawImplementation(const glowutils::Camera & camera)
     m_program->release();
 }
 
-glm::mat4 Hand::transform() const
+const glm::mat4 & Hand::transform() const
 {
-    return m_transform;
+    if (!m_transform.isValid())
+        m_transform.setValue(m_translate * m_rotate);
+
+    return m_transform.value();
 }
 
-glm::vec3 Hand::position() const
+const glm::vec3 & Hand::position() const
 {
     return m_position;
 }
@@ -138,23 +174,27 @@ glm::vec3 Hand::position() const
 void Hand::setPosition(const glm::vec3 & position)
 {
     m_position = position;
-    m_translate = glm::mat4(
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        position.x, position.y, position.z, 1.0f);
-    m_transform = m_translate * m_rotate * m_scale;
+    m_translate = glm::translate(glm::mat4(), position);
+
+    m_transform.invalidate();
+}
+
+void Hand::setPositionChecked(float worldX, float worldZ, const TerrainInteractor & interactor)
+{
+    float newHeight = heightCheck(worldX, worldZ, interactor);
+
+    setPosition(glm::vec3(worldX, newHeight, worldZ));
 }
 
 void Hand::rotate(const float angle)
 {
-    m_rotate = glm::rotate(c_defaultRotate, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-    m_transform = m_translate * m_rotate * m_scale;
+    m_rotate = glm::rotate(glm::mat4(), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+    m_transform.invalidate();
 }
 
 void Hand::drawLightMapImpl(const CameraEx & lightSource)
 {
-    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * m_transform);
+    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * transform());
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
