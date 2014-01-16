@@ -4,9 +4,9 @@
 
 #include <glowutils/Camera.h>
 
-#include "rendering/renderer.h"
 #include "ui/navigation.h"
 #include "ui/manipulator.h"
+#include "rendering/renderer.h"
 
 class PhysicsWrapper;
 class World;
@@ -26,6 +26,8 @@ public:
     /** Starts the Game Loop until end() is called.  */
     void start();
 
+
+    void reloadLua();
 
     Navigation * navigation();
     Manipulator * manipulator();

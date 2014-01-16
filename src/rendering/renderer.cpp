@@ -20,6 +20,7 @@ namespace glow {
 #include "particledrawable.h"
 #include "hand.h"
 #include "particlewaterstep.h"
+#include "shadowmappingstep.h"
 
 Renderer::Renderer(const World & world)
 : m_world(world)
@@ -32,6 +33,9 @@ void Renderer::initialize()
     glow::DebugMessageOutput::enable();
 
     glClearColor(1, 1, 1, 1);
+
+    glDepthFunc(GL_LEQUAL);
+    glClearDepth(1.0);
 
     m_sceneColor = new glow::Texture(GL_TEXTURE_2D);
     m_sceneColor->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -49,17 +53,21 @@ void Renderer::initialize()
     m_sceneFbo = new glow::FrameBufferObject();
     m_sceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
     m_sceneFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_sceneDepth);
-    m_sceneFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_sceneFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_sceneFbo->unbind();
 
     m_particleWaterStep = std::make_shared<ParticleWaterStep>();
+    m_shadowMappingStep = std::make_shared<ShadowMappingStep>(this->m_world);
+
+    m_steps.push_back(m_particleWaterStep.get());
+    m_steps.push_back(m_shadowMappingStep.get());
 
     m_handDepth = new glow::RenderBufferObject();
     // draw the hand into the scene color texture, but do not change the scene depth
     m_handFbo = new glow::FrameBufferObject();
     m_handFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
     m_handFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_handDepth);
-    m_handFbo->setDrawBuffer({ GL_COLOR_ATTACHMENT0 });
+    m_handFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_handFbo->unbind();
 
     m_quadProgram = new glow::Program();
@@ -71,6 +79,8 @@ void Renderer::initialize()
     m_quadProgram->setUniform("sceneDepth", 1);
     m_quadProgram->setUniform("waterNormals", 2);
     m_quadProgram->setUniform("waterDepth", 3);
+    m_quadProgram->setUniform("shadowMap", 4);
+    m_quadProgram->setUniform("lightMap", 5);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
 }
@@ -82,6 +92,7 @@ void Renderer::operator()(const glowutils::Camera & camera)
     sceneStep(camera);
     handStep(camera);
     m_particleWaterStep->draw(camera);
+    m_shadowMappingStep->draw(camera);
     flushStep();
 }
 
@@ -124,6 +135,8 @@ void Renderer::flushStep()
     m_sceneDepth->bind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->bind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->bind(GL_TEXTURE3);
+    m_shadowMappingStep->result()->bind(GL_TEXTURE4);
+    m_shadowMappingStep->lightMap()->bind(GL_TEXTURE5);
 
     m_quad->draw();
 
@@ -131,6 +144,8 @@ void Renderer::flushStep()
     m_sceneDepth->unbind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
+    m_shadowMappingStep->result()->unbind(GL_TEXTURE4);
+    m_shadowMappingStep->lightMap()->unbind(GL_TEXTURE5);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const
@@ -148,6 +163,8 @@ void Renderer::resize(int width, int height)
     m_handDepth->storage(GL_DEPTH_COMPONENT32F, width, height);
     assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    assert(m_particleWaterStep);
-    m_particleWaterStep->resize(width, height);
+    for (auto step : m_steps) {
+        assert(step);
+        step->resize(width, height);
+    }
 }

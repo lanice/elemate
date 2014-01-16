@@ -39,9 +39,12 @@ public:
     void toggleBackgroundSound(int id);
 
     void updateListener();
+    void reloadLua();
 
     void setNavigation(Navigation & navigation);
 
+    const glm::vec3 & sunlightInvDirection() const;
+    const glm::mat4 & sunlighting() const;
     void setUpLighting(glow::Program & program) const;
 
     glow::Program * programByName(const std::string & name);
@@ -60,6 +63,9 @@ protected:
     std::vector<int> m_sounds;
 
     void initShader();
+
+    glm::vec3 m_sunlightInvDirection;
+    glm::mat4 m_sunlighting;
 
 public:
     World(World&) = delete;

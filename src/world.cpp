@@ -29,7 +29,9 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
 , m_programsByName()
 , m_sounds()
-{    
+, m_sunlightInvDirection(glm::vec3(0.0, 6.5, 7.5))
+, m_sunlighting()
+{
     // Create two non-3D channels (paino and rain)
     //initialise as paused
     m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
@@ -47,10 +49,15 @@ World::World(PhysicsWrapper & physicsWrapper)
     terrainGen.setMaxHeight(20.0f);
     terrainGen.setMaxBasicHeightVariance(0.05f);
 
-    terrain = std::shared_ptr<Terrain>(terrainGen.generate());
+    terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
 
     for (const auto actor : terrain->pxActorMap())
         m_physicsWrapper.addActor(*actor.second);
+
+    m_sunlighting[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
+    m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
+    m_sunlighting[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
+    m_sunlighting[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 }
 
 World::~World()
@@ -108,6 +115,11 @@ void World::updateListener(){
     m_soundManager->update();
 }
 
+void World::reloadLua()
+{
+    m_physicsWrapper.reloadLua();
+}
+
 void World::setNavigation(Navigation & navigation)
 {
     m_navigation = &navigation;
@@ -117,17 +129,20 @@ void World::initShader()
 {
 }
 
+const glm::vec3 & World::sunlightInvDirection() const
+{
+    return m_sunlightInvDirection;
+}
+
+const glm::mat4 & World::sunlighting() const
+{
+    return m_sunlighting;
+}
+
 void World::setUpLighting(glow::Program & program) const
 {
     static glm::vec4 lightambientglobal(0, 0, 0, 0);
-    static glm::vec3 lightdir1(0.0, 6.5, 7.5);
     static glm::vec3 lightdir2(0.0, -8.0, 7.5);
-
-    static glm::mat4 lightMat1;
-    lightMat1[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
-    lightMat1[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
-    lightMat1[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
-    lightMat1[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 
     static glm::mat4 lightMat2;
     lightMat2[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
@@ -136,9 +151,9 @@ void World::setUpLighting(glow::Program & program) const
     lightMat2[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 
     program.setUniform("lightambientglobal", lightambientglobal);
-    program.setUniform("lightdir1", lightdir1);
+    program.setUniform("sunlightInvDir", sunlightInvDirection());
+    program.setUniform("sunlighting", sunlighting());
     program.setUniform("lightdir2", lightdir2);
-    program.setUniform("light1", lightMat1);
     program.setUniform("light2", lightMat2);
 }
 

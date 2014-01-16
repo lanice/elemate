@@ -30,6 +30,9 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
         glow::info("Updating shader...");
         glowutils::FileRegistry::instance().reloadAll();
         glow::info("Updating shader done.");
+        glow::info("Reloading lua scripts...");
+        m_game.reloadLua();
+        glow::info("Reloading lua scripts done.");
     }
 
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);
