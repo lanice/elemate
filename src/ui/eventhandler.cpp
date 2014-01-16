@@ -21,6 +21,11 @@ EventHandler::~EventHandler()
 }
 
 
+void EventHandler::handleMouseButtonEvent(int button, int action, int mods)
+{
+    m_game.manipulator()->handleMouseButtonEvent(button, action, mods);
+}
+    
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
