@@ -63,6 +63,11 @@ void LuaWrapper::callFunc(const int & numArgs, const int & numRet)
     luaError();
 }
 
+void LuaWrapper::popStack(lua_State * state, const int index)
+{
+    lua_pop(state, index);
+}
+
 void LuaWrapper::push()
 {
 }

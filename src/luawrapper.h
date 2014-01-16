@@ -4,8 +4,6 @@
 #include <vector>
 #include <tuple>
 
-#include "lua.hpp"
-
 
 struct lua_State;
 
@@ -41,6 +39,8 @@ protected:
 
     void pushFunc(const std::string & func);
     void callFunc(const int & numArgs, const int & numRet);
+
+    static void popStack(lua_State * state, const int index);
 
     template<typename T, typename... Ts>
     void push(const T value, const Ts... values)
@@ -91,7 +91,7 @@ protected:
         static type apply(LuaWrapper &l)
         {
             auto ret = worker<Ts...>(l, 1);
-            lua_pop(l.m_state, sizeof...(Ts));
+            LuaWrapper::popStack(l.m_state, sizeof...(Ts));
             return ret;
         }
     };
@@ -114,7 +114,7 @@ protected:
             T ret  = l.fetch<T>(-1);
 
             // Remove it from the stack
-            lua_pop(l.m_state, 1);
+            LuaWrapper::popStack(l.m_state, 1);
             return ret;
         }
     };
