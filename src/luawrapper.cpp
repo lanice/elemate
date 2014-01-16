@@ -53,7 +53,6 @@ void LuaWrapper::reloadScripts()
 
 void LuaWrapper::pushFunc(const std::string & func)
 {
-    lua_pushstring(m_lua, func.c_str());
     lua_getglobal(m_lua, func.c_str());
 }
 
