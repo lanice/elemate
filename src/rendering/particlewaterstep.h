@@ -27,9 +27,10 @@ protected:
     glow::ref_ptr<glow::Texture> m_postTexA;
     glow::ref_ptr<glow::Texture> m_postTexB;
 
-    // references to the two result textures
 
-    glow::Texture * m_normalsResultTex;
+    glow::ref_ptr<glow::Texture> m_normalsTex;
+
+    // references to the result depth image
     glow::Texture * m_depthResultTex;
 
     class PostProcess {

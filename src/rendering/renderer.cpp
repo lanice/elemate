@@ -87,11 +87,12 @@ void Renderer::operator()(const glowutils::Camera & camera)
 
 void Renderer::sceneStep(const glowutils::Camera & camera)
 {
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
     m_sceneFbo->bind();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
 
     m_world.terrain->draw(camera);
 
@@ -130,9 +131,6 @@ void Renderer::flushStep()
     m_sceneDepth->unbind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const

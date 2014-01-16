@@ -39,7 +39,7 @@ ParticleWaterStep::ParticleWaterStep()
     m_postTexB->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_postTexB->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // postprocessing: 2x blurring + normals
+    // postprocessing: 2x depth blurring
 
     glow::Program * blurHorizontalProgram = new glow::Program();
     blurHorizontalProgram->attach(
@@ -57,13 +57,19 @@ ParticleWaterStep::ParticleWaterStep()
     m_depthResultTex = m_postTexB;
 
 
+    // postprocessing: calculate normals from depth image
+    
+    m_normalsTex = new glow::Texture(GL_TEXTURE_2D);
+    m_normalsTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_normalsTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_normalsTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_normalsTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     glow::Program * normalProgram = new glow::Program();
     normalProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_normals.frag"));
-    addProcess(*m_postTexB, m_postTexA, *normalProgram);
-
-    m_normalsResultTex = m_postTexA;
+    addProcess(*m_postTexB, m_normalsTex, *normalProgram);
 }
 
 ParticleWaterStep::PostProcess::PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
@@ -104,16 +110,18 @@ void ParticleWaterStep::addProcess(glow::Texture & source, glow::Texture * targe
 void ParticleWaterStep::draw(const glowutils::Camera & camera)
 {
     // render depth values to texture
-    m_depthFbo->bind();
-    glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
+
+    m_depthFbo->bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
     ParticleDrawable::drawParticles(camera);
     m_depthFbo->unbind();
 
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
+    // apply post processing on depth image, calculate normals
     for (PostProcess & process : m_processes) {
         process.draw();
     }
@@ -127,6 +135,8 @@ void ParticleWaterStep::resize(int width, int height)
 
     m_postTexA->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
     m_postTexB->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
+
+    m_normalsTex->image2D(0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 
     for (PostProcess & process : m_processes) {
         process.m_fbo->printStatus(true);
@@ -144,6 +154,6 @@ glow::Texture * ParticleWaterStep::depthTex()
 
 glow::Texture * ParticleWaterStep::normalsTex()
 {
-    assert(m_normalsResultTex);
-    return m_normalsResultTex;
+    assert(m_normalsTex);
+    return m_normalsTex;
 }
