@@ -9,7 +9,7 @@
 #include "world.h"
 #include "navigation.h"
 #include "hand.h"
-#include "renderer.h"
+#include "rendering/renderer.h"
 #include "terrain/terraininteractor.h"
 
 

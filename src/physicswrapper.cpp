@@ -10,6 +10,7 @@
 
 #include "elements.h"
 #include "particleemitter.h"
+#include "luawrapper.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
@@ -20,8 +21,8 @@ PhysicsWrapper::PhysicsWrapper()
 , m_physics(nullptr)
 , m_scene(nullptr)
 , m_emitters()
-, m_activeEmitter("")
-        //m_profile_zone_manager(nullptr),
+, m_lua(new LuaWrapper())
+, m_activeEmitter("")        //m_profile_zone_manager(nullptr),
 {
     initializePhysics();
     initializeScene();
@@ -42,6 +43,8 @@ PhysicsWrapper::~PhysicsWrapper()
     //Please don't forget if you activate this feature.
     //m_profile_zone_manager->release();
     m_foundation->release();
+
+    delete m_lua;
 }
 
 bool PhysicsWrapper::step(double delta){
@@ -187,4 +190,8 @@ void PhysicsWrapper::stopEmitting()
 {
     if (m_activeEmitter != "")
         m_emitters[m_activeEmitter]->stopEmit();
+}
+void PhysicsWrapper::reloadLua()
+{
+    m_lua->reloadScripts();
 }

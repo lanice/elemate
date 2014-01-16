@@ -123,11 +123,11 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
 
     PxHeightFieldGeometry newGeometry(hf, PxMeshGeometryFlags(), geometry.heightScale, geometry.rowScale, geometry.columnScale);
     assert(PxGetPhysics().getNbScenes() == 1);
-    PxScene * pxScene = static_cast<PxScene*>(malloc(sizeof(pxScene)));
-    PxGetPhysics().getScenes(&pxScene, 1);
-    pxScene->lockWrite();
+    PxScene * pxScenePtrs[1];
+    PxGetPhysics().getScenes(pxScenePtrs, 1);
+    pxScenePtrs[0]->lockWrite();
     pxShape.setGeometry(newGeometry);
-    pxScene->unlockWrite();
+    pxScenePtrs[0]->unlockWrite();
 }
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ, TerrainLevel level)

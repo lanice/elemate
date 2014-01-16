@@ -12,7 +12,7 @@
 #include "world.h"
 #include "particledrawable.h"
 #include "terrain/terrain.h"
-#include "renderer.h"
+#include "rendering/renderer.h"
 
 
 Game::Game(GLFWwindow & window) :
@@ -98,6 +98,11 @@ void Game::loop(double delta)
     }
 
     m_world->stopSimulation();
+}
+
+void Game::reloadLua()
+{
+    m_world->reloadLua();
 }
 
 Navigation * Game::navigation()

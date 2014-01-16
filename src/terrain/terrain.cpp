@@ -7,14 +7,17 @@
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
+#include <glowutils/Camera.h>
+#include <glowutils/File.h>
+
+#include <glm/gtc/random.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "terraintile.h"
 
-Terrain::Terrain(const TerrainSettings & settings)
-: settings(settings)
-, m_vao(nullptr)
-, m_indexBuffer(nullptr)
-, m_vbo(nullptr)
+Terrain::Terrain(const World & world, const TerrainSettings & settings)
+: Drawable(world)
+, settings(settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
 {
@@ -28,34 +31,25 @@ Terrain::~Terrain()
     delete m_indices;
 }
 
-const GLuint restartIndex = std::numeric_limits<GLuint>::max();
+const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
 
-void Terrain::draw(const glowutils::Camera & camera)
+void Terrain::drawImplementation(const glowutils::Camera & camera)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
-    if (!m_vao)
-        initialize();
-
-    assert(m_vao);
     assert(m_indexBuffer);
-    assert(m_vbo);
-
-    m_vao->bind();
 
     glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(s_restartIndex);
 
     for (auto & pair : m_tiles) {
         pair.second->bind(camera);
-        glPrimitiveRestartIndex(restartIndex);
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
-        //m_vao->drawArrays(GL_TRIANGLE_STRIP_ADJACENCY, 0, m_vertices->size());
-
         pair.second->unbind();
     }
 
-    m_vao->unbind();
+    glDisable(GL_PRIMITIVE_RESTART);
 }
 
 void Terrain::initialize()
@@ -119,7 +113,7 @@ void Terrain::generateIndices()
             m_indices->push_back(origin);
             m_indices->push_back(origin + settings.columns);
         }
-        m_indices->push_back(restartIndex);
+        m_indices->push_back(s_restartIndex);
     }
 
     assert(m_indices->size() == numIndices);
@@ -135,31 +129,6 @@ void Terrain::registerTile(const TileID & tileID, TerrainTile & tile)
 const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
 {
     return m_pxActors;
-}
-
-void Terrain::setUpLighting(glow::Program & program) const
-{
-    static glm::vec4 lightambientglobal(0, 0, 0, 0);
-    static glm::vec3 lightdir1(0.0, 6.5, 7.5);
-    static glm::vec3 lightdir2(0.0, -8.0, 7.5);
-
-    static glm::mat4 lightMat1;
-    lightMat1[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
-    lightMat1[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
-    lightMat1[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
-    lightMat1[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
-
-    static glm::mat4 lightMat2;
-    lightMat2[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
-    lightMat2[1] = glm::vec4(0.1, 0.1, 0.1, 1.0);        //diffuse
-    lightMat2[2] = glm::vec4(0.1, 0.1, 0.1, 1.0);        //specular
-    lightMat2[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
-
-    program.setUniform("lightambientglobal", lightambientglobal);
-    program.setUniform("lightdir1", lightdir1);
-    program.setUniform("lightdir2", lightdir2);
-    program.setUniform("light1", lightMat1);
-    program.setUniform("light2", lightMat2);
 }
 
 float Terrain::heightAt(float x, float z) const

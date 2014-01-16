@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game.h"
-#include "eventhandler.h"
+#include "ui/eventhandler.h"
 
 static GLint MajorVersionRequire = 3;
 static GLint MinorVersionRequire = 3;
@@ -65,7 +65,6 @@ void setCallbacks(GLFWwindow * window)
 
 int main()
 {
-    
     if (!glfwInit()) {
         glow::fatal("Could not initialize glfw.");
         return -1;
