@@ -47,7 +47,6 @@ ParticleWaterStep::ParticleWaterStep()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_h.frag"));
     addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
 
-
     glow::Program * blurVerticalProgram = new glow::Program();
     blurVerticalProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
@@ -55,6 +54,23 @@ ParticleWaterStep::ParticleWaterStep()
     addProcess(*m_postTexA, m_postTexB, *blurVerticalProgram);
 
     m_depthResultTex = m_postTexB;
+
+    glow::FloatArray binomCoeff;
+    glow::IntArray binomOffset;
+
+    for (unsigned int nHalf = 0; nHalf < 20; ++nHalf){
+        binomOffset.push_back(binomCoeff.size());
+        unsigned long int sum = pow(2, 2 * nHalf);
+        for (int k = nHalf; k >= 0; --k){
+            double num = 1;
+            for (unsigned int i = 0; i < 2*nHalf-k; i++)
+                num = num*(2*nHalf-i)/(i+1);
+        binomCoeff.push_back(float(num)/float(sum));
+        }
+    }
+
+    blurVerticalProgram->setUniform("binomCoeff", binomCoeff);
+    blurHorizontalProgram->setUniform("binomCoeff", binomCoeff);
 
 
     // postprocessing: calculate normals from depth image

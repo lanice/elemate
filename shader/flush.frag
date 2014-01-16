@@ -11,6 +11,8 @@ uniform sampler2D lightMap;
 
 layout(location = 0)out vec4 fragColor;
 
+vec4 waterColor();
+
 void main()
 {
     // fragColor = vec4(texture(shadowMap, v_uv).xxx, 1.0);
@@ -23,13 +25,20 @@ void main()
 	fragColor = 
     (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
     mix(
-		mix(
+        waterColor(),
+		texture(sceneColor, v_uv),
+		step(sceneZ,waterZ)
+	);
+}
+
+vec4 waterColor(){
+		return mix(
             mix(
                 vec4(vec3(0.0),0.8),
                 vec4(0.2, 0.3, 0.8, 0.8),
                 dot(
-                    texture(waterNormals, v_uv).rgb,
-                    normalize(vec3(0,1,0.5))
+                    texture(waterNormals, v_uv).xyz,
+                    normalize(vec3(1,1,0))
                 )
             ),
             vec4(0.5,0.7,0.9,0.8),
@@ -38,11 +47,8 @@ void main()
                 0.98,
                 dot(
                     texture(waterNormals, v_uv).rgb,
-                    normalize(vec3(0,1,0.5))
+                    normalize(vec3(1,1,0))
                 )
             )
-        ),
-		texture(sceneColor, v_uv),
-		step(sceneZ,waterZ)
-	);
+        );
 }

@@ -25,15 +25,11 @@ void main(){
     ivec2 uv = ivec2(v_uv*vec2(viewport));
 
     float originDepth = texelFetch(source, uv, 0).r;
-    if (originDepth == 1.0){
-        depthValue = 1.0;
-    }else{
-        int coeffSize = 10;
-        float sum = originDepth*coeff[0];
-        for(int i=1; i<=coeffSize; ++i){
-                sum += texelFetch(source, uv + ivec2(0, i), 0).r*coeff[i];
-                sum += texelFetch(source, uv - ivec2(0, i), 0).r*coeff[i];
-        }
-        depthValue = sum;
+    int coeffSize = 10;
+    float sum = originDepth*coeff[0];
+    for(int i=1; i<=coeffSize; ++i){
+            sum += texelFetch(source, uv + ivec2(0, i), 0).r*coeff[i];
+            sum += texelFetch(source, uv - ivec2(0, i), 0).r*coeff[i];
     }
+    depthValue = mix(sum,1.0,step(1.0,originDepth));
 }
