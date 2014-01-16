@@ -42,7 +42,6 @@ protected:
 
     template<typename T> T fetch(const int index) const;
 
-
     template <size_t, typename... Ts>
     struct _pop
     {
@@ -73,7 +72,11 @@ protected:
     struct _pop<0, Ts...>
     {
         typedef void type;
-        static type apply(LuaWrapper /*&instance*/) {}
+        static type apply(LuaWrapper &instance)
+        {
+            // necessary because just commenting out '&instance' (to prevent unused parameter warning) would cause the lua state to crash when calling a function after calling a function with no return value... o.0
+            LuaWrapper::popStack(instance.m_state, 0);
+        }
     };
 
     template <typename T>
