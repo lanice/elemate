@@ -61,7 +61,7 @@ protected:
     void fetchResult(bool & result);
 
 
-    lua_State * m_lua;
+    lua_State * m_state;
 
     std::vector<std::string> m_scripts;
     int m_err;
