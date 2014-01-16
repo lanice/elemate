@@ -56,6 +56,8 @@ void ParticleDrawable::draw(const glowutils::Camera & camera)
     glm::vec3 lookAtUp = glm::normalize(glm::cross(lookAtRight, viewDir));
     m_program->setUniform("lookAtUp", lookAtUp);
     m_program->setUniform("lookAtRight", lookAtRight);
+    m_program->setUniform("znear", camera.zNear());
+    m_program->setUniform("zfar", camera.zFar());
 
     m_vao->bind();
 
@@ -89,6 +91,7 @@ void ParticleDrawable::initialize()
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert"),
         glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
 }
 

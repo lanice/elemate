@@ -23,7 +23,7 @@ ParticleWaterStep::ParticleWaterStep()
 
     m_depthFbo = new glow::FrameBufferObject();
     m_depthFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_depthTex);
-    m_depthFbo->setDrawBuffer(GL_NONE);
+    m_depthFbo->setDrawBuffers({ GL_NONE });
     m_depthFbo->unbind();
 
 
@@ -59,8 +59,8 @@ ParticleWaterStep::ParticleWaterStep()
     glow::IntArray binomOffset;
 
     for (unsigned int nHalf = 0; nHalf < 20; ++nHalf){
-        binomOffset.push_back(binomCoeff.size());
-        unsigned long int sum = pow(2, 2 * nHalf);
+        binomOffset.push_back(static_cast<int>(binomCoeff.size()));
+        unsigned long int sum = static_cast<unsigned long int>(pow(2, 2 * nHalf));
         for (int k = nHalf; k >= 0; --k){
             double num = 1;
             for (unsigned int i = 0; i < 2*nHalf-k; i++)

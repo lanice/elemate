@@ -152,7 +152,7 @@ set(SHADER
     shader/shadows/shadowmapping_terrain.vert
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag
-    shader/shadows/depth_util.frag
+    shader/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

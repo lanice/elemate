@@ -62,17 +62,24 @@ void Renderer::initialize()
     m_steps.push_back(m_particleWaterStep.get());
     m_steps.push_back(m_shadowMappingStep.get());
 
-    m_handDepth = new glow::RenderBufferObject();
+    m_sceneWithHandDepth = new glow::Texture(GL_TEXTURE_2D);
+    m_sceneWithHandDepth->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_sceneWithHandDepth->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_sceneWithHandDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_sceneWithHandDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_sceneWithHandDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
     // draw the hand into the scene color texture, but do not change the scene depth
     m_handFbo = new glow::FrameBufferObject();
     m_handFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
-    m_handFbo->attachRenderBuffer(GL_DEPTH_ATTACHMENT, m_handDepth);
+    m_handFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_sceneWithHandDepth);
     m_handFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
     m_handFbo->unbind();
 
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag"));
 
     m_quadProgram->setUniform("sceneColor", 0);
@@ -93,7 +100,7 @@ void Renderer::operator()(const glowutils::Camera & camera)
     handStep(camera);
     m_particleWaterStep->draw(camera);
     m_shadowMappingStep->draw(camera);
-    flushStep();
+    flushStep(camera);
 }
 
 void Renderer::sceneStep(const glowutils::Camera & camera)
@@ -126,22 +133,25 @@ void Renderer::handStep(const glowutils::Camera & camera)
     m_handFbo->unbind();
 }
 
-void Renderer::flushStep()
+void Renderer::flushStep(const glowutils::Camera & camera)
 {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
     m_sceneColor->bind(GL_TEXTURE0);
-    m_sceneDepth->bind(GL_TEXTURE1);
+    m_sceneWithHandDepth->bind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->bind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->bind(GL_TEXTURE3);
     m_shadowMappingStep->result()->bind(GL_TEXTURE4);
     m_shadowMappingStep->lightMap()->bind(GL_TEXTURE5);
 
+    m_quad->program()->setUniform("znear", camera.zNear());
+    m_quad->program()->setUniform("zfar", camera.zFar());
+
     m_quad->draw();
 
     m_sceneColor->unbind(GL_TEXTURE0);
-    m_sceneDepth->unbind(GL_TEXTURE1);
+    m_sceneWithHandDepth->unbind(GL_TEXTURE1);
     m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
     m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
     m_shadowMappingStep->result()->unbind(GL_TEXTURE4);
@@ -160,7 +170,7 @@ void Renderer::resize(int width, int height)
     m_sceneFbo->printStatus(true);
     assert(m_sceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_handDepth->storage(GL_DEPTH_COMPONENT32F, width, height);
+    m_sceneWithHandDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     for (auto step : m_steps) {

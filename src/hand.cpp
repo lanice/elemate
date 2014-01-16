@@ -177,7 +177,7 @@ void Hand::initLightMappingProgram()
     m_lightMapProgram = new glow::Program();
     m_lightMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 
     Drawable::initLightMappingProgram();
@@ -188,7 +188,7 @@ void Hand::initShadowMappingProgram()
     m_shadowMappingProgram = new glow::Program();
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     Drawable::initShadowMappingProgram();
