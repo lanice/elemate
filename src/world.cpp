@@ -19,7 +19,6 @@
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
 
-
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(new Hand(*this))
 , terrain(nullptr)
@@ -89,10 +88,16 @@ void World::update()
     m_physicsWrapper.step(delta);
 }
 
-void World::makeStandardBall(const glm::vec3& position)
+void World::makeElements(const glm::vec3& position)
 {
-    m_physicsWrapper.makeParticleEmitter(position);
+    m_physicsWrapper.clearEmitters();
+    m_currentElements = Elements::availableElements();
+    for (const auto& element_name: m_currentElements)
+        m_physicsWrapper.makeParticleEmitter(element_name, position);
+    selectNextEmitter();
 }
+
+
 
 void World::createFountainSound(const glm::vec3& position)
 {
@@ -166,4 +171,30 @@ glow::Program * World::programByName(const std::string & name)
         glow::critical("trying to use unloaded shader %;", name);
         return nullptr;
     }
+}
+
+void World::updateEmitterPosition(const glm::vec3& position)
+{
+    m_physicsWrapper.updateEmitterPosition(position);
+    //FMOD_VECTOR pos;
+    //pos.x = position.x; 
+    //pos.y = position.y;
+    //pos.z = position.z;
+    //m_soundManager->setSoundPos(0,pos); // Not good .... just for testing reasons
+}
+
+void World::selectNextEmitter()
+{
+    m_currentElements.splice(m_currentElements.end(), m_currentElements, m_currentElements.begin());
+    m_physicsWrapper.selectEmitter(m_currentElements.front());
+}
+
+void World::startEmitting()
+{
+    m_physicsWrapper.startEmitting();
+}
+
+void World::stopEmitting()
+{
+    m_physicsWrapper.stopEmitting();
 }

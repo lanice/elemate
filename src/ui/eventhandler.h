@@ -13,6 +13,7 @@ public:
     EventHandler(GLFWwindow & window, Game & game);
     virtual ~EventHandler();
 
+    void handleMouseButtonEvent(int button, int action, int mods);
     void handleKeyEvent(int key, int scancode, int action, int mods);
     void handleScrollEvent(double xoffset, double yoffset);
     void handeResizeEvent(int width, int height);
