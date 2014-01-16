@@ -81,7 +81,7 @@ void Manipulator::updateHandPosition()
     double xpos, ypos;
     glfwGetCursorPos(&m_window, &xpos, &ypos);
 
-    glm::vec3 handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos))) + glm::vec3(0.0f, 3.5f, 0.0f);
+    glm::vec3 handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos)));
 
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
