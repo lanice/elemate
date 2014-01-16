@@ -22,7 +22,7 @@ PhysicsWrapper::PhysicsWrapper()
 , m_scene(nullptr)
 , m_emitters()
 , m_lua(new LuaWrapper())
-        //m_profile_zone_manager(nullptr),
+, m_activeEmitter("")        //m_profile_zone_manager(nullptr),
 {
     initializePhysics();
     initializeScene();
@@ -32,7 +32,8 @@ PhysicsWrapper::PhysicsWrapper()
 PhysicsWrapper::~PhysicsWrapper()
 {
     Elements::clear();
-    m_emitters.clear();
+
+    clearEmitters();
 
     m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
     m_scene->release();
@@ -63,15 +64,20 @@ void PhysicsWrapper::updateAllObjects(double delta)
     m_scene->fetchResults(true);
 
     for (auto& emitter : m_emitters){
-        emitter->update(delta);
+        emitter.second->update(delta);
     }
 }
 
-void PhysicsWrapper::makeParticleEmitter(const glm::vec3& position){
-    m_emitters.push_back(std::make_shared<ParticleEmitter>(
+void PhysicsWrapper::makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position){
+    m_emitters.emplace(emitter_name, new ParticleEmitter(
         physx::PxVec3(position.x, position.y, position.z)));
-    m_emitters.back()->initializeParticleSystem();
-    m_emitters.back()->startEmit();
+    m_emitters[emitter_name]->initializeParticleSystem(Elements::emitterDescription(emitter_name));
+}
+
+void PhysicsWrapper::clearEmitters(){
+    for (auto emitter : m_emitters)
+        delete emitter.second;
+    m_emitters.clear();
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -157,6 +163,34 @@ void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
     scene()->addActor(actor);
 }
 
+void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
+{
+    if (m_activeEmitter != "")
+        m_emitters[m_activeEmitter]->setPosition(physx::PxVec3(position.x, position.y, position.z));
+}
+
+void PhysicsWrapper::selectEmitter(const std::string& emitter_name)
+{
+    physx::PxVec3 current_hand_position = physx::PxVec3(0.0F, 0.0F, 0.0F);
+    if (m_activeEmitter != ""){
+        current_hand_position = m_emitters[m_activeEmitter]->position();
+        stopEmitting();
+    }
+    m_activeEmitter = emitter_name;
+    m_emitters[m_activeEmitter]->setPosition(current_hand_position);
+}
+
+void PhysicsWrapper::startEmitting()
+{
+    if (m_activeEmitter != "")
+        m_emitters[m_activeEmitter]->startEmit();
+}
+
+void PhysicsWrapper::stopEmitting()
+{
+    if (m_activeEmitter != "")
+        m_emitters[m_activeEmitter]->stopEmit();
+}
 void PhysicsWrapper::reloadLua()
 {
     m_lua->reloadScripts();
