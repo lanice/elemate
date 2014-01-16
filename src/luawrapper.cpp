@@ -63,34 +63,34 @@ void LuaWrapper::callFunction(const int & argCount, const int & resultCount)
     luaError();
 }
 
-void LuaWrapper::pushArgument(const std::string & arg)
+void LuaWrapper::push(const std::string & value)
 {
-    lua_pushstring(m_state, arg.c_str());
+    lua_pushstring(m_state, value.c_str());
 }
 
-void LuaWrapper::pushArgument(const char * arg)
+void LuaWrapper::push(const char * value)
 {
-    lua_pushstring(m_state, arg);
+    lua_pushstring(m_state, value);
 }
 
-void LuaWrapper::pushArgument(const int & arg)
+void LuaWrapper::push(const int value)
 {
-    lua_pushinteger(m_state, arg);
+    lua_pushinteger(m_state, value);
 }
 
-void LuaWrapper::pushArgument(const double & arg)
+void LuaWrapper::push(const double value)
 {
-    lua_pushnumber(m_state, arg);
+    lua_pushnumber(m_state, value);
 }
 
-void LuaWrapper::pushArgument(const unsigned long & arg)
+void LuaWrapper::push(const unsigned long value)
 {
-    lua_pushunsigned(m_state, arg);
+    lua_pushunsigned(m_state, value);
 }
 
-void LuaWrapper::pushArgument(const bool & arg)
+void LuaWrapper::push(const bool value)
 {
-    lua_pushboolean(m_state, arg);
+    lua_pushboolean(m_state, value);
 }
 
 void LuaWrapper::fetchResult(std::string & result)

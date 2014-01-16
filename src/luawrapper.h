@@ -43,16 +43,16 @@ protected:
     template<typename T, typename... TArgs>
     void pushArguments(const T & head, const TArgs & ... tail)
     {
-        pushArgument(head);
+        push(head);
         pushArguments(tail...);
     };
 
-    void pushArgument(const char * arg);
-    void pushArgument(const std::string & arg);
-    void pushArgument(const int & arg);
-    void pushArgument(const double & arg);
-    void pushArgument(const unsigned long & arg);
-    void pushArgument(const bool & arg);
+    void push(const char * value);
+    void push(const std::string & value);
+    void push(const int value);
+    void push(const double value);
+    void push(const unsigned long value);
+    void push(const bool value);
 
     void fetchResult(std::string & result);
     void fetchResult(int & result);
