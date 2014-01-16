@@ -16,6 +16,7 @@ LuaWrapper::LuaWrapper()
 
 LuaWrapper::~LuaWrapper()
 {
+    if (m_lua == nullptr) return;
     lua_close(m_lua);
 }
 
