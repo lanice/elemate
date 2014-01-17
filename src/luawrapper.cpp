@@ -63,9 +63,9 @@ void LuaWrapper::callFunc(const int numArgs, const int numRet)
     luaError();
 }
 
-void LuaWrapper::popStack(lua_State * state, const int index)
+void LuaWrapper::popStack(const int index)
 {
-    lua_pop(state, index);
+    lua_pop(m_state, index);
 }
 
 void LuaWrapper::push() const

@@ -23,7 +23,7 @@ protected:
     void pushFunc(const std::string & func) const;
     void callFunc(const int numArgs, const int numRet);
 
-    static void popStack(lua_State * state, const int index);
+    void popStack(const int index);
 
     template<typename T, typename... Ts>
     void push(const T value, const Ts... values) const
@@ -63,7 +63,7 @@ protected:
         static type apply(LuaWrapper &instance)
         {
             auto ret = worker<Ts...>(instance, 1);
-            LuaWrapper::popStack(instance.m_state, sizeof...(Ts));
+            instance.popStack(sizeof...(Ts));
             return ret;
         }
     };
@@ -75,7 +75,7 @@ protected:
         static type apply(LuaWrapper &instance)
         {
             // necessary because just commenting out '&instance' (to prevent unused parameter warning) would cause the lua state to crash when calling a function after calling a function with no return value... o.0
-            LuaWrapper::popStack(instance.m_state, 0);
+            instance.popStack(0);
         }
     };
 
@@ -88,7 +88,7 @@ protected:
             // fetch the top element (negative indices count from the top)
             T ret  = instance.fetch<T>(-1);
 
-            LuaWrapper::popStack(instance.m_state, 1);
+            instance.popStack(1);
             return ret;
         }
     };
