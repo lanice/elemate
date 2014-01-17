@@ -83,11 +83,11 @@ void Manipulator::updateHandPosition()
 
     glm::vec3 handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos)));
 
+    m_hand.setPosition(handPosition.x, handPosition.z);
+    m_hand.rotate(m_navigation.rotationAngle());
+
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
-
-    m_hand.setPosition(handPosition);
-    m_hand.rotate(m_navigation.rotationAngle());
 
     m_world.updateEmitterPosition(handPosition);
 }
