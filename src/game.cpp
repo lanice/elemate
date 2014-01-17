@@ -69,7 +69,7 @@ void Game::loop(double delta)
         {
             nextTime += delta;
 
-            m_world->update();
+            m_world->updatePhysics();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
@@ -81,7 +81,7 @@ void Game::loop(double delta)
                 m_navigation.apply();
 
                 m_manipulator.updateHandPosition();
-                m_world->updateListener();
+                m_world->updateVisuals();
 
                 m_renderer(m_camera);
 
