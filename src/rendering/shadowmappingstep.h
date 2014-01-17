@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <glow/Array.h>
+
 #include <glm/glm.hpp>
 
 #include "renderingstep.h"
@@ -20,13 +22,9 @@ public:
     glow::Texture * lightMap();
     glow::Texture * result();
 
-    struct Definitions {
-        std::vector<glm::vec2> shadowSamples;
-        glow::ref_ptr<glowutils::Camera> lightSource;
-        float lightSize;
-        float searchWidth;
-        float zOffset;
-    };
+    static void setUniforms(glow::Program & program);
+
+    static const glm::mat4 s_biasMatrix;
 
 protected:
     const World & m_world;
@@ -41,6 +39,10 @@ protected:
     glow::ref_ptr<glow::FrameBufferObject> m_shadowFbo;
     glow::ref_ptr<glow::RenderBufferObject> m_shadowDepthBuffer;
     glow::ref_ptr<glow::Texture> m_shadowTex;
+
+    static const glow::Vec2Array s_depthSamples;
+    static const glow::Vec2Array s_earlyBailSamples;
+    static const GLuint s_lightmapSlot;
 
 public:
     void operator=(ShadowMappingStep&) = delete;
