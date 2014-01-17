@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <map>
+#include <memory>
+
+#include "luawrapperfunction.h"
 
 
 struct lua_State;
@@ -72,11 +76,7 @@ protected:
     struct _pop<0, Ts...>
     {
         typedef void type;
-        static type apply(LuaWrapper &instance)
-        {
-            // necessary because just commenting out '&instance' (to prevent unused parameter warning) would cause the lua state to crash when calling a function after calling a function with no return value... o.0
-            instance.popStack(0);
-        }
+        static type apply(LuaWrapper & /*instance*/){}
     };
 
     template <typename T>
@@ -115,12 +115,44 @@ public:
         return pop<Ret...>();
     }
 
+    template <typename Return, typename... Args>
+    void Register(const std::string & name, std::function<Return(Args...)> function)
+    {
+        auto tmp = std::unique_ptr<BaseFunction>(new Function<1, Return, Args...>{m_state, name, function});
+        m_functions.insert(std::make_pair(name, std::move(tmp)));
+    }
+
+    template <typename Return, typename... Args>
+    void Register(const std::string & name, Return (*function)(Args...))
+    {
+        auto tmp = std::unique_ptr<BaseFunction>(new Function<1, Return, Args...>{m_state, name, function});
+        m_functions.insert(std::make_pair(name, std::move(tmp)));
+    }
+
+    template <typename... Return, typename... Args>
+    void Register(const std::string & name, std::function<std::tuple<Return...>(Args...)> function)
+    {
+        constexpr int num_return = sizeof...(Return);
+        auto tmp = std::unique_ptr<BaseFunction>(new Function<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
+        m_functions.insert(std::make_pair(name, std::move(tmp)));
+    }
+
+    template <typename... Return, typename... Args>
+    void Register(const std::string & name, std::tuple<Return...> (*function)(Args...))
+    {
+        constexpr int num_return = sizeof...(Return);
+        auto tmp = std::unique_ptr<BaseFunction>(new Function<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
+        m_functions.insert(std::make_pair(name, std::move(tmp)));
+    }
+
 
 protected:
     lua_State * m_state;
 
     std::vector<std::string> m_scripts;
     int m_err;
+
+    std::map<std::string, std::unique_ptr<BaseFunction>> m_functions;
 
 
 public:

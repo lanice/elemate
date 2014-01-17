@@ -88,6 +88,8 @@ set(SOURCES
     src/soundmanager.h
     src/luawrapper.cpp
     src/luawrapper.h
+    src/luawrapperfunction.cpp
+    src/luawrapperfunction.h
     src/ui/eventhandler.cpp
     src/ui/eventhandler.h
     src/ui/navigation.cpp

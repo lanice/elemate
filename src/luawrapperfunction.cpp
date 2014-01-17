@@ -1,0 +1,75 @@
+#include "luawrapperfunction.h"
+
+
+namespace Lua
+{
+    int _lua_dispatcher(lua_State * state)
+    {
+        BaseFunction * function = (BaseFunction *) lua_touserdata(state, lua_upvalueindex(1));
+        return function->apply(state);
+    }
+
+    template <>
+    int _check_get<int>(lua_State * state, const int index) {
+        return luaL_checkint(state, index);
+    };
+
+    template <>
+    unsigned int _check_get<unsigned int>(lua_State * state, const int index) {
+        return luaL_checkunsigned(state, index);
+    }
+
+    template <>
+    float _check_get<float>(lua_State * state, const int index) {
+        return luaL_checknumber(state, index);
+    }
+
+    template <>
+    double _check_get<double>(lua_State * state, const int index) {
+        return luaL_checknumber(state, index);
+    }
+
+    template <>
+    bool _check_get<bool>(lua_State * state, const int index) {
+        return lua_toboolean(state, index);
+    }
+
+    template <>
+    std::string _check_get<std::string>(lua_State * state, const int index) {
+        return luaL_checkstring(state, index);
+    }
+
+    void _push(lua_State * /*state*/)
+    {
+    }
+
+    void _push(lua_State * state, bool && value)
+    {
+        lua_pushboolean(state, value);
+    }
+
+    void _push(lua_State * state, int && value)
+    {
+        lua_pushinteger(state, value);
+    }
+
+    void _push(lua_State * state, unsigned int && value)
+    {
+        lua_pushunsigned(state, value);
+    }
+
+    void _push(lua_State * state, float && value)
+    {
+        lua_pushnumber(state, value);
+    }
+
+    void _push(lua_State * state, double && value)
+    {
+        lua_pushnumber(state, value);
+    }
+
+    void _push(lua_State * state, std::string && value)
+    {
+        lua_pushlstring(state, value.c_str(), value.size());
+    }
+}
