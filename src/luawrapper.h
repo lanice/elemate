@@ -25,7 +25,7 @@ protected:
 
     void popStack(const int index);
 
-    template<typename T, typename... Ts>
+    template <typename T, typename... Ts>
     void push(const T value, const Ts... values) const
     {
         push(value);
@@ -40,7 +40,7 @@ protected:
     void push(const unsigned long value) const;
     void push(const bool value) const;
 
-    template<typename T> T fetch(const int index) const;
+    template <typename T> T fetch(const int index) const;
 
     template <size_t, typename... Ts>
     struct _pop
@@ -62,7 +62,7 @@ protected:
 
         static type apply(LuaWrapper &instance)
         {
-            auto ret = worker<Ts...>(instance, 1);
+            type ret = worker<Ts...>(instance, 1);
             instance.popStack(sizeof...(Ts));
             return ret;
         }
@@ -107,8 +107,8 @@ public:
         pushFunc(fun.c_str());
         push(args...);
 
-        const int numArgs = sizeof...(Args);
-        const int numRet = sizeof...(Ret);
+        constexpr int numArgs = sizeof...(Args);
+        constexpr int numRet = sizeof...(Ret);
 
         callFunc(numArgs, numRet);
 
