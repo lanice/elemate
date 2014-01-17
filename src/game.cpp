@@ -17,7 +17,7 @@
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
-m_vsyncEnabled(true),
+m_vsyncEnabled(false),
 m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
 m_camera(),
@@ -80,7 +80,6 @@ void Game::loop(double delta)
                 m_navigation.update(deltaTime);
                 m_navigation.apply();
 
-                m_manipulator.updateHandPosition();
                 m_world->updateVisuals();
 
                 m_renderer(m_camera);

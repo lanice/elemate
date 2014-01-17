@@ -101,14 +101,13 @@ void Manipulator::updateHandPosition()
 void Manipulator::setRenderer(Renderer & renderer)
 {
     m_renderer = &renderer;
+    // call updateHandPosition when the renderer has drawn the scene
+    m_renderer->addSceneFboReader(std::bind(&Manipulator::updateHandPosition, this));
 }
 
 const float Manipulator::depthAt(const glm::ivec2 & windowCoordinates)
 {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_renderer->sceneFbo()->id());
-    const float depth =  AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    return depth;
+    return AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
 }
 
 const glm::vec3 Manipulator::objAt(const glm::ivec2 & windowCoordinates, const float depth)
