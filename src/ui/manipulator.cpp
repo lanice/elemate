@@ -83,7 +83,7 @@ void Manipulator::updateHandPosition()
 
     glm::vec3 handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos)));
 
-    m_hand.setPositionChecked(handPosition.x, handPosition.z, *m_terrainInteractor);
+    m_hand.setPosition(handPosition.x, handPosition.z);
     m_hand.rotate(m_navigation.rotationAngle());
 
     if (m_grabbedTerrain)

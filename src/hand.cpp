@@ -18,18 +18,24 @@
 
 #include "world.h"
 #include "cameraex.h"
-#include "terrain/terraininteractor.h"
+#include "terrain/terrain.h"
 
 const std::string Hand::s_modelFilename = "data/models/hand.3DS";
 
 Hand::Hand(const World & world)
 : Drawable(world)
+, m_numIndices(0)
+, m_heightOffset(1.0f)
 {
-    m_rotate = glm::mat4();
-
-    setPosition(glm::vec3());
+    setPosition(0.0f, 0.0f);
 
     loadModel();
+
+    m_program = new glow::Program();
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
 }
 
 void Hand::loadModel()
@@ -120,28 +126,32 @@ void Hand::loadModel()
     m_vao->enable(1);
 
     m_vao->unbind();
-
-
-    m_program = new glow::Program();
-    m_program->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
 }
 
-float Hand::heightCheck(float worldX, float worldZ, const TerrainInteractor & interactor)
+float Hand::heightCheck(float worldX, float worldZ) const
 {
     float maxHeight = std::numeric_limits<float>::lowest();
+    float minHeight = std::numeric_limits<float>::max();
+
+    assert(m_world.terrain);
+    const Terrain & terrain(*m_world.terrain);
 
     for (const glm::vec3 & checkPoint : m_heightCheckPoints) {
-        const glm::vec3 worldPos = glm::vec3(worldX, 0, worldZ) + glm::vec3(transform() * glm::vec4(checkPoint, 1.0));
+        const glm::vec3 worldPos = glm::vec3(worldX, 0, worldZ) + xzTransform() * checkPoint;
 
-        float heightAt = interactor.heightTotalAt(worldX + checkPoint.x, worldZ + checkPoint.z) + checkPoint.y;
+        float heightAt = terrain.heightTotalAt(worldX + checkPoint.x, worldZ + checkPoint.z) + checkPoint.y;
         if (heightAt > maxHeight)
             maxHeight = heightAt;
+        if (heightAt < minHeight)
+            minHeight = heightAt;
     }
 
-    return maxHeight;
+    float transition = (maxHeight + minHeight) * 0.5f + m_heightOffset;
+
+    if (transition < maxHeight)
+        transition = maxHeight;
+
+    return transition;
 }
 
 void Hand::drawImplementation(const glowutils::Camera & camera)
@@ -161,29 +171,73 @@ void Hand::drawImplementation(const glowutils::Camera & camera)
 const glm::mat4 & Hand::transform() const
 {
     if (!m_transform.isValid())
-        m_transform.setValue(m_translate * m_rotate);
+        m_transform.setValue(translate() * m_rotate);
 
     return m_transform.value();
 }
 
-const glm::vec3 & Hand::position() const
+const glm::mat3 & Hand::xzTransform() const
 {
-    return m_position;
+    if (!m_xzTransform.isValid())
+        m_xzTransform.setValue(glm::mat3(glm::translate(glm::mat4(), glm::vec3(m_positionX, 0.0f, m_positionZ)) * m_rotate));
+
+    return m_xzTransform.value();
 }
 
-void Hand::setPosition(const glm::vec3 & position)
+const glm::vec3 & Hand::position() const
 {
-    m_position = position;
-    m_translate = glm::translate(glm::mat4(), position);
+    if (!m_positionY.isValid()) {
+        m_positionY.setValue(heightCheck(m_positionX, m_positionZ));
+        m_position.invalidate();
+    }
+    if (!m_position.isValid())
+        m_position.setValue(glm::vec3(m_positionX, m_positionY.value(), m_positionZ));
 
+    return m_position.value();
+}
+
+void Hand::setPosition(float worldX, float worldZ)
+{
+    if (m_positionX == worldX && m_positionZ == worldZ)
+        return;
+
+    m_positionX = worldX;
+    m_positionZ = worldZ;
+
+    m_positionY.invalidate();
+    m_position.invalidate();
+
+    m_xzTransform.invalidate();
+    m_translate.invalidate();
     m_transform.invalidate();
 }
 
-void Hand::setPositionChecked(float worldX, float worldZ, const TerrainInteractor & interactor)
+const glm::mat4 & Hand::translate() const
 {
-    float newHeight = heightCheck(worldX, worldZ, interactor);
+    if (!m_translate.isValid())
+        m_translate.setValue(glm::translate(glm::mat4(), position()));
 
-    setPosition(glm::vec3(worldX, newHeight, worldZ));
+    return m_translate.value();
+}
+
+void Hand::setHeightOffset(float heightOffset)
+{
+    if (m_heightOffset == heightOffset)
+        return;
+
+    assert(heightOffset >= 0.0f);
+
+    m_heightOffset = heightOffset >= 0.0f ? heightOffset : 0.0f;
+
+    m_positionY.invalidate();
+
+    m_translate.invalidate();
+    m_transform.invalidate();
+}
+
+float Hand::heightOffset() const
+{
+    return m_heightOffset;
 }
 
 void Hand::rotate(const float angle)
