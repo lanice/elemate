@@ -145,6 +145,11 @@ public:
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
+    void Unregister(const std::string &name) {
+        auto it = m_functions.find(name);
+        if (it != m_functions.end()) m_functions.erase(it);
+    }
+
 
 protected:
     lua_State * m_state;
