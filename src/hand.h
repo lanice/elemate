@@ -2,6 +2,8 @@
 
 #include "rendering/drawable.h"
 
+#include <string>
+
 #include <glowutils/CachedValue.h>
 
 #include <glm/glm.hpp>
