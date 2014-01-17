@@ -31,7 +31,7 @@ glow::Vec2Array initDepthSamples() {
     return samples;
 }
 const glow::Vec2Array ShadowMappingStep::s_depthSamples = initDepthSamples();
-const GLuint ShadowMappingStep::s_lightmapSlot = 0;
+const GLint ShadowMappingStep::s_lightmapSlot = 0;
 static const float earlyBailDistance = 3.0f;
 const glow::Vec2Array ShadowMappingStep::s_earlyBailSamples({
     glm::vec2(earlyBailDistance, earlyBailDistance),

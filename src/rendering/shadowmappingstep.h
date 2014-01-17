@@ -42,7 +42,7 @@ protected:
 
     static const glow::Vec2Array s_depthSamples;
     static const glow::Vec2Array s_earlyBailSamples;
-    static const GLuint s_lightmapSlot;
+    static const GLint s_lightmapSlot;
 
 public:
     void operator=(ShadowMappingStep&) = delete;
