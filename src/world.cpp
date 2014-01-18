@@ -20,7 +20,7 @@
 #include "terrain/terrain.h"
 
 World::World(PhysicsWrapper & physicsWrapper)
-: hand(new Hand(*this))
+: hand(nullptr)
 , terrain(nullptr)
 , m_soundManager(std::make_shared<SoundManager>())
 , m_physicsWrapper(physicsWrapper)
@@ -52,6 +52,8 @@ World::World(PhysicsWrapper & physicsWrapper)
 
     for (const auto actor : terrain->pxActorMap())
         m_physicsWrapper.addActor(*actor.second);
+
+    hand = std::make_shared<Hand>(*this);
 
     m_sunlighting[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
     m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
