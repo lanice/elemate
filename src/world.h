@@ -26,6 +26,8 @@ public:
     World(PhysicsWrapper & physicsWrapper);
     ~World();
 
+    static World * getInstance();
+
     /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
     void togglePause();
 
@@ -60,6 +62,8 @@ public:
     std::shared_ptr<SoundManager>               m_soundManager;
 
 protected:
+    static World * s_instance;
+
     PhysicsWrapper & m_physicsWrapper;
     std::list<std::string> m_currentElements;
 

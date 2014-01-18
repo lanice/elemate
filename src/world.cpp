@@ -19,6 +19,8 @@
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
 
+World * World::s_instance = nullptr;
+
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(nullptr)
 , terrain(nullptr)
@@ -59,12 +61,20 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
     m_sunlighting[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
     m_sunlighting[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
+    assert(s_instance == nullptr);
+    s_instance = this;
 }
 
 World::~World()
 {
 }
 
+World * World::getInstance()
+{
+    assert(s_instance);
+    return s_instance;
+}
 
 void World::togglePause()
 {

@@ -7,6 +7,8 @@
 #include "PxPhysicsAPI.h"
 
 #include "particledrawable.h"
+#include "world.h"
+#include "terrain/terraininteractor.h"
 
 
 const physx::PxU32  ParticleEmitter::kMaxParticleCount = 2000;
@@ -16,6 +18,7 @@ const int           ParticleEmitter::kDefaultParticleSpreading = 50;
 
 ParticleEmitter::ParticleEmitter(const physx::PxVec3& position)
 : m_particleDrawable(nullptr)
+, m_terrainInteractor(std::make_shared<TerrainInteractor>(World::getInstance()->terrain))
 , m_position(position)
 , m_emitting(false)
 , m_particles_per_second(kDefaultEmittedParticles)
@@ -72,8 +75,8 @@ void ParticleEmitter::startEmit(){
     m_emitting = true;
 }
 
-void ParticleEmitter::createParticles(physx::PxU32 number_of_particles){
-
+void ParticleEmitter::createParticles(physx::PxU32 number_of_particles)
+{
     if (number_of_particles > kMaxParticleCount)
         number_of_particles = kMaxParticleCount;
 
@@ -114,6 +117,9 @@ void ParticleEmitter::createParticles(physx::PxU32 number_of_particles){
     }
 
     m_particleDrawable->addParticles(number_of_particles, m_particle_position_buffer);
+
+    // take away some material from the terrain .. something related to number_of_particles and stuff...
+    m_terrainInteractor->changeHeight(m_position.x, m_position.z, TerrainLevel::WaterLevel, -0.01f * number_of_particles);
 }
 
 void ParticleEmitter::stopEmit(){
