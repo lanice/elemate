@@ -21,7 +21,7 @@ float average_blocker_depth(vec2 coord, float zReceiver, float relativeSearchWid
     float zSum = 0.0;
     int numBlockers = 0;
     for(int i=0; i < nbSamples; ++i) {
-        float zBlocker = texture(lightMap, fma(depthSamples[i], vec2(relativeSearchWidth), coord)).x;
+        float zBlocker = texture(lightMap, depthSamples[i] * relativeSearchWidth + coord).x;
         if (zBlocker < zReceiver){
             zSum += zBlocker;
             ++numBlockers;
@@ -55,7 +55,7 @@ void main()
     float shadow = 0.0;
     float x,y;
     for (int i=0; i < nbSamples; ++i) { 
-            vec2 offset = fma(vec2(depthSamples[i]), vec2(penumbra), fromLightCoord.st);    // fma = a * b + c
+            vec2 offset = depthSamples[i] * penumbra + fromLightCoord.st;
             float distanceFromLight = texture(lightMap, offset).x;
             shadow += mix( 1.0, 0.0, step(distanceFromLight, fromLightZ));
     }
@@ -69,7 +69,7 @@ bool earlyBailing(vec2 coord, float zReceiver, float relativeSearchWidth)
     float sumFromLightZ = 0.0;
     
     for (int i=0; i < 4; ++i) {
-        float zBlocker = texture(lightMap, fma(earlyBailSamples[i],  vec2(relativeSearchWidth), coord)).x;
+        float zBlocker = texture(lightMap, earlyBailSamples[i] * relativeSearchWidth + coord).x;
         sumFromLightZ += zBlocker;
         zBlocker += mix(0, 1, step(zReceiver, zBlocker));
     }
