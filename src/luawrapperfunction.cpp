@@ -1,11 +1,41 @@
 #include "luawrapperfunction.h"
 
+#include <lua.hpp>
+
 
 namespace Lua
 {
+    void settop(lua_State * state, int index)
+    {
+        lua_settop(state, index);
+    }
+
+    void pushlightuserdata(lua_State * state, void * p)
+    {
+        lua_pushlightuserdata(state, p);
+    }
+
+    void pushcclosure(lua_State * state, lua_CFunction fn, int n)
+    {
+        lua_pushcclosure(state, fn, n);
+    }
+
+    void setglobal(lua_State * state, const char * name)
+    {
+        lua_setglobal(state, name);
+    }
+
+    void pushnil(lua_State * state)
+    {
+        lua_pushnil(state);
+    }
+}
+
+namespace Luaw
+{
     int _lua_dispatcher(lua_State * state)
     {
-        BaseFunction * function = (BaseFunction *) lua_touserdata(state, lua_upvalueindex(1));
+        BaseLuaFunction * function = (BaseLuaFunction *) lua_touserdata(state, lua_upvalueindex(1));
         return function->apply(state);
     }
 

@@ -118,14 +118,14 @@ public:
     template <typename Return, typename... Args>
     void Register(const std::string & name, std::function<Return(Args...)> function)
     {
-        auto tmp = std::unique_ptr<BaseFunction>(new Function<1, Return, Args...>{m_state, name, function});
+        auto tmp = std::unique_ptr<BaseLuaFunction>(new LuaFunction<1, Return, Args...>{m_state, name, function});
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
     template <typename Return, typename... Args>
     void Register(const std::string & name, Return (*function)(Args...))
     {
-        auto tmp = std::unique_ptr<BaseFunction>(new Function<1, Return, Args...>{m_state, name, function});
+        auto tmp = std::unique_ptr<BaseLuaFunction>(new LuaFunction<1, Return, Args...>{m_state, name, function});
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
@@ -133,7 +133,7 @@ public:
     void Register(const std::string & name, std::function<std::tuple<Return...>(Args...)> function)
     {
         constexpr int num_return = sizeof...(Return);
-        auto tmp = std::unique_ptr<BaseFunction>(new Function<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
+        auto tmp = std::unique_ptr<BaseLuaFunction>(new LuaFunction<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
@@ -141,7 +141,7 @@ public:
     void Register(const std::string & name, std::tuple<Return...> (*function)(Args...))
     {
         constexpr int num_return = sizeof...(Return);
-        auto tmp = std::unique_ptr<BaseFunction>(new Function<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
+        auto tmp = std::unique_ptr<BaseLuaFunction>(new LuaFunction<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
@@ -157,7 +157,7 @@ protected:
     std::vector<std::string> m_scripts;
     int m_err;
 
-    std::map<std::string, std::unique_ptr<BaseFunction>> m_functions;
+    std::map<std::string, std::unique_ptr<BaseLuaFunction>> m_functions;
 
 
 public:

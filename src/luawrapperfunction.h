@@ -4,17 +4,27 @@
 #include <tuple>
 #include <functional>
 
-#include <lua.hpp>
 
+struct lua_State;
 
-struct BaseFunction
+struct BaseLuaFunction
 {
-    virtual ~BaseFunction() {}
+    virtual ~BaseLuaFunction() {}
     virtual int apply(lua_State * state) = 0;
 };
 
-
 namespace Lua
+{
+    typedef int (*lua_CFunction) (lua_State * state);
+
+    void settop(lua_State * state, int index);
+    void pushlightuserdata(lua_State * state, void * p);
+    void pushcclosure(lua_State * state, lua_CFunction fn, int n);
+    void setglobal(lua_State * state, const char * name);
+    void pushnil(lua_State * state);
+}
+
+namespace Luaw
 {
     int _lua_dispatcher(lua_State * state);
 
@@ -84,49 +94,49 @@ namespace Lua
     void _push(lua_State * state, std::tuple<T...> &&values)
     {
         constexpr int num_values = sizeof...(T);
-        lua_settop(state, num_values);
+        Lua::settop(state, num_values);
         _push_dispatcher(state, std::forward<std::tuple<T...>>(values), typename _indices_builder<num_values>::type());
     }
 }
 
 
 template <int N, typename Return, typename... Args>
-class Function : public BaseFunction
+class LuaFunction : public BaseLuaFunction
 {
-private:
+protected:
     std::function<Return(Args...)> m_function;
     std::string m_name;
     lua_State ** m_state;
 
 public:
-    Function(lua_State * &state, const std::string & name, Return(*function)(Args...)) : Function(state, name, std::function<Return(Args...)>{function}) {}
+    LuaFunction(lua_State * &state, const std::string & name, Return(*function)(Args...)) : LuaFunction(state, name, std::function<Return(Args...)>{function}) {}
 
-    Function(lua_State * &state, const std::string & name, std::function<Return(Args...)> function) : m_function(function), m_name(name), m_state(&state)
+    LuaFunction(lua_State * &state, const std::string & name, std::function<Return(Args...)> function) : m_function(function), m_name(name), m_state(&state)
     {
-        lua_pushlightuserdata(state, (void *)static_cast<BaseFunction *>(this));
+        Lua::pushlightuserdata(state, (void *)static_cast<BaseLuaFunction *>(this));
 
-        lua_pushcclosure(state, &Lua::_lua_dispatcher, 1);
+        Lua::pushcclosure(state, &Luaw::_lua_dispatcher, 1);
 
-        lua_setglobal(state, name.c_str());
+        Lua::setglobal(state, name.c_str());
     }
 
-    ~Function()
+    ~LuaFunction()
     {
         if (m_state != nullptr && *m_state != nullptr)
         {
-            lua_pushnil(*m_state);
-            lua_setglobal(*m_state, m_name.c_str());
+            Lua::pushnil(*m_state);
+            Lua::setglobal(*m_state, m_name.c_str());
         }
     }
 
     int apply(lua_State * state)
     {
-        std::tuple<Args...> args = Lua::_get_args<Args...>(state);
-        Return value = Lua::_lift(m_function, args);
-        Lua::_push(state, std::forward<Return>(value));
+        std::tuple<Args...> args = Luaw::_get_args<Args...>(state);
+        Return value = Luaw::_lift(m_function, args);
+        Luaw::_push(state, std::forward<Return>(value));
         return N;
     }
 
 public:
-    void operator=(Function &) = delete;
+    void operator=(LuaFunction &) = delete;
 };
