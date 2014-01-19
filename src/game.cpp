@@ -17,7 +17,7 @@
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
-m_vsyncEnabled(false),
+m_vsyncEnabled(true),
 m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
 m_camera(),

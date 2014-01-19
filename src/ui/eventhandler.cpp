@@ -56,8 +56,6 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
         }
     }
 
-    }
-
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);
     m_game.manipulator()->handleKeyEvent(key, scancode, action, mods);
 }

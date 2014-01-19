@@ -199,7 +199,7 @@ void PhysicsWrapper::setUseGpuParticles(bool useGPU)
 {
     m_gpuParticles = useGPU;
     for (auto emitter : m_emitters)
-        emitter->setGPUAccelerated(m_gpuParticles);
+        emitter.second->setGPUAccelerated(m_gpuParticles);
 }
 
 bool PhysicsWrapper::useGpuParticles() const
