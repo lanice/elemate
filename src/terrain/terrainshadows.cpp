@@ -11,6 +11,7 @@
 
 #include "terraintile.h"
 #include "cameraex.h"
+#include "rendering/shadowmappingstep.h"
 
 void Terrain::drawLightMapImpl(const CameraEx & lightSource)
 {
@@ -45,15 +46,10 @@ void Terrain::drawShadowMappingImpl(const glowutils::Camera & camera, const Came
     auto baseTile = m_tiles.at(TileID(TerrainLevel::BaseLevel));
     auto waterTile = m_tiles.at(TileID(TerrainLevel::WaterLevel));
 
-    glm::mat4 lightBiasMVP = s_biasMatrix * lightSource.viewProjectionOrthographic() * baseTile->transform();
+    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionOrthographic() * baseTile->transform();
 
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_shadowMappingProgram->setUniform("lightSourceView", lightSource.view());
-    m_shadowMappingProgram->setUniform("invView", camera.viewInverted());
-    m_shadowMappingProgram->setUniform("viewport", camera.viewport());
-    m_shadowMappingProgram->setUniform("znear", camera.zNear());
-    m_shadowMappingProgram->setUniform("zfar", camera.zFar());
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     baseTile->m_heightTex->bind(GL_TEXTURE1);
@@ -82,8 +78,6 @@ void Terrain::initLightMappingProgram()
     m_lightMapProgram->setUniform("heightField1", 1);
 
     m_lightMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
-
-    Drawable::initLightMappingProgram();
 }
 
 void Terrain::initShadowMappingProgram()
@@ -99,5 +93,5 @@ void Terrain::initShadowMappingProgram()
 
     m_shadowMappingProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
 
-    Drawable::initShadowMappingProgram();
+    ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }

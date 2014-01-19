@@ -92,6 +92,11 @@ void Renderer::initialize()
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
 }
 
+void Renderer::addSceneFboReader(const std::function<void()> & reader)
+{
+    m_sceneFboReader.push_back(reader);
+}
+
 void Renderer::operator()(const glowutils::Camera & camera)
 {
     assert(m_sceneFbo);
@@ -113,6 +118,10 @@ void Renderer::sceneStep(const glowutils::Camera & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->draw(camera);
+
+    // call functions that read from the scene fbo for the object they are member of
+    for (auto & function : m_sceneFboReader)
+        function();
 
     m_sceneFbo->unbind();
 }

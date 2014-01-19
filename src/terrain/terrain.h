@@ -31,8 +31,8 @@ public:
     /** Map of static PhysX actors. TileID's level is always BaseLevel.
       * One actor owns the shapes for all terain levels at its x/z-ID. */
     const std::map<TileID, physx::PxRigidStatic*> pxActorMap() const;
-    /** @return interpolated height at specific world position */
-    float heightAt(float x, float z) const;
+    /** @return interpolated maximal height of all terrain layers at specific world position */
+    float heightTotalAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
     float heightAt(float x, float z, TerrainLevel level) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */

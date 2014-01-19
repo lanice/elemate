@@ -35,16 +35,17 @@ void BaseTile::bind(const glowutils::Camera & camera)
         createTerrainTypeTexture();
 
     assert(m_terrainTypeTex);
-    glActiveTexture(GL_TEXTURE1);
-    m_terrainTypeTex->bind();
+    m_terrainTypeTex->bind(GL_TEXTURE1);
 
     assert(m_rockTexture);
-    glActiveTexture(GL_TEXTURE2);
-    m_rockTexture->bind();
+    m_rockTexture->bind(GL_TEXTURE2);
 }
 
 void BaseTile::unbind()
 {
+    m_terrainTypeTex->unbind(GL_TEXTURE1);
+    m_rockTexture->unbind(GL_TEXTURE2);
+
     TerrainTile::unbind();
 }
 

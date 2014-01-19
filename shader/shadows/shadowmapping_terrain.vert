@@ -2,10 +2,7 @@
 
 layout(location = 0)in vec2 _vertex;
 
-uniform mat4 modelTransform;
 uniform mat4 modelViewProjection;
-uniform mat4 lightSourceView;
-uniform mat4 invView;
 
 uniform mat4 lightBiasMVP;
 

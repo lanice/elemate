@@ -33,7 +33,7 @@ void Navigation::setTransformation(const glm::vec3 & eye, const glm::vec3 & cent
 {
     glm::vec3 center_terrainHeight = glm::vec3(
         center.x,
-        m_terrain->heightAt(center.x, center.z),
+        m_terrain->heightTotalAt(center.x, center.z),
         center.z);
 
     m_center = center_terrainHeight;
@@ -47,7 +47,7 @@ void Navigation::setTransformation(const glm::vec3 & center, const glm::vec3 & l
 {
     glm::vec3 center_terrainHeight = glm::vec3(
         center.x,
-        m_terrain->heightAt(center.x, center.z),
+        m_terrain->heightTotalAt(center.x, center.z),
         center.z);
 
     m_center = center_terrainHeight;
@@ -72,7 +72,7 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
         glm::vec3 eye = m_camera->eye();
         if (yoffset < 0)
         {
-            if (eye.y <= m_terrain->heightAt(eye.x, eye.z) + 1.f) return;
+            if (eye.y <= m_terrain->heightTotalAt(eye.x, eye.z) + 1.f) return;
             pitch(2.f);
         } else {
             if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
@@ -119,7 +119,7 @@ void Navigation::update(double delta)
 
             m_center = glm::vec3(
                 m_center.x,
-                m_terrain->heightAt(m_center.x, m_center.z),
+                m_terrain->heightTotalAt(m_center.x, m_center.z),
                 m_center.z);
         }
     }
@@ -129,7 +129,7 @@ void Navigation::apply()
 {
     glm::vec3 eye = m_center - glm::normalize(m_lookAtVector) * m_distanceEyeCenter;
 
-    float eyeHeight = m_terrain->heightAt(eye.x, eye.z);
+    float eyeHeight = m_terrain->heightTotalAt(eye.x, eye.z);
     if (eye.y < eyeHeight + 1.f)
     {
         eye.y = eyeHeight + 1.f;
