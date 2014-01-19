@@ -143,6 +143,30 @@ void ParticleEmitter::setGPUAccelerated(bool enable)
     scene_buffer[0]->addActor(*m_particleSystem);
 }
 
+void ParticleEmitter::pauseGPUAcceleration()
+{
+    assert(m_gpuParticlesPauseFlags == 0x00);
+    if ((m_gpuParticlesPauseFlags & 0x01) == 0x01) // break, if already paused
+        return;
+
+    m_gpuParticlesPauseFlags = 0x01 | (m_gpuParticles ? 0x10 : 0x00);
+
+    if (!m_gpuParticles)
+        return;
+    setGPUAccelerated(false);
+}
+
+void ParticleEmitter::restoreGPUAccelerated()
+{
+    assert((m_gpuParticlesPauseFlags & 0x01) == 0x01);
+    if ((m_gpuParticlesPauseFlags & 0x01) == 0x00)   // break, if not paused
+        return;
+
+    if ((m_gpuParticlesPauseFlags & 0x10) == 0x10)
+        setGPUAccelerated(true);
+
+    m_gpuParticlesPauseFlags = 0x00;
+}
 
 void ParticleEmitter::setPosition(const physx::PxVec3& position){
     m_position = position;

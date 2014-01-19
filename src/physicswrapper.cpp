@@ -207,6 +207,18 @@ bool PhysicsWrapper::useGpuParticles() const
     return m_gpuParticles;
 }
 
+void PhysicsWrapper::pauseGPUAcceleration()
+{
+    for (auto emitter : m_emitters)
+        emitter.second->pauseGPUAcceleration();
+}
+
+void PhysicsWrapper::restoreGPUAccelerated()
+{
+    for (auto emitter : m_emitters)
+        emitter.second->restoreGPUAccelerated();
+}
+
 void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
 {
     if (m_activeEmitter != "")

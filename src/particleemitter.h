@@ -64,6 +64,11 @@ public:
     /** enable/disable GPU acceleration. Will cause errors if not running on nvidia gpu. */
     void setGPUAccelerated(bool enable);
 
+    /** pause the gpu acceleration if enabled, for scene mesh updates */
+    void pauseGPUAcceleration();
+    /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
+    void restoreGPUAccelerated();
+
 protected:
     static const physx::PxU32	kMaxParticleCount;
     static const physx::PxU32   kDefaultEmittedParticles;
@@ -75,6 +80,7 @@ protected:
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
     bool                     m_gpuParticles;
+    uint8_t                  m_gpuParticlesPauseFlags;
     physx::PxVec3            m_position;
     bool                     m_emitting;
     int                      m_particles_per_second;

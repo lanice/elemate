@@ -11,9 +11,13 @@
 #include <geometry/PxHeightFieldSample.h>
 #include <geometry/PxHeightFieldDesc.h>
 #include <geometry/PxHeightFieldGeometry.h>
+#ifdef PX_WINDOWS
+#include <gpu/PxParticleGpu.h>
+#endif
 
 #include "terrain.h"
 #include "terraintile.h"
+#include "physicswrapper.h"
 
 using namespace physx;
 
@@ -114,6 +118,8 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     descM.convexEdgeThreshold = hf->getConvexEdgeThreshold();
     descM.flags = hf->getFlags();
 
+    PhysicsWrapper::getInstance()->pauseGPUAcceleration();
+
     bool success = hf->modifySamples(column - 1, row - 1, descM);
     assert(success);
     if (!success) {
@@ -128,6 +134,13 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     pxScenePtrs[0]->lockWrite();
     pxShape.setGeometry(newGeometry);
     pxScenePtrs[0]->unlockWrite();
+
+    PhysicsWrapper::getInstance()->restoreGPUAccelerated();
+
+#ifdef PX_WINDOWS
+    PxParticleGpu::releaseHeightFieldMirror(*hf);
+    PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
+#endif
 }
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ, TerrainLevel level)

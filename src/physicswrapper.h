@@ -68,6 +68,10 @@ public:
 
     void setUseGpuParticles(bool useGPU);
     bool useGpuParticles() const;
+    /** pause the gpu acceleration if enabled, for scene mesh updates */
+    void pauseGPUAcceleration();
+    /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
+    void restoreGPUAccelerated();
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
