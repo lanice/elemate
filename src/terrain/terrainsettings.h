@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <limits>
 #include <functional>
+#include <string>
 
 
 enum class TerrainLevel {
@@ -12,6 +13,10 @@ enum class TerrainLevel {
 };
 extern std::initializer_list<TerrainLevel> TerrainLevels;
 
+void initMaterialTerrainLevels();
+
+/** @return the terrain level that hold the material with name materialName */
+TerrainLevel levelForMaterial(const std::string & materialName);
 
 struct TileID {
     TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0);

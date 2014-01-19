@@ -47,7 +47,7 @@ public:
     ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
-    void initializeParticleSystem(EmitterDescriptionData* descriptionData);
+    void initializeParticleSystem(const EmitterDescriptionData * descriptionData);
     void update(double elapsed_Time);
 
     void startEmit();
@@ -65,7 +65,9 @@ protected:
     static const physx::PxReal  kDefaultInitialParticleSpeed;
     static const int            kDefaultParticleSpreading;
 
-    void applyDescriptionData(EmitterDescriptionData* descriptionData);
+    const EmitterDescriptionData * m_desc;
+
+    void applyDescriptionData(const EmitterDescriptionData * descriptionData);
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

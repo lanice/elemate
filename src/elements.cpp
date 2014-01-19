@@ -8,7 +8,8 @@
 #include <PxPhysics.h>
 #include <PxMaterial.h>
 
-#include <particleemitter.h>
+#include "particleemitter.h"
+#include "terrain/terrainsettings.h"
 
 bool Elements::s_isInitialized = false;
 
@@ -64,6 +65,8 @@ void Elements::initialize(physx::PxPhysics & physxSdk)
         if (!pair.second)
             glow::warning("Elements::initialize could not create PhysX material: %;", pair.first);
     }
+
+    initMaterialTerrainLevels();
 
     s_isInitialized = true;
 }

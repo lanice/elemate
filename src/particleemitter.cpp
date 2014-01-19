@@ -18,7 +18,7 @@ const int           ParticleEmitter::kDefaultParticleSpreading = 50;
 
 ParticleEmitter::ParticleEmitter(const physx::PxVec3& position)
 : m_particleDrawable(nullptr)
-, m_terrainInteractor(std::make_shared<TerrainInteractor>(World::getInstance()->terrain))
+, m_terrainInteractor(std::make_shared<TerrainInteractor>(World::getInstance()->terrain, "water"))
 , m_position(position)
 , m_emitting(false)
 , m_particles_per_second(kDefaultEmittedParticles)
@@ -33,8 +33,9 @@ ParticleEmitter::~ParticleEmitter(){
     m_particleSystem->releaseParticles();
 }
 
-void ParticleEmitter::initializeParticleSystem(EmitterDescriptionData* descriptionData){
-    applyDescriptionData(descriptionData);
+void ParticleEmitter::initializeParticleSystem(const EmitterDescriptionData * descriptionData){
+    m_desc = descriptionData;
+    applyDescriptionData(m_desc);
 
     assert(PxGetPhysics().getNbScenes() == 1);
     physx::PxScene* scene_buffer[1];
@@ -44,7 +45,7 @@ void ParticleEmitter::initializeParticleSystem(EmitterDescriptionData* descripti
     m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
 }
 
-void ParticleEmitter::applyDescriptionData(EmitterDescriptionData* descriptionData){
+void ParticleEmitter::applyDescriptionData(const EmitterDescriptionData * descriptionData){
     m_particleSystem = PxGetPhysics().createParticleFluid(kMaxParticleCount, false);
     assert(m_particleSystem);
 
@@ -119,7 +120,10 @@ void ParticleEmitter::createParticles(physx::PxU32 number_of_particles)
     m_particleDrawable->addParticles(number_of_particles, m_particle_position_buffer);
 
     // take away some material from the terrain .. something related to number_of_particles and stuff...
-    m_terrainInteractor->changeHeight(m_position.x, m_position.z, TerrainLevel::WaterLevel, -0.01f * number_of_particles);
+
+    const float deltaVolume = m_desc->restOffset * m_desc->restOffset * m_desc->restOffset * number_of_particles;
+
+    m_terrainInteractor->takeOffVolume(m_position.x, m_position.z, deltaVolume);
 }
 
 void ParticleEmitter::stopEmit(){

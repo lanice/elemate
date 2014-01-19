@@ -19,7 +19,7 @@ m_navigation(navigation),
 m_camera(*navigation.camera()),
 m_world(world),
 m_hand(*world.hand),
-m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
+m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedrock")),
 m_grabbedTerrain(false),
 m_renderer(nullptr)
 {
@@ -59,20 +59,20 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
     // Terrain interaction
     if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS) {
         m_grabbedTerrain = true;
-        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
     }
     if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE) {
         m_grabbedTerrain = false;
     }
 
     if (key == GLFW_KEY_R && action == GLFW_PRESS && altPressed) {
-        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
-        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
+        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
     }
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS && altPressed) {
-        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
-        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
+        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
     }
 }
 

@@ -18,22 +18,45 @@
 using namespace physx;
 
 
-TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain)
+TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactMaterial)
 : m_terrain(terrain)
+, m_interactMaterial(interactMaterial)
+, m_interactLevel(levelForMaterial(interactMaterial))
 {
 }
 
-float TerrainInteractor::heightTotalAt(float worldX, float worldZ) const
+const std::string & TerrainInteractor::interactMaterial() const
+{
+    return m_interactMaterial;
+}
+
+void TerrainInteractor::setInteractMaterial(const std::string & material)
+{
+    m_interactMaterial = material;
+    m_interactLevel = levelForMaterial(material);
+}
+
+float TerrainInteractor::heightAt(float worldX, float worldZ) const
+{
+    return m_terrain->heightAt(worldX, worldZ, m_interactLevel);
+}
+
+float TerrainInteractor::changeHeight(float worldX, float worldZ, float delta)
+{
+    return changeLevelHeight(worldX, worldZ, m_interactLevel, delta);
+}
+
+float TerrainInteractor::terrainHeightAt(float worldX, float worldZ) const
 {
     return m_terrain->heightTotalAt(worldX, worldZ);
 }
 
-float TerrainInteractor::heightAt(float worldX, float worldZ, TerrainLevel level) const
+float TerrainInteractor::levelHeightAt(float worldX, float worldZ, TerrainLevel level) const
 {
     return m_terrain->heightAt(worldX, worldZ, level);
 }
 
-float TerrainInteractor::setHeight(float worldX, float worldZ, TerrainLevel level, float value)
+float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value)
 {
     std::shared_ptr<TerrainTile> tile = nullptr;
     unsigned int physxRow;
@@ -47,7 +70,7 @@ float TerrainInteractor::setHeight(float worldX, float worldZ, TerrainLevel leve
     return setHeight(*tile.get(), physxRow, physxColumn, value);
 }
 
-float TerrainInteractor::changeHeight(float worldX, float worldZ, TerrainLevel level, float delta)
+float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta)
 {
     std::shared_ptr<TerrainTile> tile;
     unsigned int row;
@@ -59,6 +82,12 @@ float TerrainInteractor::changeHeight(float worldX, float worldZ, TerrainLevel l
     float height = tile->heightAt(row, column);
 
     return setHeight(*tile.get(), row, column, height + delta);
+}
+
+void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
+{
+    const float heightDelta = - volume / (m_terrain->settings.intervalX() * m_terrain->settings.intervalZ());
+    changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta);
 }
 
 float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value)
@@ -73,11 +102,11 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
     if (value_inRange < -settings.maxHeight) value_inRange = -settings.maxHeight;
     if (value_inRange > settings.maxHeight) value_inRange = settings.maxHeight;
 
-    for (int u = -1; u <= 1; ++u) {
-        for (int v = -1; v <= 1; ++v) {
+    for (int u = 0; u <= 1; ++u) {
+        for (int v = 0; v <= 1; ++v) {
             tile.setHeight(row + u, column + v, value_inRange);
         }
-        tile.addBufferUpdateRange(column - 1 + (row + u)*settings.columns, 3);
+        tile.addBufferUpdateRange(column - 1 + (row + u)*settings.columns, 2);
     }
 
     setPxHeight(tile, row, column, value);
@@ -87,6 +116,8 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
 
 void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned column, float value)
 {
+    static const unsigned d_size = 2;
+
     PxShape & pxShape = *tile.pxShape();
     PxHeightFieldGeometry geometry;
     bool result = pxShape.getHeightFieldGeometry(geometry);
@@ -97,16 +128,16 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     }
     PxHeightField * hf = geometry.heightField;
 
-    PxHeightFieldSample samplesM[9];
-    for (PxU32 i = 0; i < 9; i++)
+    PxHeightFieldSample samplesM[d_size * d_size];
+    for (PxU32 i = 0; i < d_size * d_size; i++)
     {
         samplesM[i].height = static_cast<PxI16>(value / geometry.heightScale);
         samplesM[i].materialIndex0 = samplesM[i].materialIndex1 = tile.pxMaterialIndexAt(row, column);
     }
 
     PxHeightFieldDesc descM;
-    descM.nbColumns = 3;
-    descM.nbRows = 3;
+    descM.nbColumns = d_size;
+    descM.nbRows = d_size;
     descM.samples.data = samplesM;
     descM.format = hf->getFormat();
     descM.samples.stride = hf->getSampleStride();
@@ -130,15 +161,15 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     pxScenePtrs[0]->unlockWrite();
 }
 
-float TerrainInteractor::heightGrab(float worldX, float worldZ, TerrainLevel level)
+float TerrainInteractor::heightGrab(float worldX, float worldZ)
 {
-    m_grabbedLevel = level;
-    return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, level);
+    m_grabbedLevel = m_interactLevel;
+    return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }
 
 void TerrainInteractor::heightPull(float worldX, float worldZ)
 {
-    setHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight);
+    setLevelHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight);
 }
 
 std::shared_ptr<const Terrain> TerrainInteractor::terrain() const
