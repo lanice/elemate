@@ -24,12 +24,13 @@
 
 #include "terrain.h"
 #include "elements.h"
+#include "world.h"
 #include "physicswrapper.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
 , m_terrain(terrain)
-, isInitialized(false)
+, m_isInitialized(false)
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
@@ -54,7 +55,7 @@ TerrainTile::~TerrainTile()
 
 void TerrainTile::bind(const glowutils::Camera & camera)
 {
-    if (!isInitialized)
+    if (!m_isInitialized)
         initialize();
     if (!m_program)
         initializeProgram();
@@ -74,8 +75,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
 
-    m_terrain.setUpLighting(*m_program);
-
+    m_terrain.m_world.setUpLighting(*m_program);
 }
 
 void TerrainTile::unbind()
@@ -100,6 +100,7 @@ void TerrainTile::setHeightField(glow::FloatArray & heightField)
 
 void TerrainTile::initialize()
 {
+    m_isInitialized = true;
 }
 
 void TerrainTile::initializeProgram()
@@ -227,6 +228,11 @@ float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
     }
 
     return 0.0f;
+}
+
+glm::mat4 TerrainTile::transform() const
+{
+    return m_transform;
 }
 
 void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)

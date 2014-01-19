@@ -6,7 +6,7 @@
 
 #include "ui/navigation.h"
 #include "ui/manipulator.h"
-#include "renderer.h"
+#include "rendering/renderer.h"
 
 class PhysicsWrapper;
 class World;
@@ -23,9 +23,14 @@ public:
 
     ~Game();
 
-    /** Starts the Game Loop until end() is called.  */
+    /** Starts the Game Loop until recieving a window close event. */
     void start();
 
+    void setVSync(bool enabled);
+    void toggleVSync();
+    bool vSyncEnabled() const;
+
+    void reloadLua();
 
     Navigation * navigation();
     Manipulator * manipulator();
@@ -38,7 +43,9 @@ protected:
 
     /** The Game's loop containing drawing and triggering physics is placed right here.
       * @param delta specifies the time between each logic update in seconds.*/
-    void loop(double delta = 1.0/100.0);
+    void loop(double delta = 1.0 / 100.0);
+
+    bool m_vsyncEnabled;
 
     PhysicsWrapper * m_physicsWrapper;
     World * m_world;

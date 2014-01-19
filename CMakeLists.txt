@@ -58,6 +58,8 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
+    src/element.h
+    src/element.cpp
     src/elements.h
     src/elements.cpp
     src/pxcompilerfix.h
@@ -82,20 +84,23 @@ set(SOURCES
     src/hpicgs/MathMacros.h
     src/hpicgs/ChronoTimer.cpp
     src/hpicgs/ChronoTimer.h
-    src/renderer.h
-    src/renderer.cpp
     src/simpleconfigreader.cpp
     src/simpleconfigreader.h
     src/soundmanager.cpp
     src/soundmanager.h
+    src/luawrapper.cpp
+    src/luawrapper.h
     src/ui/eventhandler.cpp
     src/ui/eventhandler.h
     src/ui/navigation.cpp
     src/ui/navigation.h
     src/ui/manipulator.cpp
     src/ui/manipulator.h
+    src/cameraex.h
+    src/cameraex.cpp
     src/terrain/terrain.h
     src/terrain/terrain.cpp
+    src/terrain/terrainshadows.cpp
     src/terrain/terrainsettings.h
     src/terrain/terrainsettings.cpp
     src/terrain/terraininteractor.h
@@ -108,6 +113,16 @@ set(SOURCES
     src/terrain/watertile.cpp
     src/terrain/terraingenerator.h
     src/terrain/terraingenerator.cpp
+    src/rendering/drawable.h
+    src/rendering/drawable.cpp
+    src/rendering/renderer.h
+    src/rendering/renderer.cpp
+    src/rendering/renderingstep.h
+    src/rendering/renderingstep.cpp
+    src/rendering/particlewaterstep.h
+    src/rendering/particlewaterstep.cpp
+    src/rendering/shadowmappingstep.cpp
+    src/rendering/shadowmappingstep.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -124,7 +139,18 @@ set(SHADER
     shader/terrain_water.frag
     shader/hand.frag
     shader/hand.vert
+    shader/particle_water.vert
+    shader/particle_water.geo
+    shader/particle_water.frag
+    shader/particle_water_normals.frag
     shader/phongLighting.frag
+    shader/shadows/lightmap_terrain.vert
+    shader/shadows/lightmap_hand.vert
+    shader/shadows/lightmap.frag
+    shader/shadows/shadowmapping_terrain.vert
+    shader/shadows/shadowmapping_hand.vert
+    shader/shadows/shadowmapping.frag
+    shader/shadows/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
@@ -147,6 +173,7 @@ find_package( GLOW REQUIRED )
 find_package( PhysX REQUIRED )
 find_package( FMOD REQUIRED )
 find_package( ASSIMP REQUIRED )
+find_package( LUA REQUIRED )
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
@@ -154,6 +181,7 @@ include_directories(
     SYSTEM ${GLM_INCLUDE_DIR}
     SYSTEM ${GLFW_INCLUDE_DIR}
     SYSTEM ${PHYSX_INCLUDE_DIR}
+    SYSTEM ${LUA_INCLUDE_DIR}
 )
 
 list(APPEND SOURCES ${SHADER})
@@ -183,3 +211,8 @@ config_project( ${PROJECT_NAME} GLOW_UTILS 0 )
 config_project( ${PROJECT_NAME} PHYSX 0 )
 config_project( ${PROJECT_NAME} FMOD 0 )
 config_project( ${PROJECT_NAME} ASSIMP 0 )
+config_project( ${PROJECT_NAME} LUA 0 )
+
+if(LINUX)
+    target_link_libraries( ${PROJECT_NAME} dl)
+endif()

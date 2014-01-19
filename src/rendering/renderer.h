@@ -1,5 +1,9 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <functional>
+
 #include <glow/ref_ptr.h>
 
 namespace glow {
@@ -13,6 +17,9 @@ namespace glowutils {
     class ScreenAlignedQuad;
 }
 class World;
+class RenderingStep;
+class ParticleWaterStep;
+class ShadowMappingStep;
 
 class Renderer
 {
@@ -25,13 +32,18 @@ public:
 
     const glow::FrameBufferObject * sceneFbo() const;
 
+    void addSceneFboReader(const std::function<void()> & reader);
+
 protected:
     // drawing steps
     void sceneStep(const glowutils::Camera & camera);
     void handStep(const glowutils::Camera & camera);
-    void particleWaterStep(const glowutils::Camera & camera);
+    std::shared_ptr<ParticleWaterStep> m_particleWaterStep;
+    std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
     void flushStep();
 
+    /** maintain a list of rendering all steps to apply operations on all of them, regardless of the ordering */
+    std::vector<RenderingStep*> m_steps;
 
     const World & m_world;
 
@@ -47,10 +59,7 @@ protected:
     glow::ref_ptr<glow::FrameBufferObject> m_handFbo;
     glow::ref_ptr<glow::RenderBufferObject> m_handDepth;
 
-    glow::ref_ptr<glow::FrameBufferObject> m_particleWaterFbo;
-    glow::ref_ptr<glow::Texture> m_particleWaterColor;
-    glow::ref_ptr<glow::Texture> m_particleWaterDepth;
-
+    std::vector<std::function<void()>> m_sceneFboReader;
 public:
     Renderer() = delete;
     Renderer(Renderer&) = delete;

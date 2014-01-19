@@ -23,9 +23,9 @@ TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain)
 {
 }
 
-float TerrainInteractor::heightAt(float worldX, float worldZ) const
+float TerrainInteractor::heightTotalAt(float worldX, float worldZ) const
 {
-    return m_terrain->heightAt(worldX, worldZ);
+    return m_terrain->heightTotalAt(worldX, worldZ);
 }
 
 float TerrainInteractor::heightAt(float worldX, float worldZ, TerrainLevel level) const
@@ -125,9 +125,9 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     assert(PxGetPhysics().getNbScenes() == 1);
     PxScene * pxScenePtrs[1];
     PxGetPhysics().getScenes(pxScenePtrs, 1);
-    pxScenePtrs[1]->lockWrite();
+    pxScenePtrs[0]->lockWrite();
     pxShape.setGeometry(newGeometry);
-    pxScenePtrs[1]->unlockWrite();
+    pxScenePtrs[0]->unlockWrite();
 }
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ, TerrainLevel level)

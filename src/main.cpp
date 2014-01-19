@@ -42,6 +42,12 @@ static void scrollCallback(GLFWwindow* /*window*/, double xoffset, double yoffse
         eventHandler->handleScrollEvent(xoffset, yoffset);
 }
 
+static void mouseButtonCallback(GLFWwindow* /*window*/, int button, int action, int mods)
+{
+    if (eventHandler)
+        eventHandler->handleMouseButtonEvent(button, action, mods);
+}
+
 static void resizeCallback(GLFWwindow* /*window*/, int width, int height)
 {
     if (eventHandler)
@@ -53,12 +59,12 @@ void setCallbacks(GLFWwindow * window)
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetWindowSizeCallback(window, resizeCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
 }
 
 
 int main()
 {
-    
     if (!glfwInit()) {
         glow::fatal("Could not initialize glfw.");
         return -1;
@@ -90,7 +96,6 @@ int main()
 
     glfwMakeContextCurrent(window);
     setCallbacks(window);
-    glfwSwapInterval(1);
 
     checkVersion();
 

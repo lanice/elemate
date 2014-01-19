@@ -32,6 +32,8 @@ void WaterTile::unbind()
     glDisable(GL_BLEND);
 
     m_baseHeightTex->unbind(GL_TEXTURE1);
+
+    TerrainTile::unbind();
 }
 
 void WaterTile::initializeProgram()

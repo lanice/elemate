@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <list>
+#include <unordered_map>
 #include <memory>
 
 #include <glm/glm.hpp>
@@ -19,6 +19,7 @@ namespace physx {
     class PxCudaContextManager;
 }
 class ParticleEmitter;
+class LuaWrapper;
 
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -36,10 +37,23 @@ public:
     static PhysicsWrapper * getInstance();
 
     /** Proceeds with simulation for amount of given time delta. */
-    bool step(double delta);
+    void step(double delta);
+
+    /** Sets and rotates every object according to its representation in PhysX. */
+    void updateAllObjects();
     
     /** Creates a particle emitter */
-    void makeParticleEmitter(const glm::vec3& position);
+    void makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position);
+
+    void updateEmitterPosition(const glm::vec3& position);
+
+    void selectEmitter(const std::string& emitter_name);
+
+    void startEmitting();
+
+    void stopEmitting();
+
+    void clearEmitters();
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
@@ -50,15 +64,14 @@ public:
     void addActor(physx::PxActor& actor);
     void addActor(physx::PxRigidStatic& actor);
 
+    void reloadLua();
+
     void setUseGpuParticles(bool useGPU);
     bool useGpuParticles() const;
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
     static const int            kNumberOfThreads;
-
-    /** Sets and rotates every object according to its representation in PhysX. */
-    void updateAllObjects(double delta);
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();
@@ -82,9 +95,11 @@ protected:
     //physx::PxCooking*                               m_cooking;
     physx::PxCudaContextManager*                    m_cudaContextManager;
 
-    std::list<std::shared_ptr<ParticleEmitter>>     m_emitters;
+    std::unordered_map<std::string, ParticleEmitter*>     m_emitters;
+    std::string m_activeEmitter;
     bool                                            m_gpuParticles;
-
+    LuaWrapper * m_lua;
+    
     static PhysicsWrapper * s_instance;
 
 public:

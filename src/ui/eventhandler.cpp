@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game.h"
-#include "renderer.h"
+#include "rendering/renderer.h"
 #include "physicswrapper.h"
 
 
@@ -22,23 +22,40 @@ EventHandler::~EventHandler()
 }
 
 
+void EventHandler::handleMouseButtonEvent(int button, int action, int mods)
+{
+    m_game.manipulator()->handleMouseButtonEvent(button, action, mods);
+}
+    
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(&m_window, GL_TRUE);
+    if (action == GLFW_PRESS) {
+        switch (key) {
+        case GLFW_KEY_ESCAPE:
+            glfwSetWindowShouldClose(&m_window, GL_TRUE);
+            break;
+        case GLFW_KEY_F5:
+            glow::info("Updating shader...");
+            glowutils::FileRegistry::instance().reloadAll();
+            glow::info("Updating shader done.");
+            glow::info("Reloading lua scripts...");
+            m_game.reloadLua();
+            glow::info("Reloading lua scripts done.");
+            break;
+        case GLFW_KEY_V:
+            m_game.toggleVSync();
+            break;
+        case GLFW_KEY_G:
+            bool useGPU = !m_game.physicsWrapper()->useGpuParticles();
+            if (useGPU)
+                glow::info("Enabling particle simulation on GPU...");
+            else
+                glow::info("Disabling particle simulation on GPU...");
+            m_game.physicsWrapper()->setUseGpuParticles(useGPU);
+            break;
+        }
     }
-    if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
-        glow::info("Updating shader...");
-        glowutils::FileRegistry::instance().reloadAll();
-        glow::info("Updating shader done.");
-    }
-    if (key == GLFW_KEY_G && action == GLFW_PRESS) {
-        bool useGPU = !m_game.physicsWrapper()->useGpuParticles();
-        if (useGPU)
-            glow::info("Enabling particle simulation on GPU...");
-        else
-            glow::info("Disabling particle simulation on GPU...");
-        m_game.physicsWrapper()->setUseGpuParticles(useGPU);
+
     }
 
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);

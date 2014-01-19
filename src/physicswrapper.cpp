@@ -10,6 +10,7 @@
 
 #include "elements.h"
 #include "particleemitter.h"
+#include "luawrapper.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
@@ -21,6 +22,8 @@ PhysicsWrapper::PhysicsWrapper()
 , m_physics(nullptr)
 , m_scene(nullptr)
 , m_emitters()
+, m_lua(new LuaWrapper())
+, m_activeEmitter("")
 , m_gpuParticles(false)
 //m_profile_zone_manager(nullptr)
 {
@@ -36,7 +39,8 @@ PhysicsWrapper::~PhysicsWrapper()
     s_instance = nullptr;
 
     Elements::clear();
-    m_emitters.clear();
+
+    clearEmitters();
 
     m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
     m_scene->release();
@@ -48,6 +52,8 @@ PhysicsWrapper::~PhysicsWrapper()
     if (m_cudaContextManager)
         m_cudaContextManager->release();
     m_foundation->release();
+
+    delete m_lua;
 }
 
 PhysicsWrapper * PhysicsWrapper::getInstance()
@@ -56,33 +62,37 @@ PhysicsWrapper * PhysicsWrapper::getInstance()
     return s_instance;
 }
 
-bool PhysicsWrapper::step(double delta){
-
-    if (delta == 0)
-        return false;
-    
-    m_scene->simulate(static_cast<physx::PxReal>(delta));
-
-    updateAllObjects(delta);
-    
-    return true;
-}
-
-void PhysicsWrapper::updateAllObjects(double delta)
+void PhysicsWrapper::step(double delta)
 {
+    if (delta == 0)
+        return;
+
+    m_scene->simulate(static_cast<physx::PxReal>(delta));
     m_scene->fetchResults(true);
 
     for (auto& emitter : m_emitters){
-        emitter->update(delta);
+        emitter.second->step(delta);
     }
 }
 
-void PhysicsWrapper::makeParticleEmitter(const glm::vec3& position){
-    m_emitters.push_back(std::make_shared<ParticleEmitter>(
+void PhysicsWrapper::updateAllObjects()
+{
+    for (auto& emitter : m_emitters){
+        emitter.second->update();
+    }
+}
+
+void PhysicsWrapper::makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position){
+    m_emitters.emplace(emitter_name, new ParticleEmitter(
         m_gpuParticles,
         physx::PxVec3(position.x, position.y, position.z)));
-    m_emitters.back()->initializeParticleSystem();
-    m_emitters.back()->startEmit();
+    m_emitters[emitter_name]->initializeParticleSystem(Elements::emitterDescription(emitter_name));
+}
+
+void PhysicsWrapper::clearEmitters(){
+    for (auto emitter : m_emitters)
+        delete emitter.second;
+    m_emitters.clear();
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -195,4 +205,37 @@ void PhysicsWrapper::setUseGpuParticles(bool useGPU)
 bool PhysicsWrapper::useGpuParticles() const
 {
     return m_gpuParticles;
+}
+
+void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
+{
+    if (m_activeEmitter != "")
+        m_emitters[m_activeEmitter]->setPosition(physx::PxVec3(position.x, position.y, position.z));
+}
+
+void PhysicsWrapper::selectEmitter(const std::string& emitter_name)
+{
+    physx::PxVec3 current_hand_position = physx::PxVec3(0.0F, 0.0F, 0.0F);
+    if (m_activeEmitter != ""){
+        current_hand_position = m_emitters[m_activeEmitter]->position();
+        stopEmitting();
+    }
+    m_activeEmitter = emitter_name;
+    m_emitters[m_activeEmitter]->setPosition(current_hand_position);
+}
+
+void PhysicsWrapper::startEmitting()
+{
+    if (m_activeEmitter != "")
+        m_emitters[m_activeEmitter]->startEmit();
+}
+
+void PhysicsWrapper::stopEmitting()
+{
+    if (m_activeEmitter != "")
+        m_emitters[m_activeEmitter]->stopEmit();
+}
+void PhysicsWrapper::reloadLua()
+{
+    m_lua->reloadScripts();
 }
