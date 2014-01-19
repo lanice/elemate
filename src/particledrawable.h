@@ -26,7 +26,7 @@ class ParticleDrawable
 {
 public:
     /** creates a new drawable with fixed maximum number of particles */
-    ParticleDrawable(unsigned int maxParticleCount);
+    ParticleDrawable(float particleSize, unsigned int maxParticleCount);
 
     virtual ~ParticleDrawable();
 
@@ -49,6 +49,8 @@ protected:
 
     const unsigned int m_maxParticleCount;
     unsigned int m_currentNumParticles;
+
+    float m_particleSize;
 
     bool m_needBufferUpdate;
     void updateBuffers();

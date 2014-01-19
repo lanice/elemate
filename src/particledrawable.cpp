@@ -18,9 +18,10 @@
 
 std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
-ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
+ParticleDrawable::ParticleDrawable(float particleSize, unsigned int maxParticleCount)
 : m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
+, m_particleSize(particleSize)
 , m_needBufferUpdate(true)
 , m_vao(nullptr)
 , m_vbo(nullptr)
@@ -93,6 +94,8 @@ void ParticleDrawable::initialize()
         glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
+
+    m_program->setUniform("particleSize", m_particleSize);
 }
 
 void ParticleDrawable::updateBuffers()

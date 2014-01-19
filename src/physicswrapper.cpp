@@ -70,7 +70,7 @@ void PhysicsWrapper::updateAllObjects()
 void PhysicsWrapper::makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position){
     m_emitters.emplace(emitter_name, new ParticleEmitter(
         physx::PxVec3(position.x, position.y, position.z)));
-    m_emitters[emitter_name]->initializeParticleSystem(Elements::emitterDescription(emitter_name));
+    m_emitters[emitter_name]->initializeParticleSystem(*Elements::emitterDescription(emitter_name));
 }
 
 void PhysicsWrapper::clearEmitters(){

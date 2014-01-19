@@ -5,6 +5,7 @@ in vec3 v_vertex[1];
 uniform mat4 viewProjection;
 uniform vec3 lookAtUp;
 uniform vec3 lookAtRight;
+uniform float particleSize;
 
 
 layout (points) in;
@@ -15,9 +16,7 @@ out vec4 g_absPos;
 flat out float g_size;
 
 void main()
-{
-    float size = 0.1;
-    
+{    
     vec4 projPos = viewProjection * vec4(v_vertex[0], 1.0);
     
     vec4 pos2 = viewProjection * vec4(v_vertex[0] + lookAtRight, 1.0);
@@ -25,31 +24,31 @@ void main()
 	pos2 = viewProjection * vec4(v_vertex[0] + lookAtUp, 1.0);
 	float diffy = distance(pos2.xyz, projPos.xyz);
     
-    float factorX = size * diffx;
-	float factorY = size * diffy;
+    float factorX = particleSize * diffx;
+	float factorY = particleSize * diffy;
 	
     gl_Position = projPos + vec4(-factorX, -factorY, 0.0, 0.0);
 	g_relPos = vec2(-1,-1);
     g_absPos = gl_Position;
-    g_size = size;
+    g_size = particleSize;
     EmitVertex();
     
     gl_Position = projPos + vec4(-factorX, factorY, 0.0, 0.0);
 	g_relPos = vec2(-1,1);
     g_absPos = gl_Position;
-    g_size = size;
+    g_size = particleSize;
     EmitVertex();
     
     gl_Position = projPos + vec4(factorX, -factorY, 0.0, 0.0);
 	g_relPos = vec2(1,-1);
     g_absPos = gl_Position;
-    g_size = size;
+    g_size = particleSize;
     EmitVertex();
     
     gl_Position = projPos + vec4(factorX, factorY, 0.0, 0.0);
 	g_relPos = vec2(1,1);
     g_absPos = gl_Position;
-    g_size = size;
+    g_size = particleSize;
     EmitVertex();
     
     EndPrimitive();

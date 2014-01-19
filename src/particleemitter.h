@@ -46,7 +46,7 @@ public:
     ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
-    void initializeParticleSystem(EmitterDescriptionData* descriptionData);
+    void initializeParticleSystem(const EmitterDescriptionData & descriptionData);
     /** creates particles when enough time is accumulated */
     void step(double elapsed_Time);
     /** fetch the particle positions and copies it to the drawables */
@@ -67,7 +67,8 @@ protected:
     static const physx::PxReal  kDefaultInitialParticleSpeed;
     static const int            kDefaultParticleSpreading;
 
-    void applyDescriptionData(EmitterDescriptionData* descriptionData);
+    void applyDescriptionData();
+    const EmitterDescriptionData * m_desc;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
