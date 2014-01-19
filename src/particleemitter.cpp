@@ -50,7 +50,8 @@ void ParticleEmitter::applyDescriptionData(EmitterDescriptionData* descriptionDa
     m_particleSystem->setRestParticleDistance(descriptionData->restParticleDistance);
 }
 
-void ParticleEmitter::update(double elapsed_Time){
+void ParticleEmitter::step(double elapsed_Time)
+{
     if (m_akkumulator > 0.0f && m_emitting){
         m_akkumulator = static_cast<float>(m_akkumulator - elapsed_Time);
         return;
@@ -59,7 +60,10 @@ void ParticleEmitter::update(double elapsed_Time){
         if (m_emitting)
             createParticles(m_particles_per_second);
     }
-    
+}
+
+void ParticleEmitter::update()
+{    
     physx::PxParticleReadData * read_data = m_particleSystem->lockParticleReadData();
     assert(read_data);
 

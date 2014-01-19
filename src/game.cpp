@@ -3,7 +3,7 @@
 #include <thread>
 #include <cassert>
 
-#include <glow/global.h>
+#include <glow/logging.h>
 
 #include <GLFW/glfw3.h>
 
@@ -17,6 +17,7 @@
 
 Game::Game(GLFWwindow & window) :
 m_window(window),
+m_vsyncEnabled(false),
 m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
 m_camera(),
@@ -24,6 +25,8 @@ m_navigation(window, m_camera, m_world->terrain),
 m_manipulator(window, m_navigation, *m_world),
 m_renderer(*m_world)
 {
+    setVSync(m_vsyncEnabled);
+
     m_world->setNavigation(m_navigation);
     m_manipulator.setRenderer(m_renderer);
 }
@@ -66,7 +69,7 @@ void Game::loop(double delta)
         {
             nextTime += delta;
 
-            m_world->update();
+            m_world->updatePhysics();
 
             // update and draw objects if we have time remaining or already too many frames skipped.
             if ((currTime < nextTime) || (skippedFrames > maxSkippedFrames))
@@ -77,8 +80,7 @@ void Game::loop(double delta)
                 m_navigation.update(deltaTime);
                 m_navigation.apply();
 
-                m_manipulator.updateHandPosition();
-                m_world->updateListener();
+                m_world->updateVisuals();
 
                 m_renderer(m_camera);
 
@@ -98,6 +100,27 @@ void Game::loop(double delta)
     }
 
     m_world->stopSimulation();
+}
+
+void Game::setVSync(bool enabled)
+{
+    m_vsyncEnabled = enabled;
+    if (m_vsyncEnabled)
+        glow::debug("Enabling VSync");
+    else
+        glow::debug("Disabling VSync");
+
+    glfwSwapInterval(m_vsyncEnabled ? 1 : 0);
+}
+
+void Game::toggleVSync()
+{
+    setVSync(!m_vsyncEnabled);
+}
+
+bool Game::vSyncEnabled() const
+{
+    return m_vsyncEnabled;
 }
 
 void Game::reloadLua()

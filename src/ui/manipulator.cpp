@@ -43,36 +43,42 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
 {
     bool altPressed = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
 
-    if (key == GLFW_KEY_I && action == GLFW_PRESS)
-        m_world.toggleBackgroundSound(0);
-    if (key == GLFW_KEY_O && action == GLFW_PRESS)
-        m_world.toggleBackgroundSound(1);
-    
-    if (key == GLFW_KEY_P && action == GLFW_PRESS)
-        m_world.togglePause();
-
-    // Emitter Interaction
-    if (key == GLFW_KEY_F && action == GLFW_PRESS && !altPressed)
-        m_world.selectNextEmitter();
-
-
-    // Terrain interaction
-    if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS) {
-        m_grabbedTerrain = true;
-        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+    // key press events
+    if (action == GLFW_PRESS)
+    {
+        switch (key) {
+        case GLFW_KEY_I:
+            m_world.toggleBackgroundSound(0);
+            break;
+        case GLFW_KEY_O:
+            m_world.toggleBackgroundSound(0);
+            break;
+        case GLFW_KEY_P:
+            m_world.togglePause();
+            break;
+        case GLFW_KEY_F:
+            if (!altPressed)
+                m_world.selectNextEmitter();
+            else {
+                m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
+                m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+            }
+            break;
+        case GLFW_KEY_LEFT_ALT:
+            m_grabbedTerrain = true;
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+            break;
+        case GLFW_KEY_R:
+            if (altPressed) {
+                m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
+                m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+            }
+            break;
+        }
     }
+
     if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE) {
         m_grabbedTerrain = false;
-    }
-
-    if (key == GLFW_KEY_R && action == GLFW_PRESS && altPressed) {
-        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
-        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
-    }
-
-    if (key == GLFW_KEY_F && action == GLFW_PRESS && altPressed) {
-        m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
-        m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
     }
 }
 
@@ -95,14 +101,13 @@ void Manipulator::updateHandPosition()
 void Manipulator::setRenderer(Renderer & renderer)
 {
     m_renderer = &renderer;
+    // call updateHandPosition when the renderer has drawn the scene
+    m_renderer->addSceneFboReader(std::bind(&Manipulator::updateHandPosition, this));
 }
 
 const float Manipulator::depthAt(const glm::ivec2 & windowCoordinates)
 {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_renderer->sceneFbo()->id());
-    const float depth =  AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    return depth;
+    return AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
 }
 
 const glm::vec3 Manipulator::objAt(const glm::ivec2 & windowCoordinates, const float depth)
