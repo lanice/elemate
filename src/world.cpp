@@ -90,14 +90,25 @@ void World::stopSimulation()
     m_time->stop(true);
 }
 
-void World::update()
+void World::updatePhysics()
 {
     // Retrieve time delta from last World update to now.
     double delta = static_cast<double>(m_time->getNonModf());
     delta = static_cast<double>(m_time->getNonModf(true)) - delta;
 
-    // update physic
+    if (delta == 0.0f)
+        return;
+
+    // simulate physx
     m_physicsWrapper.step(delta);
+}
+
+void World::updateVisuals()
+{
+    updateListener();
+
+    // copy simulation results
+    m_physicsWrapper.updateAllObjects();
 }
 
 void World::makeElements(const glm::vec3& position)

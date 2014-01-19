@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include <glow/Array.h>
 #include <glowutils/CachedValue.h>
 
 #include <glm/glm.hpp>

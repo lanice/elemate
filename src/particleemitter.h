@@ -48,7 +48,10 @@ public:
     ~ParticleEmitter();
 
     void initializeParticleSystem(const EmitterDescriptionData * descriptionData);
-    void update(double elapsed_Time);
+    /** creates particles when enough time is accumulated */
+    void step(double elapsed_Time);
+    /** fetch the particle positions and copies it to the drawables */
+    void update();
 
     void startEmit();
     void stopEmit();

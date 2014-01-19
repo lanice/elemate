@@ -32,7 +32,12 @@ public:
     void togglePause();
 
     void stopSimulation();
-    void update();
+
+    /** updates the physics but doesn't copy/update any datastructures */
+    void updatePhysics();
+
+    /** updates the world as needed for visualization and interaction */
+    void updateVisuals();
 
     /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
     void makeElements(const glm::vec3& position);
@@ -46,7 +51,6 @@ public:
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
 
-    void updateListener();
     void reloadLua();
 
     void setNavigation(Navigation & navigation);
@@ -73,6 +77,7 @@ protected:
 
     std::vector<int> m_sounds;
 
+    void updateListener();
     void initShader();
 
     glm::vec3 m_sunlightInvDirection;

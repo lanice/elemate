@@ -19,6 +19,7 @@
 #include "world.h"
 #include "cameraex.h"
 #include "terrain/terrain.h"
+#include "rendering/shadowmappingstep.h"
 
 const std::string Hand::s_modelFilename = "data/models/hand.3DS";
 
@@ -255,12 +256,9 @@ void Hand::drawLightMapImpl(const CameraEx & lightSource)
 
 void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
 {
-    glm::mat4 lightBiasMVP = s_biasMatrix * lightSource.viewProjectionOrthographic() * transform();
+    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionOrthographic() * transform();
 
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
-    m_shadowMappingProgram->setUniform("viewport", camera.viewport());
-    m_shadowMappingProgram->setUniform("znear", camera.zNear());
-    m_shadowMappingProgram->setUniform("zfar", camera.zFar());
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
@@ -273,8 +271,6 @@ void Hand::initLightMappingProgram()
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
-
-    Drawable::initLightMappingProgram();
 }
 
 void Hand::initShadowMappingProgram()
@@ -285,5 +281,5 @@ void Hand::initShadowMappingProgram()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
-    Drawable::initShadowMappingProgram();
+    ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }
