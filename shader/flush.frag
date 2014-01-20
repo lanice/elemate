@@ -18,19 +18,20 @@ void main()
 {
     // fragColor = vec4(texture(shadowMap, v_uv).xxx, 1.0);
     // fragColor = vec4(texture(lightMap, v_uv).xxx, 1.0);
+    // fragColor = vec4(texture(waterDepth, v_uv).xxx, 1.0);
     // return;
     // fragColor = texture(sceneColor, v_uv);
     // return;
-    float sceneZ = linearize(texture(sceneDepth, v_uv).r);
+    float sceneZ = /* linearize */(texture(sceneDepth, v_uv).r);
     float waterZ = texture(waterDepth, v_uv).r;
 	fragColor = 
-    (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
+    // (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
     mix(
-        vec4(vec3(waterZ),1.0),
-        vec4(vec3(sceneZ),1.0),0
-        //waterColor(),
-		//texture(sceneColor, v_uv),
-		//step(sceneZ,waterZ)
+        // vec4(vec3(waterZ),1.0),
+        // vec4(vec3(sceneZ),1.0),
+        waterColor(),
+		texture(sceneColor, v_uv),
+		step(sceneZ,waterZ)
 	);
 }
 
