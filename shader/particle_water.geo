@@ -3,6 +3,8 @@
 in vec3 v_vertex[1];
 
 uniform mat4 viewProjection;
+uniform mat4 view;
+uniform mat4 projection;
 uniform vec3 lookAtUp;
 uniform vec3 lookAtRight;
 uniform vec3 lookAtFront;
@@ -13,38 +15,30 @@ layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
 out vec2 g_relPos;
-flat out float g_zDiff;
+out vec4 g_viewPos;
+flat out vec4 g_viewPosCenter;
+// flat out float g_zDiff;
+
+
+vec4 dRightUp = vec4(particleSize, particleSize, 0.0, 0.0);
+
+void addVertex(vec4 viewPosCenter, vec2 relPos)
+{
+	g_relPos = relPos;
+    g_viewPosCenter = viewPosCenter;
+    g_viewPos = viewPosCenter + dRightUp * vec4(relPos, 0.0, 0.0);
+    gl_Position = projection * g_viewPos;
+    EmitVertex();
+}
 
 void main()
 {    
-    vec4 projPos = viewProjection * vec4(v_vertex[0], 1.0);
-    vec4 projPosRight = viewProjection * vec4(v_vertex[0] + lookAtRight * particleSize, 1.0);
-    vec4 projPosUp = viewProjection * vec4(v_vertex[0] + lookAtUp * particleSize, 1.0);
-    vec4 projPosFront = viewProjection * vec4(v_vertex[0] + lookAtFront * particleSize, 1.0);
-    
-	float projDiffx = distance(projPosRight.xyz, projPos.xyz);
-	float projDiffy = distance(projPosUp.xyz, projPos.xyz);
-    float projDiffz = distance(projPosFront.xyz, projPos.xyz);
+    vec4 viewPosCenter = view * vec4(v_vertex[0], 1.0);
 	
-    gl_Position = projPos + vec4(-projDiffx, -projDiffy, 0.0, 0.0);
-	g_relPos = vec2(-1,-1);
-    g_zDiff = projDiffz;
-    EmitVertex();
-    
-    gl_Position = projPos + vec4(-projDiffx, projDiffy, 0.0, 0.0);
-	g_relPos = vec2(-1,1);
-    g_zDiff = projDiffz;
-    EmitVertex();
-    
-    gl_Position = projPos + vec4(projDiffx, -projDiffy, 0.0, 0.0);
-	g_relPos = vec2(1,-1);
-    g_zDiff = projDiffz;
-    EmitVertex();
-    
-    gl_Position = projPos + vec4(projDiffx, projDiffy, 0.0, 0.0);
-	g_relPos = vec2(1,1);
-    g_zDiff = projDiffz;
-    EmitVertex();
+	addVertex(viewPosCenter, vec2(-1,-1));
+	addVertex(viewPosCenter, vec2(-1, 1));
+	addVertex(viewPosCenter, vec2( 1,-1));
+	addVertex(viewPosCenter, vec2( 1, 1));
     
     EndPrimitive();
 }

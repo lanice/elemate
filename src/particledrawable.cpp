@@ -52,6 +52,8 @@ void ParticleDrawable::draw(const glowutils::Camera & camera)
 
     m_program->use();
     m_program->setUniform("viewProjection", camera.viewProjection());
+    m_program->setUniform("projection", camera.projection());
+    m_program->setUniform("view", camera.view());
     glm::vec3 viewDir = camera.center() - camera.eye();
     glm::vec3 lookAtRight = glm::normalize(glm::cross(viewDir, camera.up()));
     glm::vec3 lookAtUp = glm::normalize(glm::cross(lookAtRight, viewDir));

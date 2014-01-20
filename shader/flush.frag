@@ -22,7 +22,7 @@ void main()
     // return;
     // fragColor = texture(sceneColor, v_uv);
     // return;
-    float sceneZ = /* linearize */(texture(sceneDepth, v_uv).r);
+    float sceneZ = linearize(texture(sceneDepth, v_uv).r);
     float waterZ = texture(waterDepth, v_uv).r;
 	fragColor = 
     // (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
