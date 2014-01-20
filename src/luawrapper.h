@@ -40,6 +40,7 @@ protected:
     void push(const std::string & value) const;
     void push(const char * value) const;
     void push(const int value) const;
+    void push(const float value) const;
     void push(const double value) const;
     void push(const unsigned long value) const;
     void push(const bool value) const;

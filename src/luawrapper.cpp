@@ -87,6 +87,11 @@ void LuaWrapper::push(const int value) const
     lua_pushinteger(m_state, value);
 }
 
+void LuaWrapper::push(const float value) const
+{
+    lua_pushnumber(m_state, value);
+}
+
 void LuaWrapper::push(const double value) const
 {
     lua_pushnumber(m_state, value);
