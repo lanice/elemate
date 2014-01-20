@@ -19,7 +19,7 @@ public:
     
     physx::PxReal maxMotionDistance = 1.0F; // The maximum distance a particle can travel during one simulation step.High values may hurt performance, while low values may restrict the particle velocity too much.
     physx::PxReal gridSize = 0.0F;          // A hint for the PhysX SDK to choose the particle grouping granularity for proximity tests and parallelization.See particleGrid.
-    physx::PxReal restOffset = 0.3F;        // Defines the minimum distance between particles and the surface of rigid actors that is maintained by the collision system.
+    physx::PxReal restOffset = 0.15F;        // Defines the minimum distance between particles and the surface of rigid actors that is maintained by the collision system.
     physx::PxReal contactOffset = 0.3F;     // Defines the distance at which contacts between particles and rigid actors are created.The contacts are internally used to avoid jitter and sticking.It needs to be larger than restOffset.
     
     //PxParticleFluids only                        

@@ -11,5 +11,6 @@ void main()
 	if(length(g_relPos) > 1)
 		discard;
     gl_FragDepth = linearize(
-        (g_absPos.z - g_size*sqrt(1.0 - dot(g_relPos.xy, g_relPos.xy)))/g_absPos.w);
+        (g_absPos.z - g_size*sqrt(1.0 - dot(g_relPos.xy, g_relPos.xy)))/g_absPos.w
+    );
 }

@@ -70,7 +70,9 @@ ParticleWaterStep::ParticleWaterStep()
     }
 
     blurVerticalProgram->setUniform("binomCoeff", binomCoeff);
+    blurVerticalProgram->setUniform("binomOffset", binomOffset);
     blurHorizontalProgram->setUniform("binomCoeff", binomCoeff);
+    blurHorizontalProgram->setUniform("binomOffset", binomOffset);
 
 
     // postprocessing: calculate normals from depth image

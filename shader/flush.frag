@@ -26,9 +26,11 @@ void main()
 	fragColor = 
     (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
     mix(
-        waterColor(),
-		texture(sceneColor, v_uv),
-		step(sceneZ,waterZ)
+        vec4(vec3(waterZ),1.0),
+        vec4(vec3(sceneZ),1.0),0
+        //waterColor(),
+		//texture(sceneColor, v_uv),
+		//step(sceneZ,waterZ)
 	);
 }
 
