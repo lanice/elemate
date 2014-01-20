@@ -132,6 +132,15 @@ double LuaWrapper::fetch<double>(const int index) const
 }
 
 template<>
+float LuaWrapper::fetch<float>(const int index) const
+{
+    if (!lua_isnumber(m_state, index))
+        glow::critical("LuaWrapper: Return value not a number.");
+
+    return static_cast<float>(lua_tonumber(m_state, index));
+}
+
+template<>
 unsigned long LuaWrapper::fetch<unsigned long>(const int index) const
 {
     if (!lua_isnumber(m_state, index))

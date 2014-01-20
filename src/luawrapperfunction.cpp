@@ -45,7 +45,7 @@ namespace Luaw
     };
 
     template <>
-    unsigned int _check_get<unsigned int>(lua_State * state, const int index) {
+    unsigned long _check_get<unsigned long>(lua_State * state, const int index) {
         return luaL_checkunsigned(state, index);
     }
 
@@ -83,7 +83,7 @@ namespace Luaw
         lua_pushinteger(state, value);
     }
 
-    void _push(lua_State * state, unsigned int && value)
+    void _push(lua_State * state, unsigned long && value)
     {
         lua_pushunsigned(state, value);
     }
