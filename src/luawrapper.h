@@ -107,8 +107,8 @@ public:
         pushFunc(fun.c_str());
         push(args...);
 
-        constexpr int numArgs = sizeof...(Args);
-        constexpr int numRet = sizeof...(Ret);
+        const int numArgs = sizeof...(Args);
+        const int numRet = sizeof...(Ret);
 
         callFunc(numArgs, numRet);
 
@@ -132,7 +132,7 @@ public:
     template <typename... Return, typename... Args>
     void Register(const std::string & name, std::function<std::tuple<Return...>(Args...)> function)
     {
-        constexpr int num_return = sizeof...(Return);
+        const int num_return = sizeof...(Return);
         auto tmp = std::unique_ptr<BaseLuaFunction>(new LuaFunction<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
@@ -140,7 +140,7 @@ public:
     template <typename... Return, typename... Args>
     void Register(const std::string & name, std::tuple<Return...> (*function)(Args...))
     {
-        constexpr int num_return = sizeof...(Return);
+        const int num_return = sizeof...(Return);
         auto tmp = std::unique_ptr<BaseLuaFunction>(new LuaFunction<num_return, std::tuple<Return...>, Args...>{m_state, name, function});
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }

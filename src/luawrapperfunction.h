@@ -71,7 +71,7 @@ namespace Luaw
     template <typename... T>
     std::tuple<T...> _get_args(lua_State * state)
     {
-        constexpr std::size_t num_args = sizeof...(T);
+        const std::size_t num_args = sizeof...(T);
         return _get_args<T...>(state, typename _indices_builder<num_args>::type());
     }
 
@@ -93,7 +93,7 @@ namespace Luaw
     template <typename... T>
     void _push(lua_State * state, std::tuple<T...> &&values)
     {
-        constexpr int num_values = sizeof...(T);
+        const int num_values = sizeof...(T);
         Lua::settop(state, num_values);
         _push_dispatcher(state, std::forward<std::tuple<T...>>(values), typename _indices_builder<num_values>::type());
     }
