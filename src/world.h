@@ -39,15 +39,6 @@ public:
     /** updates the world as needed for visualization and interaction */
     void updateVisuals();
 
-    /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
-    void makeElements(const glm::vec3& position);
-    void createFountainSound(const glm::vec3& position);
-    
-    void updateEmitterPosition(const glm::vec3& position);
-    void selectNextEmitter();
-    void startEmitting();
-    void stopEmitting();
-
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
 

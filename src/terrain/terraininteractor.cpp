@@ -1,5 +1,7 @@
 #include "terraininteractor.h"
 
+#include <algorithm>
+
 #include <glow/logging.h>
 
 #include "pxcompilerfix.h"
@@ -45,9 +47,24 @@ float TerrainInteractor::heightAt(float worldX, float worldZ) const
     return m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }
 
+bool TerrainInteractor::isHeighestAt(float worldX, float worldZ) const
+{
+    if (TerrainLevels.size() == 1)
+        return true;
+
+    float othersMaxHeight = std::numeric_limits<float>::lowest();
+    for (TerrainLevel level : TerrainLevels) {
+        if (level == m_interactLevel)
+            continue;
+        othersMaxHeight = std::max(m_terrain->heightAt(worldX, worldZ, level), othersMaxHeight);
+    }
+    float myHeight = m_terrain->heightAt(worldX, worldZ, m_interactLevel);
+    return othersMaxHeight < myHeight;
+}
+
 float TerrainInteractor::changeHeight(float worldX, float worldZ, float delta)
 {
-    return changeLevelHeight(worldX, worldZ, m_interactLevel, delta);
+    return changeLevelHeight(worldX, worldZ, m_interactLevel, delta, 2);
 }
 
 float TerrainInteractor::terrainHeightAt(float worldX, float worldZ) const
@@ -60,7 +77,7 @@ float TerrainInteractor::levelHeightAt(float worldX, float worldZ, TerrainLevel 
     return m_terrain->heightAt(worldX, worldZ, level);
 }
 
-float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value)
+float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value, unsigned int diameter)
 {
     std::shared_ptr<TerrainTile> tile = nullptr;
     unsigned int physxRow;
@@ -71,10 +88,10 @@ float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel
 
     assert(tile);
 
-    return setHeight(*tile.get(), physxRow, physxColumn, value, 1);
+    return setHeight(*tile.get(), physxRow, physxColumn, value, diameter);
 }
 
-float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta)
+float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, unsigned int diameter)
 {
     std::shared_ptr<TerrainTile> tile;
     unsigned int row;
@@ -85,13 +102,13 @@ float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLe
 
     float height = tile->heightAt(row, column);
 
-    return setHeight(*tile.get(), row, column, height + delta, 1);
+    return setHeight(*tile.get(), row, column, height + delta, diameter);
 }
 
 void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
 {
     const float heightDelta = - volume / (m_terrain->settings.intervalX() * m_terrain->settings.intervalZ());
-    changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta);
+    changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta, 2);
 }
 
 float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, unsigned int diameter)
@@ -191,7 +208,7 @@ float TerrainInteractor::heightGrab(float worldX, float worldZ)
 
 void TerrainInteractor::heightPull(float worldX, float worldZ)
 {
-    setLevelHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight);
+    setLevelHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight, 3);
 }
 
 std::shared_ptr<const Terrain> TerrainInteractor::terrain() const

@@ -19,6 +19,8 @@ public:
 
     /** @return the height of the material this interactor is configured to work with */
     float heightAt(float worldX, float worldZ) const;
+    /** @return whether current interact material's layer is the heighest at the world position, meaning the one the player can interact with. */
+    bool isHeighestAt(float worldX, float worldZ) const;
     /** Add delta to the current interact material height at a specified world position.
     * The actual height value will be clampted to terrain's [-maxHeight, maxHeight] if necessary.
     * @return the new applied height value or zero if the position is out of range. */
@@ -35,11 +37,11 @@ public:
     /** Set the terrain level height at a specified world position to value.
       * @param value the new height value. Will be clamped to terrain's [-maxHeight, maxHeight] if necessary.
       * @return the new applied height value or zero if the position is out of range. */
-    float setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value);
+    float setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value, unsigned int diameter);
     /** Add delta to the terrain level height at a specified world position.
       * The actual height value will be clampted to terrain's [-maxHeight, maxHeight] if necessary.
       * @return the new applied height value or zero if the position is out of range. */
-    float changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta);
+    float changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, unsigned int diameter);
 
     /** grabs the terrain at worldXZ, storing the current height value */
     float heightGrab(float worldX, float worldZ);

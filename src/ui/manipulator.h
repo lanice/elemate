@@ -27,6 +27,9 @@ public:
 
     void updateHandPosition();
 
+    /** This is testing code and should probably go somewhere else */
+    void convertTerrainAtHand();
+
     void setRenderer(Renderer & renderer);
 
     virtual const float depthAt(const glm::ivec2 & windowCoordinates) override;

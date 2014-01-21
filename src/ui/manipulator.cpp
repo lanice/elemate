@@ -11,6 +11,8 @@
 #include "hand.h"
 #include "rendering/renderer.h"
 #include "terrain/terraininteractor.h"
+#include "physicswrapper.h"
+#include "particleemitter.h"
 
 
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
@@ -23,8 +25,8 @@ m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedroc
 m_grabbedTerrain(false),
 m_renderer(nullptr)
 {
-    m_world.makeElements(m_hand.position());
-    m_world.createFountainSound(m_hand.position());
+    PhysicsWrapper::getInstance()->makeParticleEmitter("water", glm::vec3());
+    PhysicsWrapper::getInstance()->selectEmitter("water");
 }
 
 Manipulator::~Manipulator()
@@ -34,9 +36,13 @@ void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
     //Emitter Interaction
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        m_world.startEmitting();
+        PhysicsWrapper::getInstance()->startEmitting();
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-        m_world.stopEmitting();
+        PhysicsWrapper::getInstance()->stopEmitting();
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+        convertTerrainAtHand();
 }
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
@@ -57,9 +63,7 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_world.togglePause();
             break;
         case GLFW_KEY_F:
-            if (!altPressed)
-                m_world.selectNextEmitter();
-            else {
+            if (altPressed) {
                 m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
                 m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
             }
@@ -95,7 +99,7 @@ void Manipulator::updateHandPosition()
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
 
-    m_world.updateEmitterPosition(handPosition);
+    PhysicsWrapper::getInstance()->updateEmitterPosition(handPosition + glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void Manipulator::setRenderer(Renderer & renderer)
@@ -121,4 +125,21 @@ const glm::vec3 Manipulator::objAt(
     , const glm::mat4 & viewProjectionInverted)
 {
     return unproject(m_camera, viewProjectionInverted, depth, windowCoordinates);
+}
+
+void Manipulator::convertTerrainAtHand()
+{
+    float interactRadius = 5.0f;
+
+    TerrainInteractor waterInteract(m_world.terrain, "water");
+
+    EmitterDescriptionData desc;
+
+    for (float x = m_hand.position().x - interactRadius; x < m_hand.position().x + interactRadius; x += desc.restOffset)
+    for (float z = m_hand.position().z - interactRadius; z < m_hand.position().z + interactRadius; z += desc.restOffset)
+    {
+        while (waterInteract.isHeighestAt(x, z)) {// bad idea...
+            waterInteract.changeHeight(x, z, -desc.restOffset);
+        }
+    }
 }
