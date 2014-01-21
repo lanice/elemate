@@ -7,7 +7,7 @@ uniform ivec2 viewport;
 uniform float binomCoeff[465];
 uniform int binomOffset[30];
 
-const int coeffSize = 10;
+const int coeffSize = 20;
 
 layout(location = 0)out float depthValue;
 

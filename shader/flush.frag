@@ -25,7 +25,7 @@ void main()
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
     float waterZ = texture(waterDepth, v_uv).r;
 	fragColor = 
-    // (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
+     (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
     mix(
         // vec4(texture(waterNormals, v_uv).rgb,1.0),
         // vec4(vec3(waterZ),1.0),
@@ -37,16 +37,22 @@ void main()
 }
 
 vec4 waterColor(){
+        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 3);
+        vec4 waterCol = texture(
+            sceneColor, 
+            v_uv + resVector.xy/4/resVector.z
+        );
+
 		return mix(
             mix(
-                vec4(0.1, 0.15, 0.4, 0.8),
-                vec4(0.2, 0.3, 0.8, 0.8),
+                waterCol+vec4(0,0.5,1,1)/2,
+                waterCol,
                 dot(
                     texture(waterNormals, v_uv).xyz,
                     normalize(vec3(0,1,1))
                 )
             ),
-            vec4(0.5,0.7,0.9,0.8),
+            vec4(0.9,0.9,0.9,0.8),
             smoothstep(
                 0.95,
                 0.98,
