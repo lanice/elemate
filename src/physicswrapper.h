@@ -33,7 +33,10 @@ public:
     ~PhysicsWrapper();
 
     /** Proceeds with simulation for amount of given time delta. */
-    bool step(double delta);
+    void step(double delta);
+
+    /** Sets and rotates every object according to its representation in PhysX. */
+    void updateAllObjects();
     
     /** Creates a particle emitter */
     void makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position);
@@ -60,9 +63,6 @@ public:
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
     static const int            kNumberOfThreads;
-
-    /** Sets and rotates every object according to its representation in PhysX. */
-    void updateAllObjects(double delta);
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();

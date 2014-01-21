@@ -28,7 +28,7 @@
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
 , m_terrain(terrain)
-, isInitialized(false)
+, m_isInitialized(false)
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
@@ -53,7 +53,7 @@ TerrainTile::~TerrainTile()
 
 void TerrainTile::bind(const glowutils::Camera & camera)
 {
-    if (!isInitialized)
+    if (!m_isInitialized)
         initialize();
     if (!m_program)
         initializeProgram();
@@ -98,6 +98,7 @@ void TerrainTile::setHeightField(glow::FloatArray & heightField)
 
 void TerrainTile::initialize()
 {
+    m_isInitialized = true;
 }
 
 void TerrainTile::initializeProgram()

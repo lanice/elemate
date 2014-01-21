@@ -10,7 +10,7 @@
 
 #include "elements.h"
 #include "particleemitter.h"
-#include "luawrapper.h"
+#include "lua/luawrapper.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
@@ -47,24 +47,23 @@ PhysicsWrapper::~PhysicsWrapper()
     delete m_lua;
 }
 
-bool PhysicsWrapper::step(double delta){
-
-    if (delta == 0)
-        return false;
-    
-    m_scene->simulate(static_cast<physx::PxReal>(delta));
-
-    updateAllObjects(delta);
-    
-    return true;
-}
-
-void PhysicsWrapper::updateAllObjects(double delta)
+void PhysicsWrapper::step(double delta)
 {
+    if (delta == 0)
+        return;
+
+    m_scene->simulate(static_cast<physx::PxReal>(delta));
     m_scene->fetchResults(true);
 
     for (auto& emitter : m_emitters){
-        emitter.second->update(delta);
+        emitter.second->step(delta);
+    }
+}
+
+void PhysicsWrapper::updateAllObjects()
+{
+    for (auto& emitter : m_emitters){
+        emitter.second->update();
     }
 }
 

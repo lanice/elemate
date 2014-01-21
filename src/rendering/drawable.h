@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glow/ref_ptr.h>
-#include <glow/Array.h>
 
 namespace glow {
     class Program;
@@ -41,11 +40,8 @@ protected:
     // Shadowing
     glow::ref_ptr<glow::Program> m_lightMapProgram;
     glow::ref_ptr<glow::Program> m_shadowMappingProgram;
-    virtual void initLightMappingProgram();
-    virtual void initShadowMappingProgram();
-
-    static const glow::Vec2Array s_depthSamples;
-    static const glm::mat4 s_biasMatrix;
+    virtual void initLightMappingProgram() = 0;
+    virtual void initShadowMappingProgram() = 0;
 
 public:
     void operator=(Drawable&) = delete;

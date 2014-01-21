@@ -52,7 +52,7 @@ protected:
     const Terrain & m_terrain;
 
     virtual void initialize();
-    bool isInitialized;
+    bool m_isInitialized;
     /** subclass has to override this method to create the program.
       * Afterward, call this function to set some uniforms. */
     virtual void initializeProgram() = 0;
