@@ -44,7 +44,7 @@ public:
 class ParticleEmitter
 {
 public:
-    ParticleEmitter(const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
+    ParticleEmitter(bool gpuParticles, const physx::PxVec3& position = physx::PxVec3(0, 0, 0));
     ~ParticleEmitter();
 
     void initializeParticleSystem(const EmitterDescriptionData * descriptionData);
@@ -62,6 +62,14 @@ public:
 
     void createParticles(physx::PxU32 number_of_particles);
 
+    /** enable/disable GPU acceleration. Will cause errors if not running on nvidia gpu. */
+    void setGPUAccelerated(bool enable);
+
+    /** pause the gpu acceleration if enabled, for scene mesh updates */
+    void pauseGPUAcceleration();
+    /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
+    void restoreGPUAccelerated();
+
 protected:
     static const physx::PxU32	kMaxParticleCount;
     static const physx::PxU32   kDefaultEmittedParticles;
@@ -76,6 +84,8 @@ protected:
 
     const std::shared_ptr<TerrainInteractor> m_terrainInteractor;
 
+    bool                     m_gpuParticles;
+    uint8_t                  m_gpuParticlesPauseFlags;
     physx::PxVec3            m_position;
     bool                     m_emitting;
     int                      m_particles_per_second;

@@ -147,3 +147,8 @@ Renderer * Game::renderer()
 {
     return &m_renderer;
 }
+
+PhysicsWrapper * Game::physicsWrapper()
+{
+    return m_physicsWrapper;
+}
