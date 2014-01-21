@@ -1,82 +1,36 @@
-//#version 330 core
-//
-//in vec2 v_uv;
-//
-//uniform sampler2D source;
-//uniform ivec2 viewport;
-//
-//const float coeff[11] = float[11](
-//    float(184756)/1048576,
-//    float(167960)/1048576,
-//    float(125970)/1048576,
-//    float(77520)/1048576,
-//    float(38760)/1048576,
-//    float(15504)/1048576,
-//    float(4845)/1048576,
-//    float(1140)/1048576,
-//    float(190)/1048576,
-//    float(20)/1048576,
-//    float(1)/1048576
-//    );
-//
-//layout(location = 0)out float depthValue;
-//
-//float calcDepth(ivec2 p_uv, float p_originDepth);
-//
-//void main(){
-//    ivec2 uv = ivec2(v_uv*vec2(viewport));
-//    float originDepth = texelFetch(source, uv, 0).r;
-//    depthValue = mix(
-//        originDepth,
-//        //calcDepth(uv, originDepth),
-//        1.0,
-//        step(1.0, originDepth)
-//    );
-//}
-//
-//float calcDepth(ivec2 p_uv, float p_originDepth){
-//    int coeffSize = 10;
-//    float sum = p_originDepth*coeff[0];
-//    for(int i=1; i<=coeffSize; ++i){
-//            sum += texelFetch(source, p_uv + ivec2(i, 0), 0).r*coeff[i];
-//            sum += texelFetch(source, p_uv - ivec2(i, 0), 0).r*coeff[i];
-//    }
-//    return sum;
-//}
-
-
 #version 330 core
 
 in vec2 v_uv;
 
 uniform sampler2D source;
 uniform ivec2 viewport;
+uniform float binomCoeff[465];
+uniform int binomOffset[30];
 
-const float coeff[11] = float[11](
-    float(184756)/1048576,
-    float(167960)/1048576,
-    float(125970)/1048576,
-    float(77520)/1048576,
-    float(38760)/1048576,
-    float(15504)/1048576,
-    float(4845)/1048576,
-    float(1140)/1048576,
-    float(190)/1048576,
-    float(20)/1048576,
-    float(1)/1048576
-    );
+const int coeffSize = 10;
 
 layout(location = 0)out float depthValue;
+
+float calcDepth(float originDepth, ivec2 uv);
 
 void main(){
     ivec2 uv = ivec2(v_uv*vec2(viewport));
 
     float originDepth = texelFetch(source, uv, 0).r;
-    int coeffSize = 10;
-    float sum = originDepth*coeff[0];
+
+    depthValue = mix(
+        calcDepth(originDepth,uv),
+        1.0,
+        step(1.0, originDepth)
+    );
+}
+
+
+float calcDepth(float originDepth, ivec2 uv){
+    float sum = originDepth * binomCoeff[binomOffset[coeffSize]];
     for(int i=1; i<=coeffSize; ++i){
-            sum += texelFetch(source, uv + ivec2(i, 0), 0).r*coeff[i];
-            sum += texelFetch(source, uv - ivec2(i, 0), 0).r*coeff[i];
+            sum += (texelFetch(source, uv + ivec2(i, 0), 0).r +
+                    texelFetch(source, uv - ivec2(i, 0), 0).r) * binomCoeff[binomOffset[coeffSize] + i];
     }
-    depthValue = mix(sum,1.0,step(1.0,originDepth));
+    return sum;
 }

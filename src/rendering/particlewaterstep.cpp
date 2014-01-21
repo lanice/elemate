@@ -58,14 +58,15 @@ ParticleWaterStep::ParticleWaterStep()
     glow::FloatArray binomCoeff;
     glow::IntArray binomOffset;
 
-    for (unsigned int nHalf = 0; nHalf < 20; ++nHalf){
+    for (unsigned int nHalf = 0; nHalf < 30; ++nHalf){
         binomOffset.push_back(static_cast<int>(binomCoeff.size()));
-        unsigned long int sum = static_cast<unsigned long int>(pow(2, 2 * nHalf));
         for (int k = nHalf; k >= 0; --k){
-            double num = 1;
-            for (unsigned int i = 0; i < 2*nHalf-k; i++)
-                num = num*(2*nHalf-i)/(i+1);
-        binomCoeff.push_back(float(num)/float(sum));
+            double num = 1.0;
+            for (unsigned int i = 0; i < 2 * nHalf - k; i++)
+                num = 0.5*num*(2 * nHalf - i) / (i + 1);
+            for (unsigned int i = 0; i < k; i++)
+                num /= 2;
+            binomCoeff.push_back(float(num));
         }
     }
 
