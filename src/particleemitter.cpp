@@ -34,9 +34,10 @@ ParticleEmitter::~ParticleEmitter(){
     m_particleSystem->releaseParticles();
 }
 
-void ParticleEmitter::initializeParticleSystem(const EmitterDescriptionData * descriptionData){
-    m_desc = descriptionData;
-    applyDescriptionData(m_desc);
+void ParticleEmitter::initializeParticleSystem(const EmitterDescriptionData & descriptionData)
+{
+    m_desc = &descriptionData;
+    applyDescriptionData();
 
     assert(PxGetPhysics().getNbScenes() == 1);
     physx::PxScene* scene_buffer[1];
@@ -44,16 +45,17 @@ void ParticleEmitter::initializeParticleSystem(const EmitterDescriptionData * de
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
     scene_buffer[0]->addActor(*m_particleSystem);
 
-    m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
+    m_particleDrawable = std::make_shared<ParticleDrawable>(m_desc->restParticleDistance, kMaxParticleCount);
 }
 
-void ParticleEmitter::applyDescriptionData(const EmitterDescriptionData * descriptionData){
+void ParticleEmitter::applyDescriptionData()
+{
     m_particleSystem = PxGetPhysics().createParticleFluid(kMaxParticleCount, false);
     assert(m_particleSystem);
 
-    m_particleSystem->setViscosity(descriptionData->viscosity);
-    m_particleSystem->setStiffness(descriptionData->stiffness);
-    m_particleSystem->setRestParticleDistance(descriptionData->restParticleDistance);
+    m_particleSystem->setViscosity(m_desc->viscosity);
+    m_particleSystem->setStiffness(m_desc->stiffness);
+    m_particleSystem->setRestParticleDistance(m_desc->restParticleDistance);
 }
 
 void ParticleEmitter::step(double elapsed_Time)

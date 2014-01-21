@@ -13,6 +13,7 @@
 
 ParticleWaterStep::ParticleWaterStep()
 {
+    // first step: get depth image
     m_depthTex = new glow::Texture(GL_TEXTURE_2D);
     m_depthTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     m_depthTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -22,74 +23,127 @@ ParticleWaterStep::ParticleWaterStep()
 
     m_depthFbo = new glow::FrameBufferObject();
     m_depthFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_depthTex);
-    m_depthFbo->setDrawBuffer(GL_NONE);
+    m_depthFbo->setDrawBuffers({ GL_NONE });
     m_depthFbo->unbind();
 
 
-    m_blurredDepthTex = new glow::Texture(GL_TEXTURE_2D);
-    m_blurredDepthTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_blurredDepthTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_blurredDepthTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_blurredDepthTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_postTexA = new glow::Texture(GL_TEXTURE_2D);
+    m_postTexA->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_postTexA->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_postTexA->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_postTexA->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    m_blurredDepthFbo = new glow::FrameBufferObject();
-    m_blurredDepthFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_blurredDepthTex);
-    m_blurredDepthFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
-    m_blurredDepthFbo->unbind();
+    m_postTexB = new glow::Texture(GL_TEXTURE_2D);
+    m_postTexB->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_postTexB->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_postTexB->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_postTexB->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    m_blurringProgram = new glow::Program();
-    m_blurringProgram->attach(
+    // postprocessing: 2x depth blurring
+
+    glow::Program * blurHorizontalProgram = new glow::Program();
+    blurHorizontalProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring.frag"));
-    m_blurringProgram->setUniform("waterDepth", 0);
-    m_blurringQuad = new glowutils::ScreenAlignedQuad(m_blurringProgram);
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_h.frag"));
+    addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
+
+    glow::Program * blurVerticalProgram = new glow::Program();
+    blurVerticalProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_v.frag"));
+    addProcess(*m_postTexA, m_postTexB, *blurVerticalProgram);
+
+    m_depthResultTex = m_postTexB;
+
+    glow::FloatArray binomCoeff;
+    glow::IntArray binomOffset;
+
+    for (unsigned int nHalf = 0; nHalf < 30; ++nHalf){
+        binomOffset.push_back(static_cast<int>(binomCoeff.size()));
+        for (int k = nHalf; k >= 0; --k){
+            double num = 1.0;
+            for (unsigned int i = 0; i < 2 * nHalf - k; i++)
+                num = 0.5*num*(2 * nHalf - i) / (i + 1);
+            for (unsigned int i = 0; i < k; i++)
+                num /= 2;
+            binomCoeff.push_back(float(num));
+        }
+    }
+
+    blurVerticalProgram->setUniform("binomCoeff", binomCoeff);
+    blurVerticalProgram->setUniform("binomOffset", binomOffset);
+    blurHorizontalProgram->setUniform("binomCoeff", binomCoeff);
+    blurHorizontalProgram->setUniform("binomOffset", binomOffset);
 
 
+    // postprocessing: calculate normals from depth image
+    
     m_normalsTex = new glow::Texture(GL_TEXTURE_2D);
     m_normalsTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     m_normalsTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_normalsTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_normalsTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    m_normalsFbo = new glow::FrameBufferObject();
-    m_normalsFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_normalsTex);
-    m_normalsFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
-    m_normalsFbo->unbind();
-
-    m_normalsProgram = new glow::Program();
-    m_normalsProgram->attach(
+    glow::Program * normalProgram = new glow::Program();
+    normalProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_normals.frag"));
-    m_normalsProgram->setUniform("waterDepth", 0);
-    m_normalsQuad = new glowutils::ScreenAlignedQuad(m_normalsProgram);
+    addProcess(*m_postTexB, m_normalsTex, *normalProgram);
+}
+
+ParticleWaterStep::PostProcess::PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
+: m_source(source)
+, m_target(target)
+, m_fbo(nullptr)
+, m_program(&program)
+, m_quad(new glowutils::ScreenAlignedQuad(&program))
+{
+    if (m_target) {
+        m_fbo = new glow::FrameBufferObject;
+        m_fbo->attachTexture2D(GL_COLOR_ATTACHMENT0, target);
+        m_fbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
+        m_fbo->unbind();
+    }
+}
+
+void ParticleWaterStep::PostProcess::draw()
+{
+    if (m_fbo)
+        m_fbo->bind();
+
+    m_source.bind(GL_TEXTURE0);
+
+    m_quad->draw();
+
+    m_source.unbind(GL_TEXTURE0);
+
+    if (m_fbo)
+        m_fbo->unbind();
+}
+
+void ParticleWaterStep::addProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
+{
+    m_processes.push_back(PostProcess(source, target, program));
 }
 
 void ParticleWaterStep::draw(const glowutils::Camera & camera)
 {
     // render depth values to texture
-    m_depthFbo->bind();
-    glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
+
+    m_depthFbo->bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
     ParticleDrawable::drawParticles(camera);
     m_depthFbo->unbind();
 
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    // apply blurring on the depth image
-    m_blurredDepthFbo->bind();
-    m_depthTex->bind(GL_TEXTURE0);
-    m_blurringQuad->draw();
-    m_depthTex->unbind(GL_TEXTURE0);
-    m_blurredDepthFbo->unbind();
-
-    // calculate the surface normals
-    m_normalsFbo->bind();
-    m_blurredDepthTex->bind(GL_TEXTURE0);
-    m_normalsQuad->draw();
-    m_blurredDepthTex->unbind(GL_TEXTURE0);
-    m_normalsFbo->unbind();
+    // apply post processing on depth image, calculate normals
+    for (PostProcess & process : m_processes) {
+        process.draw();
+    }
 }
 
 void ParticleWaterStep::resize(int width, int height)
@@ -98,26 +152,27 @@ void ParticleWaterStep::resize(int width, int height)
     m_depthFbo->printStatus(true);
     assert(m_depthFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_blurredDepthTex->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
-    m_blurredDepthFbo->printStatus(true);
-    assert(m_blurredDepthFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    m_postTexA->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
+    m_postTexB->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
 
     m_normalsTex->image2D(0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
-    m_normalsFbo->printStatus(true);
-    assert(m_normalsFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_blurringProgram->setUniform("viewport", glm::ivec2(width, height));
-    m_normalsProgram->setUniform("viewport", glm::ivec2(width, height));
+    for (PostProcess & process : m_processes) {
+        process.m_fbo->printStatus(true);
+        assert(process.m_fbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+
+        process.m_program->setUniform("viewport", glm::ivec2(width, height));
+    }
+}
+
+glow::Texture * ParticleWaterStep::depthTex()
+{
+    assert(m_depthResultTex);
+    return m_depthResultTex;
 }
 
 glow::Texture * ParticleWaterStep::normalsTex()
 {
     assert(m_normalsTex);
-    return m_normalsTex.get();
-}
-
-glow::Texture * ParticleWaterStep::depthTex()
-{
-    assert(m_blurredDepthTex);
-    return m_blurredDepthTex.get();
+    return m_normalsTex;
 }

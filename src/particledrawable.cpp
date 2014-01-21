@@ -18,9 +18,10 @@
 
 std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
-ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
+ParticleDrawable::ParticleDrawable(float particleSize, unsigned int maxParticleCount)
 : m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
+, m_particleSize(particleSize)
 , m_needBufferUpdate(true)
 , m_vao(nullptr)
 , m_vbo(nullptr)
@@ -51,11 +52,16 @@ void ParticleDrawable::draw(const glowutils::Camera & camera)
 
     m_program->use();
     m_program->setUniform("viewProjection", camera.viewProjection());
+    m_program->setUniform("projection", camera.projection());
+    m_program->setUniform("view", camera.view());
     glm::vec3 viewDir = camera.center() - camera.eye();
     glm::vec3 lookAtRight = glm::normalize(glm::cross(viewDir, camera.up()));
     glm::vec3 lookAtUp = glm::normalize(glm::cross(lookAtRight, viewDir));
     m_program->setUniform("lookAtUp", lookAtUp);
     m_program->setUniform("lookAtRight", lookAtRight);
+    m_program->setUniform("lookAtFront", glm::normalize(viewDir));
+    m_program->setUniform("znear", camera.zNear());
+    m_program->setUniform("zfar", camera.zFar());
 
     m_vao->bind();
 
@@ -89,7 +95,10 @@ void ParticleDrawable::initialize()
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert"),
         glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
+
+    m_program->setUniform("particleSize", m_particleSize);
 }
 
 void ParticleDrawable::updateBuffers()

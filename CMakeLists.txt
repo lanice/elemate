@@ -145,6 +145,8 @@ set(SHADER
     shader/particle_water.geo
     shader/particle_water.frag
     shader/particle_water_normals.frag
+    shader/particle_water_depthblurring_h.frag
+    shader/particle_water_depthblurring_v.frag
     shader/phongLighting.frag
     shader/shadows/lightmap_terrain.vert
     shader/shadows/lightmap_hand.vert
@@ -152,7 +154,7 @@ set(SHADER
     shader/shadows/shadowmapping_terrain.vert
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag
-    shader/shadows/depth_util.frag
+    shader/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
