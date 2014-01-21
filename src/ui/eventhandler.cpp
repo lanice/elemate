@@ -46,12 +46,7 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             m_game.toggleVSync();
             break;
         case GLFW_KEY_G:
-            bool useGPU = !m_game.physicsWrapper()->useGpuParticles();
-            if (useGPU)
-                glow::info("Enabling particle simulation on GPU...");
-            else
-                glow::info("Disabling particle simulation on GPU...");
-            m_game.physicsWrapper()->setUseGpuParticles(useGPU);
+            m_game.physicsWrapper()->toogleUseGpuParticles();
             break;
         }
     }

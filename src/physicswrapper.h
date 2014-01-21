@@ -6,6 +6,9 @@
 
 #include <glm/glm.hpp>
 
+#include "pxcompilerfix.h"
+#include "foundation/PxErrorCallback.h"
+
 namespace physx {
     class PxPhysics;
     class PxFoundation;
@@ -20,6 +23,13 @@ namespace physx {
 }
 class ParticleEmitter;
 class LuaWrapper;
+
+
+class ElematePxErrorCallback : public physx::PxErrorCallback
+{
+public:
+    virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override;
+};
 
 
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
@@ -67,11 +77,14 @@ public:
     void reloadLua();
 
     void setUseGpuParticles(bool useGPU);
+    void toogleUseGpuParticles();
     bool useGpuParticles() const;
     /** pause the gpu acceleration if enabled, for scene mesh updates */
     void pauseGPUAcceleration();
     /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
     void restoreGPUAccelerated();
+
+    static bool physxGpuAvailable();
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
@@ -88,15 +101,18 @@ protected:
 
     /** Prints an error message and end the application after pressing enter. */
     void fatalError(std::string error_message);
+
+    bool checkPhysxGpuAvailable();
     
 
-
+    ElematePxErrorCallback                          m_errorCallback;
     physx::PxFoundation*                            m_foundation;
     //physx::PxProfileZoneManager*                  m_profile_zone_manager; ///< currently disabled.
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
     //physx::PxCooking*                               m_cooking;
+    const bool                                      m_physxGpuAvailable;
     physx::PxCudaContextManager*                    m_cudaContextManager;
 
     std::unordered_map<std::string, ParticleEmitter*>     m_emitters;

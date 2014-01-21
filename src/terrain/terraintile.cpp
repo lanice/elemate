@@ -155,7 +155,8 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     assert(m_pxShape);
 
 #ifdef PX_WINDOWS
-    PxParticleGpu::createHeightFieldMirror(*pxHeightField, *PhysicsWrapper::getInstance()->cudaContextManager());
+    if (PhysicsWrapper::physxGpuAvailable())
+        PxParticleGpu::createHeightFieldMirror(*pxHeightField, *PhysicsWrapper::getInstance()->cudaContextManager());
 #endif
 
     delete[] hfSamples;

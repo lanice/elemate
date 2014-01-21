@@ -21,6 +21,8 @@ PhysicsWrapper::PhysicsWrapper()
 , m_cpu_dispatcher(nullptr)
 , m_physics(nullptr)
 , m_scene(nullptr)
+, m_physxGpuAvailable(checkPhysxGpuAvailable())
+, m_cudaContextManager(nullptr)
 , m_emitters()
 , m_lua(new LuaWrapper())
 , m_activeEmitter("")
@@ -54,6 +56,21 @@ PhysicsWrapper::~PhysicsWrapper()
     m_foundation->release();
 
     delete m_lua;
+}
+
+bool PhysicsWrapper::checkPhysxGpuAvailable()
+{
+    bool gpuPhysx = -1 != physx::PxGetSuggestedCudaDeviceOrdinal(m_errorCallback);
+    if (gpuPhysx)
+        glow::info("PhysX GPU acceleration is available. Press G to toggle this feature.");
+    else
+        glow::info("PhysX GPU acceleration is not available. Calculating the particles on the CPU.");
+    return gpuPhysx;
+}
+
+bool PhysicsWrapper::physxGpuAvailable()
+{
+    return getInstance()->m_physxGpuAvailable;
 }
 
 PhysicsWrapper * PhysicsWrapper::getInstance()
@@ -107,9 +124,11 @@ void PhysicsWrapper::initializePhysics(){
         fatalError("PxCreatePhysics failed!");
 
 #ifdef PX_WINDOWS
-    // create cuda context manager
-    physx::PxCudaContextManagerDesc cudaContextManagerDesc;
-    m_cudaContextManager = physx::PxCreateCudaContextManager(*m_foundation, cudaContextManagerDesc, nullptr);
+    if (m_physxGpuAvailable) {
+        // create cuda context manager
+        physx::PxCudaContextManagerDesc cudaContextManagerDesc;
+        m_cudaContextManager = physx::PxCreateCudaContextManager(*m_foundation, cudaContextManagerDesc, nullptr);
+    }
 #endif
 
     /* ... we still have to think about those:
@@ -197,24 +216,53 @@ void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
 
 void PhysicsWrapper::setUseGpuParticles(bool useGPU)
 {
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
     m_gpuParticles = useGPU;
     for (auto emitter : m_emitters)
         emitter.second->setGPUAccelerated(m_gpuParticles);
 }
 
+void PhysicsWrapper::toogleUseGpuParticles()
+{
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
+    if (!m_gpuParticles)
+        glow::info("Enabling particle simulation on GPU...");
+    else
+        glow::info("Disabling particle simulation on GPU...");
+    setUseGpuParticles(!m_gpuParticles);
+}
+
 bool PhysicsWrapper::useGpuParticles() const
 {
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return false;
+    }
     return m_gpuParticles;
 }
 
 void PhysicsWrapper::pauseGPUAcceleration()
 {
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
     for (auto emitter : m_emitters)
         emitter.second->pauseGPUAcceleration();
 }
 
 void PhysicsWrapper::restoreGPUAccelerated()
 {
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
     for (auto emitter : m_emitters)
         emitter.second->restoreGPUAccelerated();
 }
@@ -250,4 +298,36 @@ void PhysicsWrapper::stopEmitting()
 void PhysicsWrapper::reloadLua()
 {
     m_lua->reloadScripts();
+}
+
+void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
+{
+    switch (code) {
+    case physx::PxErrorCode::eNO_ERROR:
+        glow::info("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eDEBUG_INFO:
+        glow::debug("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eDEBUG_WARNING:
+        glow::warning("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eINVALID_PARAMETER:
+    case physx::PxErrorCode::eINVALID_OPERATION:
+    case physx::PxErrorCode::eOUT_OF_MEMORY:
+        glow::critical("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eINTERNAL_ERROR:
+        glow::fatal("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eABORT:
+        glow::fatal("PhysX: ""%;"" [%;%;]", message, file, line);
+        exit(2);
+    case physx::PxErrorCode::ePERF_WARNING:
+        glow::debug("PhysX (performance): ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eMASK_ALL:
+        glow::fatal("PhysX (something terrible happened): ""%;"" [%;%;]", message, file, line);
+        break;
+    }
 }
