@@ -37,10 +37,10 @@ void main()
 }
 
 vec4 waterColor(){
-        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 3);
+        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 1.8);
         vec4 waterCol = texture(
             sceneColor, 
-            v_uv + resVector.xy/4/resVector.z
+            v_uv + resVector.xy/resVector.z
         );
 
 		return mix(
