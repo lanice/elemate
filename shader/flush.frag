@@ -27,6 +27,7 @@ void main()
 	fragColor = 
     // (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
     mix(
+        // vec4(texture(waterNormals, v_uv).rgb,1.0),
         // vec4(vec3(waterZ),1.0),
         // vec4(vec3(sceneZ),1.0),
         waterColor(),
@@ -38,11 +39,11 @@ void main()
 vec4 waterColor(){
 		return mix(
             mix(
-                vec4(vec3(0.0),0.8),
+                vec4(0.1, 0.15, 0.4, 0.8),
                 vec4(0.2, 0.3, 0.8, 0.8),
                 dot(
                     texture(waterNormals, v_uv).xyz,
-                    normalize(vec3(1,1,0))
+                    normalize(vec3(0,1,1))
                 )
             ),
             vec4(0.5,0.7,0.9,0.8),
@@ -51,7 +52,7 @@ vec4 waterColor(){
                 0.98,
                 dot(
                     texture(waterNormals, v_uv).rgb,
-                    normalize(vec3(1,1,0))
+                    normalize(vec3(0,1,1))
                 )
             )
         );

@@ -16,20 +16,27 @@ void main()
 
     float height_left = texelFetch(source, uv+ivec2(-1, 0), 0).x;
     float height_right = texelFetch(source, uv+ivec2(1, 0), 0).x;
-    float height_front = texelFetch(source, uv+ivec2(0, -1), 0).x;
-    float height_back = texelFetch(source, uv+ivec2(0, 1), 0).x;
+    float height_up = texelFetch(source, uv+ivec2(0, 1), 0).x;
+    float height_down = texelFetch(source, uv+ivec2(0, -1), 0).x;
 
     vec3 va,vb;
 
-    if(abs(height_right-depth) < abs(height_left-depth))
-        va = vec3(1.0/viewport.x, height_right - depth, 0.0);
-    else
-        va = vec3(1.0/viewport.x, depth - height_left, 0.0);
+    va = vec3(1.0/viewport.x, 0.0, mix(
+            height_right - depth,
+            depth - height_left,
+            step(
+                abs(height_left-depth),
+                abs(height_right-depth)
+            )
+    ));
+    vb = vec3(0.0, 1.0/viewport.y, mix(
+        depth - height_up,
+        height_down - depth,
+        step(
+            abs(height_down-depth),
+            abs(height_up-depth)
+        )
+    ));
 
-    if(abs(height_front-depth) < abs(height_back-depth))
-        vb = vec3(0.0, height_front - depth, 1.0/viewport.y);
-    else
-        vb = vec3(0.0, depth - height_back, 1.0/viewport.y);
-
-    normal = normalize(cross(vb, va));
+    normal = normalize(cross(va, vb));
 }
