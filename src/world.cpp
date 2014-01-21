@@ -19,9 +19,8 @@
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
 
-
 World::World(PhysicsWrapper & physicsWrapper)
-: hand(new Hand(*this))
+: hand(nullptr)
 , terrain(nullptr)
 , m_soundManager(std::make_shared<SoundManager>())
 , m_physicsWrapper(physicsWrapper)
@@ -54,6 +53,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     for (const auto actor : terrain->pxActorMap())
         m_physicsWrapper.addActor(*actor.second);
 
+    hand = std::make_shared<Hand>(*this);
+
     m_sunlighting[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
     m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
     m_sunlighting[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
@@ -79,20 +80,37 @@ void World::stopSimulation()
     m_time->stop(true);
 }
 
-void World::update()
+void World::updatePhysics()
 {
     // Retrieve time delta from last World update to now.
     double delta = static_cast<double>(m_time->getNonModf());
     delta = static_cast<double>(m_time->getNonModf(true)) - delta;
 
-    // update physic
+    if (delta == 0.0f)
+        return;
+
+    // simulate physx
     m_physicsWrapper.step(delta);
 }
 
-void World::makeStandardBall(const glm::vec3& position)
+void World::updateVisuals()
 {
-    m_physicsWrapper.makeParticleEmitter(position);
+    updateListener();
+
+    // copy simulation results
+    m_physicsWrapper.updateAllObjects();
 }
+
+void World::makeElements(const glm::vec3& position)
+{
+    m_physicsWrapper.clearEmitters();
+    m_currentElements = Elements::availableElements();
+    for (const auto& element_name: m_currentElements)
+        m_physicsWrapper.makeParticleEmitter(element_name, position);
+    selectNextEmitter();
+}
+
+
 
 void World::createFountainSound(const glm::vec3& position)
 {
@@ -166,4 +184,30 @@ glow::Program * World::programByName(const std::string & name)
         glow::critical("trying to use unloaded shader %;", name);
         return nullptr;
     }
+}
+
+void World::updateEmitterPosition(const glm::vec3& position)
+{
+    m_physicsWrapper.updateEmitterPosition(position);
+    //FMOD_VECTOR pos;
+    //pos.x = position.x; 
+    //pos.y = position.y;
+    //pos.z = position.z;
+    //m_soundManager->setSoundPos(0,pos); // Not good .... just for testing reasons
+}
+
+void World::selectNextEmitter()
+{
+    m_currentElements.splice(m_currentElements.end(), m_currentElements, m_currentElements.begin());
+    m_physicsWrapper.selectEmitter(m_currentElements.front());
+}
+
+void World::startEmitting()
+{
+    m_physicsWrapper.startEmitting();
+}
+
+void World::stopEmitting()
+{
+    m_physicsWrapper.stopEmitting();
 }

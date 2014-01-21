@@ -23,6 +23,7 @@ public:
     virtual ~Manipulator();
 
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
+    void handleMouseButtonEvent(int button, int action, int mods);
 
     void updateHandPosition();
 

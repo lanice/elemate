@@ -131,7 +131,7 @@ const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
     return m_pxActors;
 }
 
-float Terrain::heightAt(float x, float z) const
+float Terrain::heightTotalAt(float x, float z) const
 {
     float height = std::numeric_limits<float>::lowest();
     for (TerrainLevel level : TerrainLevels) {

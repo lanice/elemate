@@ -3,12 +3,13 @@
 namespace glow {
     class Buffer; // missing forward declaration in FrameBufferObject.h
 }
-#include <glow/DebugMessageOutput.h> // for error handling of missing glTexParameterfv
 #include <glow/FrameBufferObject.h>
 #include <glow/Texture.h>
 #include <glow/RenderBufferObject.h>
+#include <glow/Program.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/random.hpp>
 
 #include "world.h"
 #include "terrain/terrain.h"
@@ -16,6 +17,28 @@ namespace glow {
 #include "cameraex.h"
 
 #undef far  // that's for windows (minwindef.h)
+
+const glm::mat4 ShadowMappingStep::s_biasMatrix(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0);
+
+glow::Vec2Array initDepthSamples() {
+    glow::Vec2Array samples;
+    for (int i = 0; i < 32; ++i)
+        samples.push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
+    return samples;
+}
+const glow::Vec2Array ShadowMappingStep::s_depthSamples = initDepthSamples();
+const GLint ShadowMappingStep::s_lightmapSlot = 0;
+static const float earlyBailDistance = 3.0f;
+const glow::Vec2Array ShadowMappingStep::s_earlyBailSamples({
+    glm::vec2(earlyBailDistance, earlyBailDistance),
+    glm::vec2(earlyBailDistance, -earlyBailDistance),
+    glm::vec2(-earlyBailDistance, earlyBailDistance),
+    glm::vec2(-earlyBailDistance, -earlyBailDistance)});
+
 
 ShadowMappingStep::ShadowMappingStep(const World & world)
 : m_world(world)
@@ -91,7 +114,7 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
 {
     drawLightMap(camera);
 
-    m_lightTex->bind(GL_TEXTURE0);
+    m_lightTex->bind(GL_TEXTURE0 + s_lightmapSlot);
     m_shadowFbo->bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -99,7 +122,7 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
     m_world.hand->drawShadowMapping(camera, *m_lightCam);
 
     m_shadowFbo->unbind();
-    m_lightTex->unbind(GL_TEXTURE0);
+    m_lightTex->unbind(GL_TEXTURE0 + s_lightmapSlot);
 }
 
 void ShadowMappingStep::resize(int width, int height)
@@ -120,4 +143,11 @@ glow::Texture * ShadowMappingStep::result()
 {
     assert(m_shadowTex);
     return m_shadowTex.get();
+}
+
+void ShadowMappingStep::setUniforms(glow::Program & program)
+{
+    program.setUniform("lightMap", s_lightmapSlot);
+    program.setUniform("depthSamples", s_depthSamples);
+    program.setUniform("earlyBailSamples", s_earlyBailSamples);
 }
