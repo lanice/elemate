@@ -10,7 +10,7 @@
 
 #include "elements.h"
 #include "particleemitter.h"
-#include "luawrapper.h"
+#include "lua/luawrapper.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;

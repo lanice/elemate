@@ -86,10 +86,10 @@ set(SOURCES
     src/simpleconfigreader.h
     src/soundmanager.cpp
     src/soundmanager.h
-    src/luawrapper.cpp
-    src/luawrapper.h
-    src/luawrapperfunction.cpp
-    src/luawrapperfunction.h
+    src/lua/luawrapper.cpp
+    src/lua/luawrapper.h
+    src/lua/luawrapperfunction.cpp
+    src/lua/luawrapperfunction.h
     src/ui/eventhandler.cpp
     src/ui/eventhandler.h
     src/ui/navigation.cpp
