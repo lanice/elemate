@@ -7,6 +7,7 @@
 
 #include "game.h"
 #include "rendering/renderer.h"
+#include "physicswrapper.h"
 
 
 EventHandler::EventHandler(GLFWwindow & window, Game & game)
@@ -43,6 +44,9 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             break;
         case GLFW_KEY_V:
             m_game.toggleVSync();
+            break;
+        case GLFW_KEY_G:
+            m_game.physicsWrapper()->toogleUseGpuParticles();
             break;
         }
     }

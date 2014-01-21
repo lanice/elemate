@@ -60,11 +60,7 @@ PhysicsWrapper::~PhysicsWrapper()
 
 bool PhysicsWrapper::checkPhysxGpuAvailable()
 {
-#ifdef PX_WINDOWS
     bool gpuPhysx = -1 != physx::PxGetSuggestedCudaDeviceOrdinal(m_errorCallback);
-#elif
-    bool gpuPhysx = false;
-#endif
     if (gpuPhysx)
         glow::info("PhysX GPU acceleration is available. Press G to toggle this feature.");
     else
@@ -303,6 +299,7 @@ void PhysicsWrapper::reloadLua()
 {
     m_lua->reloadScripts();
 }
+<<<<<<< HEAD
 
 void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 {
@@ -335,3 +332,5 @@ void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const ch
         break;
     }
 }
+=======
+>>>>>>> origin/master
