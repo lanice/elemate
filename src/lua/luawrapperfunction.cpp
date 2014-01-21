@@ -51,7 +51,7 @@ namespace Luaw
 
     template <>
     float _check_get<float>(lua_State * state, const int index) {
-        return luaL_checknumber(state, index);
+        return static_cast<float>(luaL_checknumber(state, index));
     }
 
     template <>
@@ -61,7 +61,7 @@ namespace Luaw
 
     template <>
     bool _check_get<bool>(lua_State * state, const int index) {
-        return lua_toboolean(state, index);
+        return lua_toboolean(state, index) != 0;
     }
 
     template <>

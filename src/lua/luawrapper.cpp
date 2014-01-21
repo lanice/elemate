@@ -160,5 +160,5 @@ bool LuaWrapper::fetch<bool>(const int index) const
     if (!lua_isboolean(m_state, index))
         glow::critical("LuaWrapper: Return value not a boolean.");
 
-    return lua_toboolean(m_state, index);
+    return lua_toboolean(m_state, index) != 0;
 }
