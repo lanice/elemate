@@ -67,7 +67,7 @@ struct TerrainSettings {
     /** number of sample rows per z coordinate */
     inline float samplesPerZCoord() const { assert(sizeZ > 0); return columns / sizeZ; }
     /** distance between two sample points along the x axis */
-    inline float intervalX() const { assert(rows >= 2); return sizeX / (rows - 1); }
+    inline float intervalX() const { assert(rows >= 2); return tileSizeX() / (rows - 1); }
     /** distance between two sample points along the z axis */
-    inline float intervalZ() const { assert(columns >= 2); return sizeZ / (columns - 1); }
+    inline float intervalZ() const { assert(columns >= 2); return tileSizeZ() / (columns - 1); }
 };

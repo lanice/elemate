@@ -56,8 +56,8 @@ private:
     /** for internal usage: the terrain level that hold the configured interact material */
     TerrainLevel m_interactLevel;
 
-    float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value);
-    void setPxHeight(TerrainTile & tile, unsigned row, unsigned column, float value);
+    float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, unsigned int diameter);
+    void updatePxHeight(TerrainTile & tile, unsigned row, unsigned column, unsigned int diameter);
 
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;

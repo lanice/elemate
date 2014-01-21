@@ -78,6 +78,7 @@ protected:
     * @param terrainTile if world x/z position are in range, this pointer will be set to a valid terrain tile.
     * @return true, if the position is in terrain extent's range. */
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const;
+    bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const;
     /** transform world position into tileID and normalized coordinates in this tile.
     * @param tileID this will set the x, y values of the id, but will not change the level
     * @param normX normZ these parameter will be set the normalized position in the tile, referenced with tileID

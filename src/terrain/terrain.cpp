@@ -158,14 +158,24 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
 
 bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const
 {
+    float row_fract = 0.0f, column_fract = 0.0f;
+    return worldToTileRowColumn(x, z, level, terrainTile, row, column, row_fract, column_fract);
+}
+
+bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const
+{
     // only implemented for 1 tile
     assert(settings.tilesX == 1 && settings.tilesZ == 1);
     float normX = (x / settings.sizeX + 0.5f);
     float normZ = (z / settings.sizeZ + 0.5f);
     bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
 
-    row = static_cast<int>(normX * settings.rows) % settings.rows;
-    column = static_cast<int>(normZ * settings.columns) % settings.columns;
+    float row_int = 0.0f, column_int = 0.0f;
+    row_fract = std::modf(normX * settings.rows, &row_int);
+    column_fract = std::modf(normZ * settings.columns, &column_int);
+
+    row = static_cast<unsigned int>(row_int) % settings.rows;
+    column = static_cast<unsigned int>(column_int) % settings.columns;
 
     TileID tileID(level, 0, 0);
 

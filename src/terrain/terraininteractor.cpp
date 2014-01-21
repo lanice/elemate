@@ -71,7 +71,7 @@ float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel
 
     assert(tile);
 
-    return setHeight(*tile.get(), physxRow, physxColumn, value);
+    return setHeight(*tile.get(), physxRow, physxColumn, value, 1);
 }
 
 float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta)
@@ -85,7 +85,7 @@ float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLe
 
     float height = tile->heightAt(row, column);
 
-    return setHeight(*tile.get(), row, column, height + delta);
+    return setHeight(*tile.get(), row, column, height + delta, 1);
 }
 
 void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
@@ -94,33 +94,39 @@ void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
     changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta);
 }
 
-float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value)
+float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, unsigned int diameter)
 {
+    assert(diameter > 0);
     const TerrainSettings & settings = m_terrain->settings;
 
-    // abort, if we are at the bounderies (because we set 3x3 values)
-    if (row == 0 || column == 0 || row == settings.rows - 1 || column == settings.columns - 1)
+    int maxD = diameter - int((diameter + 1) * 0.5f);
+    int minD = maxD - diameter + 1;
+
+    // abort, if we are at the bounderies
+    if (row < static_cast<unsigned>(-minD) || column < static_cast<unsigned>(-minD) || row > settings.rows - maxD || column == settings.columns - maxD)
         return 0.0f;
     
     float value_inRange = value; /** clamp height value */
     if (value_inRange < -settings.maxHeight) value_inRange = -settings.maxHeight;
     if (value_inRange > settings.maxHeight) value_inRange = settings.maxHeight;
 
-    for (int u = 0; u <= 1; ++u) {
-        for (int v = 0; v <= 1; ++v) {
+    for (int u = minD; u <= maxD; ++u) {
+        for (int v = minD; v <= maxD; ++v) {
             tile.setHeight(row + u, column + v, value_inRange);
         }
-        tile.addBufferUpdateRange(column - 1 + (row + u)*settings.columns, 2);
+        tile.addBufferUpdateRange(column - minD + (row + u)*settings.columns, diameter);
     }
 
-    setPxHeight(tile, row, column, value);
+    updatePxHeight(tile, row, column, diameter);
 
     return value_inRange;
 }
 
-void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned column, float value)
+void TerrainInteractor::updatePxHeight(TerrainTile & tile, unsigned row, unsigned column, unsigned int diameter)
 {
-    static const unsigned d_size = 2;
+    int maxD = diameter - int((diameter + 1) * 0.5f);
+    int minD = maxD - diameter + 1;
+    int sizeD = diameter * diameter;
 
     PxShape & pxShape = *tile.pxShape();
     PxHeightFieldGeometry geometry;
@@ -132,16 +138,19 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     }
     PxHeightField * hf = geometry.heightField;
 
-    PxHeightFieldSample samplesM[d_size * d_size];
-    for (PxU32 i = 0; i < d_size * d_size; i++)
-    {
-        samplesM[i].height = static_cast<PxI16>(value / geometry.heightScale);
-        samplesM[i].materialIndex0 = samplesM[i].materialIndex1 = tile.pxMaterialIndexAt(row, column);
+    PxHeightFieldSample * samplesM = new PxHeightFieldSample[sizeD];
+    for (unsigned int u = 0; u < diameter; ++u) {
+        for (unsigned int v = 0; v < diameter; ++v) {
+            const unsigned int index = u + v*diameter;
+            const float terrainHeight = tile.heightAt(row + minD + u, column + minD + v);
+            samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
+            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = tile.pxMaterialIndexAt(row, column);
+        }
     }
 
     PxHeightFieldDesc descM;
-    descM.nbColumns = d_size;
-    descM.nbRows = d_size;
+    descM.nbColumns = diameter;
+    descM.nbRows = diameter;
     descM.samples.data = samplesM;
     descM.format = hf->getFormat();
     descM.samples.stride = hf->getSampleStride();
@@ -151,7 +160,7 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
 
     PhysicsWrapper::getInstance()->pauseGPUAcceleration();
 
-    bool success = hf->modifySamples(column - 1, row - 1, descM);
+    bool success = hf->modifySamples(column + minD, row + minD, descM);
     assert(success);
     if (!success) {
         glow::warning("TerrainInteractor::setPxHeight could not modify heightfield.");
