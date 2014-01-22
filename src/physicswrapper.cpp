@@ -62,7 +62,7 @@ bool PhysicsWrapper::checkPhysxGpuAvailable()
 {
 #ifdef PX_WINDOWS
     bool gpuPhysx = -1 != physx::PxGetSuggestedCudaDeviceOrdinal(m_errorCallback);
-#elif
+#else
     bool gpuPhysx = false;
 #endif
     if (gpuPhysx)
