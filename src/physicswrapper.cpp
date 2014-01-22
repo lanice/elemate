@@ -24,9 +24,9 @@ PhysicsWrapper::PhysicsWrapper()
 , m_physxGpuAvailable(checkPhysxGpuAvailable())
 , m_cudaContextManager(nullptr)
 , m_emitters()
-, m_lua(new LuaWrapper())
 , m_activeEmitter("")
 , m_gpuParticles(false)
+, m_lua(new LuaWrapper())
 //m_profile_zone_manager(nullptr)
 {
     initializePhysics();
@@ -62,7 +62,7 @@ bool PhysicsWrapper::checkPhysxGpuAvailable()
 {
 #ifdef PX_WINDOWS
     bool gpuPhysx = -1 != physx::PxGetSuggestedCudaDeviceOrdinal(m_errorCallback);
-#elif
+#else
     bool gpuPhysx = false;
 #endif
     if (gpuPhysx)
