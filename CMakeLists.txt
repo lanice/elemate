@@ -73,6 +73,7 @@ set(SOURCES
     src/hand.h
     src/imagereader.h
     src/imagereader.cpp
+    src/particlegroup.cpp
     src/particlegroup.h
     src/particleemitter.cpp
     src/particleemitter.h
