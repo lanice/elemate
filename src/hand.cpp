@@ -249,14 +249,14 @@ void Hand::rotate(const float angle)
 
 void Hand::drawLightMapImpl(const CameraEx & lightSource)
 {
-    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * transform());
+    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionEx() * transform());
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
 
 void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
 {
-    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionOrthographic() * transform();
+    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * transform();
 
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);

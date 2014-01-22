@@ -18,9 +18,9 @@ void Terrain::drawLightMapImpl(const CameraEx & lightSource)
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
-    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_lightMapProgram->setUniform("viewport", glm::ivec2(1024, 1024));
-    m_lightMapProgram->setUniform("znear", lightSource.zNearOrtho());
+    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_lightMapProgram->setUniform("viewport", lightSource.viewport());
+    m_lightMapProgram->setUniform("znear", lightSource.zNearEx());
     m_lightMapProgram->setUniform("zfar", lightSource.zFar());
 
     // TODO: generalize for more tiles...
@@ -46,7 +46,7 @@ void Terrain::drawShadowMappingImpl(const glowutils::Camera & camera, const Came
     auto baseTile = m_tiles.at(TileID(TerrainLevel::BaseLevel));
     auto waterTile = m_tiles.at(TileID(TerrainLevel::WaterLevel));
 
-    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionOrthographic() * baseTile->transform();
+    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * baseTile->transform();
 
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
