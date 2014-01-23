@@ -8,6 +8,7 @@
 
 namespace physx {
     class PxParticleFluid;
+    class PxParticleReadData;
     struct PxFilterData;
     class PxVec3;
 }
@@ -62,8 +63,7 @@ public:
 
     void createParticles(physx::PxU32 number_of_particles);
 
-    void getRestingParticles(std::list<physx::PxVec3>& particles_position_buffer);
-    void destroyRestingParticles();    
+    size_t getRestingParticles(std::list<physx::PxVec3>& particles_position_buffer, physx::PxU32* particle_index_buffer, physx::PxParticleReadData * read_data);
     
     /** enable/disable GPU acceleration. Will cause errors if not running on nvidia gpu. */
     void setGPUAccelerated(bool enable);
@@ -78,6 +78,7 @@ protected:
     static const physx::PxU32   kDefaultEmittedParticles;
     static const physx::PxReal  kDefaultInitialParticleSpeed;
     static const int            kDefaultParticleSpreading;
+    static const physx::PxReal  KSpeedRestThreshold;
 
     void applyDescriptionData(EmitterDescriptionData* descriptionData);
 

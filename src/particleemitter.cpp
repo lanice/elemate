@@ -9,10 +9,11 @@
 #include "particledrawable.h"
 
 
-const physx::PxU32  ParticleEmitter::kMaxParticleCount = 2000;
+const physx::PxU32  ParticleEmitter::kMaxParticleCount = 20000;
 const physx::PxU32  ParticleEmitter::kDefaultEmittedParticles = 1;
 const physx::PxReal ParticleEmitter::kDefaultInitialParticleSpeed = 0.5F;
 const int           ParticleEmitter::kDefaultParticleSpreading = 50;
+const physx::PxReal ParticleEmitter::KSpeedRestThreshold = 0.1F;
 
 ParticleEmitter::ParticleEmitter(bool gpuParticles, const physx::PxVec3& position)
 : m_particleDrawable(nullptr)
@@ -38,6 +39,7 @@ void ParticleEmitter::initializeParticleSystem(EmitterDescriptionData* descripti
     physx::PxScene* scene_buffer[1];
     PxGetPhysics().getScenes(scene_buffer, 1);
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+    m_particleSystem->setParticleReadDataFlag(physx::PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
     scene_buffer[0]->addActor(*m_particleSystem);
 
     m_particleDrawable = std::make_shared<ParticleDrawable>(kMaxParticleCount);
@@ -69,9 +71,16 @@ void ParticleEmitter::update()
     physx::PxParticleReadData * read_data = m_particleSystem->lockParticleReadData();
     assert(read_data);
 
+    std::list<physx::PxVec3> released_positions;
+    physx::PxU32 particle_index_buffer[kMaxParticleCount];
+    size_t resting_particle_count = getRestingParticles(released_positions, particle_index_buffer, read_data);
+
     m_particleDrawable->updateParticles(read_data);
 
     read_data->unlock();
+
+    //if (resting_particle_count)
+    //    m_particleSystem->releaseParticles(resting_particle_count, physx::PxStrideIterator<const physx::PxU32>(particle_index_buffer));
 }
 
 void ParticleEmitter::startEmit(){
@@ -180,12 +189,18 @@ void ParticleEmitter::setEmittingRate(const physx::PxU32& particle_per_emit){
     m_particles_per_second = particle_per_emit;
 }
 
-void ParticleEmitter::getRestingParticles(std::list<physx::PxVec3>& particles_position_buffer)
+size_t ParticleEmitter::getRestingParticles(std::list<physx::PxVec3>& particles_position_buffer, physx::PxU32* particle_index_buffer, physx::PxParticleReadData * read_data)
 {
-    assert(false);
-}
+    assert(read_data);
+    particles_position_buffer.clear();
 
-void ParticleEmitter::destroyRestingParticles()
-{
-    assert(false);
+    unsigned int particle_count = 0;
+    for (unsigned int index = 0; index < read_data->nbValidParticles; index++){
+        if (read_data->flagsBuffer[index] == physx::PxParticleFlag::eVALID &&
+            read_data->velocityBuffer[index].magnitude() < KSpeedRestThreshold){
+            particles_position_buffer.push_back(read_data->positionBuffer[index]);
+            particle_index_buffer[particle_count++] = index;
+        }
+    }
+    return particle_count;
 }

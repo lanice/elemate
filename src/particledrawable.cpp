@@ -117,7 +117,7 @@ void ParticleDrawable::addParticles(unsigned int numParticles, const physx::PxVe
 
 void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readData)
 {
-    unsigned numParticles = readData->nbValidParticles;
+    unsigned numParticles = readData->validParticleRange;
 
     if (numParticles == 0)
         return;
