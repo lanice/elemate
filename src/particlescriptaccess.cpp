@@ -21,6 +21,11 @@ ParticleScriptAccess& ParticleScriptAccess::instance()
     return s_access;
 }
 
+ParticleGroup * ParticleScriptAccess::particleGroup(const int index)
+{
+    return std::get<0>(m_particleGroups.at(index));
+}
+
 int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
 {
     ParticleGroup * particleGroup = new ParticleGroup();
