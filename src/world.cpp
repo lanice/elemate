@@ -18,6 +18,7 @@
 #include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
+#include "particlescriptaccess.h"
 
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(nullptr)
@@ -96,6 +97,8 @@ void World::updatePhysics()
 void World::updateVisuals()
 {
     updateListener();
+
+    ParticleScriptAccess::instance().updateVisuals();
 
     // copy simulation results
     m_physicsWrapper.updateAllObjects();
