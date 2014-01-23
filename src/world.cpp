@@ -19,6 +19,8 @@
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
 
+World * World::s_instance = nullptr;
+
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(nullptr)
 , terrain(nullptr)
@@ -26,11 +28,13 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_physicsWrapper(physicsWrapper)
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
-, m_programsByName()
+, m_sharedShaders()
 , m_sounds()
 , m_sunlightInvDirection(glm::vec3(0.0, 6.5, 7.5))
 , m_sunlighting()
 {
+    assert(s_instance == nullptr);
+
     // Create two non-3D channels (paino and rain)
     //initialise as paused
     m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
@@ -59,10 +63,18 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
     m_sunlighting[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
     m_sunlighting[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+    s_instance = this;
 }
 
 World::~World()
 {
+    s_instance = nullptr;
+}
+
+World * World::instance()
+{
+    assert(s_instance);
+    return s_instance;
 }
 
 
@@ -175,15 +187,19 @@ void World::setUpLighting(glow::Program & program) const
     program.setUniform("light2", lightMat2);
 }
 
-glow::Program * World::programByName(const std::string & name)
+glow::Shader * World::sharedShader(GLenum type, const std::string & filename) const
 {
-    try {
-        return m_programsByName.at(name).get();
+    auto shaderIt = m_sharedShaders.find(filename);
+
+    if (shaderIt != m_sharedShaders.end()) {
+        assert(shaderIt->second->type() == type);
+        return shaderIt->second.get();
     }
-    catch (std::out_of_range e) {
-        glow::critical("trying to use unloaded shader %;", name);
-        return nullptr;
-    }
+
+    glow::Shader * loaded = glowutils::createShaderFromFile(type, filename);
+    m_sharedShaders.emplace(filename, loaded);
+
+    return loaded;
 }
 
 void World::updateEmitterPosition(const glm::vec3& position)

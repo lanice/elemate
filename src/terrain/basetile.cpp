@@ -12,6 +12,7 @@
 #include "terrain.h"
 #include "elements.h"
 #include "imagereader.h"
+#include "world.h"
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID)
 : TerrainTile(terrain, tileID)
@@ -72,13 +73,12 @@ void BaseTile::initialize()
 
 void BaseTile::initializeProgram()
 {
-    glow::ref_ptr<glow::Shader> vertex = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_base.vert");
-    glow::ref_ptr<glow::Shader> geo = glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/terrain_base.geo");
-    glow::ref_ptr<glow::Shader> fragment = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_base.frag");
-    glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
-
     m_program = new glow::Program();
-    m_program->attach(vertex, geo, fragment, phongLightingFrag);
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_base.vert"),
+        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/terrain_base.geo"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_base.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"));
 
     m_program->setUniform("terrainTypeID", 1);
     m_program->setUniform("rockSampler", 2);
