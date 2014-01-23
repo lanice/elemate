@@ -299,10 +299,6 @@ void PhysicsWrapper::stopEmitting()
     if (m_activeEmitter != "")
         m_emitters[m_activeEmitter]->stopEmit();
 }
-void PhysicsWrapper::reloadLua()
-{
-    m_lua->reloadScripts();
-}
 
 void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 {

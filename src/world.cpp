@@ -133,11 +133,6 @@ void World::updateListener(){
     m_soundManager->update();
 }
 
-void World::reloadLua()
-{
-    m_physicsWrapper.reloadLua();
-}
-
 void World::setNavigation(Navigation & navigation)
 {
     m_navigation = &navigation;

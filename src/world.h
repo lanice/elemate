@@ -49,8 +49,6 @@ public:
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
 
-    void reloadLua();
-
     void setNavigation(Navigation & navigation);
 
     const glm::vec3 & sunlightInvDirection() const;

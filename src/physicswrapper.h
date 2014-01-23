@@ -74,8 +74,6 @@ public:
     void addActor(physx::PxActor& actor);
     void addActor(physx::PxRigidStatic& actor);
 
-    void reloadLua();
-
     void setUseGpuParticles(bool useGPU);
     void toogleUseGpuParticles();
     bool useGpuParticles() const;

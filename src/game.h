@@ -30,8 +30,6 @@ public:
     void toggleVSync();
     bool vSyncEnabled() const;
 
-    void reloadLua();
-
     Navigation * navigation();
     Manipulator * manipulator();
     glowutils::Camera * camera();

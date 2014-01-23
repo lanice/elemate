@@ -8,6 +8,7 @@
 #include "game.h"
 #include "rendering/renderer.h"
 #include "physicswrapper.h"
+#include "lua/luawrapper.h"
 
 
 EventHandler::EventHandler(GLFWwindow & window, Game & game)
@@ -39,7 +40,7 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             glowutils::FileRegistry::instance().reloadAll();
             glow::info("Updating shader done.");
             glow::info("Reloading lua scripts...");
-            m_game.reloadLua();
+            LuaWrapper::reloadAll();
             glow::info("Reloading lua scripts done.");
             break;
         case GLFW_KEY_V:
