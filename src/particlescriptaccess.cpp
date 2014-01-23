@@ -55,7 +55,7 @@ int ParticleScriptAccess::removeParticleGroup(const int index)
 
 void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType)
 {
-    auto lambda = [particleGroup](float a, float b, float c, float d, float e, float f, float g)
+    auto lambda = [&](float a, float b, float c, float d, float e, float f, float g)
     {
         particleGroup->setMutableProperties(a, b, c, d, e, f, g);
         return 0;
