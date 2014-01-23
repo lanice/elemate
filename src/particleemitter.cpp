@@ -132,3 +132,13 @@ physx::PxVec3 ParticleEmitter::position()const{
 void ParticleEmitter::setEmittingRate(const physx::PxU32& particle_per_emit){
     m_particles_per_second = particle_per_emit;
 }
+
+void ParticleEmitter::getRestingParticles(std::list<physx::PxVec3>& particles_position_buffer)
+{
+    assert(false);
+}
+
+void ParticleEmitter::destroyRestingParticles()
+{
+    assert(false);
+}

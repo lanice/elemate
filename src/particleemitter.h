@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <list>
 
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
@@ -57,6 +58,9 @@ public:
     void setEmittingRate(const physx::PxU32& particle_per_emit);
 
     void createParticles(physx::PxU32 number_of_particles);
+
+    void getRestingParticles(std::list<physx::PxVec3>& particles_position_buffer);
+    void destroyRestingParticles();
 
 protected:
     static const physx::PxU32	kMaxParticleCount;

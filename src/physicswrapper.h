@@ -37,16 +37,13 @@ public:
     
     /** Creates a particle emitter */
     void makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position);
-
     void updateEmitterPosition(const glm::vec3& position);
-
     void selectEmitter(const std::string& emitter_name);
-
     void startEmitting();
-
     void stopEmitting();
-
     void clearEmitters();
+
+    void getRestingParticles();
 
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
@@ -76,7 +73,6 @@ protected:
     /** Prints an error message and end the application after pressing enter. */
     void fatalError(std::string error_message);
     
-
 
     physx::PxFoundation*                            m_foundation;
     //physx::PxProfileZoneManager*                  m_profile_zone_manager; ///< currently disabled.
