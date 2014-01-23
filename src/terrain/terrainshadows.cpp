@@ -73,7 +73,7 @@ void Terrain::initLightMappingProgram()
     m_lightMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_terrain.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 
     m_lightMapProgram->setUniform("heightField0", 0);
     m_lightMapProgram->setUniform("heightField1", 1);
@@ -87,7 +87,7 @@ void Terrain::initShadowMappingProgram()
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_terrain.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     m_shadowMappingProgram->setUniform("heightField0", 1);
     m_shadowMappingProgram->setUniform("heightField1", 2);

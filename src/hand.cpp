@@ -271,7 +271,7 @@ void Hand::initLightMappingProgram()
     m_lightMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 }
 
 void Hand::initShadowMappingProgram()
@@ -280,7 +280,7 @@ void Hand::initShadowMappingProgram()
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }
