@@ -75,6 +75,8 @@ set(SOURCES
     src/imagereader.cpp
     src/particlegroup.cpp
     src/particlegroup.h
+    src/particlescriptaccess.cpp
+    src/particlescriptaccess.h
     src/particleemitter.cpp
     src/particleemitter.h
     src/particledrawable.h

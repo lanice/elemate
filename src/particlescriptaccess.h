@@ -2,9 +2,11 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
 
 
 class ParticleGroup;
+class LuaWrapper;
 
 /**
  * Provides global access to ParticleGroups.
@@ -18,6 +20,7 @@ public:
 
     /** Creates an instance of ParticleGroup and registers it, returning the access index */
     int createParticleGroup(const std::string & elementType = "default");
+    int removeParticleGroup(const int index);
 
     /** Called automatically to update the ParticleDrawable(s) */
     void updateVisuals();
@@ -25,7 +28,7 @@ public:
 protected:
     ParticleScriptAccess();
 
-    std::vector<ParticleGroup *> m_particleGroups;
+    std::vector<std::tuple<ParticleGroup *, LuaWrapper *> > m_particleGroups;
     std::vector<int> m_freeIndices;
 
     static ParticleScriptAccess s_access;
