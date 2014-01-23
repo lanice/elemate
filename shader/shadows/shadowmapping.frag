@@ -12,8 +12,9 @@ const float lightSize = 30.0f;
 const float searchWidth = 5.0f;
 
 const int nbSamples = 32;
-uniform vec2 depthSamples[32];
-uniform vec2 earlyBailSamples[4];
+uniform vec2 depthSamples[nbSamples];
+const int nbEarlySamples = 5;
+uniform vec2 earlyBailSamples[nbEarlySamples];
 
 float linearize(float depth);
 
@@ -34,9 +35,9 @@ bool earlyBailing(vec2 coord, float zReceiver, float relativeSearchWidth);
 
 void main()
 {
-    vec3 fromLightCoord = v_shadowCoord.xyz /* / v_shadowCoord */; // orthographic projection -> xyz/w not needed
+    vec3 fromLightCoord = v_shadowCoord.xyz; // orthographic projection -> xyz/w not needed
     // float fromLightZ = linearize(fromLightCoord.z) - zBias;
-    float fromLightZ = v_shadowCoord.z - zBias;
+    float fromLightZ = fromLightCoord.z - zBias;
     
     float relativeSearchWidth = searchWidth * invViewportSize;
 
@@ -68,10 +69,10 @@ bool earlyBailing(vec2 coord, float zReceiver, float relativeSearchWidth)
     int numBlockers = 0;
     float sumFromLightZ = 0.0;
     
-    for (int i=0; i < 4; ++i) {
+    for (int i=0; i < nbEarlySamples; ++i) {
         float zBlocker = texture(lightMap, earlyBailSamples[i] * relativeSearchWidth + coord).x;
         sumFromLightZ += zBlocker;
-        zBlocker += mix(0, 1, step(zReceiver, zBlocker));
+        numBlockers += int(mix(0, 1, step(zReceiver, zBlocker)));
     }
     
     // early bailing not applicable for complex surfaces
@@ -79,10 +80,10 @@ bool earlyBailing(vec2 coord, float zReceiver, float relativeSearchWidth)
         return false;
     
     if (numBlockers == 0) {
-        shadowValue = 1.0;
-        return true;
-    } else if (numBlockers == 4) {
         shadowValue = 0.0;
+        return true;
+    } else if (numBlockers == nbEarlySamples) {
+        shadowValue = 1.0;
         return true;
     }
     return false;

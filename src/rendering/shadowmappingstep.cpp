@@ -34,6 +34,7 @@ const glow::Vec2Array ShadowMappingStep::s_depthSamples = initDepthSamples();
 const GLint ShadowMappingStep::s_lightmapSlot = 0;
 static const float earlyBailDistance = 3.0f;
 const glow::Vec2Array ShadowMappingStep::s_earlyBailSamples({
+    glm::vec2(0, 0),
     glm::vec2(earlyBailDistance, earlyBailDistance),
     glm::vec2(earlyBailDistance, -earlyBailDistance),
     glm::vec2(-earlyBailDistance, earlyBailDistance),
@@ -79,8 +80,8 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     const float top = ts.maxHeight;
     const float far = ts.sizeZ * 0.5f;
 
-    m_lightCam->setEye(glm::vec3(0, 0, 0));
-    m_lightCam->setCenter(-m_world.sunPosition());
+    m_lightCam->setEye(m_world.sunPosition());
+    m_lightCam->setCenter(glm::vec3(0, 0, 0));
     m_lightCam->setUp(glm::vec3(0, 1, 0));
     m_lightCam->setLeft(-right);
     m_lightCam->setRight(right);
