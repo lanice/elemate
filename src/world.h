@@ -57,8 +57,8 @@ public:
 
     void setNavigation(Navigation & navigation);
 
-    const glm::vec3 & sunlightInvDirection() const;
-    const glm::mat4 & sunlighting() const;
+    const glm::vec3 & sunPosition() const;
+    const glm::mat4 & sunlight() const;
     void setUpLighting(glow::Program & program) const;
 
     /** The world maintains a list of shaders that are needed multiple times in the game (phonglighting, depth_util..).
@@ -87,8 +87,8 @@ protected:
     void updateListener();
     void initShader();
 
-    glm::vec3 m_sunlightInvDirection;
-    glm::mat4 m_sunlighting;
+    glm::vec3 m_sunPosition;
+    glm::mat4 m_sunlight;
 
 public:
     World(World&) = delete;

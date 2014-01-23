@@ -30,8 +30,8 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
 , m_sharedShaders()
 , m_sounds()
-, m_sunlightInvDirection(glm::vec3(0.0, 6.5, 7.5))
-, m_sunlighting()
+, m_sunPosition(glm::normalize(glm::vec3(0.0, 6.5, 7.5)))
+, m_sunlight()
 {
     assert(s_instance == nullptr);
 
@@ -59,10 +59,11 @@ World::World(PhysicsWrapper & physicsWrapper)
 
     hand = std::make_shared<Hand>(*this);
 
-    m_sunlighting[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
-    m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
-    m_sunlighting[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
-    m_sunlighting[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+    m_sunlight[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
+    m_sunlight[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
+    m_sunlight[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
+    m_sunlight[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
     s_instance = this;
 }
 
@@ -159,14 +160,14 @@ void World::initShader()
 {
 }
 
-const glm::vec3 & World::sunlightInvDirection() const
+const glm::vec3 & World::sunPosition() const
 {
-    return m_sunlightInvDirection;
+    return m_sunPosition;
 }
 
-const glm::mat4 & World::sunlighting() const
+const glm::mat4 & World::sunlight() const
 {
-    return m_sunlighting;
+    return m_sunlight;
 }
 
 void World::setUpLighting(glow::Program & program) const
@@ -181,8 +182,8 @@ void World::setUpLighting(glow::Program & program) const
     lightMat2[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 
     program.setUniform("lightambientglobal", lightambientglobal);
-    program.setUniform("sunlightInvDir", sunlightInvDirection());
-    program.setUniform("sunlighting", sunlighting());
+    program.setUniform("sunPosition", sunPosition());
+    program.setUniform("sunlight", sunlight());
     program.setUniform("lightdir2", lightdir2);
     program.setUniform("light2", lightMat2);
 }
