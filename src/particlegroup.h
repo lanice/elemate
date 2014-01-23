@@ -15,25 +15,25 @@ class ParticleDrawable;
 
 struct ImmutableParticleProperties
 {
-    physx::PxReal maxMotionDistance = 1.0f;
-    physx::PxReal gridSize = 0.0f;
-    physx::PxReal restOffset = 0.3f;
-    physx::PxReal contactOffset = 0.3f;
+    physx::PxReal maxMotionDistance;
+    physx::PxReal gridSize;
+    physx::PxReal restOffset;
+    physx::PxReal contactOffset;
 
-    physx::PxReal restParticleDistance = 0.3f;
+    physx::PxReal restParticleDistance;
 };
 
 struct MutableParticleProperties
 {
-    physx::PxReal restitution = 0.5f;
-    physx::PxReal dynamicFriction = 0.5f;
-    physx::PxReal staticFriction = 0.5f;
-    physx::PxReal damping = 0.5f;
-    physx::PxVec3 externalAcceleration = physx::PxVec3(0.0f, 0.0f, 0.0f);
-    physx::PxReal particleMass = 0.5f;
+    physx::PxReal restitution;
+    physx::PxReal dynamicFriction;
+    physx::PxReal staticFriction;
+    physx::PxReal damping;
+    physx::PxVec3 externalAcceleration;
+    physx::PxReal particleMass;
 
-    physx::PxReal viscosity = 5.0f;
-    physx::PxReal stiffness = 8.134f;
+    physx::PxReal viscosity;
+    physx::PxReal stiffness;
 };
 
 class ParticleGroup
@@ -47,8 +47,6 @@ public:
     ~ParticleGroup();
 
     void createParticles(const physx::PxU32 numParticles, const physx::PxU32 * indices, const physx::PxVec3 * positions, const physx::PxVec3 * velocities);
-    void startEmit(const physx::PxU32 particleRate, const physx::PxVec3 & position);
-    void stopEmit();
 
     void updateVisuals();
 
