@@ -7,6 +7,7 @@
 
 #include "game.h"
 #include "rendering/renderer.h"
+#include "physicswrapper.h"
 
 
 EventHandler::EventHandler(GLFWwindow & window, Game & game)
@@ -28,16 +29,26 @@ void EventHandler::handleMouseButtonEvent(int button, int action, int mods)
     
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(&m_window, GL_TRUE);
-    }
-    if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
-        glow::info("Updating shader...");
-        glowutils::FileRegistry::instance().reloadAll();
-        glow::info("Updating shader done.");
-        glow::info("Reloading lua scripts...");
-        m_game.reloadLua();
-        glow::info("Reloading lua scripts done.");
+    if (action == GLFW_PRESS) {
+        switch (key) {
+        case GLFW_KEY_ESCAPE:
+            glfwSetWindowShouldClose(&m_window, GL_TRUE);
+            break;
+        case GLFW_KEY_F5:
+            glow::info("Updating shader...");
+            glowutils::FileRegistry::instance().reloadAll();
+            glow::info("Updating shader done.");
+            glow::info("Reloading lua scripts...");
+            m_game.reloadLua();
+            glow::info("Reloading lua scripts done.");
+            break;
+        case GLFW_KEY_V:
+            m_game.toggleVSync();
+            break;
+        case GLFW_KEY_G:
+            m_game.physicsWrapper()->toogleUseGpuParticles();
+            break;
+        }
     }
 
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);

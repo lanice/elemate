@@ -20,15 +20,19 @@
 #include <geometry/PxHeightFieldDesc.h>
 #include <geometry/PxHeightFieldGeometry.h>
 #include <foundation/PxMat44.h>
+#ifdef PX_WINDOWS
+#include <gpu/PxParticleGpu.h>
+#endif
 
 #include "terrain.h"
 #include "elements.h"
 #include "world.h"
+#include "physicswrapper.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 : m_tileID(tileID)
 , m_terrain(terrain)
-, isInitialized(false)
+, m_isInitialized(false)
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
@@ -53,7 +57,7 @@ TerrainTile::~TerrainTile()
 
 void TerrainTile::bind(const glowutils::Camera & camera)
 {
-    if (!isInitialized)
+    if (!m_isInitialized)
         initialize();
     if (!m_program)
         initializeProgram();
@@ -98,6 +102,7 @@ void TerrainTile::setHeightField(glow::FloatArray & heightField)
 
 void TerrainTile::initialize()
 {
+    m_isInitialized = true;
 }
 
 void TerrainTile::initializeProgram()
@@ -148,6 +153,11 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
 
     assert(m_pxShape);
+
+#ifdef PX_WINDOWS
+    if (PhysicsWrapper::physxGpuAvailable())
+        PxParticleGpu::createHeightFieldMirror(*pxHeightField, *PhysicsWrapper::getInstance()->cudaContextManager());
+#endif
 
     delete[] hfSamples;
     delete[] materials;

@@ -20,7 +20,7 @@
 #include "terrain/terrain.h"
 
 World::World(PhysicsWrapper & physicsWrapper)
-: hand(new Hand(*this))
+: hand(nullptr)
 , terrain(nullptr)
 , m_soundManager(std::make_shared<SoundManager>())
 , m_physicsWrapper(physicsWrapper)
@@ -53,6 +53,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     for (const auto actor : terrain->pxActorMap())
         m_physicsWrapper.addActor(*actor.second);
 
+    hand = std::make_shared<Hand>(*this);
+
     m_sunlighting[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
     m_sunlighting[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
     m_sunlighting[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
@@ -78,14 +80,25 @@ void World::stopSimulation()
     m_time->stop(true);
 }
 
-void World::update()
+void World::updatePhysics()
 {
     // Retrieve time delta from last World update to now.
     double delta = static_cast<double>(m_time->getNonModf());
     delta = static_cast<double>(m_time->getNonModf(true)) - delta;
 
-    // update physic
+    if (delta == 0.0f)
+        return;
+
+    // simulate physx
     m_physicsWrapper.step(delta);
+}
+
+void World::updateVisuals()
+{
+    updateListener();
+
+    // copy simulation results
+    m_physicsWrapper.updateAllObjects();
 }
 
 void World::makeElements(const glm::vec3& position)

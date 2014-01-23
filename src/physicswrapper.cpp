@@ -6,31 +6,40 @@
 #include <glow/logging.h>
 
 #include "pxcompilerfix.h"
-#include "PxPhysicsAPI.h"
+#include <PxPhysicsAPI.h>
 
 #include "elements.h"
 #include "particleemitter.h"
-#include "luawrapper.h"
+#include "lua/luawrapper.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
+PhysicsWrapper * PhysicsWrapper::s_instance = nullptr;
 
 PhysicsWrapper::PhysicsWrapper()
 : m_foundation(nullptr)
 , m_cpu_dispatcher(nullptr)
 , m_physics(nullptr)
 , m_scene(nullptr)
+, m_physxGpuAvailable(checkPhysxGpuAvailable())
+, m_cudaContextManager(nullptr)
 , m_emitters()
+, m_activeEmitter("")
+, m_gpuParticles(false)
 , m_lua(new LuaWrapper())
-, m_activeEmitter("")        //m_profile_zone_manager(nullptr),
+//m_profile_zone_manager(nullptr)
 {
     initializePhysics();
     initializeScene();
     Elements::initialize(*m_physics);
+
+    s_instance = this;
 }
 
 PhysicsWrapper::~PhysicsWrapper()
 {
+    s_instance = nullptr;
+
     Elements::clear();
 
     clearEmitters();
@@ -42,34 +51,61 @@ PhysicsWrapper::~PhysicsWrapper()
     PxCloseExtensions();
     //Please don't forget if you activate this feature.
     //m_profile_zone_manager->release();
+    if (m_cudaContextManager)
+        m_cudaContextManager->release();
     m_foundation->release();
 
     delete m_lua;
 }
 
-bool PhysicsWrapper::step(double delta){
-
-    if (delta == 0)
-        return false;
-    
-    m_scene->simulate(static_cast<physx::PxReal>(delta));
-
-    updateAllObjects(delta);
-    
-    return true;
+bool PhysicsWrapper::checkPhysxGpuAvailable()
+{
+#ifdef PX_WINDOWS
+    bool gpuPhysx = -1 != physx::PxGetSuggestedCudaDeviceOrdinal(m_errorCallback);
+#else
+    bool gpuPhysx = false;
+#endif
+    if (gpuPhysx)
+        glow::info("PhysX GPU acceleration is available. Press G to toggle this feature.");
+    else
+        glow::info("PhysX GPU acceleration is not available. Calculating the particles on the CPU.");
+    return gpuPhysx;
 }
 
-void PhysicsWrapper::updateAllObjects(double delta)
+bool PhysicsWrapper::physxGpuAvailable()
 {
+    return getInstance()->m_physxGpuAvailable;
+}
+
+PhysicsWrapper * PhysicsWrapper::getInstance()
+{
+    assert(s_instance);
+    return s_instance;
+}
+
+void PhysicsWrapper::step(double delta)
+{
+    if (delta == 0)
+        return;
+
+    m_scene->simulate(static_cast<physx::PxReal>(delta));
     m_scene->fetchResults(true);
 
     for (auto& emitter : m_emitters){
-        emitter.second->update(delta);
+        emitter.second->step(delta);
+    }
+}
+
+void PhysicsWrapper::updateAllObjects()
+{
+    for (auto& emitter : m_emitters){
+        emitter.second->update();
     }
 }
 
 void PhysicsWrapper::makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position){
     m_emitters.emplace(emitter_name, new ParticleEmitter(
+        m_gpuParticles,
         physx::PxVec3(position.x, position.y, position.z)));
     m_emitters[emitter_name]->initializeParticleSystem(Elements::emitterDescription(emitter_name));
 }
@@ -90,6 +126,14 @@ void PhysicsWrapper::initializePhysics(){
     m_physics= PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, physx::PxTolerancesScale());
     if (!m_physics)
         fatalError("PxCreatePhysics failed!");
+
+#ifdef PX_WINDOWS
+    if (m_physxGpuAvailable) {
+        // create cuda context manager
+        physx::PxCudaContextManagerDesc cudaContextManagerDesc;
+        m_cudaContextManager = physx::PxCreateCudaContextManager(*m_foundation, cudaContextManagerDesc, nullptr);
+    }
+#endif
 
     /* ... we still have to think about those:
     //For Debugging Lab ....
@@ -131,6 +175,11 @@ void PhysicsWrapper::initializeScene(){
     if (!sceneDesc.filterShader)
         sceneDesc.filterShader = &physx::PxDefaultSimulationFilterShader;
 
+#ifdef PX_WINDOWS
+    if (m_cudaContextManager)
+        sceneDesc.gpuDispatcher = m_cudaContextManager->getGpuDispatcher();
+#endif
+
     m_scene = m_physics->createScene(sceneDesc);
     if (!m_scene)
         fatalError("createScene failed!");
@@ -153,6 +202,12 @@ physx::PxScene* PhysicsWrapper::scene() const
     return m_scene;
 }
 
+physx::PxCudaContextManager * PhysicsWrapper::cudaContextManager() const
+{
+    assert(m_cudaContextManager);
+    return m_cudaContextManager;
+}
+
 void PhysicsWrapper::addActor(physx::PxActor & actor)
 {
     scene()->addActor(actor);
@@ -161,6 +216,59 @@ void PhysicsWrapper::addActor(physx::PxActor & actor)
 void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
 {
     scene()->addActor(actor);
+}
+
+void PhysicsWrapper::setUseGpuParticles(bool useGPU)
+{
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
+    m_gpuParticles = useGPU;
+    for (auto emitter : m_emitters)
+        emitter.second->setGPUAccelerated(m_gpuParticles);
+}
+
+void PhysicsWrapper::toogleUseGpuParticles()
+{
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
+    if (!m_gpuParticles)
+        glow::info("Enabling particle simulation on GPU...");
+    else
+        glow::info("Disabling particle simulation on GPU...");
+    setUseGpuParticles(!m_gpuParticles);
+}
+
+bool PhysicsWrapper::useGpuParticles() const
+{
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return false;
+    }
+    return m_gpuParticles;
+}
+
+void PhysicsWrapper::pauseGPUAcceleration()
+{
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
+    for (auto emitter : m_emitters)
+        emitter.second->pauseGPUAcceleration();
+}
+
+void PhysicsWrapper::restoreGPUAccelerated()
+{
+    if (!m_physxGpuAvailable) {
+        glow::warning("PhysX calculation on GPU not available!");
+        return;
+    }
+    for (auto emitter : m_emitters)
+        emitter.second->restoreGPUAccelerated();
 }
 
 void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
@@ -194,4 +302,36 @@ void PhysicsWrapper::stopEmitting()
 void PhysicsWrapper::reloadLua()
 {
     m_lua->reloadScripts();
+}
+
+void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
+{
+    switch (code) {
+    case physx::PxErrorCode::eNO_ERROR:
+        glow::info("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eDEBUG_INFO:
+        glow::debug("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eDEBUG_WARNING:
+        glow::warning("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eINVALID_PARAMETER:
+    case physx::PxErrorCode::eINVALID_OPERATION:
+    case physx::PxErrorCode::eOUT_OF_MEMORY:
+        glow::critical("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eINTERNAL_ERROR:
+        glow::fatal("PhysX: ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eABORT:
+        glow::fatal("PhysX: ""%;"" [%;%;]", message, file, line);
+        exit(2);
+    case physx::PxErrorCode::ePERF_WARNING:
+        glow::debug("PhysX (performance): ""%;"" [%;%;]", message, file, line);
+        break;
+    case physx::PxErrorCode::eMASK_ALL:
+        glow::fatal("PhysX (something terrible happened): ""%;"" [%;%;]", message, file, line);
+        break;
+    }
 }
