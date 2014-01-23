@@ -15,22 +15,22 @@ class ParticleDrawable;
 
 struct ImmutableParticleProperties
 {
-    physx::PxReal maxMotionDistance = 1.0f;
-    physx::PxReal gridSize = 0.0f;
-    physx::PxReal restOffset = 0.3f;
-    physx::PxReal contactOffset = 0.3f;
+    physx::PxReal maxMotionDistance = 0.06f;
+    physx::PxReal gridSize = 0.64f;
+    physx::PxReal restOffset = 0.004f;
+    physx::PxReal contactOffset = 0.008f;
 
-    physx::PxReal restParticleDistance = 0.3f;
+    physx::PxReal restParticleDistance = 0.03f;
 };
 
 struct MutableParticleProperties
 {
     physx::PxReal restitution = 0.5f;
-    physx::PxReal dynamicFriction = 0.5f;
-    physx::PxReal staticFriction = 0.5f;
-    physx::PxReal damping = 0.5f;
+    physx::PxReal dynamicFriction = 0.05f;
+    physx::PxReal staticFriction = 0.0f;
+    physx::PxReal damping = 0.0f;
     physx::PxVec3 externalAcceleration = physx::PxVec3(0.0f, 0.0f, 0.0f);
-    physx::PxReal particleMass = 0.5f;
+    physx::PxReal particleMass = 0.001f;
 
     physx::PxReal viscosity = 0.5f;
     physx::PxReal stiffness = 8.134f;
