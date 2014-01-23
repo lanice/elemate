@@ -14,8 +14,9 @@ const physx::PxU32  ParticleEmitter::kDefaultEmittedParticles = 1;
 const physx::PxReal ParticleEmitter::kDefaultInitialParticleSpeed = 0.5F;
 const int           ParticleEmitter::kDefaultParticleSpreading = 50;
 
-ParticleEmitter::ParticleEmitter(const physx::PxVec3& position)
+ParticleEmitter::ParticleEmitter(bool gpuParticles, const physx::PxVec3& position)
 : m_particleDrawable(nullptr)
+, m_gpuParticles(gpuParticles)
 , m_position(position)
 , m_emitting(false)
 , m_particles_per_second(kDefaultEmittedParticles)
@@ -38,6 +39,7 @@ void ParticleEmitter::initializeParticleSystem(const EmitterDescriptionData & de
     assert(PxGetPhysics().getNbScenes() == 1);
     physx::PxScene* scene_buffer[1];
     PxGetPhysics().getScenes(scene_buffer, 1);
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
     scene_buffer[0]->addActor(*m_particleSystem);
 
     m_particleDrawable = std::make_shared<ParticleDrawable>(m_desc->restParticleDistance, kMaxParticleCount);
@@ -127,6 +129,47 @@ void ParticleEmitter::stopEmit(){
     m_emitting = false;
 }
 
+void ParticleEmitter::setGPUAccelerated(bool enable)
+{
+    m_gpuParticles = enable;
+
+    assert(m_particleSystem);
+
+    assert(PxGetPhysics().getNbScenes() == 1);
+    physx::PxScene* scene_buffer[1];
+    PxGetPhysics().getScenes(scene_buffer, 1);
+
+    scene_buffer[0]->removeActor(*m_particleSystem);
+
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+
+    scene_buffer[0]->addActor(*m_particleSystem);
+}
+
+void ParticleEmitter::pauseGPUAcceleration()
+{
+    assert(m_gpuParticlesPauseFlags == 0x00);
+    if ((m_gpuParticlesPauseFlags & 0x01) == 0x01) // break, if already paused
+        return;
+
+    m_gpuParticlesPauseFlags = 0x01 | (m_gpuParticles ? 0x10 : 0x00);
+
+    if (!m_gpuParticles)
+        return;
+    setGPUAccelerated(false);
+}
+
+void ParticleEmitter::restoreGPUAccelerated()
+{
+    assert((m_gpuParticlesPauseFlags & 0x01) == 0x01);
+    if ((m_gpuParticlesPauseFlags & 0x01) == 0x00)   // break, if not paused
+        return;
+
+    if ((m_gpuParticlesPauseFlags & 0x10) == 0x10)
+        setGPUAccelerated(true);
+
+    m_gpuParticlesPauseFlags = 0x00;
+}
 
 void ParticleEmitter::setPosition(const physx::PxVec3& position){
     m_position = position;
