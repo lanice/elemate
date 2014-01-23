@@ -53,19 +53,19 @@ public:
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
 
-    void setImmutableProperties(
+    int setImmutableProperties(
         const physx::PxReal maxMotionDistance,
         const physx::PxReal gridSize,
         const physx::PxReal restOffset,
         const physx::PxReal contactOffset,
         const physx::PxReal restParticleDistance
         );
-    void setMutableProperties(
+    int setMutableProperties(
         const physx::PxReal restitution,
         const physx::PxReal dynamicFriction,
         const physx::PxReal staticFriction,
         const physx::PxReal damping,
-        const physx::PxVec3 externalAcceleration,
+        // const physx::PxVec3 externalAcceleration,
         const physx::PxReal particleMass,
         const physx::PxReal viscosity,
         const physx::PxReal stiffness

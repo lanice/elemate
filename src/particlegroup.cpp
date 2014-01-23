@@ -96,23 +96,27 @@ void ParticleGroup::setMutableProperties(const MutableParticleProperties & prope
     m_particleSystem->setStiffness(properties.stiffness);
 }
 
-void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
+int ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
 {
     m_particleSystem->setMaxMotionDistance(maxMotionDistance);
     m_particleSystem->setGridSize(gridSize);
     m_particleSystem->setRestOffset(restOffset);
     m_particleSystem->setContactOffset(contactOffset);
     m_particleSystem->setRestParticleDistance(restParticleDistance);
+
+    return 0;
 }
 
-void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, const physx::PxVec3 externalAcceleration, const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
+int ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
 {
     m_particleSystem->setRestitution(restitution);
     m_particleSystem->setDynamicFriction(dynamicFriction);
     m_particleSystem->setStaticFriction(staticFriction);
     m_particleSystem->setDamping(damping);
-    m_particleSystem->setExternalAcceleration(externalAcceleration);
+    // m_particleSystem->setExternalAcceleration(externalAcceleration);
     m_particleSystem->setParticleMass(particleMass);
     m_particleSystem->setViscosity(viscosity);
     m_particleSystem->setStiffness(stiffness);
+
+    return 0;
 }

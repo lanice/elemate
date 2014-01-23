@@ -28,6 +28,8 @@ public:
 protected:
     ParticleScriptAccess();
 
+    void setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType);
+
     std::vector<std::tuple<ParticleGroup *, LuaWrapper *> > m_particleGroups;
     std::vector<int> m_freeIndices;
 
