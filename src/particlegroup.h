@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include <glow/Array.h>
+
 #include "pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
@@ -41,13 +43,13 @@ class ParticleGroup
 {
 public:
     ParticleGroup(
-        const physx::PxU32 maxParticleCount = 10000,
+        const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
     ~ParticleGroup();
 
-    void createParticles(const physx::PxU32 numParticles, const physx::PxVec3 * positions, const physx::PxVec3 * velocities);
+    void createParticles(const uint32_t numParticles, const glow::Vec3Array & positions, const glow::Vec3Array & velocities);
 
     void updateVisuals();
 
@@ -81,7 +83,7 @@ protected:
 
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
-    size_t m_nextFreeIndex;
+    uint32_t m_nextFreeIndex;
 
 
 public:

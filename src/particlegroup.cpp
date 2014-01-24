@@ -54,9 +54,11 @@ ParticleGroup::~ParticleGroup()
     m_particleSystem = nullptr;
 }
 
-void ParticleGroup::createParticles(const PxU32 numParticles, const PxVec3 * positions, const PxVec3 * velocities)
+void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec3Array & pos, const glow::Vec3Array & vel)
 {
     PxU32 indices[numParticles];
+    PxVec3 positions[numParticles];
+    PxVec3 velocities[numParticles];
 
     for (PxU32 i = 0; i < numParticles; ++i)
     {
@@ -67,6 +69,9 @@ void ParticleGroup::createParticles(const PxU32 numParticles, const PxVec3 * pos
         } else {
             indices[i] = m_nextFreeIndex++;
         }
+
+        positions[i] = PxVec3(pos.at(i).x, pos.at(i).y, pos.at(i).z);
+        velocities[i] = PxVec3(vel.at(i).x, vel.at(i).y, vel.at(i).z);
     }
 
     PxParticleCreationData particleCreationData;
