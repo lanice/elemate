@@ -11,7 +11,6 @@ namespace physx {
     class PxVec3;
 }
 class ParticleDrawable;
-class TerrainInteractor;
 
 class EmitterDescriptionData{
 public:
@@ -81,8 +80,6 @@ protected:
     void applyDescriptionData(const EmitterDescriptionData * descriptionData);
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
-
-    const std::shared_ptr<TerrainInteractor> m_terrainInteractor;
 
     bool                     m_gpuParticles;
     uint8_t                  m_gpuParticlesPauseFlags;
