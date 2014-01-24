@@ -77,32 +77,28 @@ void ParticleGroup::updateVisuals()
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
 {
-    m_particleSystem->setMaxMotionDistance(properties.maxMotionDistance);
-    m_particleSystem->setGridSize(properties.gridSize);
-    m_particleSystem->setRestOffset(properties.restOffset);
-    m_particleSystem->setContactOffset(properties.contactOffset);
-    m_particleSystem->setRestParticleDistance(properties.restParticleDistance);
+    setImmutableProperties(properties.maxMotionDistance, properties.gridSize, properties.restOffset, properties.contactOffset, properties.restParticleDistance);
 }
 
 void ParticleGroup::setMutableProperties(const MutableParticleProperties & properties)
 {
-    m_particleSystem->setRestitution(properties.restitution);
-    m_particleSystem->setDynamicFriction(properties.dynamicFriction);
-    m_particleSystem->setStaticFriction(properties.staticFriction);
-    m_particleSystem->setDamping(properties.damping);
-    m_particleSystem->setExternalAcceleration(properties.externalAcceleration);
-    m_particleSystem->setParticleMass(properties.particleMass);
-    m_particleSystem->setViscosity(properties.viscosity);
-    m_particleSystem->setStiffness(properties.stiffness);
+    setMutableProperties(properties.restitution, properties.dynamicFriction, properties.staticFriction, properties.damping, /*properties.externalAcceleration,*/ properties.particleMass, properties.viscosity, properties.stiffness);
 }
 
 int ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
 {
+    assert(m_particleSystem);
+    assert(m_scene);
+
+    m_scene->removeActor(*m_particleSystem);
+
     m_particleSystem->setMaxMotionDistance(maxMotionDistance);
     m_particleSystem->setGridSize(gridSize);
     m_particleSystem->setRestOffset(restOffset);
     m_particleSystem->setContactOffset(contactOffset);
     m_particleSystem->setRestParticleDistance(restParticleDistance);
+
+    m_scene->addActor(*m_particleSystem);
 
     return 0;
 }
