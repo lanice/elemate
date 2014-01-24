@@ -42,6 +42,12 @@ static void scrollCallback(GLFWwindow* /*window*/, double xoffset, double yoffse
         eventHandler->handleScrollEvent(xoffset, yoffset);
 }
 
+static void mouseMoveCallback(GLFWwindow*, double xpos, double ypos)
+{
+    if (eventHandler)
+        eventHandler->handleMouseMoveEvent(xpos, ypos);
+}
+
 static void mouseButtonCallback(GLFWwindow* /*window*/, int button, int action, int mods)
 {
     if (eventHandler)
@@ -58,6 +64,7 @@ void setCallbacks(GLFWwindow * window)
 {
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetCursorPosCallback(window, mouseMoveCallback);
     glfwSetWindowSizeCallback(window, resizeCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
 }

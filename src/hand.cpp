@@ -227,8 +227,6 @@ void Hand::setHeightOffset(float heightOffset)
     if (m_heightOffset == heightOffset)
         return;
 
-    assert(heightOffset >= 0.0f);
-
     m_heightOffset = heightOffset >= 0.0f ? heightOffset : 0.0f;
 
     m_positionY.invalidate();
