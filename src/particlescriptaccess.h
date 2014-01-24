@@ -22,7 +22,7 @@ public:
 
     /** Creates an instance of ParticleGroup and registers it, returning the access index */
     int createParticleGroup(const std::string & elementType = "default");
-    int removeParticleGroup(const int index);
+    void removeParticleGroup(const int index);
 
     /** Called automatically to update the ParticleDrawable(s) */
     void updateVisuals();

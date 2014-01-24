@@ -46,7 +46,7 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
     return m_particleGroups.size() - 1;
 }
 
-int ParticleScriptAccess::removeParticleGroup(const int index)
+void ParticleScriptAccess::removeParticleGroup(const int index)
 {
     delete std::get<0>(m_particleGroups.at(index));
     delete std::get<1>(m_particleGroups.at(index));
@@ -55,13 +55,12 @@ int ParticleScriptAccess::removeParticleGroup(const int index)
     std::get<1>(m_particleGroups.at(index)) = nullptr;
 
     m_freeIndices.push_back(index);
-    return 0;
 }
 
 void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType)
 {
     std::function<int(float, float, float, float, float)> func1 = [=](float a, float b, float c, float d, float e) {particleGroup->setImmutableProperties(a, b, c, d, e); return 0; };
-    
+
     std::function<int(float, float, float, float, float, float, float)> func2 = [=](float a, float b, float c, float d, float e, float f, float g) {particleGroup->setMutableProperties(a, b, c, d, e, f, g); return 0; };
 
     wrapper->Register("particles_setImmutableProperties", func1);

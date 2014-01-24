@@ -86,7 +86,7 @@ void ParticleGroup::setMutableProperties(const MutableParticleProperties & prope
     setMutableProperties(properties.restitution, properties.dynamicFriction, properties.staticFriction, properties.damping, /*properties.externalAcceleration,*/ properties.particleMass, properties.viscosity, properties.stiffness);
 }
 
-int ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
+void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
 {
     assert(m_particleSystem);
     assert(m_scene);
@@ -100,11 +100,9 @@ int ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance,
     m_particleSystem->setRestParticleDistance(restParticleDistance);
 
     m_scene->addActor(*m_particleSystem);
-
-    return 0;
 }
 
-int ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
+void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
 {
     m_particleSystem->setRestitution(restitution);
     m_particleSystem->setDynamicFriction(dynamicFriction);
@@ -114,6 +112,4 @@ int ParticleGroup::setMutableProperties(const physx::PxReal restitution, const p
     m_particleSystem->setParticleMass(particleMass);
     m_particleSystem->setViscosity(viscosity);
     m_particleSystem->setStiffness(stiffness);
-
-    return 0;
 }
