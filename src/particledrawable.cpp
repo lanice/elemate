@@ -16,6 +16,8 @@
 
 #include <glm/glm.hpp>
 
+#include "world.h"
+
 std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
 ParticleDrawable::ParticleDrawable(float particleSize, unsigned int maxParticleCount)
@@ -95,7 +97,7 @@ void ParticleDrawable::initialize()
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert"),
         glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
 
     m_program->setUniform("particleSize", m_particleSize);

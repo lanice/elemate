@@ -90,7 +90,6 @@ void Terrain::initShadowMappingProgram()
     m_shadowMappingProgram = new glow::Program();
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_terrain.vert"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     m_shadowMappingProgram->setUniform("heightField", 1);

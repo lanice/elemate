@@ -9,6 +9,7 @@ uniform float particleSize;
 uniform mat4 projection;
 
 float linearize(float depth);
+float depthNdcToWindow(float ndcDepth);
 
 void main()
 {        
@@ -24,5 +25,5 @@ void main()
     vec4 screenFragPos = projection * viewFragPos;
     float ndcDepth = screenFragPos.z / screenFragPos.w;
     
-    gl_FragDepth = linearize(((gl_DepthRange.diff * ndcDepth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0);
+    gl_FragDepth = linearize(depthNdcToWindow(ndcDepth));
 }

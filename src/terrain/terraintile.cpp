@@ -254,6 +254,7 @@ void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
 void TerrainTile::updateGlBuffers()
 {
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
+    m_bufferUpdateList.clear();
 
     // TODO update needed data only
     /*for (; !m_bufferUpdateList.empty(); m_bufferUpdateList.pop_front()) {
