@@ -29,7 +29,6 @@ void main()
     mix(
         // vec4(texture(waterNormals, v_uv).rgb,1.0),
         // vec4(vec3(waterZ),1.0),
-        // vec4(vec3(sceneZ),1.0),
         waterColor(),
 		texture(sceneColor, v_uv),
 		step(sceneZ,waterZ)
@@ -37,28 +36,29 @@ void main()
 }
 
 vec4 waterColor(){
-        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 1.8);
-        vec4 waterCol = texture(
+        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 0.8);
+        vec4 waterCol = (6*texture(
             sceneColor, 
-            v_uv + resVector.xy/resVector.z
-        );
+            v_uv + resVector.xy/10/resVector.z
+        )+vec4(0.1,0.8,1,1))/7;
 
 		return mix(
             mix(
-                waterCol+vec4(0,0.5,1,1)/2,
+                vec4(0,0,0.4,1),
                 waterCol,
-                dot(
+                0.8+
+                0.2*abs(dot(
                     texture(waterNormals, v_uv).xyz,
-                    normalize(vec3(0,1,1))
-                )
+                    normalize(vec3(0,1,0.1))
+                ))
             ),
             vec4(0.9,0.9,0.9,0.8),
             smoothstep(
-                0.95,
+                0.96,
                 0.98,
                 dot(
                     texture(waterNormals, v_uv).rgb,
-                    normalize(vec3(0,1,1))
+                    normalize(vec3(0,1,0.1))
                 )
             )
         );

@@ -10,7 +10,6 @@ uniform vec3 lookAtRight;
 uniform vec3 lookAtFront;
 uniform float particleSize;
 
-
 layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
@@ -18,7 +17,6 @@ out vec2 g_relPos;
 out vec4 g_viewPos;
 flat out vec4 g_viewPosCenter;
 // flat out float g_zDiff;
-
 
 vec4 dRightUp = vec4(particleSize, particleSize, 0.0, 0.0);
 

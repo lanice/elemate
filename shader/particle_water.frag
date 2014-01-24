@@ -18,7 +18,7 @@ void main()
     if (r2 > 1.0)
         discard;
     
-    N.z = -sqrt(1.0 - r2);
+    N.z = sqrt(1.0 - r2);
     
     vec4 viewFragPos = g_viewPosCenter + vec4(N * particleSize, 0.0);
     vec4 screenFragPos = projection * viewFragPos;

@@ -21,22 +21,22 @@ void main()
 
     vec3 va,vb;
 
-    va = vec3(1.0/viewport.x, 0.0, mix(
-            height_right - depth,
-            depth - height_left,
+    va = mix(
+            vec3(0.001*(0.01+height_right), 0.0, height_right - depth),
+            vec3(0.001*(0.01+height_left), 0.0, depth - height_left),
             step(
                 abs(height_left-depth),
                 abs(height_right-depth)
             )
-    ));
-    vb = vec3(0.0, 1.0/viewport.y, mix(
-        depth - height_up,
-        height_down - depth,
+    );
+    vb = mix(
+        vec3(0.0, 0.001*(0.01+height_up), depth - height_up),
+        vec3(0.0, 0.001*(0.01+height_down), height_down - depth),
         step(
             abs(height_down-depth),
             abs(height_up-depth)
         )
-    ));
+    );
 
     normal = normalize(cross(va, vb));
 }

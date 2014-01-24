@@ -24,7 +24,7 @@ public:
     physx::PxReal contactOffset = 0.15F;     // Defines the distance at which contacts between particles and rigid actors are created.The contacts are internally used to avoid jitter and sticking.It needs to be larger than restOffset.
     
     //PxParticleFluids only                        
-    physx::PxReal restParticleDistance = 0.2F; // Defines the resolution of the particle fluid.
+    physx::PxReal restParticleDistance = 0.1F; // Defines the resolution of the particle fluid.
 
 // mutable properties
     //PxParticleBase (Fluid and System)

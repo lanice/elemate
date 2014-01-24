@@ -7,8 +7,6 @@ uniform ivec2 viewport;
 uniform float binomCoeff[465];
 uniform int binomOffset[30];
 
-const int coeffSize = 20;
-
 layout(location = 0)out float depthValue;
 
 float calcDepth(float originDepth, ivec2 uv);
@@ -27,10 +25,16 @@ void main(){
 
 
 float calcDepth(float originDepth, ivec2 uv){
+    int coeffSize = int(clamp(
+        29+floor(originDepth*29),
+        1,
+        29
+    ));
     float sum = originDepth * binomCoeff[binomOffset[coeffSize]];
     for(int i=1; i<=coeffSize; ++i){
-            sum += (texelFetch(source, uv + ivec2(0, i), 0).r +
-                    texelFetch(source, uv - ivec2(0, i), 0).r) * binomCoeff[binomOffset[coeffSize] + i];
+            float rightDepth = texelFetch(source, uv + ivec2(0, i), 0).r;
+            float leftDepth = texelFetch(source, uv - ivec2(0, i), 0).r;
+            sum += (mix(rightDepth,originDepth,step(0.02,abs(rightDepth-originDepth))) + mix(leftDepth,originDepth,step(0.02,abs(leftDepth-originDepth)))) * binomCoeff[binomOffset[coeffSize] + i];
     }
     return sum;
 }
