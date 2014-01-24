@@ -36,7 +36,7 @@ Hand::Hand(const World & world)
     m_program = new glow::Program();
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
-        world.sharedShader(GL_FRAGMENT_SHADER, "shader/phonglighting.frag"),
+        world.sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
 }
 
