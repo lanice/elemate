@@ -11,7 +11,7 @@
 // #include "PxPhysicsAPI.h"
 
 #include "particledrawable.h"
-
+#include "particlemanagement.h"
 
 using namespace physx;
 
@@ -38,6 +38,8 @@ ParticleGroup::ParticleGroup(
     setMutableProperties(mutableProperties);
 
     m_scene->addActor(*m_particleSystem);
+
+    m_particleManagement = new ParticleManagement(m_particleSystem);
 }
 
 ParticleGroup::~ParticleGroup()
@@ -51,11 +53,7 @@ ParticleGroup::~ParticleGroup()
 
 void ParticleGroup::createParticles(const physx::PxU32 numParticles, const physx::PxU32 * indices, const physx::PxVec3 * positions, const physx::PxVec3 * velocities)
 {
-    PxParticleCreationData particleCreationData;
-    particleCreationData.numParticles = numParticles;
-    particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(indices);
-    particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(positions);
-    particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(velocities, 0);
+    PxParticleCreationData particleCreationData = *m_particleManagement->particleCreationData(numParticles, *positions);
 
     bool success = m_particleSystem->createParticles(particleCreationData);
 

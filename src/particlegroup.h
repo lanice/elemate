@@ -12,6 +12,7 @@ namespace physx {
     class PxScene;
 }
 class ParticleDrawable;
+class ParticleManagement;
 
 struct ImmutableParticleProperties
 {
@@ -75,6 +76,8 @@ public:
 protected:
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
+    
+    ParticleManagement* m_particleManagement;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
