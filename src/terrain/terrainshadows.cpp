@@ -20,7 +20,6 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     assert(m_tiles.size() > 0);
 
     m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_depthMapProgram->setUniform("viewport", camera.viewport());
     m_depthMapProgram->setUniform("znear", camera.zNearEx());
     m_depthMapProgram->setUniform("zfar", camera.zFar());
 
@@ -31,12 +30,14 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     glPrimitiveRestartIndex(s_restartIndex);
 
     for (TerrainLevel level : m_drawLevels) {
+        TerrainTile & tile = *m_tiles.at(TileID(level));
 
-        m_tiles.at(TileID(level))->m_heightTex->bind(GL_TEXTURE0);
+        tile.prepareDraw();
+        tile.m_heightTex->bind(GL_TEXTURE0);
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
 
-        m_tiles.at(TileID(level))->m_heightTex->unbind(GL_TEXTURE0);
+        tile.m_heightTex->unbind(GL_TEXTURE0);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);
@@ -58,11 +59,14 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
     glPrimitiveRestartIndex(s_restartIndex);
 
     for (TerrainLevel level : m_drawLevels) {
-        m_tiles.at(TileID(level))->m_heightTex->bind(GL_TEXTURE1);
+        TerrainTile & tile = *m_tiles.at(TileID(level));
+
+        tile.prepareDraw();
+        tile.m_heightTex->bind(GL_TEXTURE1);
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
 
-        m_tiles.at(TileID(level))->m_heightTex->unbind(GL_TEXTURE1);
+        tile.m_heightTex->unbind(GL_TEXTURE1);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);

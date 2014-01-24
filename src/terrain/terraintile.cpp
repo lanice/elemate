@@ -55,14 +55,20 @@ TerrainTile::~TerrainTile()
     delete m_heightField;
 }
 
-void TerrainTile::bind(const CameraEx & camera)
+void TerrainTile::prepareDraw()
 {
     if (!m_isInitialized)
         initialize();
-    if (!m_program)
-        initializeProgram();
     if (!m_bufferUpdateList.empty())
         updateGlBuffers();
+}
+
+void TerrainTile::bind(const CameraEx & camera)
+{
+    prepareDraw();
+
+    if (!m_program)
+        initializeProgram();
 
     assert(m_program);
     assert(m_heightField);

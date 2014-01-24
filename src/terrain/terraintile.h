@@ -30,6 +30,9 @@ public:
     TerrainTile(Terrain & terrain, const TileID & tileID);
     virtual ~TerrainTile();
 
+    /** update opengl buffers etc */
+    virtual void prepareDraw();
+
     virtual void bind(const CameraEx & camera);
     virtual void unbind();
 

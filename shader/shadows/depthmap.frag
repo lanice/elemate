@@ -4,5 +4,5 @@ float linearize(float depth);
 
 void main()
 {
-    // gl_FragDepth = linearize(gl_FragCoord.z);
+    gl_FragDepth = linearize(gl_FragCoord.z);
 }

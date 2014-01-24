@@ -117,7 +117,7 @@ void Renderer::sceneStep(const CameraEx & camera)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->draw(camera, { "bedrock", "water" });
+    m_world.terrain->draw(camera, { "bedrock" });
 
     // call functions that read from the scene fbo for the object they are member of
     for (auto & function : m_sceneFboReader)

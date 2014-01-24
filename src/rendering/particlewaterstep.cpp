@@ -11,6 +11,7 @@
 
 #include "particledrawable.h"
 #include "world.h"
+#include "terrain/terrain.h"
 
 
 ParticleWaterStep::ParticleWaterStep()
@@ -137,6 +138,7 @@ void ParticleWaterStep::draw(const CameraEx & camera)
     m_depthFbo->bind();
     glClear(GL_DEPTH_BUFFER_BIT);
     ParticleDrawable::drawParticles(camera);
+    World::instance()->terrain->drawDepthMap(camera, { "water" });
     m_depthFbo->unbind();
 
     glDisable(GL_DEPTH_TEST);

@@ -250,6 +250,8 @@ void Hand::rotate(const float angle)
 void Hand::drawDepthMapImpl(const CameraEx & camera)
 {
     m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * transform());
+    m_depthMapProgram->setUniform("znear", camera.zNearEx());
+    m_depthMapProgram->setUniform("zfar", camera.zFar());
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
