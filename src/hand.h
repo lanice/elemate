@@ -38,7 +38,7 @@ protected:
     static const std::string s_modelFilename;
 
     virtual void drawImplementation(const glowutils::Camera & camera) override;
-    virtual void drawLightMapImpl(const CameraEx & lightSource) override;
+    virtual void drawDepthMapImpl(const CameraEx & camera) override;
     virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
 
     glow::ref_ptr<glow::Buffer> m_normalBuffer;
@@ -66,7 +66,7 @@ protected:
     const glm::mat3 & xzTransform() const;
     glowutils::CachedValue<glm::mat3> m_xzTransform; // this is needed to transform the heightCheckpoints while calculating the actual transform
 
-    virtual void initLightMappingProgram() override;
+    virtual void initDepthMapProgram() override;
     virtual void initShadowMappingProgram() override;
 
 public:

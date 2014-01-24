@@ -247,9 +247,9 @@ void Hand::rotate(const float angle)
     m_transform.invalidate();
 }
 
-void Hand::drawLightMapImpl(const CameraEx & lightSource)
+void Hand::drawDepthMapImpl(const CameraEx & camera)
 {
-    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionEx() * transform());
+    m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * transform());
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
@@ -264,13 +264,13 @@ void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraE
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
 
-void Hand::initLightMappingProgram()
+void Hand::initDepthMapProgram()
 {
-    m_lightMapProgram = new glow::Program();
-    m_lightMapProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
+    m_depthMapProgram = new glow::Program();
+    m_depthMapProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_hand.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depthmap.frag"));
 }
 
 void Hand::initShadowMappingProgram()

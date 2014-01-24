@@ -37,25 +37,25 @@ void Drawable::draw(const glowutils::Camera & camera)
     m_vao->unbind();
 }
 
-void Drawable::drawLightMap(const CameraEx & lightSource)
+void Drawable::drawDepthMap(const CameraEx & camera)
 {
     if (!m_vao)
         initialize();
-    if (!m_lightMapProgram)
-        initLightMappingProgram();
+    if (!m_depthMapProgram)
+        initDepthMapProgram();
 
     assert(m_vao);
     assert(m_indexBuffer);
     assert(m_vbo);
-    assert(m_lightMapProgram);
+    assert(m_depthMapProgram);
 
-    m_lightMapProgram->use();
+    m_depthMapProgram->use();
     m_vao->bind();
 
-    drawLightMapImpl(lightSource);
+    drawDepthMapImpl(camera);
 
     m_vao->unbind();
-    m_lightMapProgram->release();
+    m_depthMapProgram->release();
 }
 
 void Drawable::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource)

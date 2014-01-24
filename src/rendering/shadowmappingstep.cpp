@@ -103,8 +103,8 @@ void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
     m_lightFbo->bind();
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->drawLightMap(*m_lightCam);
-    m_world.hand->drawLightMap(*m_lightCam);
+    m_world.terrain->drawDepthMap(*m_lightCam, { "bedrock" });
+    m_world.hand->drawDepthMap(*m_lightCam);
 
     m_lightFbo->unbind();
 
@@ -119,7 +119,7 @@ void ShadowMappingStep::draw(const glowutils::Camera & camera)
     m_shadowFbo->bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->drawShadowMapping(camera, *m_lightCam);
+    m_world.terrain->drawShadowMapping(camera, *m_lightCam, { "bedrock" });
     m_world.hand->drawShadowMapping(camera, *m_lightCam);
 
     m_shadowFbo->unbind();

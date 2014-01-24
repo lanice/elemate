@@ -3,6 +3,7 @@
 #include "rendering/drawable.h"
 
 #include <map>
+#include <set>
 #include <memory>
 
 #include <glow/ref_ptr.h>
@@ -21,6 +22,11 @@ class Terrain : public Drawable
 public:
     Terrain(const World & world, const TerrainSettings & settings);
     virtual ~Terrain() override;
+
+    /** set a list of elements that will be used for the draw call */
+    virtual void draw(const glowutils::Camera & camera, const std::initializer_list<std::string> & elements);
+    virtual void drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements);
+    virtual void drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements);
 
     /** PhysX shape containing height field geometry for one tile.
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
@@ -43,8 +49,11 @@ public:
     friend class TerrainInteractor;
 
 protected:
+    void Terrain::setDrawElements(const std::initializer_list<std::string> & elements);
+    std::set<TerrainLevel> m_drawLevels;
+
     virtual void drawImplementation(const glowutils::Camera & camera) override;
-    virtual void drawLightMapImpl(const CameraEx & lightSource) override;
+    virtual void drawDepthMapImpl(const CameraEx & camera) override;
     virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
 
     /** register terrain tile to be part of this terrain with unique tileID */
@@ -67,7 +76,7 @@ protected:
     glow::UIntArray * m_indices;
 
     /** light map and shadow mapping */
-    virtual void initLightMappingProgram() override;
+    virtual void initDepthMapProgram() override;
     virtual void initShadowMappingProgram() override;
 
     static const GLuint s_restartIndex;

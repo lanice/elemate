@@ -20,6 +20,7 @@ Terrain::Terrain(const World & world, const TerrainSettings & settings)
 , settings(settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
+, m_drawLevels(TerrainLevels)
 {
 }
 
@@ -29,6 +30,40 @@ Terrain::~Terrain()
     delete m_vertices;
     m_indices->clear();
     delete m_indices;
+}
+
+
+void Terrain::draw(const glowutils::Camera & camera, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    Drawable::draw(camera);
+    setDrawElements({});
+}
+
+void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    Drawable::drawDepthMap(camera);
+    setDrawElements({});
+}
+
+void Terrain::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    Drawable::drawShadowMapping(camera, lightSource);
+    setDrawElements({});
+}
+
+void Terrain::setDrawElements(const std::initializer_list<std::string> & elements)
+{
+    if (elements.size() == 0) {
+        m_drawLevels = TerrainLevels;
+        return;
+    }
+
+    m_drawLevels.clear();
+    for (const std::string & name : elements)
+        m_drawLevels.insert(levelForMaterial(name));
 }
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
@@ -44,6 +79,8 @@ void Terrain::drawImplementation(const glowutils::Camera & camera)
     glPrimitiveRestartIndex(s_restartIndex);
 
     for (auto & pair : m_tiles) {
+        if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
+            continue;   // only draw elements that are listed for drawing
         pair.second->bind(camera);
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
         pair.second->unbind();
