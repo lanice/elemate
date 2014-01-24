@@ -10,6 +10,7 @@
 
 #include "terrain.h"
 #include "elements.h"
+#include "world.h"
 
 WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
 : TerrainTile(terrain, tileID)
@@ -38,12 +39,11 @@ void WaterTile::unbind()
 
 void WaterTile::initializeProgram()
 {
-    glow::ref_ptr<glow::Shader> vertex = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_water.vert");
-    glow::ref_ptr<glow::Shader> fragment = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_water.frag");
-    glow::ref_ptr<glow::Shader> phongLightingFrag = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag");
-
     m_program = new glow::Program();
-    m_program->attach(vertex, fragment, phongLightingFrag);
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_water.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_water.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"));
 
     m_program->setUniform("baseHeightField", 1);
 
