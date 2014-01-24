@@ -21,7 +21,7 @@ struct ImmutableParticleProperties
     physx::PxReal restOffset = 0.004f;
     physx::PxReal contactOffset = 0.008f;
 
-    physx::PxReal restParticleDistance = 0.03f;
+    physx::PxReal restParticleDistance = 0.1f;
 };
 
 struct MutableParticleProperties
@@ -33,7 +33,7 @@ struct MutableParticleProperties
     physx::PxVec3 externalAcceleration = physx::PxVec3(0.0f, 0.0f, 0.0f);
     physx::PxReal particleMass = 0.001f;
 
-    physx::PxReal viscosity = 0.5f;
+    physx::PxReal viscosity = 5.0f;
     physx::PxReal stiffness = 8.134f;
 };
 

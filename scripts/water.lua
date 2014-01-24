@@ -6,7 +6,7 @@ maxMotionDistance = 0.06
 gridSize = 0.64
 restOffset = 0.004
 contactOffset = 0.008
-restParticleDistance = 0.03
+restParticleDistance = 0.1
 
 -- mutable properties
 restitution = 0.5
@@ -14,7 +14,7 @@ dynamicFriction = 0.05
 staticFriction = 0.0
 damping = 0.0
 particleMass = 0.001
-viscosity = 0.5
+viscosity = 5.0
 stiffness = 8.134
 
 
