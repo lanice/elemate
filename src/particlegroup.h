@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
@@ -46,7 +47,7 @@ public:
         );
     ~ParticleGroup();
 
-    void createParticles(const physx::PxU32 numParticles, const physx::PxU32 * indices, const physx::PxVec3 * positions, const physx::PxVec3 * velocities);
+    void createParticles(const physx::PxU32 numParticles, const physx::PxVec3 * positions, const physx::PxVec3 * velocities);
 
     void updateVisuals();
 
@@ -77,6 +78,10 @@ protected:
     physx::PxScene * m_scene;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
+
+    physx::PxU32 * m_indices;
+    std::vector<physx::PxU32> m_freeIndices;
+    size_t m_nextFreeIndex;
 
 
 public:

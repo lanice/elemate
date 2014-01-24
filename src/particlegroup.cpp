@@ -23,7 +23,11 @@ ParticleGroup::ParticleGroup(
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(maxParticleCount))
+, m_indices(new PxU32[maxParticleCount]())
+, m_nextFreeIndex(0)
 {
+    for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
+
     assert(PxGetPhysics().getNbScenes() == 1);
     PxScene * pxScenePtrs[1];
     PxGetPhysics().getScenes(pxScenePtrs, 1);
@@ -50,8 +54,21 @@ ParticleGroup::~ParticleGroup()
     m_particleSystem = nullptr;
 }
 
-void ParticleGroup::createParticles(const physx::PxU32 numParticles, const physx::PxU32 * indices, const physx::PxVec3 * positions, const physx::PxVec3 * velocities)
+void ParticleGroup::createParticles(const PxU32 numParticles, const PxVec3 * positions, const PxVec3 * velocities)
 {
+    PxU32 indices[numParticles];
+
+    for (PxU32 i = 0; i < numParticles; ++i)
+    {
+        if (m_freeIndices.size() > 0)
+        {
+            indices[i] = m_freeIndices.back();
+            m_freeIndices.pop_back();
+        } else {
+            indices[i] = m_nextFreeIndex++;
+        }
+    }
+
     PxParticleCreationData particleCreationData;
     particleCreationData.numParticles = numParticles;
     particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(indices);
