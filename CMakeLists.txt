@@ -134,6 +134,7 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 set(SHADER
     shader/flush.vert
     shader/flush.frag
+    shader/passthrough.frag
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
@@ -150,7 +151,7 @@ set(SHADER
     shader/phongLighting.frag
     shader/shadows/depthmap_terrain.vert
     shader/shadows/depthmap_hand.vert
-    shader/shadows/depthmap.frag
+    shader/shadows/depthmapLinearized.frag
     shader/shadows/shadowmapping_terrain.vert
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag

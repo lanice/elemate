@@ -36,6 +36,7 @@ protected:
 
     // Shadowing
     glow::ref_ptr<glow::Program> m_depthMapProgram;
+    glow::ref_ptr<glow::Program> m_depthMapLinearizedProgram;
     glow::ref_ptr<glow::Program> m_shadowMappingProgram;
     virtual void initDepthMapProgram() = 0;
     virtual void initShadowMappingProgram() = 0;

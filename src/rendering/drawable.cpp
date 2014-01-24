@@ -48,13 +48,11 @@ void Drawable::drawDepthMap(const CameraEx & camera)
     assert(m_vbo);
     assert(m_depthMapProgram);
 
-    m_depthMapProgram->use();
     m_vao->bind();
 
     drawDepthMapImpl(camera);
 
     m_vao->unbind();
-    m_depthMapProgram->release();
 }
 
 void Drawable::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource)

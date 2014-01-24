@@ -253,7 +253,11 @@ void Hand::drawDepthMapImpl(const CameraEx & camera)
     m_depthMapProgram->setUniform("znear", camera.zNearEx());
     m_depthMapProgram->setUniform("zfar", camera.zFar());
 
+    m_depthMapProgram->use();
+
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+
+    m_depthMapProgram->release();
 }
 
 void Hand::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource)
@@ -272,7 +276,7 @@ void Hand::initDepthMapProgram()
     m_depthMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_hand.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmap.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
 }
 
 void Hand::initShadowMappingProgram()

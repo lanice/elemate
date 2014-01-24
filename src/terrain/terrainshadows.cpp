@@ -19,12 +19,23 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
-    m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
-    m_depthMapProgram->setUniform("znear", camera.zNearEx());
-    m_depthMapProgram->setUniform("zfar", camera.zFar());
+    glow::Program * program = nullptr;
+
+    // linearize the depth values for perspective projections
+    if (camera.projectionType() == ProjectionType::perspective) {
+        program = m_depthMapLinearizedProgram;
+        program->setUniform("znear", camera.zNearEx());
+        program->setUniform("zfar", camera.zFar());
+    }
+    else { // not needed for the orthographic projection
+        program = m_depthMapProgram; 
+    }
+
+    program->setUniform("depthMVP", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
 
     // TODO: generalize for more tiles...
 
+    program->use();
 
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(s_restartIndex);
@@ -41,6 +52,8 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     }
 
     glDisable(GL_PRIMITIVE_RESTART);
+
+    program->release();
 }
 
 void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource)
@@ -77,12 +90,18 @@ void Terrain::initDepthMapProgram()
     m_depthMapProgram = new glow::Program();
     m_depthMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmap.frag"));
-
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
-
     m_depthMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+
+
+    m_depthMapLinearizedProgram = new glow::Program();
+    m_depthMapLinearizedProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
+    m_depthMapLinearizedProgram->setUniform("heightField", 0);
+    m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
 }
 
 void Terrain::initShadowMappingProgram()
