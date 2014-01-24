@@ -7,7 +7,6 @@
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
-#include <glowutils/Camera.h>
 #include <glowutils/File.h>
 
 #include <glm/gtc/random.hpp>
@@ -33,7 +32,7 @@ Terrain::~Terrain()
 }
 
 
-void Terrain::draw(const glowutils::Camera & camera, const std::initializer_list<std::string> & elements)
+void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
     Drawable::draw(camera);
@@ -47,7 +46,7 @@ void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<
     setDrawElements({});
 }
 
-void Terrain::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
+void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
     Drawable::drawShadowMapping(camera, lightSource);
@@ -68,7 +67,7 @@ void Terrain::setDrawElements(const std::initializer_list<std::string> & element
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
 
-void Terrain::drawImplementation(const glowutils::Camera & camera)
+void Terrain::drawImplementation(const CameraEx & camera)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);

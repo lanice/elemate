@@ -7,6 +7,7 @@ namespace glow {
 #include <glow/Texture.h>
 #include <glow/RenderBufferObject.h>
 #include <glow/Program.h>
+#include "cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/random.hpp>
@@ -14,7 +15,6 @@ namespace glow {
 #include "world.h"
 #include "terrain/terrain.h"
 #include "hand.h"
-#include "cameraex.h"
 
 #undef far  // that's for windows (minwindef.h)
 
@@ -91,7 +91,7 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_shadowFbo->unbind();
 }
 
-void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
+void ShadowMappingStep::drawLightMap(const CameraEx & camera)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -110,7 +110,7 @@ void ShadowMappingStep::drawLightMap(const glowutils::Camera & camera)
     glViewport(0, 0, camera.viewport().x, camera.viewport().y);
 }
 
-void ShadowMappingStep::draw(const glowutils::Camera & camera)
+void ShadowMappingStep::draw(const CameraEx & camera)
 {
     drawLightMap(camera);
 

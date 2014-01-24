@@ -3,7 +3,6 @@
 #include <glow/Program.h>
 #include <glow/VertexArrayObject.h>
 #include <glow/Buffer.h>
-
 #include "cameraex.h"
 
 Drawable::Drawable(const World & world)
@@ -22,7 +21,7 @@ void Drawable::initialize()
 {
 }
 
-void Drawable::draw(const glowutils::Camera & camera)
+void Drawable::draw(const CameraEx & camera)
 {
     if (!m_vao)
         initialize();
@@ -58,7 +57,7 @@ void Drawable::drawDepthMap(const CameraEx & camera)
     m_depthMapProgram->release();
 }
 
-void Drawable::drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource)
+void Drawable::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource)
 {
     if (!m_vao)
         initialize();

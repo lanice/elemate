@@ -6,7 +6,7 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include <glowutils/Camera.h>
+#include "cameraex.h"
 
 #include <glm/glm.hpp>
 
@@ -55,7 +55,7 @@ TerrainTile::~TerrainTile()
     delete m_heightField;
 }
 
-void TerrainTile::bind(const glowutils::Camera & camera)
+void TerrainTile::bind(const CameraEx & camera)
 {
     if (!m_isInitialized)
         initialize();
@@ -74,7 +74,7 @@ void TerrainTile::bind(const glowutils::Camera & camera)
     m_program->setUniform("cameraposition", camera.eye());
     glm::mat4 modelView = camera.view() * m_transform;
     m_program->setUniform("modelView", modelView);
-    glm::mat4 modelViewProjection = camera.viewProjection() * m_transform;
+    glm::mat4 modelViewProjection = camera.viewProjectionEx() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
 
     m_terrain.m_world.setUpLighting(*m_program);

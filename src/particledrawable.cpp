@@ -8,7 +8,7 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include <glowutils/Camera.h>
+#include "cameraex.h"
 
 #include "pxcompilerfix.h"
 #include <foundation/PxVec3.h>
@@ -37,13 +37,13 @@ ParticleDrawable::~ParticleDrawable()
     s_instances.remove(this);
 }
 
-void ParticleDrawable::drawParticles(const glowutils::Camera & camera)
+void ParticleDrawable::drawParticles(const CameraEx & camera)
 {
     for (auto & instance : s_instances)
         instance->draw(camera);
 }
 
-void ParticleDrawable::draw(const glowutils::Camera & camera)
+void ParticleDrawable::draw(const CameraEx & camera)
 {
     if (!m_vao)
         initialize();
@@ -51,8 +51,8 @@ void ParticleDrawable::draw(const glowutils::Camera & camera)
         updateBuffers();
 
     m_program->use();
-    m_program->setUniform("viewProjection", camera.viewProjection());
-    m_program->setUniform("projection", camera.projection());
+    m_program->setUniform("viewProjection", camera.viewProjectionEx());
+    m_program->setUniform("projection", camera.projectionEx());
     m_program->setUniform("view", camera.view());
     glm::vec3 viewDir = camera.center() - camera.eye();
     glm::vec3 lookAtRight = glm::normalize(glm::cross(viewDir, camera.up()));
@@ -60,7 +60,7 @@ void ParticleDrawable::draw(const glowutils::Camera & camera)
     m_program->setUniform("lookAtUp", lookAtUp);
     m_program->setUniform("lookAtRight", lookAtRight);
     m_program->setUniform("lookAtFront", glm::normalize(viewDir));
-    m_program->setUniform("znear", camera.zNear());
+    m_program->setUniform("znear", camera.zNearEx());
     m_program->setUniform("zfar", camera.zFar());
 
     m_vao->bind();

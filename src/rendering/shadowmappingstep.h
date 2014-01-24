@@ -9,14 +9,13 @@
 #include "renderingstep.h"
 
 class World;
-class CameraEx;
 
 class ShadowMappingStep : public RenderingStep
 {
 public:
     ShadowMappingStep(const World & world);
 
-    virtual void draw(const glowutils::Camera & camera) override;
+    virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;
 
     glow::Texture * lightMap();
@@ -31,7 +30,7 @@ protected:
 
     CameraEx * m_lightCam;
 
-    virtual void drawLightMap(const glowutils::Camera & camera);
+    virtual void drawLightMap(const CameraEx & camera);
 
     glow::ref_ptr<glow::FrameBufferObject> m_lightFbo;
     glow::ref_ptr<glow::Texture> m_lightTex;

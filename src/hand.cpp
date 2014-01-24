@@ -8,8 +8,8 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 #include <glowutils/FileRegistry.h>
-#include <glowutils/Camera.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
+#include "cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -18,7 +18,6 @@
 #include <assimp/scene.h>
 
 #include "world.h"
-#include "cameraex.h"
 #include "terrain/terrain.h"
 #include "rendering/shadowmappingstep.h"
 
@@ -156,11 +155,11 @@ float Hand::heightCheck(float worldX, float worldZ) const
     return transition;
 }
 
-void Hand::drawImplementation(const glowutils::Camera & camera)
+void Hand::drawImplementation(const CameraEx & camera)
 {
     m_program->use();
     m_program->setUniform("modelView", camera.view() * transform());
-    m_program->setUniform("modelViewProjection", camera.viewProjection() * transform());
+    m_program->setUniform("modelViewProjection", camera.viewProjectionEx() * transform());
     m_program->setUniform("rotate", m_rotate);
     m_program->setUniform("cameraposition", camera.eye());
     m_world.setUpLighting(*m_program);
@@ -255,11 +254,11 @@ void Hand::drawDepthMapImpl(const CameraEx & camera)
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
 
-void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
+void Hand::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource)
 {
     glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * transform();
 
-    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * transform());
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);

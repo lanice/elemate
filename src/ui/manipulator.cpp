@@ -2,6 +2,7 @@
 
 #include <glow/logging.h>
 #include <glow/FrameBufferObject.h>
+#include "cameraex.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/swizzle.hpp>
@@ -18,7 +19,7 @@
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
 m_window(window),
 m_navigation(navigation),
-m_camera(*navigation.camera()),
+m_camera(navigation.camera()),
 m_world(world),
 m_hand(*world.hand),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedrock")),

@@ -14,9 +14,6 @@ namespace glow {
     class Texture;
     class Buffer;
 }
-namespace glowutils {
-    class Camera;
-}
 namespace physx {
     class PxShape;
     class PxRigidStatic;
@@ -24,6 +21,7 @@ namespace physx {
     class PxMaterial;
 }
 class Terrain;
+class CameraEx;
 
 class TerrainTile {
 public:
@@ -32,7 +30,7 @@ public:
     TerrainTile(Terrain & terrain, const TileID & tileID);
     virtual ~TerrainTile();
 
-    virtual void bind(const glowutils::Camera & camera);
+    virtual void bind(const CameraEx & camera);
     virtual void unbind();
 
     physx::PxShape * pxShape() const;

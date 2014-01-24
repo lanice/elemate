@@ -17,7 +17,7 @@ WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
 {
 }
 
-void WaterTile::bind(const glowutils::Camera & camera)
+void WaterTile::bind(const CameraEx & camera)
 {
     TerrainTile::bind(camera);
 

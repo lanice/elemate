@@ -2,6 +2,7 @@
 
 #include <glow/logging.h>
 #include <glowutils/FileRegistry.h>
+#include "cameraex.h"
 
 #include <GLFW/glfw3.h>
 

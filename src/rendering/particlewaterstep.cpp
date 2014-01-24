@@ -7,6 +7,7 @@
 #include <glow/FrameBufferObject.h>
 #include <glowutils/File.h>
 #include <glowutils/ScreenAlignedQuad.h>
+#include "cameraex.h"
 
 #include "particledrawable.h"
 #include "world.h"
@@ -127,7 +128,7 @@ void ParticleWaterStep::addProcess(glow::Texture & source, glow::Texture * targe
     m_processes.push_back(PostProcess(source, target, program));
 }
 
-void ParticleWaterStep::draw(const glowutils::Camera & camera)
+void ParticleWaterStep::draw(const CameraEx & camera)
 {
     // render depth values to texture
     glEnable(GL_DEPTH_TEST);

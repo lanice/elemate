@@ -5,12 +5,12 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
+#include "cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 
 #include "terraintile.h"
-#include "cameraex.h"
 #include "rendering/shadowmappingstep.h"
 #include "world.h"
 
@@ -42,7 +42,7 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     glDisable(GL_PRIMITIVE_RESTART);
 }
 
-void Terrain::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
+void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource)
 {
     // TODO: generalize for more tiles...
 
@@ -51,7 +51,7 @@ void Terrain::drawShadowMappingImpl(const glowutils::Camera & camera, const Came
     glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * baseTile->transform();
 
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
-    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     glEnable(GL_PRIMITIVE_RESTART);

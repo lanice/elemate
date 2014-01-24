@@ -13,20 +13,20 @@ namespace glow {
     class Program;
 }
 namespace glowutils {
-    class Camera;
     class ScreenAlignedQuad;
 }
 class World;
 class RenderingStep;
 class ParticleWaterStep;
 class ShadowMappingStep;
+class CameraEx;
 
 class Renderer
 {
 public:
     Renderer(const World & world);
 
-    void operator()(const glowutils::Camera & camera);
+    void operator()(const CameraEx & camera);
 
     void resize(int width, int height);
 
@@ -36,11 +36,11 @@ public:
 
 protected:
     // drawing steps
-    void sceneStep(const glowutils::Camera & camera);
-    void handStep(const glowutils::Camera & camera);
+    void sceneStep(const CameraEx & camera);
+    void handStep(const CameraEx & camera);
     std::shared_ptr<ParticleWaterStep> m_particleWaterStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
-    void flushStep(const glowutils::Camera & camera);
+    void flushStep(const CameraEx & camera);
 
     /** maintain a list of rendering all steps to apply operations on all of them, regardless of the ordering */
     std::vector<RenderingStep*> m_steps;

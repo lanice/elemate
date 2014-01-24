@@ -10,8 +10,8 @@ namespace glow {
 #include <glow/RenderBufferObject.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include <glowutils/Camera.h>
 #include <glowutils/ScreenAlignedQuad.h>
+#include "cameraex.h"
 
 #include <cassert>
 
@@ -97,7 +97,7 @@ void Renderer::addSceneFboReader(const std::function<void()> & reader)
     m_sceneFboReader.push_back(reader);
 }
 
-void Renderer::operator()(const glowutils::Camera & camera)
+void Renderer::operator()(const CameraEx & camera)
 {
     assert(m_sceneFbo);
 
@@ -108,7 +108,7 @@ void Renderer::operator()(const glowutils::Camera & camera)
     flushStep(camera);
 }
 
-void Renderer::sceneStep(const glowutils::Camera & camera)
+void Renderer::sceneStep(const CameraEx & camera)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -126,7 +126,7 @@ void Renderer::sceneStep(const glowutils::Camera & camera)
     m_sceneFbo->unbind();
 }
 
-void Renderer::handStep(const glowutils::Camera & camera)
+void Renderer::handStep(const CameraEx & camera)
 {
     m_handFbo->bind();
 
@@ -142,7 +142,7 @@ void Renderer::handStep(const glowutils::Camera & camera)
     m_handFbo->unbind();
 }
 
-void Renderer::flushStep(const glowutils::Camera & camera)
+void Renderer::flushStep(const CameraEx & camera)
 {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
@@ -154,7 +154,7 @@ void Renderer::flushStep(const glowutils::Camera & camera)
     m_shadowMappingStep->result()->bind(GL_TEXTURE4);
     m_shadowMappingStep->lightMap()->bind(GL_TEXTURE5);
 
-    m_quad->program()->setUniform("znear", camera.zNear());
+    m_quad->program()->setUniform("znear", camera.zNearEx());
     m_quad->program()->setUniform("zfar", camera.zFar());
 
     m_quad->draw();

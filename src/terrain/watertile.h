@@ -7,7 +7,7 @@ class WaterTile : public TerrainTile
 public:
     WaterTile(Terrain & terrain, const TileID & tileID);
 
-    virtual void bind(const glowutils::Camera & camera) override;
+    virtual void bind(const CameraEx & camera) override;
     virtual void unbind() override;
 
 protected:

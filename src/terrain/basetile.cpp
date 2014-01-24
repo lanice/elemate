@@ -28,7 +28,7 @@ BaseTile::~BaseTile()
     delete m_terrainTypeData;
 }
 
-void BaseTile::bind(const glowutils::Camera & camera)
+void BaseTile::bind(const CameraEx & camera)
 {
     TerrainTile::bind(camera);
 

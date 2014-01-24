@@ -10,7 +10,7 @@ class ParticleWaterStep : public RenderingStep
 public:
     ParticleWaterStep();
 
-    virtual void draw(const glowutils::Camera & camera) override;
+    virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;
 
     glow::Texture * normalsTex();

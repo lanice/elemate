@@ -8,7 +8,7 @@ public:
     BaseTile(Terrain & terrain, const TileID & tileID);
     virtual ~BaseTile() override;
 
-    virtual void bind(const glowutils::Camera & camera) override;
+    virtual void bind(const CameraEx & camera) override;
     virtual void unbind() override;
 
 protected:

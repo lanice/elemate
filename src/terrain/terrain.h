@@ -24,9 +24,9 @@ public:
     virtual ~Terrain() override;
 
     /** set a list of elements that will be used for the draw call */
-    virtual void draw(const glowutils::Camera & camera, const std::initializer_list<std::string> & elements);
+    virtual void draw(const CameraEx & camera, const std::initializer_list<std::string> & elements);
     virtual void drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements);
-    virtual void drawShadowMapping(const glowutils::Camera & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements);
+    virtual void drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements);
 
     /** PhysX shape containing height field geometry for one tile.
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
@@ -52,9 +52,9 @@ protected:
     void Terrain::setDrawElements(const std::initializer_list<std::string> & elements);
     std::set<TerrainLevel> m_drawLevels;
 
-    virtual void drawImplementation(const glowutils::Camera & camera) override;
+    virtual void drawImplementation(const CameraEx & camera) override;
     virtual void drawDepthMapImpl(const CameraEx & camera) override;
-    virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
+    virtual void drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource) override;
 
     /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);

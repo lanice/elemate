@@ -37,9 +37,9 @@ protected:
     void loadModel();
     static const std::string s_modelFilename;
 
-    virtual void drawImplementation(const glowutils::Camera & camera) override;
+    virtual void drawImplementation(const CameraEx & camera) override;
     virtual void drawDepthMapImpl(const CameraEx & camera) override;
-    virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
+    virtual void drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource) override;
 
     glow::ref_ptr<glow::Buffer> m_normalBuffer;
 
