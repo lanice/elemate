@@ -12,6 +12,7 @@
 #include "terraintile.h"
 #include "cameraex.h"
 #include "rendering/shadowmappingstep.h"
+#include "world.h"
 
 void Terrain::drawDepthMapImpl(const CameraEx & camera)
 {
@@ -72,8 +73,8 @@ void Terrain::initDepthMapProgram()
     m_depthMapProgram = new glow::Program();
     m_depthMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depthmap.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmap.frag"));
 
     m_depthMapProgram->setUniform("heightField", 0);
 
@@ -85,8 +86,8 @@ void Terrain::initShadowMappingProgram()
     m_shadowMappingProgram = new glow::Program();
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_terrain.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     m_shadowMappingProgram->setUniform("heightField", 1);
 

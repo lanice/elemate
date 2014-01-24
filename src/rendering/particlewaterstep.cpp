@@ -9,6 +9,7 @@
 #include <glowutils/ScreenAlignedQuad.h>
 
 #include "particledrawable.h"
+#include "world.h"
 
 
 ParticleWaterStep::ParticleWaterStep()
@@ -43,7 +44,7 @@ ParticleWaterStep::ParticleWaterStep()
 
     glow::Program * blurHorizontalProgram = new glow::Program();
     blurHorizontalProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_h.frag"));
     addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
 
@@ -86,7 +87,7 @@ ParticleWaterStep::ParticleWaterStep()
 
     glow::Program * normalProgram = new glow::Program();
     normalProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_normals.frag"));
     addProcess(*m_postTexB, m_normalsTex, *normalProgram);
 }

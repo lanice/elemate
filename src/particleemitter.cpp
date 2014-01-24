@@ -19,7 +19,7 @@ const int           ParticleEmitter::kDefaultParticleSpreading = 50;
 ParticleEmitter::ParticleEmitter(bool gpuParticles, const physx::PxVec3& position)
 : m_particleDrawable(nullptr)
 , m_gpuParticles(gpuParticles)
-, m_terrainInteractor(std::make_shared<TerrainInteractor>(World::getInstance()->terrain, "water"))
+, m_terrainInteractor(std::make_shared<TerrainInteractor>(World::instance()->terrain, "water"))
 , m_position(position)
 , m_emitting(false)
 , m_particles_per_second(kDefaultEmittedParticles)
