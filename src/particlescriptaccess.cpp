@@ -60,20 +60,11 @@ int ParticleScriptAccess::removeParticleGroup(const int index)
 
 void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType)
 {
-    auto lambda1 = [&](float a, float b, float c, float d, float e)
-    {
-        particleGroup->setImmutableProperties(a, b, c, d, e);
-        return 0;
-    };
-    auto func1 = static_cast<std::function<int(float, float, float, float, float)> >(lambda1);
-    wrapper->Register("particles_setImmutableProperties", func1);
+    std::function<int(float, float, float, float, float)> func1 = [=](float a, float b, float c, float d, float e) {particleGroup->setImmutableProperties(a, b, c, d, e); return 0; };
+    
+    std::function<int(float, float, float, float, float, float, float)> func2 = [=](float a, float b, float c, float d, float e, float f, float g) {particleGroup->setMutableProperties(a, b, c, d, e, f, g); return 0; };
 
-    auto lambda2 = [&](float a, float b, float c, float d, float e, float f, float g)
-    {
-        particleGroup->setMutableProperties(a, b, c, d, e, f, g);
-        return 0;
-    };
-    auto func2 = static_cast<std::function<int(float, float, float, float, float, float, float)> >(lambda2);
+    wrapper->Register("particles_setImmutableProperties", func1);
     wrapper->Register("particles_setMutableProperties", func2);
 
     std::string script = "scripts/" + elementType + ".lua";
