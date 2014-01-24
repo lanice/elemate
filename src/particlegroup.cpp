@@ -34,10 +34,11 @@ ParticleGroup::ParticleGroup(
     m_particleSystem = PxGetPhysics().createParticleFluid(maxParticleCount, false);
     assert(m_particleSystem);
     // m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
-    setImmutableProperties(immutableProperties);
-    setMutableProperties(mutableProperties);
 
     m_scene->addActor(*m_particleSystem);
+    
+    setImmutableProperties(immutableProperties);
+    setMutableProperties(mutableProperties);
 }
 
 ParticleGroup::~ParticleGroup()

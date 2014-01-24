@@ -60,14 +60,22 @@ int ParticleScriptAccess::removeParticleGroup(const int index)
 
 void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType)
 {
-    auto lambda = [&](float a, float b, float c, float d, float e, float f, float g)
+    auto lambda1 = [&](float a, float b, float c, float d, float e)
+    {
+        particleGroup->setImmutableProperties(a, b, c, d, e);
+        return 0;
+    };
+    auto func1 = static_cast<std::function<int(float, float, float, float, float)> >(lambda1);
+    wrapper->Register("particles_setImmutableProperties", func1);
+
+    auto lambda2 = [&](float a, float b, float c, float d, float e, float f, float g)
     {
         particleGroup->setMutableProperties(a, b, c, d, e, f, g);
         return 0;
     };
-    auto func = static_cast<std::function<int(float, float, float, float, float, float, float)> >(lambda);
+    auto func2 = static_cast<std::function<int(float, float, float, float, float, float, float)> >(lambda2);
+    wrapper->Register("particles_setMutableProperties", func2);
 
-    wrapper->Register("particles_setMutableProperties", func);
     std::string script = "scripts/" + elementType + ".lua";
     wrapper->loadScript(script);
 }
