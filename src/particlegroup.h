@@ -94,6 +94,7 @@ protected:
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
+    uint32_t m_maxParticleCount;
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;

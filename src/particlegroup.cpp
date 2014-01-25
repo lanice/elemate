@@ -37,6 +37,7 @@ ParticleGroup::ParticleGroup(
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(maxParticleCount))
+, m_maxParticleCount(maxParticleCount)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_emitting(false)
@@ -84,6 +85,7 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
             indices[i] = m_freeIndices.back();
             m_freeIndices.pop_back();
         } else {
+            if (m_nextFreeIndex == m_maxParticleCount-1) return;
             indices[i] = m_nextFreeIndex++;
         }
 
