@@ -1,6 +1,8 @@
 #include "particlegroup.h"
 
 #include <cassert>
+#include <random>
+#include <ctime>
 
 #include <glow/logging.h>
 
@@ -8,12 +10,23 @@
 #include <PxScene.h>
 #include <PxSceneLock.h>
 
-// #include "PxPhysicsAPI.h"
-
 #include "particledrawable.h"
 
 
+namespace {
+    std::mt19937 rng;
+}
+
 using namespace physx;
+
+namespace {
+    uint32_t seed_val = static_cast<uint32_t>(std::time(0));
+    bool initRng() {
+        rng.seed(seed_val);
+        return true;
+    }
+    bool didRngInit = initRng();
+}
 
 ParticleGroup::ParticleGroup(
     const bool enableGpuParticles,
@@ -104,7 +117,7 @@ void ParticleGroup::emit(const double & ratio, const glm::vec3 & position, const
 {
     m_emitRatio = ratio;
     m_emitPosition = position;
-    m_emitDirection = direction;
+    m_emitDirection = glm::normalize(direction);
     m_emitting = true;
 }
 
@@ -120,8 +133,10 @@ void ParticleGroup::updateEmitting(const double & delta)
 
     if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
     {
-        float randomFactor = 2.f * ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) - 0.5f);
-        createParticle(m_emitPosition, m_emitDirection + randomFactor);
+        std::uniform_real_distribution<float> uniform_dist(-0.5f, 0.5f);
+        std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
+
+        createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
         m_timeSinceLastEmit = 0.0;
     } else {
         m_timeSinceLastEmit += delta;
