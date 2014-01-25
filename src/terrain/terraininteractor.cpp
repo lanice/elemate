@@ -122,9 +122,26 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
 {
     const TerrainSettings & settings = m_terrain->settings;
 
+    /** clamp height value */
+    if (value < -settings.maxHeight) value = -settings.maxHeight;
+    if (value > settings.maxHeight) value = settings.maxHeight;
+
     // define the size of the affected interaction area, in grid coords
-    const uint32_t diameter = 10;
+    const uint32_t diameter = 50;
     const float radius = diameter * 0.5f;
+
+    // normal deviation:
+    const float stddev = 0.25f;
+    const float rangeScale = 1.0f / radius;
+
+    bool moveUp = (value - tile.heightAt(row, column)) > 0;
+    int invert = moveUp ? 1 : -1;   // invert the normal distribution if moving downwards
+
+    float norm0 = normalDist(0, 0, stddev);
+    float maxHeight = settings.maxHeight;
+    std::function<float(float)> normHeight = [stddev, norm0, maxHeight, invert](float x){
+        return invert * normalDist(x, 0, stddev) / norm0 * (norm0 + maxHeight) - maxHeight;
+    };
 
     unsigned int minRow, maxRow, minColumn, maxColumn;
     {
@@ -139,18 +156,6 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
         maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn > static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMaxColumn));
     }
 
-    // normal deviation:
-    const float mean = 0.44f;
-    const float rangeScale = 1.0f / radius;
-
-    /** clamp height value */
-    if (value < -settings.maxHeight) value = -settings.maxHeight;
-    if (value > settings.maxHeight) value = settings.maxHeight;
-
-    bool moveUp = (value - tile.heightAt(row, column)) > 0;
-    int invert = moveUp ? 1 : -1;   // invert the normal distribution if moving downwards
-    float heightNormDelta = value - invert * normalDist(0, 0, mean); // delta between the normal deviation "height" and the height we actually want
-
     for (unsigned int r = minRow; r <= maxRow; ++r) {
         for (unsigned int c = minColumn; c <= maxColumn; ++c) {
             signed int relativeRow = r - row;
@@ -161,7 +166,7 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
             if (localRadius > radius)   // interaction in a circle, not square
                 continue;
 
-            float newLocalHeight = invert * normalDist(localRadius * rangeScale, 0, mean) + heightNormDelta;   // move the Probability density function along the y axis, to match the desired height in the interact center
+            float newLocalHeight = normHeight(localRadius * rangeScale);
 
             bool localMoveUp = newLocalHeight > tile.heightAt(r, c);
             if (localMoveUp != moveUp)
@@ -244,12 +249,14 @@ void TerrainInteractor::updatePxHeight(const TerrainTile & tile, unsigned minRow
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ)
 {
+    return 1.0;
     m_grabbedLevel = m_interactLevel;
     return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }
 
 void TerrainInteractor::heightPull(float worldX, float worldZ)
 {
+    return;
     setLevelHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight);
 }
 
