@@ -44,9 +44,9 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
     float minX = terrain.settings.tileSizeX() * (tileID.x - 0.5f);
     float minZ = terrain.settings.tileSizeZ() * (tileID.z - 0.5f);
     m_transform = glm::mat4(
-        terrain.settings.intervalX(), 0, 0, 0,
+        terrain.settings.sampleInterval(), 0, 0, 0,
         0, 1, 0, 0,
-        0, 0, terrain.settings.intervalZ(), 0,
+        0, 0, terrain.settings.sampleInterval(), 0,
         minX, 0, minZ, 1);
 }
 
@@ -151,11 +151,10 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
     PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
-    assert(m_terrain.settings.intervalX() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
-    assert(m_terrain.settings.intervalZ() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(m_terrain.settings.sampleInterval() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     // create height field geometry and set scale
     PxHeightFieldGeometry pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
-        heightScaleToWorld, m_terrain.settings.intervalX(), m_terrain.settings.intervalZ());
+        heightScaleToWorld, m_terrain.settings.sampleInterval(), m_terrain.settings.sampleInterval());
     m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
 
     assert(m_pxShape);

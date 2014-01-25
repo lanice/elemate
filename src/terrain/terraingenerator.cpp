@@ -183,16 +183,10 @@ void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
     m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
 }
 
-float TerrainGenerator::samplesPerWorldXCoord() const
+float TerrainGenerator::samplesPerWorldCoord() const
 {
-    return m_settings.samplesPerXCoord();
+    return m_settings.samplesPerWorldCoord();
 }
-
-float TerrainGenerator::samplesPerWorldZCoord() const
-{
-    return m_settings.samplesPerZCoord();
-}
-
 void TerrainGenerator::setTilesPerAxis(unsigned x, unsigned z)
 {
     assert(x >= 1 && z >= 1);

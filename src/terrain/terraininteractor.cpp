@@ -114,7 +114,7 @@ float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLe
 
 void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
 {
-    const float heightDelta = - volume / (m_terrain->settings.intervalX() * m_terrain->settings.intervalZ());
+    const float heightDelta = -volume / (m_terrain->settings.sampleInterval() * m_terrain->settings.sampleInterval());
     changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta);
 }
 
