@@ -56,6 +56,11 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
     m_game.manipulator()->handleKeyEvent(key, scancode, action, mods);
 }
 
+void EventHandler::handleMouseMoveEvent(double xpos, double ypos)
+{
+    m_game.manipulator()->handleMouseMoveEvent(xpos, ypos);
+}
+
 void EventHandler::handleScrollEvent(double xoffset, double yoffset)
 {
     // As soon as we have a HUD interface in which we scroll,

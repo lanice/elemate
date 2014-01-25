@@ -9,6 +9,7 @@
 #include <glowutils/ScreenAlignedQuad.h>
 
 #include "particledrawable.h"
+#include "world.h"
 
 
 ParticleWaterStep::ParticleWaterStep()
@@ -39,7 +40,7 @@ ParticleWaterStep::ParticleWaterStep()
 
     m_blurringProgram = new glow::Program();
     m_blurringProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring.frag"));
     m_blurringProgram->setUniform("waterDepth", 0);
     m_blurringQuad = new glowutils::ScreenAlignedQuad(m_blurringProgram);
@@ -58,7 +59,7 @@ ParticleWaterStep::ParticleWaterStep()
 
     m_normalsProgram = new glow::Program();
     m_normalsProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_normals.frag"));
     m_normalsProgram->setUniform("waterDepth", 0);
     m_normalsQuad = new glowutils::ScreenAlignedQuad(m_normalsProgram);

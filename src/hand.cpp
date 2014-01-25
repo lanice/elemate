@@ -7,6 +7,7 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
+#include <glowutils/FileRegistry.h>
 #include <glowutils/Camera.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
 
@@ -35,7 +36,7 @@ Hand::Hand(const World & world)
     m_program = new glow::Program();
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
+        world.sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
 }
 
@@ -226,8 +227,6 @@ void Hand::setHeightOffset(float heightOffset)
     if (m_heightOffset == heightOffset)
         return;
 
-    assert(heightOffset >= 0.0f);
-
     m_heightOffset = heightOffset >= 0.0f ? heightOffset : 0.0f;
 
     m_positionY.invalidate();
@@ -269,8 +268,8 @@ void Hand::initLightMappingProgram()
     m_lightMapProgram = new glow::Program();
     m_lightMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
 }
 
 void Hand::initShadowMappingProgram()
@@ -278,8 +277,8 @@ void Hand::initShadowMappingProgram()
     m_shadowMappingProgram = new glow::Program();
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }
