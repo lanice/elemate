@@ -9,7 +9,7 @@
 #include <PxPhysicsAPI.h>
 
 #include "elements.h"
-#include "particleemitter.h"
+#include "particlescriptaccess.h"
 #include "lua/luawrapper.h"
 
 
@@ -23,8 +23,6 @@ PhysicsWrapper::PhysicsWrapper()
 , m_scene(nullptr)
 , m_physxGpuAvailable(checkPhysxGpuAvailable())
 , m_cudaContextManager(nullptr)
-, m_emitters()
-, m_activeEmitter("")
 , m_gpuParticles(false)
 , m_lua(new LuaWrapper())
 //m_profile_zone_manager(nullptr)
@@ -41,8 +39,6 @@ PhysicsWrapper::~PhysicsWrapper()
     s_instance = nullptr;
 
     Elements::clear();
-
-    clearEmitters();
 
     m_scene->fetchResults(); //Wait for last simulation step to complete before releasing scene
     m_scene->release();
@@ -90,30 +86,6 @@ void PhysicsWrapper::step(double delta)
 
     m_scene->simulate(static_cast<physx::PxReal>(delta));
     m_scene->fetchResults(true);
-
-    for (auto& emitter : m_emitters){
-        emitter.second->step(delta);
-    }
-}
-
-void PhysicsWrapper::updateAllObjects()
-{
-    for (auto& emitter : m_emitters){
-        emitter.second->update();
-    }
-}
-
-void PhysicsWrapper::makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position){
-    m_emitters.emplace(emitter_name, new ParticleEmitter(
-        m_gpuParticles,
-        physx::PxVec3(position.x, position.y, position.z)));
-    m_emitters[emitter_name]->initializeParticleSystem(Elements::emitterDescription(emitter_name));
-}
-
-void PhysicsWrapper::clearEmitters(){
-    for (auto emitter : m_emitters)
-        delete emitter.second;
-    m_emitters.clear();
 }
 
 void PhysicsWrapper::initializePhysics(){
@@ -225,8 +197,7 @@ void PhysicsWrapper::setUseGpuParticles(bool useGPU)
         return;
     }
     m_gpuParticles = useGPU;
-    for (auto emitter : m_emitters)
-        emitter.second->setGPUAccelerated(m_gpuParticles);
+    ParticleScriptAccess::instance().setUseGpuParticles(useGPU);
 }
 
 void PhysicsWrapper::toogleUseGpuParticles()
@@ -257,8 +228,7 @@ void PhysicsWrapper::pauseGPUAcceleration()
         glow::warning("PhysX calculation on GPU not available!");
         return;
     }
-    for (auto emitter : m_emitters)
-        emitter.second->pauseGPUAcceleration();
+    ParticleScriptAccess::instance().pauseGPUAcceleration();
 }
 
 void PhysicsWrapper::restoreGPUAccelerated()
@@ -267,37 +237,7 @@ void PhysicsWrapper::restoreGPUAccelerated()
         glow::warning("PhysX calculation on GPU not available!");
         return;
     }
-    for (auto emitter : m_emitters)
-        emitter.second->restoreGPUAccelerated();
-}
-
-void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
-{
-    if (m_activeEmitter != "")
-        m_emitters[m_activeEmitter]->setPosition(physx::PxVec3(position.x, position.y, position.z));
-}
-
-void PhysicsWrapper::selectEmitter(const std::string& emitter_name)
-{
-    physx::PxVec3 current_hand_position = physx::PxVec3(0.0F, 0.0F, 0.0F);
-    if (m_activeEmitter != ""){
-        current_hand_position = m_emitters[m_activeEmitter]->position();
-        stopEmitting();
-    }
-    m_activeEmitter = emitter_name;
-    m_emitters[m_activeEmitter]->setPosition(current_hand_position);
-}
-
-void PhysicsWrapper::startEmitting()
-{
-    if (m_activeEmitter != "")
-        m_emitters[m_activeEmitter]->startEmit();
-}
-
-void PhysicsWrapper::stopEmitting()
-{
-    if (m_activeEmitter != "")
-        m_emitters[m_activeEmitter]->stopEmit();
+    ParticleScriptAccess::instance().restoreGPUAccelerated();
 }
 
 void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
