@@ -118,7 +118,8 @@ void ParticleGroup::updateEmitting(const double & delta)
 
     if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
     {
-        createParticle(m_emitPosition, m_emitDirection);
+        float randomFactor = 2.f * ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) - 0.5f);
+        createParticle(m_emitPosition, m_emitDirection + randomFactor);
         m_timeSinceLastEmit = 0.0;
     } else {
         m_timeSinceLastEmit += delta;
