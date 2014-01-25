@@ -5,5 +5,5 @@ out vec3 v_vertex;
 
 void main()
 {
-    v_vertex = _vertex + vec3(0,0.2,0);
+    v_vertex = _vertex;
 }
