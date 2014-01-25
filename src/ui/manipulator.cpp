@@ -40,10 +40,8 @@ void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
         ParticleScriptAccess::instance().particleGroup(0)->stopEmit();
 }
 
-void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
+void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
-    bool altPressed = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
-
     // key press events
     if (action == GLFW_PRESS)
     {
@@ -66,10 +64,8 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
             break;
         case GLFW_KEY_R:
-            if (altPressed) {
-                m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
-                m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
-            }
+            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
             break;
         }
     }
