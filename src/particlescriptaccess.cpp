@@ -50,7 +50,7 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
 
     m_particleGroups.push_back(std::make_tuple(particleGroup, wrapper));
     m_worldNotifier->registerObserver(particleGroup);
-    return m_particleGroups.size() - 1;
+    return static_cast<int>(m_particleGroups.size() - 1);
 }
 
 void ParticleScriptAccess::removeParticleGroup(const int index)

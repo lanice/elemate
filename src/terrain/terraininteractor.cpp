@@ -138,8 +138,10 @@ void TerrainInteractor::setPxHeight(TerrainTile & tile, unsigned row, unsigned c
     PhysicsWrapper::getInstance()->restoreGPUAccelerated();
 
 #ifdef PX_WINDOWS
-    PxParticleGpu::releaseHeightFieldMirror(*hf);
-    PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
+    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
+        PxParticleGpu::releaseHeightFieldMirror(*hf);
+        PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
+    }
 #endif
 }
 

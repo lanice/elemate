@@ -56,7 +56,7 @@ public:
     void createParticle(const glm::vec3 & position, const glm::vec3 & velocity);
 
     /** Emit particles with ratio as particles per second. */
-    void emit(const double & ratio, const glm::vec3 & position, const glm::vec3 & direction);
+    void emit(float ratio, const glm::vec3 & position, const glm::vec3 & direction);
     void stopEmit();
 
     /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
