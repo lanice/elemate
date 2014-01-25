@@ -25,6 +25,7 @@ public:
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
     void handleMouseButtonEvent(int button, int action, int mods);
     void handleMouseMoveEvent(double xpos, double ypos);
+    void handleScrollEvent(const double & xoffset, const double & yoffset);
 
     void updateHandPosition();
 

@@ -59,6 +59,9 @@ void Navigation::setTransformation(const glm::vec3 & center, const glm::vec3 & l
 
 void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
 {
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+        return;     // currently used for terrain manipulation
+    
     if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         if (yoffset > 0)
