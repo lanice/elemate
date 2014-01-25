@@ -23,20 +23,16 @@ m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
 m_grabbedTerrain(false),
 m_renderer(nullptr)
 {
-    m_world.makeElements(m_hand.position());
     m_world.createFountainSound(m_hand.position());
 }
 
 Manipulator::~Manipulator()
 {
 }
-void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
+void Manipulator::handleMouseButtonEvent(int /*button*/, int /*action*/, int /*mods*/)
 {
-    //Emitter Interaction
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        m_world.startEmitting();
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-        m_world.stopEmitting();
+    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 }
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
@@ -57,12 +53,8 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_world.togglePause();
             break;
         case GLFW_KEY_F:
-            if (!altPressed)
-                m_world.selectNextEmitter();
-            else {
-                m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
-                m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
-            }
+            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
             break;
         case GLFW_KEY_LEFT_ALT:
             m_grabbedTerrain = true;
@@ -94,8 +86,6 @@ void Manipulator::updateHandPosition()
 
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
-
-    m_world.updateEmitterPosition(handPosition);
 }
 
 void Manipulator::setRenderer(Renderer & renderer)
