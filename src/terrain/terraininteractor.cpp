@@ -26,7 +26,7 @@ using namespace physx;
 
 float TerrainInteractor::normalDist(float x, float mean, float stddev)
 {
-    return
+    return  // n(x) = n(x) = 1 / (stddev*sqrt(2*pi)) * exp( - (x-mean)^2 / (2*stddev^2))
         1.0f / (stddev * std::sqrt(2.0f * glm::pi<float>()))
         * std::exp(-(x - mean) * (x - mean) / (2.0f * stddev * stddev));
 }
@@ -120,6 +120,9 @@ void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
 
 float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value)
 {
+    float stddev = 7.0f;
+    assert(stddev > 0);
+
     const TerrainSettings & settings = m_terrain->settings;
 
     /** clamp height value */
@@ -127,28 +130,27 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
     if (value > settings.maxHeight) value = settings.maxHeight;
 
     // define the size of the affected interaction area, in grid coords
-    const uint32_t diameter = 50;
-    const float radius = diameter * 0.5f;
-
-    // normal deviation:
-    const float stddev = 0.25f;
-    const float rangeScale = 1.0f / radius;
+    const float effectRadiusWorld = stddev * 3;
+    const uint32_t effectRadius = std::ceil(effectRadiusWorld * settings.samplesPerWorldCoord()); // = 0 means to change only the value at (row,column)
 
     bool moveUp = (value - tile.heightAt(row, column)) > 0;
-    int invert = moveUp ? 1 : -1;   // invert the normal distribution if moving downwards
+    int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
 
     float norm0 = normalDist(0, 0, stddev);
     float maxHeight = settings.maxHeight;
-    std::function<float(float)> normHeight = [stddev, norm0, maxHeight, invert](float x){
-        return invert * normalDist(x, 0, stddev) / norm0 * (norm0 + maxHeight) - maxHeight;
+    std::function<float(float)> interactHeight = [stddev, norm0, value, maxHeight, invert] (float x) {
+        return normalDist(x, 0, stddev)     // - normalize normDist to
+                   / norm0                  //    normDist value at interaction center
+               * (2 * maxHeight + 10)       // - scale to height range + 10 to omit norm values near 0
+               * invert                     // - mirror the curve along the y axis if moving downwoard
+               + value                      // - move along y so that value==0 => y==0
+               - (2*maxHeight + 10) * invert;
     };
 
     unsigned int minRow, maxRow, minColumn, maxColumn;
     {
-        int maxD = diameter - int((diameter + 1) * 0.5f);
-        int minD = maxD - diameter + 1;
         // unchecked signed min/max values, possibly < 0 or > numRows/Column
-        int iMinRow = row + minD, iMaxRow = row + maxD, iMinColumn = column + minD, iMaxColumn = column + maxD;
+        int iMinRow = row - effectRadius, iMaxRow = row + effectRadius, iMinColumn = column - effectRadius, iMaxColumn = column + effectRadius;
         // work on rows and column that are in range of the terrain tile settings and larger than 0
         minRow = iMinRow < 0 ? 0 : (iMinRow > static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMinRow));
         maxRow = iMaxRow < 0 ? 0 : (iMaxRow > static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMaxRow));
@@ -157,24 +159,25 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
     }
 
     for (unsigned int r = minRow; r <= maxRow; ++r) {
+        float relWorldX = (signed(r) - signed(row)) * settings.sampleInterval();
         for (unsigned int c = minColumn; c <= maxColumn; ++c) {
-            signed int relativeRow = r - row;
-            signed int relativeColumn = c - column;
+            float relWorldZ = (signed(c) - signed(column)) * settings.sampleInterval();
 
-            float localRadius = std::sqrt(static_cast<float>(abs(relativeRow * relativeRow + relativeColumn * relativeColumn)));
+            float localRadius = std::sqrt(relWorldX*relWorldX + relWorldZ*relWorldZ);
 
-            if (localRadius > radius)   // interaction in a circle, not square
+            if (localRadius > effectRadiusWorld)  // interaction in a circle, not square
                 continue;
 
-            float newLocalHeight = normHeight(localRadius * rangeScale);
+            float newLocalHeight = interactHeight(localRadius);
 
             bool localMoveUp = newLocalHeight > tile.heightAt(r, c);
+            // don't do anything if we pull up the terrain but the local heightpoint is already heigher than its calculated height. (vice versa)
             if (localMoveUp != moveUp)
-                continue;  // don't do anything if we pull up the terrain but the local heightpoint is already heigher than its calculated height. (vice versa)
+                continue;
 
             tile.setHeight(r, c, newLocalHeight);
         }
-        tile.addBufferUpdateRange(minColumn + r * settings.columns, diameter);
+        tile.addBufferUpdateRange(minColumn + r * settings.columns, 1u + effectRadius * 2u);
     }
 
     updatePxHeight(tile, minRow, maxRow, minColumn, maxColumn);
