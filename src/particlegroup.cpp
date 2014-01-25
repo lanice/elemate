@@ -74,9 +74,9 @@ ParticleGroup::~ParticleGroup()
 
 void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec3Array & pos, const glow::Vec3Array & vel)
 {
-    PxU32 indices[numParticles];
-    PxVec3 positions[numParticles];
-    PxVec3 velocities[numParticles];
+    PxU32 * indices = new PxU32[numParticles];
+    PxVec3 * positions = new PxVec3[numParticles];
+    PxVec3 * velocities = new PxVec3[numParticles];
 
     for (PxU32 i = 0; i < numParticles; ++i)
     {
@@ -105,6 +105,10 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
         m_particleDrawable->addParticles(numParticles, positions);
     else
         glow::warning("ParticleGroup::createParticles creation of %; physx particles failed", numParticles);
+
+    delete[] indices;
+    delete[] positions;
+    delete[] velocities;
 }
 
 void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 & velocity)
