@@ -25,6 +25,8 @@ ParticleGroup::ParticleGroup(
 , m_particleDrawable(std::make_shared<ParticleDrawable>(maxParticleCount))
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
+, m_emitting(false)
+, m_timeSinceLastEmit(0.0)
 {
     for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
 
@@ -86,6 +88,41 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
         m_particleDrawable->addParticles(numParticles, positions);
     else
         glow::warning("ParticleGroup::createParticles creation of %; physx particles failed", numParticles);
+}
+
+void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 & velocity)
+{
+    glow::Vec3Array positions, velocities;
+    positions << position;
+    velocities << velocity;
+    createParticles(1, positions, velocities);
+}
+
+void ParticleGroup::emit(const double & ratio, const glm::vec3 & position, const glm::vec3 & direction)
+{
+    m_emitRatio = ratio;
+    m_emitPosition = position;
+    m_emitDirection = direction;
+    m_emitting = true;
+}
+
+void ParticleGroup::stopEmit()
+{
+    m_emitting = false;
+    m_timeSinceLastEmit = 0.0;
+}
+
+void ParticleGroup::updateEmitting(const double & delta)
+{
+    if (!m_emitting) return;
+
+    if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
+    {
+        createParticle(m_emitPosition, m_emitDirection);
+        m_timeSinceLastEmit = 0.0;
+    } else {
+        m_timeSinceLastEmit += delta;
+    }
 }
 
 void ParticleGroup::updateVisuals()

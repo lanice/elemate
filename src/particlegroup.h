@@ -49,8 +49,18 @@ public:
         );
     ~ParticleGroup();
 
+    /** Make sure numParticles matches size of position matches size of velocities! */
     void createParticles(const uint32_t numParticles, const glow::Vec3Array & positions, const glow::Vec3Array & velocities);
+    /** Create a single particle at given position with given velocity. */
+    void createParticle(const glm::vec3 & position, const glm::vec3 & velocity);
 
+    /** Emit particles with ratio as particles per second. */
+    void emit(const double & ratio, const glm::vec3 & position, const glm::vec3 & direction);
+    void stopEmit();
+
+    /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
+    void updateEmitting(const double & delta);
+    /** Subscribed to World to update particle visuals. (Observer pattern) */
     void updateVisuals();
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
@@ -84,6 +94,14 @@ protected:
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
+
+    float m_emitRatio;
+    glm::vec3 m_emitPosition;
+    glm::vec3 m_emitDirection;
+
+    bool m_emitting;
+
+    double m_timeSinceLastEmit;
 
 
 public:

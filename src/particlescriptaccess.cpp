@@ -3,12 +3,14 @@
 #include <cassert>
 
 #include "particlegroup.h"
+#include "world.h"
 #include "lua/luawrapper.h"
 
 
 ParticleScriptAccess ParticleScriptAccess::s_access;
 
 ParticleScriptAccess::ParticleScriptAccess()
+: m_worldNotifier(nullptr)
 {
 }
 
@@ -43,6 +45,7 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
     }
 
     m_particleGroups.push_back(std::make_tuple(particleGroup, wrapper));
+    m_worldNotifier->registerObserver(particleGroup);
     return m_particleGroups.size() - 1;
 }
 
@@ -70,10 +73,7 @@ void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, Lua
     wrapper->loadScript(script);
 }
 
-void ParticleScriptAccess::updateVisuals()
+void ParticleScriptAccess::setNotifier(World * notifier)
 {
-    for (auto particleGroup : m_particleGroups)
-    {
-        if (std::get<0>(particleGroup)) std::get<0>(particleGroup)->updateVisuals();
-    }
+    m_worldNotifier = notifier;
 }

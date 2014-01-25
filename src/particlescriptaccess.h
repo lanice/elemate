@@ -6,6 +6,7 @@
 
 
 class ParticleGroup;
+class World;
 class LuaWrapper;
 
 /**
@@ -24,8 +25,7 @@ public:
     int createParticleGroup(const std::string & elementType = "default");
     void removeParticleGroup(const int index);
 
-    /** Called automatically to update the ParticleDrawable(s) */
-    void updateVisuals();
+    void setNotifier(World * notifier);
 
 protected:
     ParticleScriptAccess();
@@ -34,6 +34,8 @@ protected:
 
     std::vector<std::tuple<ParticleGroup *, LuaWrapper *> > m_particleGroups;
     std::vector<int> m_freeIndices;
+
+    World * m_worldNotifier;
 
     static ParticleScriptAccess s_access;
 };

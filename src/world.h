@@ -19,6 +19,7 @@ class SoundManager;
 class CyclicTime;
 class Hand;
 class Terrain;
+class ParticleGroup;
 
 class World {
 public:
@@ -36,6 +37,11 @@ public:
 
     /** updates the world as needed for visualization and interaction */
     void updateVisuals();
+
+    void notifyParticleGroups();
+    void notifyParticleGroups(const double & delta);
+    void registerObserver(ParticleGroup * observer);
+    void unregisterObserver(ParticleGroup * observer);
 
     /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
     void makeElements(const glm::vec3& position);
@@ -76,6 +82,8 @@ protected:
 
     glm::vec3 m_sunlightInvDirection;
     glm::mat4 m_sunlighting;
+
+    std::vector<ParticleGroup *> m_particleGroupObservers;
 
 public:
     World(World&) = delete;
