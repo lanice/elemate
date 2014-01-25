@@ -24,6 +24,7 @@ public:
 
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
     void handleMouseButtonEvent(int button, int action, int mods);
+    void handleMouseMoveEvent(double xpos, double ypos);
 
     void updateHandPosition();
 
@@ -48,6 +49,8 @@ protected:
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;
     bool m_grabbedTerrain;
     Renderer * m_renderer;
+
+    glm::dvec2 m_lastCursorPos;
 
 public:
     Manipulator() = delete;

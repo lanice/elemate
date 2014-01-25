@@ -84,12 +84,20 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
     }
 }
 
+void Manipulator::handleMouseMoveEvent(double xpos, double ypos)
+{
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
+        float delta = static_cast<float>(m_lastCursorPos.y - ypos);
+        m_hand.setHeightOffset(m_hand.heightOffset() + 0.01f * delta);
+        glfwSetCursorPos(&m_window, m_lastCursorPos.x, m_lastCursorPos.y);
+    } else
+        m_lastCursorPos = glm::dvec2(xpos, ypos);
+}
+
 void Manipulator::updateHandPosition()
 {
-    double xpos, ypos;
-    glfwGetCursorPos(&m_window, &xpos, &ypos);
-
-    glm::vec3 handPosition = objAt(glm::ivec2(std::floor(xpos), std::floor(ypos)));
+    glm::vec3 handPosition = objAt(glm::ivec2(glm::floor(m_lastCursorPos)));
 
     m_hand.setPosition(handPosition.x, handPosition.z);
     m_hand.rotate(m_navigation.rotationAngle());

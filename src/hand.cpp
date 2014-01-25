@@ -35,7 +35,7 @@ Hand::Hand(const World & world)
     m_program = new glow::Program();
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
-        world.sharedShader(GL_FRAGMENT_SHADER, "shader/phonglighting.frag"),
+        world.sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
 }
 
@@ -225,8 +225,6 @@ void Hand::setHeightOffset(float heightOffset)
 {
     if (m_heightOffset == heightOffset)
         return;
-
-    assert(heightOffset >= 0.0f);
 
     m_heightOffset = heightOffset >= 0.0f ? heightOffset : 0.0f;
 

@@ -16,6 +16,7 @@ public:
     void handleMouseButtonEvent(int button, int action, int mods);
     void handleKeyEvent(int key, int scancode, int action, int mods);
     void handleScrollEvent(double xoffset, double yoffset);
+    void handleMouseMoveEvent(double xpos, double ypos);
     void handeResizeEvent(int width, int height);
 
 
