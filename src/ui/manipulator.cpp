@@ -11,6 +11,8 @@
 #include "hand.h"
 #include "rendering/renderer.h"
 #include "terrain/terraininteractor.h"
+#include "particlescriptaccess.h"
+#include "particlegroup.h"
 
 
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
@@ -24,15 +26,18 @@ m_grabbedTerrain(false),
 m_renderer(nullptr)
 {
     m_world.createFountainSound(m_hand.position());
+    ParticleScriptAccess::instance().createParticleGroup("water");
 }
 
 Manipulator::~Manipulator()
 {
 }
-void Manipulator::handleMouseButtonEvent(int /*button*/, int /*action*/, int /*mods*/)
+void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
-    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        ParticleScriptAccess::instance().particleGroup(0)->emit(100, m_hand.position(), glm::vec3(0,1,0));
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+        ParticleScriptAccess::instance().particleGroup(0)->stopEmit();
 }
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
