@@ -16,6 +16,7 @@
 using namespace physx;
 
 ParticleGroup::ParticleGroup(
+    const bool enableGpuParticles,
     const PxU32 maxParticleCount,
     const ImmutableParticleProperties & immutableProperties,
     const MutableParticleProperties & mutableProperties
@@ -27,6 +28,7 @@ ParticleGroup::ParticleGroup(
 , m_nextFreeIndex(0)
 , m_emitting(false)
 , m_timeSinceLastEmit(0.0)
+, m_gpuParticles(enableGpuParticles)
 {
     for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
 
@@ -39,7 +41,7 @@ ParticleGroup::ParticleGroup(
 
     m_particleSystem = PxGetPhysics().createParticleFluid(maxParticleCount, false);
     assert(m_particleSystem);
-    // m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
 
     m_scene->addActor(*m_particleSystem);
     
@@ -172,4 +174,20 @@ void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const 
     m_particleSystem->setParticleMass(particleMass);
     m_particleSystem->setViscosity(viscosity);
     m_particleSystem->setStiffness(stiffness);
+}
+
+void ParticleGroup::setUseGpuParticles(const bool enable)
+{
+    if (m_gpuParticles == enable) return;
+
+    m_gpuParticles = enable;
+
+    assert(m_particleSystem);
+    assert(m_scene);
+
+    m_scene->removeActor(*m_particleSystem);
+
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+
+    m_scene->addActor(*m_particleSystem);
 }

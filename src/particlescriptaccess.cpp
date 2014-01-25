@@ -2,15 +2,19 @@
 
 #include <cassert>
 
+#include <glow/logging.h>
+
 #include "particlegroup.h"
 #include "world.h"
 #include "lua/luawrapper.h"
+
 
 
 ParticleScriptAccess ParticleScriptAccess::s_access;
 
 ParticleScriptAccess::ParticleScriptAccess()
 : m_worldNotifier(nullptr)
+, m_gpuParticles(false)
 {
 }
 
@@ -30,7 +34,7 @@ ParticleGroup * ParticleScriptAccess::particleGroup(const int index)
 
 int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
 {
-    ParticleGroup * particleGroup = new ParticleGroup();
+    ParticleGroup * particleGroup = new ParticleGroup(m_gpuParticles);
     LuaWrapper * wrapper = new LuaWrapper();
 
     setUpParticleGroup(particleGroup, wrapper, elementType);
@@ -76,4 +80,39 @@ void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, Lua
 void ParticleScriptAccess::setNotifier(World * notifier)
 {
     m_worldNotifier = notifier;
+}
+
+void ParticleScriptAccess::setUseGpuParticles(bool enable)
+{
+    if (m_gpuParticles == enable) return;
+
+    m_gpuParticles = enable;
+
+    for (auto particleGroupTuple : m_particleGroups)
+        std::get<0>(particleGroupTuple)->setUseGpuParticles(enable);
+}
+
+void ParticleScriptAccess::pauseGPUAcceleration()
+{
+    assert(m_gpuParticlesPauseFlags == 0x00);
+    if ((m_gpuParticlesPauseFlags & 0x01) == 0x01) // break, if already paused
+        return;
+
+    m_gpuParticlesPauseFlags = 0x01 | (m_gpuParticles ? 0x10 : 0x00);
+
+    if (!m_gpuParticles)
+        return;
+    setUseGpuParticles(false);
+}
+
+void ParticleScriptAccess::restoreGPUAccelerated()
+{
+    assert((m_gpuParticlesPauseFlags & 0x01) == 0x01);
+    if ((m_gpuParticlesPauseFlags & 0x01) == 0x00)   // break, if not paused
+        return;
+
+    if ((m_gpuParticlesPauseFlags & 0x10) == 0x10)
+        setUseGpuParticles(true);
+
+    m_gpuParticlesPauseFlags = 0x00;
 }

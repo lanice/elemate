@@ -43,6 +43,7 @@ class ParticleGroup
 {
 public:
     ParticleGroup(
+        const bool enableGpuParticles,
         const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
@@ -84,6 +85,8 @@ public:
         const physx::PxReal stiffness
         );
 
+    void setUseGpuParticles(const bool enable);
+
 
 protected:
     physx::PxParticleFluid * m_particleSystem;
@@ -98,10 +101,10 @@ protected:
     float m_emitRatio;
     glm::vec3 m_emitPosition;
     glm::vec3 m_emitDirection;
-
     bool m_emitting;
-
     double m_timeSinceLastEmit;
+
+    bool m_gpuParticles;
 
 
 public:

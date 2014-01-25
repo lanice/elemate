@@ -10,6 +10,7 @@
 
 #include "elements.h"
 #include "particleemitter.h"
+#include "particlescriptaccess.h"
 #include "lua/luawrapper.h"
 
 
@@ -225,8 +226,7 @@ void PhysicsWrapper::setUseGpuParticles(bool useGPU)
         return;
     }
     m_gpuParticles = useGPU;
-    for (auto emitter : m_emitters)
-        emitter.second->setGPUAccelerated(m_gpuParticles);
+    ParticleScriptAccess::instance().setUseGpuParticles(useGPU);
 }
 
 void PhysicsWrapper::toogleUseGpuParticles()
@@ -257,8 +257,7 @@ void PhysicsWrapper::pauseGPUAcceleration()
         glow::warning("PhysX calculation on GPU not available!");
         return;
     }
-    for (auto emitter : m_emitters)
-        emitter.second->pauseGPUAcceleration();
+    ParticleScriptAccess::instance().pauseGPUAcceleration();
 }
 
 void PhysicsWrapper::restoreGPUAccelerated()
@@ -267,8 +266,7 @@ void PhysicsWrapper::restoreGPUAccelerated()
         glow::warning("PhysX calculation on GPU not available!");
         return;
     }
-    for (auto emitter : m_emitters)
-        emitter.second->restoreGPUAccelerated();
+    ParticleScriptAccess::instance().restoreGPUAccelerated();
 }
 
 void PhysicsWrapper::updateEmitterPosition(const glm::vec3& position)
