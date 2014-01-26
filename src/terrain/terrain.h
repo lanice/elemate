@@ -52,7 +52,7 @@ public:
     friend class TerrainInteractor;
 
 protected:
-    void Terrain::setDrawElements(const std::initializer_list<std::string> & elements);
+    void setDrawElements(const std::initializer_list<std::string> & elements);
     std::set<TerrainLevel> m_drawLevels;
 
     virtual void drawImplementation(const CameraEx & camera) override;

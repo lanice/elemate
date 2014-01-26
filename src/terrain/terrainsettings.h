@@ -5,6 +5,7 @@
 #include <limits>
 #include <functional>
 #include <string>
+#include <cmath>
 
 
 enum class TerrainLevel {

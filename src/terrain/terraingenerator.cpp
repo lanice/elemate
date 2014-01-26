@@ -6,6 +6,7 @@
 #include <limits>
 #include <ctime>
 #include <functional>
+#include <algorithm>
 
 #include <glow/Array.h>
 #include <glow/logging.h>
