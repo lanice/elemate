@@ -12,8 +12,8 @@
 #include "hand.h"
 #include "rendering/renderer.h"
 #include "terrain/terraininteractor.h"
-#include "physicswrapper.h"
-#include "particleemitter.h"
+#include "particlescriptaccess.h"
+#include "particlegroup.h"
 
 
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
@@ -26,8 +26,7 @@ m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedroc
 m_grabbedTerrain(false),
 m_renderer(nullptr)
 {
-    PhysicsWrapper::getInstance()->makeParticleEmitter("water", glm::vec3());
-    PhysicsWrapper::getInstance()->selectEmitter("water");
+    ParticleScriptAccess::instance().createParticleGroup("water");
 }
 
 Manipulator::~Manipulator()
@@ -35,18 +34,15 @@ Manipulator::~Manipulator()
 }
 void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
-    //Emitter Interaction
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        PhysicsWrapper::getInstance()->startEmitting();
+        ParticleScriptAccess::instance().particleGroup(0)->emit(100, m_hand.position(), glm::vec3(0,1,0));
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-        PhysicsWrapper::getInstance()->stopEmitting();
+        ParticleScriptAccess::instance().particleGroup(0)->stopEmit();
 }
 
-void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & mods)
+void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
-    bool altPressed = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
-
     // key press events
     if (action == GLFW_PRESS)
     {
@@ -61,20 +57,16 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_world.togglePause();
             break;
         case GLFW_KEY_F:
-            if (altPressed) {
-                m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
-                m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
-            }
+            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
             break;
         case GLFW_KEY_LEFT_ALT:
             m_grabbedTerrain = true;
             m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
             break;
         case GLFW_KEY_R:
-            if (altPressed) {
-                m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
-                m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
-            }
+            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
             break;
         }
     }
@@ -120,8 +112,6 @@ void Manipulator::updateHandPosition()
 
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
-
-    PhysicsWrapper::getInstance()->updateEmitterPosition(handPosition + glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void Manipulator::setRenderer(Renderer & renderer)

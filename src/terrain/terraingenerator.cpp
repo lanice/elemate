@@ -21,7 +21,9 @@
 // Mersenne Twister, preconfigured
 // keep one global instance, !per thread!
 
-std::mt19937 rng;
+namespace {
+    std::mt19937 rng;
+}
 
 using namespace physx;
 

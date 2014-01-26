@@ -58,8 +58,6 @@ set(ELEMATE_SHADER_GROUP "Shader Files")
 
 set(SOURCES
     src/main.cpp
-    src/element.h
-    src/element.cpp
     src/elements.h
     src/elements.cpp
     src/pxcompilerfix.h
@@ -73,8 +71,10 @@ set(SOURCES
     src/hand.h
     src/imagereader.h
     src/imagereader.cpp
-    src/particleemitter.cpp
-    src/particleemitter.h
+    src/particlegroup.cpp
+    src/particlegroup.h
+    src/particlescriptaccess.cpp
+    src/particlescriptaccess.h
     src/particledrawable.h
     src/particledrawable.cpp
     src/hpicgs/CyclicTime.cpp

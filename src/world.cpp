@@ -1,6 +1,7 @@
 #include "world.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 #include <glow/logging.h>
 #include <glow/Program.h>
@@ -18,6 +19,8 @@
 #include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
+#include "particlescriptaccess.h"
+#include "particlegroup.h"
 
 World * World::s_instance = nullptr;
 
@@ -64,6 +67,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_sunlight[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
     m_sunlight[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 
+    ParticleScriptAccess::instance().setNotifier(this);
+    
     s_instance = this;
 }
 
@@ -102,6 +107,8 @@ void World::updatePhysics()
     if (delta == 0.0f)
         return;
 
+    // ParticleScriptAccess::instance().updatePhysics(delta);
+    notifyParticleGroups(delta);
     // simulate physx
     m_physicsWrapper.step(delta);
 }
@@ -110,8 +117,36 @@ void World::updateVisuals()
 {
     updateListener();
 
-    // copy simulation results
-    m_physicsWrapper.updateAllObjects();
+    // ParticleScriptAccess::instance().updateVisuals();
+    notifyParticleGroups();
+}
+
+void World::notifyParticleGroups()
+{
+    for (auto observer : m_particleGroupObservers)
+        observer->updateVisuals();
+}
+
+void World::notifyParticleGroups(const double & delta)
+{
+    for (auto observer : m_particleGroupObservers)
+        observer->updateEmitting(delta);
+}
+
+void World::registerObserver(ParticleGroup * observer)
+{
+    m_particleGroupObservers.push_back(observer);
+}
+
+void World::unregisterObserver(ParticleGroup * observer)
+{
+    m_particleGroupObservers.erase(std::remove(m_particleGroupObservers.begin(), m_particleGroupObservers.end(), observer), m_particleGroupObservers.end());
+}
+
+void World::createFountainSound(const glm::vec3& position)
+{
+    int id = m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), { position.x, position.y, position.z });
+    m_sounds.push_back(id);
 }
 
 void World::toggleBackgroundSound(int id){
@@ -127,11 +162,6 @@ void World::updateListener(){
     { cam.up().x, cam.up().y, cam.up().z }
     );
     m_soundManager->update();
-}
-
-void World::reloadLua()
-{
-    m_physicsWrapper.reloadLua();
 }
 
 void World::setNavigation(Navigation & navigation)

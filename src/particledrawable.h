@@ -23,7 +23,7 @@ class ParticleDrawable
 {
 public:
     /** creates a new drawable with fixed maximum number of particles */
-    ParticleDrawable(float particleSize, unsigned int maxParticleCount);
+    ParticleDrawable(unsigned int maxParticleCount);
 
     virtual ~ParticleDrawable();
 
@@ -34,6 +34,8 @@ public:
 
     /** fetches the number of valid particles and the particle positions from readData and updates interal buffers */
     void updateParticles(const physx::PxParticleReadData * readData);
+
+    void setParticleSize(float particleSize);
 
     /** draw all instances of this drawable */
     static void drawParticles(const CameraEx & camera);

@@ -7,17 +7,21 @@
 #include "lua.hpp"
 
 
+std::list<LuaWrapper *> LuaWrapper::s_instances;
+
 LuaWrapper::LuaWrapper()
 : m_state(luaL_newstate())
 , m_err(LUA_OK)
 {
     luaL_openlibs(m_state);
+    s_instances.push_back(this);
 }
 
 LuaWrapper::~LuaWrapper()
 {
     if (m_state == nullptr) return;
     lua_close(m_state);
+    s_instances.remove(this);
 }
 
 
@@ -50,6 +54,12 @@ void LuaWrapper::reloadScripts()
         m_err = luaL_dofile(m_state, script.c_str());
         luaError();
     }
+}
+
+void LuaWrapper::reloadAll()
+{
+    for (auto & instance : s_instances)
+        instance->reloadScripts();
 }
 
 void LuaWrapper::pushFunc(const std::string & func) const

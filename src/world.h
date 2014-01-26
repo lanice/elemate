@@ -21,6 +21,7 @@ class SoundManager;
 class CyclicTime;
 class Hand;
 class Terrain;
+class ParticleGroup;
 
 class World {
 public:
@@ -41,10 +42,15 @@ public:
     /** updates the world as needed for visualization and interaction */
     void updateVisuals();
 
+    void notifyParticleGroups();
+    void notifyParticleGroups(const double & delta);
+    void registerObserver(ParticleGroup * observer);
+    void unregisterObserver(ParticleGroup * observer);
+
+    void createFountainSound(const glm::vec3& position);
+    
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
-
-    void reloadLua();
 
     void setNavigation(Navigation & navigation);
 
@@ -80,6 +86,8 @@ protected:
 
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
+
+    std::vector<ParticleGroup *> m_particleGroupObservers;
 
 public:
     World(World&) = delete;

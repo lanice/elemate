@@ -20,10 +20,10 @@
 
 std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
-ParticleDrawable::ParticleDrawable(float particleSize, unsigned int maxParticleCount)
+ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
 : m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
-, m_particleSize(particleSize)
+, m_particleSize(1.0f)
 , m_needBufferUpdate(true)
 , m_vao(nullptr)
 , m_vbo(nullptr)
@@ -37,6 +37,14 @@ ParticleDrawable::ParticleDrawable(float particleSize, unsigned int maxParticleC
 ParticleDrawable::~ParticleDrawable()
 {
     s_instances.remove(this);
+}
+
+void ParticleDrawable::setParticleSize(float particleSize)
+{
+    assert(particleSize > 0);
+    m_particleSize = particleSize;
+    if (m_program)
+        m_program->setUniform("particleSize", m_particleSize);
 }
 
 void ParticleDrawable::drawParticles(const CameraEx & camera)

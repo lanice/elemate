@@ -243,7 +243,7 @@ void TerrainInteractor::updatePxHeight(const TerrainTile & tile, unsigned minRow
     PhysicsWrapper::getInstance()->restoreGPUAccelerated();
 
 #ifdef PX_WINDOWS
-    if (PhysicsWrapper::getInstance()->useGpuParticles()) {
+    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
         PxParticleGpu::releaseHeightFieldMirror(*hf);
         PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
     }
