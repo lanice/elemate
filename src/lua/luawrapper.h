@@ -4,6 +4,7 @@
 #include <vector>
 #include <tuple>
 #include <map>
+#include <list>
 #include <memory>
 
 #include "luawrapperfunction.h"
@@ -20,6 +21,8 @@ public:
     void loadScript(const std::string & script);
     void removeScript(const std::string & script);
     void reloadScripts();
+
+    static void reloadAll();
 
 
 protected:
@@ -159,6 +162,8 @@ protected:
     int m_err;
 
     std::map<std::string, std::unique_ptr<BaseLuaFunction>> m_functions;
+
+    static std::list<LuaWrapper *> s_instances;
 
 
 public:

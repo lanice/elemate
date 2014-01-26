@@ -21,7 +21,6 @@ namespace physx {
     class PxRigidStatic;
     class PxCudaContextManager;
 }
-class ParticleEmitter;
 class LuaWrapper;
 
 
@@ -48,23 +47,7 @@ public:
 
     /** Proceeds with simulation for amount of given time delta. */
     void step(double delta);
-
-    /** Sets and rotates every object according to its representation in PhysX. */
-    void updateAllObjects();
     
-    /** Creates a particle emitter */
-    void makeParticleEmitter(const std::string& emitter_name, const glm::vec3& position);
-
-    void updateEmitterPosition(const glm::vec3& position);
-
-    void selectEmitter(const std::string& emitter_name);
-
-    void startEmitting();
-
-    void stopEmitting();
-
-    void clearEmitters();
-
     /** The returned object is initialized. */
     physx::PxScene*             scene() const;
 
@@ -73,8 +56,6 @@ public:
     /** add the actor to the current physx scene */
     void addActor(physx::PxActor& actor);
     void addActor(physx::PxRigidStatic& actor);
-
-    void reloadLua();
 
     void setUseGpuParticles(bool useGPU);
     void toogleUseGpuParticles();
@@ -115,10 +96,8 @@ protected:
     const bool                                      m_physxGpuAvailable;
     physx::PxCudaContextManager*                    m_cudaContextManager;
 
-    std::unordered_map<std::string, ParticleEmitter*>     m_emitters;
-    std::string m_activeEmitter;
     bool                                            m_gpuParticles;
-    LuaWrapper * m_lua;
+    LuaWrapper*                                     m_lua;
     
     static PhysicsWrapper * s_instance;
 

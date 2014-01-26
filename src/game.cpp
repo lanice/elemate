@@ -123,11 +123,6 @@ bool Game::vSyncEnabled() const
     return m_vsyncEnabled;
 }
 
-void Game::reloadLua()
-{
-    m_world->reloadLua();
-}
-
 Navigation * Game::navigation()
 {
     return & m_navigation;

@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <list>
 
@@ -21,6 +22,7 @@ class SoundManager;
 class CyclicTime;
 class Hand;
 class Terrain;
+class ParticleGroup;
 
 class World {
 public:
@@ -41,19 +43,13 @@ public:
     /** updates the world as needed for visualization and interaction */
     void updateVisuals();
 
-    /** Throws a standard osg ball into the game using the PhysicsWrapper with correct physics.*/
-    void makeElements(const glm::vec3& position);
+    void registerObserver(ParticleGroup * observer);
+    void unregisterObserver(ParticleGroup * observer);
+
     void createFountainSound(const glm::vec3& position);
     
-    void updateEmitterPosition(const glm::vec3& position);
-    void selectNextEmitter();
-    void startEmitting();
-    void stopEmitting();
-
     /** plays and pauses the background sound **/
     void toggleBackgroundSound(int id);
-
-    void reloadLua();
 
     void setNavigation(Navigation & navigation);
 
@@ -89,6 +85,8 @@ protected:
 
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
+
+    std::unordered_set<ParticleGroup *> m_particleGroupObservers;
 
 public:
     World(World&) = delete;

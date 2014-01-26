@@ -1,6 +1,7 @@
 #include "world.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 #include <glow/logging.h>
 #include <glow/Program.h>
@@ -18,6 +19,8 @@
 #include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
+#include "particlescriptaccess.h"
+#include "particlegroup.h"
 
 World * World::s_instance = nullptr;
 
@@ -64,6 +67,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_sunlight[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
     m_sunlight[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 
+    ParticleScriptAccess::instance().setNotifier(this);
+    
     s_instance = this;
 }
 
@@ -102,6 +107,9 @@ void World::updatePhysics()
     if (delta == 0.0f)
         return;
 
+    for (auto observer : m_particleGroupObservers)
+        observer->updateEmitting(delta);
+
     // simulate physx
     m_physicsWrapper.step(delta);
 }
@@ -110,20 +118,19 @@ void World::updateVisuals()
 {
     updateListener();
 
-    // copy simulation results
-    m_physicsWrapper.updateAllObjects();
+    for (auto observer : m_particleGroupObservers)
+        observer->updateVisuals();
 }
 
-void World::makeElements(const glm::vec3& position)
+void World::registerObserver(ParticleGroup * observer)
 {
-    m_physicsWrapper.clearEmitters();
-    m_currentElements = Elements::availableElements();
-    for (const auto& element_name: m_currentElements)
-        m_physicsWrapper.makeParticleEmitter(element_name, position);
-    selectNextEmitter();
+    m_particleGroupObservers.insert(observer);
 }
 
-
+void World::unregisterObserver(ParticleGroup * observer)
+{
+    m_particleGroupObservers.erase(observer);
+}
 
 void World::createFountainSound(const glm::vec3& position)
 {
@@ -144,11 +151,6 @@ void World::updateListener(){
     { cam->up().x, cam->up().y, cam->up().z }
     );
     m_soundManager->update();
-}
-
-void World::reloadLua()
-{
-    m_physicsWrapper.reloadLua();
 }
 
 void World::setNavigation(Navigation & navigation)
@@ -201,30 +203,4 @@ glow::Shader * World::sharedShader(GLenum type, const std::string & filename) co
     m_sharedShaders.emplace(filename, loaded);
 
     return loaded;
-}
-
-void World::updateEmitterPosition(const glm::vec3& position)
-{
-    m_physicsWrapper.updateEmitterPosition(position);
-    //FMOD_VECTOR pos;
-    //pos.x = position.x; 
-    //pos.y = position.y;
-    //pos.z = position.z;
-    //m_soundManager->setSoundPos(0,pos); // Not good .... just for testing reasons
-}
-
-void World::selectNextEmitter()
-{
-    m_currentElements.splice(m_currentElements.end(), m_currentElements, m_currentElements.begin());
-    m_physicsWrapper.selectEmitter(m_currentElements.front());
-}
-
-void World::startEmitting()
-{
-    m_physicsWrapper.startEmitting();
-}
-
-void World::stopEmitting()
-{
-    m_physicsWrapper.stopEmitting();
 }
