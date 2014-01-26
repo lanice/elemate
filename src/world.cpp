@@ -124,12 +124,12 @@ void World::updateVisuals()
 
 void World::registerObserver(ParticleGroup * observer)
 {
-    m_particleGroupObservers.push_back(observer);
+    m_particleGroupObservers.insert(observer);
 }
 
 void World::unregisterObserver(ParticleGroup * observer)
 {
-    m_particleGroupObservers.erase(std::remove(m_particleGroupObservers.begin(), m_particleGroupObservers.end(), observer), m_particleGroupObservers.end());
+    m_particleGroupObservers.erase(observer);
 }
 
 void World::createFountainSound(const glm::vec3& position)

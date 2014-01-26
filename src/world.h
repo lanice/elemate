@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <list>
 
@@ -85,7 +86,7 @@ protected:
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
 
-    std::vector<ParticleGroup *> m_particleGroupObservers;
+    std::unordered_set<ParticleGroup *> m_particleGroupObservers;
 
 public:
     World(World&) = delete;
