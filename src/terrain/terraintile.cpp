@@ -29,9 +29,10 @@
 #include "world.h"
 #include "physicswrapper.h"
 
-TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
+TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : m_tileID(tileID)
 , m_terrain(terrain)
+, m_elementNames(elementNames)
 , m_isInitialized(false)
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
@@ -53,6 +54,11 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID)
 TerrainTile::~TerrainTile()
 {
     delete m_heightField;
+}
+
+const std::string & TerrainTile::elementAt(unsigned int row, unsigned int column) const
+{
+    return m_elementNames.at(elementIndexAt(row, column));
 }
 
 void TerrainTile::prepareDraw()
@@ -132,15 +138,26 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 {
     const unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
 
+    // create the list of material references
+    PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
+    PxMaterial ** materials = new PxMaterial*[m_elementNames.size()];
+    for (uint8_t i = 0; i < m_elementNames.size(); ++i)
+        materials[i] = Elements::pxMaterial(m_elementNames.at(i));
+
     // scale height so that we use the full range of PxI16=short
     PxReal heightScaleToWorld = m_terrain.settings.maxHeight / std::numeric_limits<PxI16>::max();
     assert(heightScaleToWorld >= PX_MIN_HEIGHTFIELD_Y_SCALE);
     float heightScaleToPx = std::numeric_limits<PxI16>::max() / m_terrain.settings.maxHeight;
 
-    PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
-    PxMaterial ** materials = nullptr;
-
-    pxSamplesAndMaterials(hfSamples, heightScaleToPx, materials);
+    // copy the material and height data into the px heightfield
+    for (unsigned int row = 0; row < m_terrain.settings.rows; ++row) {
+        const unsigned int rowOffset = row * m_terrain.settings.columns;
+        for (unsigned int column = 0; column < m_terrain.settings.columns; ++column) {
+            const unsigned int index = column + rowOffset;
+            hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(row, column);
+            hfSamples[index].height = static_cast<PxI16>(m_heightField->at(index) * heightScaleToPx);
+        }
+    }
 
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;

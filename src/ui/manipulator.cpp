@@ -43,6 +43,8 @@ void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
+    const glm::vec3 & handPosition = m_hand.position();
+
     // key press events
     if (action == GLFW_PRESS)
     {
@@ -57,16 +59,20 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_world.togglePause();
             break;
         case GLFW_KEY_F:
-            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+            m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, -0.1f);
+            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_LEFT_ALT:
             m_grabbedTerrain = true;
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_R:
-            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+            m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, 0.1f);
+            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
+            break;
+        case GLFW_KEY_C:
+            const std::string & material = m_terrainInteractor->elementAt(handPosition.x, handPosition.z);
+            glow::info("material at hand: ""%;""", material);
             break;
         }
     }

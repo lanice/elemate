@@ -4,16 +4,11 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 
-#include <PxMaterial.h>
-#include <geometry/PxHeightFieldSample.h>
-#include <geometry/PxHeightFieldDesc.h>
-
 #include "terrain.h"
-#include "elements.h"
 #include "world.h"
 
 WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
-: TerrainTile(terrain, tileID)
+: TerrainTile(terrain, tileID, {"water"})
 {
 }
 
@@ -50,23 +45,7 @@ void WaterTile::initializeProgram()
     TerrainTile::initializeProgram();
 }
 
-using namespace physx;
-
-void WaterTile::pxSamplesAndMaterials(PxHeightFieldSample * hfSamples, PxReal heightScale, PxMaterial ** &materials)
+uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/) const
 {
-    materials = new PxMaterial*[1];
-
-    // TODO: use water material..
-    materials[0] = Elements::pxMaterial("default");
-
-    unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
-    for (unsigned index = 0; index < numSamples; ++index) {
-        hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = 0;
-        hfSamples[index].height = static_cast<PxI16>(m_heightField->at(index) * heightScale);
-    }
-}
-
-PxU8 WaterTile::pxMaterialIndexAt(unsigned int /*row*/, unsigned int /*column*/) const
-{
-    return 0u;
+    return 0u;  // currently water only, no data for different elements
 }

@@ -13,10 +13,11 @@ enum class TerrainLevel {
 };
 extern std::initializer_list<TerrainLevel> TerrainLevels;
 
-void initMaterialTerrainLevels();
+/** initilize the list that defines which terrain level should hold which element */
+void initElementTerrainLevels();
 
-/** @return the terrain level that holds the material with name materialName */
-TerrainLevel levelForMaterial(const std::string & materialName);
+/** @return the terrain level that holds the element with name elementName */
+TerrainLevel levelForElement(const std::string & elementName);
 
 struct TileID {
     TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0);

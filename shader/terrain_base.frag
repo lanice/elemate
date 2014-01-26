@@ -9,8 +9,8 @@ uniform vec3 lightdir2;
 
 uniform mat4 light2;
 
-uniform mat4 material_bedrock;
-uniform mat4 material_dirt;
+uniform mat4 element_bedrock;
+uniform mat4 element_dirt;
 
 uniform usamplerBuffer terrainTypeID;
 uniform sampler2D rockSampler;
@@ -25,17 +25,14 @@ void main()
     uint id = texelFetch(terrainTypeID, g_texIndex).x;
     
     vec4 textureColor = texture(rockSampler, g_worldPos.xz * 0.1);
-    vec4 lightColor;
+    vec4 lightColor = vec4(1.0, 0.0, 0.0, 1.0); // just to check that the terrainTypeID texture contains valid data
     
     switch(id) {
+    case 0u:
+        lightColor = phongLighting(g_normal, g_viewPos, lightdir2, light2, element_bedrock);
+        break;
     case 1u:
-        lightColor = phongLighting(g_normal, g_viewPos, lightdir2, light2, material_bedrock);
-        break;
-    case 2u:
-        lightColor = phongLighting(g_normal, g_viewPos, lightdir2, light2, material_dirt);
-        break;
-    default:
-        lightColor = vec4(1.0, 0.0, 0.0, 1.0); // just to check that the terrainTypeID texture contains valid data
+        lightColor = phongLighting(g_normal, g_viewPos, lightdir2, light2, element_dirt);
         break;
     }
     

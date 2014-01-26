@@ -8,22 +8,22 @@ std::initializer_list<TerrainLevel> TerrainLevels = {
     TerrainLevel::WaterLevel
 };
 
-std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> s_levelsForMaterials;
+std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> s_elementToLevel;
 
-void initMaterialTerrainLevels()
+void initElementTerrainLevels()
 {
-    s_levelsForMaterials.emplace("water", TerrainLevel::WaterLevel);
-    s_levelsForMaterials.emplace("lava", TerrainLevel::WaterLevel);
+    s_elementToLevel.emplace("water", TerrainLevel::WaterLevel);
+    s_elementToLevel.emplace("lava", TerrainLevel::WaterLevel);
 
-    s_levelsForMaterials.emplace("bedrock", TerrainLevel::BaseLevel);
-    s_levelsForMaterials.emplace("grassland", TerrainLevel::BaseLevel);
-    s_levelsForMaterials.emplace("dirt", TerrainLevel::BaseLevel);
+    s_elementToLevel.emplace("bedrock", TerrainLevel::BaseLevel);
+    s_elementToLevel.emplace("grassland", TerrainLevel::BaseLevel);
+    s_elementToLevel.emplace("dirt", TerrainLevel::BaseLevel);
 }
 
-TerrainLevel levelForMaterial(const std::string & materialName)
+TerrainLevel levelForElement(const std::string & elementName)
 {
-    assert(s_levelsForMaterials.find(materialName) != s_levelsForMaterials.end());
-    return s_levelsForMaterials.at(materialName);
+    assert(s_elementToLevel.find(elementName) != s_elementToLevel.end());
+    return s_elementToLevel.at(elementName);
 }
 
 TerrainSettings::TerrainSettings()

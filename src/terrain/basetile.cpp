@@ -1,21 +1,15 @@
 #include "basetile.h"
 
-#include <glow/Shader.h>
 #include <glow/Program.h>
 #include <glow/Buffer.h>
 #include <glowutils/File.h>
 
-#include <PxMaterial.h>
-#include <geometry/PxHeightFieldSample.h>
-#include <geometry/PxHeightFieldDesc.h>
-
 #include "terrain.h"
-#include "elements.h"
 #include "imagereader.h"
 #include "world.h"
 
-BaseTile::BaseTile(Terrain & terrain, const TileID & tileID)
-: TerrainTile(terrain, tileID)
+BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
+: TerrainTile(terrain, tileID, elementNames)
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
 , m_terrainTypeData(nullptr)
@@ -87,24 +81,6 @@ void BaseTile::initializeProgram()
     TerrainTile::initializeProgram();
 }
 
-using namespace physx;
-
-void BaseTile::pxSamplesAndMaterials(PxHeightFieldSample * hfSamples, PxReal heightScale, PxMaterial ** &materials)
-{
-    materials = new PxMaterial*[1];
-
-    materials[0] = Elements::pxMaterial("default");
-    //materials[1] = Elements::pxMaterial("default");
-
-    unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
-    for (unsigned index = 0; index < numSamples; ++index) {
-        hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1
-            //= m_terrainTypeData->at(index);
-            = 0;    // no special px materials for now
-        hfSamples[index].height = static_cast<PxI16>(m_heightField->at(index) * heightScale);
-    }
-}
-
 void BaseTile::createTerrainTypeTexture()
 {
     assert(m_terrainTypeData);
@@ -118,7 +94,7 @@ void BaseTile::createTerrainTypeTexture()
     m_terrainTypeTex->unbind();
 }
 
-PxU8 BaseTile::pxMaterialIndexAt(unsigned int row, unsigned int column) const
+uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const
 {
     return m_terrainTypeData->at(column + row * m_terrain.settings.columns);
 }

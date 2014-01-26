@@ -11,7 +11,6 @@ namespace glow {
 }
 
 namespace physx {
-    class PxPhysics;
     class PxMaterial;
 }
 
@@ -19,15 +18,14 @@ struct Elements {
     Elements() = delete;
 
     /** Call this function once before calling for the elements. */
-    static void initialize(physx::PxPhysics & physxSdk);
+    static void initialize();
     static void clear();
 
     static void setAllUniforms(glow::Program & program);
 
     static physx::PxMaterial * pxMaterial(const std::string & physxMaterial);
-    static const glm::mat4 * shadingMatrix(const std::string & shadingMaterial);
 
-    static const std::string s_materialUniformPrefix;
+    static const std::string s_elementUniformPrefix;
 
 private:
     static bool s_isInitialized;

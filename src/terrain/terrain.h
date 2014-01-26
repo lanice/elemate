@@ -41,6 +41,9 @@ public:
     float heightTotalAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
     float heightAt(float x, float z, TerrainLevel level) const;
+    /** @return heighest terrain level at position */
+    TerrainLevel heighestLevelAt(float x, float z) const;
+    void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 

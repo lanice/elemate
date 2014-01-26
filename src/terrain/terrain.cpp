@@ -62,7 +62,7 @@ void Terrain::setDrawElements(const std::initializer_list<std::string> & element
 
     m_drawLevels.clear();
     for (const std::string & name : elements)
-        m_drawLevels.insert(levelForMaterial(name));
+        m_drawLevels.insert(levelForElement(name));
 }
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
@@ -167,14 +167,30 @@ const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
     return m_pxActors;
 }
 
+void Terrain::heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const
+{
+    maxHeight = std::numeric_limits<float>::lowest();
+    maxLevel = TerrainLevel::BaseLevel;
+    for (TerrainLevel level : TerrainLevels) {
+        float h = heightAt(x, z, level);
+        if (h > maxHeight) {
+            maxLevel = level;
+            maxHeight = h;
+        }
+    }
+}
+
+TerrainLevel Terrain::heighestLevelAt(float x, float z) const
+{
+    TerrainLevel level; float height;
+    heighestLevelHeightAt(x, z, level, height);
+    return level;
+}
+
 float Terrain::heightTotalAt(float x, float z) const
 {
-    float height = std::numeric_limits<float>::lowest();
-    for (TerrainLevel level : TerrainLevels) {
-        height = std::max(
-            height,
-            heightAt(x, z, level));
-    }
+    TerrainLevel level; float height;
+    heighestLevelHeightAt(x, z, level, height);
     return height;
 }
 

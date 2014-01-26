@@ -29,7 +29,7 @@ PhysicsWrapper::PhysicsWrapper()
 {
     initializePhysics();
     initializeScene();
-    Elements::initialize(*m_physics);
+    Elements::initialize();
 
     s_instance = this;
 }

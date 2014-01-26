@@ -1,6 +1,7 @@
 #pragma once
 
 #include <forward_list>
+#include <cstdint>
 
 #include <glow/ref_ptr.h>
 #include <glow/Array.h>
@@ -26,9 +27,14 @@ class CameraEx;
 class TerrainTile {
 public:
     /** @param terrain registers tile at this terrain
-      * @param tileID register tile at this position in the terrain */
-    TerrainTile(Terrain & terrain, const TileID & tileID);
+      * @param tileID register tile at this position in the terrain
+      * @param elementNames list of elements this tile will contain. */
+    TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames);
     virtual ~TerrainTile();
+
+    /** get the name of the element at the row/column position
+      * @return a reference to this name from the internal element list */
+    const std::string & elementAt(unsigned int row, unsigned int column) const;
 
     /** update opengl buffers etc */
     virtual void prepareDraw();
@@ -52,16 +58,22 @@ protected:
 
     const Terrain & m_terrain;
 
+    /** list of elements this tile consits of. The index of an element in this list equals its index in the terrain type texture. */
+    const std::vector<std::string> m_elementNames;
+
+    /** @return the index this tile internaly uses for the element at the row/column position. Parameters must be in range. */
+    virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const = 0;
+
     virtual void initialize();
     bool m_isInitialized;
     /** subclass has to override this method to create the program.
       * Afterward, call this function to set some uniforms. */
     virtual void initializeProgram() = 0;
     virtual void createPxObjects(physx::PxRigidStatic & pxActor);
-    virtual void pxSamplesAndMaterials(
+    void pxSamplesAndMaterials(
         physx::PxHeightFieldSample * hfSamples,
         physx::PxReal heightScale,
-        physx::PxMaterial ** &materials) = 0;
+        physx::PxMaterial ** const &materials);
 
     glow::ref_ptr<glow::Texture> m_heightTex;
     glow::ref_ptr<glow::Buffer>  m_heightBuffer;
@@ -87,9 +99,6 @@ protected: // interaction specific functions (see class TerrainInteractor)
     bool heightAt(unsigned int row, unsigned int column, float & height) const;
     /** set height at specified row/column position. Parameters must be in range. */
     void setHeight(unsigned int row, unsigned int column, float value);
-
-    /** @return physx material index at specified row/column position. Parameters must be in range. */
-    virtual physx::PxU8 pxMaterialIndexAt(unsigned int row, unsigned int column) const = 0;
 
     void addBufferUpdateRange(GLintptr offset, GLsizeiptr length);
     std::forward_list<std::pair<GLintptr, GLsizeiptr>> m_bufferUpdateList;

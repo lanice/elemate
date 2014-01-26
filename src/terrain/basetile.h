@@ -5,7 +5,7 @@
 class BaseTile : public TerrainTile
 {
 public:
-    BaseTile(Terrain & terrain, const TileID & tileID);
+    BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames);
     virtual ~BaseTile() override;
 
     virtual void bind(const CameraEx & camera) override;
@@ -14,10 +14,13 @@ public:
 protected:
     virtual void initialize() override;
     virtual void initializeProgram() override;
-    virtual void pxSamplesAndMaterials(physx::PxHeightFieldSample * hfSamples, physx::PxReal heightScale, physx::PxMaterial ** &materials) override;
     virtual void createTerrainTypeTexture();
 
-    virtual physx::PxU8 pxMaterialIndexAt(unsigned int row, unsigned int column) const override;
+    virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const override;
+
+    /** list of elements this tile consits of. The index of an element in this list equals its index in the terrain type texture.
+      * Index 0 is reserved for debug purpose. */
+    std::vector<std::string> m_elementNames;
 
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;

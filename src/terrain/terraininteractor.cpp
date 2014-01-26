@@ -31,22 +31,43 @@ float TerrainInteractor::normalDist(float x, float mean, float stddev)
         * std::exp(-(x - mean) * (x - mean) / (2.0f * stddev * stddev));
 }
 
-TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactMaterial)
+TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactElement)
 : m_terrain(terrain)
-, m_interactMaterial(interactMaterial)
-, m_interactLevel(levelForMaterial(interactMaterial))
+, m_interactElement(interactElement)
+, m_interactLevel(levelForElement(interactElement))
 {
 }
 
-const std::string & TerrainInteractor::interactMaterial() const
+const std::string & TerrainInteractor::interactElement() const
 {
-    return m_interactMaterial;
+    return m_interactElement;
 }
 
-void TerrainInteractor::setInteractMaterial(const std::string & material)
+void TerrainInteractor::setInteractElement(const std::string & elementName)
 {
-    m_interactMaterial = material;
-    m_interactLevel = levelForMaterial(material);
+    m_interactElement = elementName;
+    m_interactLevel = levelForElement(elementName);
+}
+
+std::string TerrainInteractor::elementAt(float worldX, float worldZ) const
+{
+    TerrainLevel topmostLevel = m_terrain->heighestLevelAt(worldX, worldZ);
+
+    std::shared_ptr<TerrainTile> tile = nullptr;
+    unsigned int row, column;
+
+    if (!m_terrain->worldToTileRowColumn(worldX, worldZ, topmostLevel, tile, row, column))
+        return "default";
+
+    assert(tile);
+
+    return tile->elementAt(row, column);
+}
+
+const std::string & TerrainInteractor::useTopmostElementAt(float worldX, float worldZ)
+{
+    setInteractElement(elementAt(worldX, worldZ));
+    return m_interactElement;
 }
 
 float TerrainInteractor::heightAt(float worldX, float worldZ) const
@@ -87,15 +108,14 @@ float TerrainInteractor::levelHeightAt(float worldX, float worldZ, TerrainLevel 
 float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value)
 {
     std::shared_ptr<TerrainTile> tile = nullptr;
-    unsigned int physxRow;
-    unsigned int physxColumn;
+    unsigned int row, column;
 
-    if (!m_terrain->worldToTileRowColumn(worldX, worldZ, level, tile, physxRow, physxColumn))
+    if (!m_terrain->worldToTileRowColumn(worldX, worldZ, level, tile, row, column))
         return 0.0f;
 
     assert(tile);
 
-    return setHeight(*tile.get(), physxRow, physxColumn, value);
+    return setHeight(*tile.get(), row, column, value);
 }
 
 float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta)
@@ -110,12 +130,6 @@ float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLe
     float height = tile->heightAt(row, column);
 
     return setHeight(*tile.get(), row, column, height + delta);
-}
-
-void TerrainInteractor::takeOffVolume(float worldX, float worldZ, float volume)
-{
-    const float heightDelta = -volume / (m_terrain->settings.sampleInterval() * m_terrain->settings.sampleInterval());
-    changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta);
 }
 
 float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value)
@@ -209,7 +223,7 @@ void TerrainInteractor::updatePxHeight(const TerrainTile & tile, unsigned minRow
             const unsigned int index = c + rowOffset;
             const float terrainHeight = tile.heightAt(r + minRow, c + minColumn);
             samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
-            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = tile.pxMaterialIndexAt(r + minRow, c + minColumn);
+            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = tile.elementIndexAt(r + minRow, c + minColumn);
         }
     }
 

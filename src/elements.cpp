@@ -15,13 +15,13 @@ bool Elements::s_isInitialized = false;
 std::unordered_map<std::string, physx::PxMaterial*>	Elements::s_pxMaterials;
 std::unordered_map<std::string, glm::mat4>          Elements::s_shadingMatrices;
 
-const std::string Elements::s_materialUniformPrefix = "material_";
+const std::string Elements::s_elementUniformPrefix = "element_";
 
-void Elements::initialize(physx::PxPhysics & physxSdk)
+void Elements::initialize()
 {
     assert(!s_isInitialized);
 
-    s_pxMaterials.emplace("default", physxSdk.createMaterial(0.5f, 0.5f, 0.1f));
+    s_pxMaterials.emplace("default", PxGetPhysics().createMaterial(0.5f, 0.5f, 0.1f));
 
     s_shadingMatrices.emplace("water", glm::mat4(
         0.0f, 0.0f, 0.0f, 1.0f,    //ambient
@@ -59,7 +59,7 @@ void Elements::initialize(physx::PxPhysics & physxSdk)
             glow::warning("Elements::initialize could not create PhysX material: %;", pair.first);
     }
 
-    initMaterialTerrainLevels();
+    initElementTerrainLevels();
 
     s_isInitialized = true;
 }
@@ -76,19 +76,20 @@ void Elements::clear()
 void Elements::setAllUniforms(glow::Program & program)
 {
     for (const auto & pair : s_shadingMatrices)
-        program.setUniform(s_materialUniformPrefix + pair.first, pair.second);
+        program.setUniform(s_elementUniformPrefix + pair.first, pair.second);
 }
 
-physx::PxMaterial * Elements::pxMaterial(const std::string & physxMaterial)
+physx::PxMaterial * Elements::pxMaterial(const std::string & elementName)
 {
     assert(s_isInitialized);
 
-    const auto & it = s_pxMaterials.find(physxMaterial);
+    const auto & it = s_pxMaterials.find(elementName);
     // for debugging: make sure to address only valid elements
     bool found = it != s_pxMaterials.end();
-    assert(found);
-    if (!found)
-        return nullptr;
+    if (!found) {
+        glow::warning("Physx material undefined for element ""%;"". using default element instead.", elementName);
+        return s_pxMaterials.at("default");
+    }
 
     return it->second;
 }

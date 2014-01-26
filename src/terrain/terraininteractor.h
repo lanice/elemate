@@ -11,23 +11,26 @@ class TerrainTile;
 class TerrainInteractor {
 public:
     /** Creates an Interactor for the specified terrain.
-      * @param interactMaterial select the material this interactor works with */
-    TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactMaterial);
+      * @param interactElement select the element this interactor works with */
+    TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactElement);
 
-    const std::string & interactMaterial() const;
-    void setInteractMaterial(const std::string & material);
+    const std::string & interactElement() const;
+    void setInteractElement(const std::string & elementName);
 
-    /** @return the height of the material this interactor is configured to work with */
+    /** @return name of topmost element at world position */
+    std::string elementAt(float worldX, float worldZ) const;
+    /** Fetch the heighest element at world position and use its level for interaction functions.
+      * @return the name of this element */
+    const std::string & useTopmostElementAt(float worldX, float worldZ);
+
+    /** @return the height of the element this interactor is configured to work with */
     float heightAt(float worldX, float worldZ) const;
-    /** @return whether current interact material's layer is the heighest at the world position, meaning the one the player can interact with. */
+    /** @return whether the current interact element's level is the heighest at the world position, meaning the one the player can interact with. */
     bool isHeighestAt(float worldX, float worldZ) const;
-    /** Add delta to the current interact material height at a specified world position.
+    /** Add delta to the current interact element height at a specified world position.
     * The actual height value will be clampted to terrain's [-maxHeight, maxHeight] if necessary.
     * @return the new applied height value or zero if the position is out of range. */
     float changeHeight(float worldX, float worldZ, float delta);
-    /** Lowers the terrain at specified coordinate, depending on the given volume and the terrain's resolution
-      * This changes the terrain layer holding the interactMaterial this interactor is configure to use */
-    void takeOffVolume(float worldX, float worldZ, float volume);
 
     /** @return the maximum height of all terrain levels at the specified position */
     float terrainHeightAt(float worldX, float worldZ) const;
@@ -55,12 +58,11 @@ public:
 
 private:
     std::shared_ptr<Terrain> m_terrain;
-    /** the name of the material this interactor currently works on */
-    std::string m_interactMaterial;
-    /** for internal usage: the terrain level that hold the configured interact material */
+    /** the name of the element this interactor currently works on */
+    std::string m_interactElement;
+    /** for internal usage: the terrain level that hold the configured interact element */
     TerrainLevel m_interactLevel;
 
-    /**  */
     float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value);
     void updatePxHeight(const TerrainTile & tile, unsigned minRow, unsigned maxRow, unsigned minColumn, unsigned maxColumn);
 
