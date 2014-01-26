@@ -107,8 +107,9 @@ void World::updatePhysics()
     if (delta == 0.0f)
         return;
 
-    // ParticleScriptAccess::instance().updatePhysics(delta);
-    notifyParticleGroups(delta);
+    for (auto observer : m_particleGroupObservers)
+        observer->updateEmitting(delta);
+
     // simulate physx
     m_physicsWrapper.step(delta);
 }
@@ -117,20 +118,8 @@ void World::updateVisuals()
 {
     updateListener();
 
-    // ParticleScriptAccess::instance().updateVisuals();
-    notifyParticleGroups();
-}
-
-void World::notifyParticleGroups()
-{
     for (auto observer : m_particleGroupObservers)
         observer->updateVisuals();
-}
-
-void World::notifyParticleGroups(const double & delta)
-{
-    for (auto observer : m_particleGroupObservers)
-        observer->updateEmitting(delta);
 }
 
 void World::registerObserver(ParticleGroup * observer)

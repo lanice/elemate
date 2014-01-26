@@ -42,8 +42,6 @@ public:
     /** updates the world as needed for visualization and interaction */
     void updateVisuals();
 
-    void notifyParticleGroups();
-    void notifyParticleGroups(const double & delta);
     void registerObserver(ParticleGroup * observer);
     void unregisterObserver(ParticleGroup * observer);
 
