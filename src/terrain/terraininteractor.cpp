@@ -131,7 +131,7 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
 
     // define the size of the affected interaction area, in grid coords
     const float effectRadiusWorld = stddev * 3;
-    const uint32_t effectRadius = std::ceil(effectRadiusWorld * settings.samplesPerWorldCoord()); // = 0 means to change only the value at (row,column)
+    const uint32_t effectRadius = static_cast<uint32_t>(std::ceil(effectRadiusWorld * settings.samplesPerWorldCoord())); // = 0 means to change only the value at (row,column)
 
     bool moveUp = (value - tile.heightAt(row, column)) > 0;
     int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
@@ -152,10 +152,10 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
         // unchecked signed min/max values, possibly < 0 or > numRows/Column
         int iMinRow = row - effectRadius, iMaxRow = row + effectRadius, iMinColumn = column - effectRadius, iMaxColumn = column + effectRadius;
         // work on rows and column that are in range of the terrain tile settings and larger than 0
-        minRow = iMinRow < 0 ? 0 : (iMinRow > static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMinRow));
-        maxRow = iMaxRow < 0 ? 0 : (iMaxRow > static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMaxRow));
-        minColumn = iMinColumn < 0 ? 0 : (iMinColumn > static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMinColumn));
-        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn > static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMaxColumn));
+        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMinRow));
+        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMaxRow));
+        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMinColumn));
+        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMaxColumn));
     }
 
     for (unsigned int r = minRow; r <= maxRow; ++r) {
@@ -252,14 +252,12 @@ void TerrainInteractor::updatePxHeight(const TerrainTile & tile, unsigned minRow
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ)
 {
-    return 1.0;
     m_grabbedLevel = m_interactLevel;
     return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }
 
 void TerrainInteractor::heightPull(float worldX, float worldZ)
 {
-    return;
     setLevelHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight);
 }
 
