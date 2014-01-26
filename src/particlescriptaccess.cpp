@@ -73,7 +73,7 @@ void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, Lua
     wrapper->Register("particles_setImmutableProperties", func1);
     wrapper->Register("particles_setMutableProperties", func2);
 
-    std::string script = "scripts/" + elementType + ".lua";
+    std::string script = "scripts/elements/" + elementType + ".lua";
     wrapper->loadScript(script);
 }
 
