@@ -107,8 +107,9 @@ void World::updatePhysics()
     if (delta == 0.0f)
         return;
 
-    // ParticleScriptAccess::instance().updatePhysics(delta);
-    notifyParticleGroups(delta);
+    for (auto observer : m_particleGroupObservers)
+        observer->updateEmitting(delta);
+
     // simulate physx
     m_physicsWrapper.step(delta);
 }
@@ -117,30 +118,18 @@ void World::updateVisuals()
 {
     updateListener();
 
-    // ParticleScriptAccess::instance().updateVisuals();
-    notifyParticleGroups();
-}
-
-void World::notifyParticleGroups()
-{
     for (auto observer : m_particleGroupObservers)
         observer->updateVisuals();
 }
 
-void World::notifyParticleGroups(const double & delta)
-{
-    for (auto observer : m_particleGroupObservers)
-        observer->updateEmitting(delta);
-}
-
 void World::registerObserver(ParticleGroup * observer)
 {
-    m_particleGroupObservers.push_back(observer);
+    m_particleGroupObservers.insert(observer);
 }
 
 void World::unregisterObserver(ParticleGroup * observer)
 {
-    m_particleGroupObservers.erase(std::remove(m_particleGroupObservers.begin(), m_particleGroupObservers.end(), observer), m_particleGroupObservers.end());
+    m_particleGroupObservers.erase(observer);
 }
 
 void World::createFountainSound(const glm::vec3& position)
