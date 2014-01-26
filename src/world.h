@@ -58,7 +58,7 @@ public:
     const glm::mat4 & sunlight() const;
     void setUpLighting(glow::Program & program) const;
 
-    /** The world maintains a list of shaders that are needed multiple times in the game (phonglighting, depth_util..).
+    /** The world maintains a list of shaders that are needed multiple times in the game (phongLighting, depth_util..).
       * Request these shaders here by there filename, just as you would do with glowutils. */
     glow::Shader * sharedShader(GLenum type, const std::string & filename) const;
     
