@@ -13,7 +13,6 @@ BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initiali
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
 , m_terrainTypeData(nullptr)
-, m_rockTexture(nullptr)
 {
 }
 
@@ -26,20 +25,17 @@ void BaseTile::bind(const CameraEx & camera)
 {
     TerrainTile::bind(camera);
 
-    if (!m_terrainTypeTex)
-        createTerrainTypeTexture();
-
     assert(m_terrainTypeTex);
     m_terrainTypeTex->bind(GL_TEXTURE1);
 
-    assert(m_rockTexture);
-    m_rockTexture->bind(GL_TEXTURE2);
+    for (TextureTuple & tex : m_textures)
+        std::get<1>(tex)->bind(GL_TEXTURE0 + std::get<2>(tex));
 }
 
 void BaseTile::unbind()
 {
-    m_terrainTypeTex->unbind(GL_TEXTURE1);
-    m_rockTexture->unbind(GL_TEXTURE2);
+    for (TextureTuple & tex : m_textures)
+        std::get<1>(tex)->unbind(GL_TEXTURE0 + std::get<2>(tex));
 
     TerrainTile::unbind();
 }
@@ -48,21 +44,10 @@ void BaseTile::initialize()
 {
     TerrainTile::initialize();
 
-    m_rockTexture = new glow::Texture(GL_TEXTURE_2D);
-    m_rockTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    m_rockTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    m_rockTexture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    m_rockTexture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    createTerrainTypeTexture();
 
-    RawImage rockImage("data/textures/rock.raw", 1024, 1024);
-
-    m_rockTexture->bind();
-    m_rockTexture->storage2D(8, GL_RGB8, rockImage.width(), rockImage.height());
-    CheckGLError();
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rockImage.width(), rockImage.height(), GL_RGB, GL_UNSIGNED_BYTE, rockImage.rawData());
-    CheckGLError();
-    glGenerateMipmap(GL_TEXTURE_2D);
-    CheckGLError();
+    loadInitTexture("bedrock", 2);
+    loadInitTexture("sand", 3);     // http://opengameart.org/content/50-free-textures
 }
 
 void BaseTile::initializeProgram()
@@ -75,7 +60,9 @@ void BaseTile::initializeProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"));
 
     m_program->setUniform("terrainTypeID", 1);
-    m_program->setUniform("rockSampler", 2);
+    for (TextureTuple & tex : m_textures)
+        m_program->setUniform(std::get<0>(tex), std::get<2>(tex));
+
     m_program->setUniform("modelTransform", m_transform);
 
     TerrainTile::initializeProgram();
@@ -92,6 +79,34 @@ void BaseTile::createTerrainTypeTexture()
     m_terrainTypeTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, m_terrainTypeBuffer->id());
     m_terrainTypeTex->unbind();
+}
+
+void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
+{
+    glow::ref_ptr<glow::Texture> texture = new glow::Texture(GL_TEXTURE_2D);
+    texture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    texture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    RawImage image("data/textures/" + elementName + ".raw", 1024, 1024);
+
+    texture->bind();
+    texture->storage2D(8, GL_RGB8, image.width(), image.height());
+    CheckGLError();
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width(), image.height(), GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
+    CheckGLError();
+    glGenerateMipmap(GL_TEXTURE_2D);
+    CheckGLError();
+    texture->unbind();
+
+    m_textures.push_back(TextureTuple(elementName + "Sampler", texture, textureSlot));
+}
+
+void BaseTile::updateGlBuffers()
+{
+    m_terrainTypeBuffer->setData(*m_terrainTypeData, GL_DYNAMIC_DRAW);
+    TerrainTile::updateGlBuffers();
 }
 
 uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const

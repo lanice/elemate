@@ -25,8 +25,12 @@ protected:
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;
     glow::UByteArray * m_terrainTypeData;
+    virtual void updateGlBuffers() override;
 
-    glow::ref_ptr<glow::Texture> m_rockTexture;
+    void loadInitTexture(const std::string & elementName, int textureSlot);
+    
+    typedef std::tuple<std::string, glow::ref_ptr<glow::Texture>, int> TextureTuple;
+    std::vector<TextureTuple> m_textures;
 
     friend class TerrainGenerator;
 

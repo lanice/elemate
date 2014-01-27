@@ -56,7 +56,7 @@ private:
 
     /** creates heightfield data with random height shift */
     glow::FloatArray * createBasicHeightField(float maxHeightVariance) const;
-    /** adds a river bed to the heightField, getting the rock and dirt indices from the initializer list
+    /** adds a river bed to the heightField, getting the rock and sand indices from the initializer list
       * @return terrain type id storage in row major order */
     glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const;
 };

@@ -47,6 +47,12 @@ void Elements::initialize()
         0.66f, 0.55f, 0.4f, 1.0f,    //specular
         0.0f, 0.0f, 0.0f, 0.0f));  //emission
 
+    s_shadingMatrices.emplace("sand", glm::mat4(
+        0.0f, 0.0f, 0.0f, 1.0f,    //ambient
+        0.75f, 0.72f, 0.61f, 1.0f,    //diffuse
+        0.75f, 0.72f, 0.61f, 1.0f,    //specular
+        0.0f, 0.0f, 0.0f, 0.0f));  //emission
+
     s_shadingMatrices.emplace("grassland", glm::mat4(
         0.0f, 0.0f, 0.0f, 1.0f,    //ambient
         0.2f, 0.7f, 0.3f, 1.0f,    //diffuse

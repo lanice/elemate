@@ -61,7 +61,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
         glow::FloatArray * baseHeightField = createBasicHeightField(m_settings.maxBasicHeightVariance);
         assert(baseHeightField);
 
-        std::initializer_list<std::string> baseElements = {"rock", "dirt"};
+        std::initializer_list<std::string> baseElements = { "bedrock", "sand" };
 
         // make landscape more interesting
         glow::UByteArray * baseTerrainTypeIDs = gougeRiverBed(*baseHeightField, baseElements);
@@ -128,8 +128,8 @@ glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightFiel
         return std::abs(5.0f * std::pow(normRow, 3) - normColumn);
     };
 
-    const uint8_t rockIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "rock") - baseElements.begin());
-    const uint8_t dirtIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "dirt") - baseElements.begin());
+    const uint8_t bedrockIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "bedrock") - baseElements.begin());
+    const uint8_t sandIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "sand") - baseElements.begin());
 
     const float riverScale = 0.15f;
 
@@ -154,10 +154,10 @@ glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightFiel
             value *= m_settings.maxHeight;
             heightField.at(index) += value;
             if (heightField.at(index) <= 0) {
-                terrainTypeIDs->at(index) = dirtIndex;
+                terrainTypeIDs->at(index) = sandIndex;
             }
             else {
-                terrainTypeIDs->at(index) = rockIndex;
+                terrainTypeIDs->at(index) = bedrockIndex;
             }
         }
     }

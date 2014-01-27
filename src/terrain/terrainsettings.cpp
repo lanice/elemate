@@ -17,7 +17,7 @@ void initElementTerrainLevels()
 
     s_elementToLevel.emplace("bedrock", TerrainLevel::BaseLevel);
     s_elementToLevel.emplace("grassland", TerrainLevel::BaseLevel);
-    s_elementToLevel.emplace("dirt", TerrainLevel::BaseLevel);
+    s_elementToLevel.emplace("sand", TerrainLevel::BaseLevel);
 }
 
 TerrainLevel levelForElement(const std::string & elementName)
