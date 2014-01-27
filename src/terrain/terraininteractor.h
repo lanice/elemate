@@ -18,10 +18,16 @@ public:
     void setInteractElement(const std::string & elementName);
 
     /** @return name of topmost element at world position */
-    std::string elementAt(float worldX, float worldZ) const;
+    const std::string & topmostElementAt(float worldX, float worldZ) const;
+    /** @return name of topmost solid element at world position, in the base level */
+    const std::string & solidElementAt(float worldX, float worldZ) const;
     /** Fetch the heighest element at world position and use its level for interaction functions.
       * @return the name of this element */
     const std::string & useTopmostElementAt(float worldX, float worldZ);
+    /** Fetch the heighest solid element at world position and use its level for interaction functions.
+      * This fetches the element from the base level.
+      * @return the name of this element */
+    const std::string & useSolidElementAt(float worldX, float worldZ);
 
     /** @return the height of the element this interactor is configured to work with */
     float heightAt(float worldX, float worldZ) const;

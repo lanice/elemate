@@ -49,7 +49,7 @@ void TerrainInteractor::setInteractElement(const std::string & elementName)
     m_interactLevel = levelForElement(elementName);
 }
 
-std::string TerrainInteractor::elementAt(float worldX, float worldZ) const
+const std::string & TerrainInteractor::topmostElementAt(float worldX, float worldZ) const
 {
     TerrainLevel topmostLevel = m_terrain->heighestLevelAt(worldX, worldZ);
 
@@ -66,7 +66,26 @@ std::string TerrainInteractor::elementAt(float worldX, float worldZ) const
 
 const std::string & TerrainInteractor::useTopmostElementAt(float worldX, float worldZ)
 {
-    setInteractElement(elementAt(worldX, worldZ));
+    setInteractElement(topmostElementAt(worldX, worldZ));
+    return m_interactElement;
+}
+
+const std::string & TerrainInteractor::solidElementAt(float worldX, float worldZ) const
+{
+    std::shared_ptr<TerrainTile> tile = nullptr;
+    unsigned int row, column;
+
+    if (!m_terrain->worldToTileRowColumn(worldX, worldZ, TerrainLevel::BaseLevel, tile, row, column))
+        return "default";
+
+    assert(tile);
+
+    return tile->elementAt(row, column);
+}
+
+const std::string & TerrainInteractor::useSolidElementAt(float worldX, float worldZ)
+{
+    setInteractElement(solidElementAt(worldX, worldZ));
     return m_interactElement;
 }
 
@@ -283,7 +302,7 @@ void TerrainInteractor::updatePxHeight(const TerrainTile & tile, unsigned minRow
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ)
 {
-    setInteractElement(elementAt(worldX, worldZ));
+    setInteractElement(solidElementAt(worldX, worldZ));
     m_grabbedLevel = m_interactLevel;
     return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }

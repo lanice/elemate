@@ -71,8 +71,9 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_C:
-            const std::string & material = m_terrainInteractor->elementAt(handPosition.x, handPosition.z);
-            glow::info("material at hand: ""%;""", material);
+            const std::string & element = m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z);
+            const std::string & solid = m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z);
+            glow::info("material at hand: ""%;"", solid element: ""%;""", element, solid);
             break;
         }
     }
