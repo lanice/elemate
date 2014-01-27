@@ -60,6 +60,8 @@ protected:
 
     /** list of elements this tile consits of. The index of an element in this list equals its index in the terrain type texture. */
     const std::vector<std::string> m_elementNames;
+    /** convenience function to get the tile specific index for an element name */
+    virtual uint8_t elementIndex(const std::string & elementName) const = 0;
 
     /** @return the index this tile internaly uses for the element at the row/column position. Parameters must be in range. */
     virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const = 0;
@@ -99,6 +101,10 @@ protected: // interaction specific functions (see class TerrainInteractor)
     bool heightAt(unsigned int row, unsigned int column, float & height) const;
     /** set height at specified row/column position. Parameters must be in range. */
     void setHeight(unsigned int row, unsigned int column, float value);
+    /** set the internal element index at the row/column position corresponding to the element name */
+    virtual void setElement(unsigned int row, unsigned int column, const std::string & elementName);
+    /** set the internal element index at the row/column position to elementIndex.  */
+    virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) = 0;
 
     void addBufferUpdateRange(GLintptr offset, GLsizeiptr length);
     std::forward_list<std::pair<GLintptr, GLsizeiptr>> m_bufferUpdateList;

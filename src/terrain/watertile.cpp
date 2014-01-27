@@ -49,3 +49,16 @@ uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/)
 {
     return 0u;  // currently water only, no data for different elements
 }
+
+uint8_t WaterTile::elementIndex(const std::string & elementName) const
+{
+    assert(elementName == "water");
+    return 0u;
+}
+
+void WaterTile::setElement(unsigned int /*row*/, unsigned int /*column*/, uint8_t /*elementIndex*/)
+{
+    glow::warning("setting element type on WaterTile is not supported.");
+    assert(false);
+}
+

@@ -17,10 +17,11 @@ protected:
     virtual void createTerrainTypeTexture();
 
     virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const override;
+    /** convenience function to get the tile specific index for an element name */
+    virtual uint8_t elementIndex(const std::string & elementName) const override;
 
-    /** list of elements this tile consits of. The index of an element in this list equals its index in the terrain type texture.
-      * Index 0 is reserved for debug purpose. */
-    std::vector<std::string> m_elementNames;
+    /** set the internal element index at the row/column position to elementIndex.  */
+    virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) override;
 
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;

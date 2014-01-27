@@ -59,7 +59,7 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_world.togglePause();
             break;
         case GLFW_KEY_F:
-            m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, -0.1f);
+            m_terrainInteractor->gatherElement(handPosition.x, handPosition.z, 0.1f);
             m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_LEFT_ALT:
@@ -67,7 +67,7 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_R:
-            m_terrainInteractor->changeHeight(handPosition.x, handPosition.z, 0.1f);
+            m_terrainInteractor->dropElement(handPosition.x, handPosition.z, 0.1f);
             m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_C:
