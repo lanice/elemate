@@ -27,11 +27,11 @@ m_grabbedTerrain(false),
 m_renderer(nullptr),
 m_lua(new LuaWrapper())
 {
-    // ParticleScriptAccess::instance().createParticleGroup("water");
+    ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
+    m_hand.registerLuaFunctions(m_lua);
+    // m_terrainInteractor->registerLuaFunctions(m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
-    ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
-    // m_terrainInteractor->registerLuaFunctions(m_lua);
 }
 
 Manipulator::~Manipulator()

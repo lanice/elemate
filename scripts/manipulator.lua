@@ -8,11 +8,14 @@ function glfwMouseButtonRight_press()
 end
 
 function glfwMouseButtonLeft_press()
-    io.write("Emitting.\n")
-    psa_emit(index, 1000, 0, 0, 0, 0, 1, 0)
+    if index == -1 then
+        io.write("No ParticleGroup created.\n")
+        return
+    end
+    psa_emit(index, 1000, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
 end
 
 function glfwMouseButtonLeft_release()
+    if index == -1 then return end
     psa_stopEmit(index)
-    io.write("Emitting stopped.\n")
 end

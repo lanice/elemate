@@ -21,6 +21,7 @@
 #include "cameraex.h"
 #include "terrain/terrain.h"
 #include "rendering/shadowmappingstep.h"
+#include "lua/luawrapper.h"
 
 const std::string Hand::s_modelFilename = "data/models/hand.3DS";
 
@@ -281,4 +282,20 @@ void Hand::initShadowMappingProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
+}
+
+void Hand::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<int()> func0 = [=] ()
+    { return position().x; };
+
+    std::function<int()> func1 = [=] ()
+    { return position().y; };
+
+    std::function<int()> func2 = [=] ()
+    { return position().z; };
+
+    lua->Register("hand_posX", func0);
+    lua->Register("hand_posY", func1);
+    lua->Register("hand_posZ", func2);
 }
