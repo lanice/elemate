@@ -73,6 +73,16 @@ ParticleGroup::~ParticleGroup()
     m_particleSystem = nullptr;
 }
 
+physx::PxParticleFluid * ParticleGroup::particleSystem()
+{
+    return m_particleSystem;
+}
+
+physx::PxScene * ParticleGroup::physxScene()
+{
+    return m_scene;
+}
+
 void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec3Array & pos, const glow::Vec3Array & vel)
 {
     PxU32 * indices = new PxU32[numParticles];
@@ -158,12 +168,13 @@ void ParticleGroup::updateVisuals()
     m_particleDrawable->updateParticles(readData);
 
     readData->unlock();
+
+    m_particleDrawable->setParticleSize(m_particleSystem->getRestParticleDistance());
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
 {
     setImmutableProperties(properties.maxMotionDistance, properties.gridSize, properties.restOffset, properties.contactOffset, properties.restParticleDistance);
-    m_particleDrawable->setParticleSize(properties.restParticleDistance);
 }
 
 void ParticleGroup::setMutableProperties(const MutableParticleProperties & properties)

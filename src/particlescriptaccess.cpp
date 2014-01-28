@@ -4,6 +4,10 @@
 
 #include <glow/logging.h>
 
+#include "pxcompilerfix.h"
+#include <PxScene.h>
+#include <PxSceneLock.h>
+
 #include "particlegroup.h"
 #include "world.h"
 #include "lua/luawrapper.h"
@@ -143,6 +147,84 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     lua->Register("psa_stopEmit", func3);
     lua->Register("psa_numParticleGroups", func4);
     lua->Register("psa_elementAtIndex", func5);
+
+    std::function<int(int, float)> func6 = [=] (int index, float maxMotionDistance)
+    { setMaxMotionDistance(index, maxMotionDistance); return 0; };
+    std::function<int(int, float)> func7 = [=] (int index, float gridSize)
+    { setGridSize(index, gridSize); return 0; };
+    std::function<int(int, float)> func8 = [=] (int index, float restOffset)
+    { setRestOffset(index, restOffset); return 0; };
+    std::function<int(int, float)> func9 = [=] (int index, float contactOffset)
+    { setContactOffset(index, contactOffset); return 0; };
+    std::function<int(int, float)> func10 = [=] (int index, float restParticleDistance)
+    { setRestParticleDistance(index, restParticleDistance); return 0; };
+
+    std::function<int(int, float)> func11 = [=] (int index, float restitution)
+    { setRestitution(index, restitution); return 0; };
+    std::function<int(int, float)> func12 = [=] (int index, float dynamicFriction)
+    { setDynamicFriction(index, dynamicFriction); return 0; };
+    std::function<int(int, float)> func13 = [=] (int index, float staticFriction)
+    { setStaticFriction(index, staticFriction); return 0; };
+    std::function<int(int, float)> func14 = [=] (int index, float damping)
+    { setDamping(index, damping); return 0; };
+    std::function<int(int, float)> func15 = [=] (int index, float particleMass)
+    { setParticleMass(index, particleMass); return 0; };
+    std::function<int(int, float)> func16 = [=] (int index, float viscosity)
+    { setViscosity(index, viscosity); return 0; };
+    std::function<int(int, float)> func17 = [=] (int index, float stiffness)
+    { setStiffness(index, stiffness); return 0; };
+
+    lua->Register("psa_setMaxMotionDistance", func6);
+    lua->Register("psa_setGridSize", func7);
+    lua->Register("psa_setRestOffset", func8);
+    lua->Register("psa_setContactOffset", func9);
+    lua->Register("psa_setRestParticleDistance", func10);
+    lua->Register("psa_setRestitution", func11);
+    lua->Register("psa_setDynamicFriction", func12);
+    lua->Register("psa_setStaticFriction", func13);
+    lua->Register("psa_setDamping", func14);
+    lua->Register("psa_setParticleMass", func15);
+    lua->Register("psa_setViscosity", func16);
+    lua->Register("psa_setStiffness", func17);
+
+    std::function<float(int)> func18 = [=] (int index)
+    { return maxMotionDistance(index); };
+    std::function<float(int)> func19 = [=] (int index)
+    { return gridSize(index); };
+    std::function<float(int)> func20 = [=] (int index)
+    { return restOffset(index); };
+    std::function<float(int)> func21 = [=] (int index)
+    { return contactOffset(index); };
+    std::function<float(int)> func22 = [=] (int index)
+    { return restParticleDistance(index); };
+    std::function<float(int)> func23 = [=] (int index)
+    { return restitution(index); };
+    std::function<float(int)> func24 = [=] (int index)
+    { return dynamicFriction(index); };
+    std::function<float(int)> func25 = [=] (int index)
+    { return staticFriction(index); };
+    std::function<float(int)> func26 = [=] (int index)
+    { return damping(index); };
+    std::function<float(int)> func27 = [=] (int index)
+    { return particleMass(index); };
+    std::function<float(int)> func28 = [=] (int index)
+    { return viscosity(index); };
+    std::function<float(int)> func29 = [=] (int index)
+    { return stiffness(index); };
+
+    lua->Register("psa_maxMotionDistance", func18);
+    lua->Register("psa_gridSize", func19);
+    lua->Register("psa_restOffset", func20);
+    lua->Register("psa_contactOffset", func21);
+    lua->Register("psa_restParticleDistance", func22);
+    lua->Register("psa_restitution", func23);
+    lua->Register("psa_dynamicFriction", func24);
+    lua->Register("psa_staticFriction", func25);
+    lua->Register("psa_damping", func26);
+    lua->Register("psa_particleMass", func27);
+    lua->Register("psa_viscosity", func28);
+    lua->Register("psa_stiffness", func29);
+
 }
 
 void ParticleScriptAccess::createParticle(const int index, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
@@ -179,3 +261,72 @@ std::string ParticleScriptAccess::elementAtIndex(int index)
 {
     return std::get<2>(m_particleGroups.at(index));
 }
+
+void ParticleScriptAccess::setMaxMotionDistance(int index, float maxMotionDistance)
+{
+    std::get<0>(m_particleGroups.at(index))->physxScene()->removeActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+    std::get<0>(m_particleGroups.at(index))->particleSystem()->setMaxMotionDistance(maxMotionDistance);
+    std::get<0>(m_particleGroups.at(index))->physxScene()->addActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+}
+void ParticleScriptAccess::setGridSize(int index, float gridSize)
+{
+    std::get<0>(m_particleGroups.at(index))->physxScene()->removeActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+    std::get<0>(m_particleGroups.at(index))->particleSystem()->setGridSize(gridSize);
+    std::get<0>(m_particleGroups.at(index))->physxScene()->addActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+}
+void ParticleScriptAccess::setRestOffset(int index, float restOffset)
+{
+    std::get<0>(m_particleGroups.at(index))->physxScene()->removeActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+    std::get<0>(m_particleGroups.at(index))->particleSystem()->setRestOffset(restOffset);
+    std::get<0>(m_particleGroups.at(index))->physxScene()->addActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+}
+void ParticleScriptAccess::setContactOffset(int index, float contactOffset)
+{
+    std::get<0>(m_particleGroups.at(index))->physxScene()->removeActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+    std::get<0>(m_particleGroups.at(index))->particleSystem()->setContactOffset(contactOffset);
+    std::get<0>(m_particleGroups.at(index))->physxScene()->addActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+}
+void ParticleScriptAccess::setRestParticleDistance(int index, float restParticleDistance)
+{
+    std::get<0>(m_particleGroups.at(index))->physxScene()->removeActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+    std::get<0>(m_particleGroups.at(index))->particleSystem()->setRestParticleDistance(restParticleDistance);
+    std::get<0>(m_particleGroups.at(index))->physxScene()->addActor(*std::get<0>(m_particleGroups.at(index))->particleSystem());
+}
+void ParticleScriptAccess::setRestitution(int index, float restitution)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setRestitution(restitution); }
+void ParticleScriptAccess::setDynamicFriction(int index, float dynamicFriction)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setDynamicFriction(dynamicFriction); }
+void ParticleScriptAccess::setStaticFriction(int index, float staticFriction)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setStaticFriction(staticFriction); }
+void ParticleScriptAccess::setDamping(int index, float damping)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setDamping(damping); }
+void ParticleScriptAccess::setParticleMass(int index, float particleMass)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setParticleMass(particleMass); }
+void ParticleScriptAccess::setViscosity(int index, float viscosity)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setViscosity(viscosity); }
+void ParticleScriptAccess::setStiffness(int index, float stiffness)
+{ std::get<0>(m_particleGroups.at(index))->particleSystem()->setStiffness(stiffness); }
+float ParticleScriptAccess::maxMotionDistance(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getMaxMotionDistance(); }
+float ParticleScriptAccess::gridSize(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getGridSize(); }
+float ParticleScriptAccess::restOffset(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getRestOffset(); }
+float ParticleScriptAccess::contactOffset(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getContactOffset(); }
+float ParticleScriptAccess::restParticleDistance(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getRestParticleDistance(); }
+float ParticleScriptAccess::restitution(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getRestitution(); }
+float ParticleScriptAccess::dynamicFriction(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getDynamicFriction(); }
+float ParticleScriptAccess::staticFriction(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getStaticFriction(); }
+float ParticleScriptAccess::damping(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getDamping(); }
+float ParticleScriptAccess::particleMass(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getParticleMass(); }
+float ParticleScriptAccess::viscosity(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getViscosity(); }
+float ParticleScriptAccess::stiffness(int index)
+{ return std::get<0>(m_particleGroups.at(index))->particleSystem()->getStiffness(); }

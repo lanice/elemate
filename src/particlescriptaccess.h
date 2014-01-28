@@ -52,6 +52,32 @@ protected:
     void setMutableProperties(const int index, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
     int numParticleGroups();
     std::string elementAtIndex(int index);
+
+    void setMaxMotionDistance(int index, float maxMotionDistance);
+    void setGridSize(int index, float gridSize);
+    void setRestOffset(int index, float restOffset);
+    void setContactOffset(int index, float contactOffset);
+    void setRestParticleDistance(int index, float restParticleDistance);
+    void setRestitution(int index, float restitution);
+    void setDynamicFriction(int index, float dynamicFriction);
+    void setStaticFriction(int index, float staticFriction);
+    void setDamping(int index, float damping);
+    void setParticleMass(int index, float particleMass);
+    void setViscosity(int index, float viscosity);
+    void setStiffness(int index, float stiffness);
+
+    float maxMotionDistance(int index);
+    float gridSize(int index);
+    float restOffset(int index);
+    float contactOffset(int index);
+    float restParticleDistance(int index);
+    float restitution(int index);
+    float dynamicFriction(int index);
+    float staticFriction(int index);
+    float damping(int index);
+    float particleMass(int index);
+    float viscosity(int index);
+    float stiffness(int index);
     /************************************************/    
 
     void setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType);
