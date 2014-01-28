@@ -38,6 +38,13 @@ Game::~Game()
     delete m_physicsWrapper;
 }
 
+void Game::showMenu()
+{
+    m_world->togglePause();
+
+    //User Interface toggle pause Menu
+}
+
 void Game::start()
 {
     glfwSetTime(0.0);   
