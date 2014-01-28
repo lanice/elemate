@@ -120,7 +120,7 @@ void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 &
     createParticles(1, positions, velocities);
 }
 
-void ParticleGroup::emit(float ratio, const glm::vec3 & position, const glm::vec3 & direction)
+void ParticleGroup::emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction)
 {
     m_emitRatio = ratio;
     m_emitPosition = position;

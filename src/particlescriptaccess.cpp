@@ -116,3 +116,49 @@ void ParticleScriptAccess::restoreGPUAccelerated()
 
     m_gpuParticlesPauseFlags = 0x00;
 }
+
+void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<int(std::string)> func0 = [=] (std::string elementType)
+    { return createParticleGroup(elementType); };
+
+    std::function<int(int, float, float, float, float, float, float)> func1 = [=] (int index, float posx, float posy, float posz, float velx, float vely, float velz)
+    { createParticle(index, posx, posy, posz, velx, vely, velz); return 0; };
+
+    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=] (int index, float ratio, float posx, float posy, float posz, float dirx, float diry, float dirz)
+    { emit(index, ratio, posx, posy, posz, dirx, diry, dirz); return 0; };
+
+    std::function<int(int)> func3 = [=] (int index)
+    { stopEmit(index); return 0; };
+
+    lua->Register("createParticleGroup", func0);
+    lua->Register("createParticle", func1);
+    lua->Register("emit", func2);
+    lua->Register("stopEmit", func3);
+}
+
+void ParticleScriptAccess::createParticle(const int index, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
+{
+    std::get<0>(m_particleGroups.at(index))->createParticle(glm::vec3(positionX, positionY, positionZ), glm::vec3(velocityX, velocityY, velocityZ));
+}
+
+void ParticleScriptAccess::emit(const int index, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ)
+{
+    std::get<0>(m_particleGroups.at(index))->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
+}
+
+void ParticleScriptAccess::stopEmit(const int index)
+{
+    std::get<0>(m_particleGroups.at(index))->stopEmit();
+}
+
+void ParticleScriptAccess::setImmutableProperties( const int index, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance)
+{
+    std::get<0>(m_particleGroups.at(index))->setImmutableProperties(maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance);
+}
+
+void ParticleScriptAccess::setMutableProperties(const int index, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness)
+{
+    std::get<0>(m_particleGroups.at(index))->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness);
+}
+

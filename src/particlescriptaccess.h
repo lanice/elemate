@@ -38,9 +38,19 @@ public:
     /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
     void restoreGPUAccelerated();
 
+    void registerLuaFunctions(LuaWrapper * lua);
+
 
 protected:
     ParticleScriptAccess();
+
+    /** Functions callable from within lua scripts. */
+    void createParticle(const int index, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ);
+    void emit(const int index, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ);
+    void stopEmit(const int index);
+    void setImmutableProperties( const int index, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance);
+    void setMutableProperties(const int index, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
+    /************************************************/    
 
     void setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType);
 
