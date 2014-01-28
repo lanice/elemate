@@ -3,54 +3,40 @@
 in vec3 v_vertex[1];
 
 uniform mat4 viewProjection;
+uniform mat4 view;
+uniform mat4 projection;
 uniform vec3 lookAtUp;
 uniform vec3 lookAtRight;
-
+uniform vec3 lookAtFront;
+uniform float particleSize;
 
 layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
 out vec2 g_relPos;
-out vec4 g_absPos;
-out float g_size;
+out vec4 g_viewPos;
+flat out vec4 g_viewPosCenter;
+// flat out float g_zDiff;
+
+vec4 dRightUp = vec4(particleSize, particleSize, 0.0, 0.0);
+
+void addVertex(vec4 viewPosCenter, vec2 relPos)
+{
+	g_relPos = relPos;
+    g_viewPosCenter = viewPosCenter;
+    g_viewPos = viewPosCenter + dRightUp * vec4(relPos, 0.0, 0.0);
+    gl_Position = projection * g_viewPos;
+    EmitVertex();
+}
 
 void main()
-{
-    float size = 0.1;
-    
-    vec4 projPos = viewProjection * vec4(v_vertex[0], 1.0);
-    
-    vec4 pos2 = viewProjection * vec4(v_vertex[0] + lookAtRight, 1.0);
-	float diffx = distance(pos2.xyz, projPos.xyz);
-	pos2 = viewProjection * vec4(v_vertex[0] + lookAtUp, 1.0);
-	float diffy = distance(pos2.xyz, projPos.xyz);
-    
-    float factorX = size * diffx;
-	float factorY = size * diffy;
+{    
+    vec4 viewPosCenter = view * vec4(v_vertex[0], 1.0);
 	
-    gl_Position = projPos + vec4(-factorX, -factorY, 0.0, 0.0);
-	g_relPos = vec2(-1,-1);
-    g_absPos = gl_Position;
-    g_size = size;
-    EmitVertex();
-    
-    gl_Position = projPos + vec4(-factorX, factorY, 0.0, 0.0);
-	g_relPos = vec2(-1,1);
-    g_absPos = gl_Position;
-    g_size = size;
-    EmitVertex();
-    
-    gl_Position = projPos + vec4(factorX, -factorY, 0.0, 0.0);
-	g_relPos = vec2(1,-1);
-    g_absPos = gl_Position;
-    g_size = size;
-    EmitVertex();
-    
-    gl_Position = projPos + vec4(factorX, factorY, 0.0, 0.0);
-	g_relPos = vec2(1,1);
-    g_absPos = gl_Position;
-    g_size = size;
-    EmitVertex();
+	addVertex(viewPosCenter, vec2(-1,-1));
+	addVertex(viewPosCenter, vec2(-1, 1));
+	addVertex(viewPosCenter, vec2( 1,-1));
+	addVertex(viewPosCenter, vec2( 1, 1));
     
     EndPrimitive();
 }

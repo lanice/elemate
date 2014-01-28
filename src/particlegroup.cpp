@@ -163,6 +163,7 @@ void ParticleGroup::updateVisuals()
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
 {
     setImmutableProperties(properties.maxMotionDistance, properties.gridSize, properties.restOffset, properties.contactOffset, properties.restParticleDistance);
+    m_particleDrawable->setParticleSize(properties.restParticleDistance);
 }
 
 void ParticleGroup::setMutableProperties(const MutableParticleProperties & properties)

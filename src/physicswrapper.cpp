@@ -27,7 +27,7 @@ PhysicsWrapper::PhysicsWrapper()
 {
     initializePhysics();
     initializeScene();
-    Elements::initialize(*m_physics);
+    Elements::initialize();
 
     s_instance = this;
 }
@@ -212,7 +212,6 @@ void PhysicsWrapper::toogleUseGpuParticles()
 bool PhysicsWrapper::useGpuParticles() const
 {
     if (!m_physxGpuAvailable) {
-        glow::warning("PhysX calculation on GPU not available!");
         return false;
     }
     return m_gpuParticles;
@@ -221,7 +220,6 @@ bool PhysicsWrapper::useGpuParticles() const
 void PhysicsWrapper::pauseGPUAcceleration()
 {
     if (!m_physxGpuAvailable) {
-        glow::warning("PhysX calculation on GPU not available!");
         return;
     }
     ParticleScriptAccess::instance().pauseGPUAcceleration();
@@ -230,7 +228,6 @@ void PhysicsWrapper::pauseGPUAcceleration()
 void PhysicsWrapper::restoreGPUAccelerated()
 {
     if (!m_physxGpuAvailable) {
-        glow::warning("PhysX calculation on GPU not available!");
         return;
     }
     ParticleScriptAccess::instance().restoreGPUAccelerated();

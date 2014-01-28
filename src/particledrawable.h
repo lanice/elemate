@@ -13,14 +13,11 @@ namespace glow {
     class Buffer;
     class Program;
 }
-namespace glowutils {
-    class Camera;
-}
-
 namespace physx {
     class PxVec3;
     class PxParticleReadData;
 }
+class CameraEx;
 
 class ParticleDrawable
 {
@@ -38,17 +35,21 @@ public:
     /** fetches the number of valid particles and the particle positions from readData and updates interal buffers */
     void updateParticles(const physx::PxParticleReadData * readData);
 
+    void setParticleSize(float particleSize);
+
     /** draw all instances of this drawable */
-    static void drawParticles(const glowutils::Camera & camera);
+    static void drawParticles(const CameraEx & camera);
 
     /** drawing implementation called during rendering */
-    virtual void draw(const glowutils::Camera & camera);
+    virtual void draw(const CameraEx & camera);
 
 protected:
     static std::list<ParticleDrawable*> s_instances;
 
     const unsigned int m_maxParticleCount;
     unsigned int m_currentNumParticles;
+
+    float m_particleSize;
 
     bool m_needBufferUpdate;
     void updateBuffers();

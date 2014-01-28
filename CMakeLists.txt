@@ -134,6 +134,7 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 set(SHADER
     shader/flush.vert
     shader/flush.frag
+    shader/passthrough.frag
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
@@ -145,14 +146,16 @@ set(SHADER
     shader/particle_water.geo
     shader/particle_water.frag
     shader/particle_water_normals.frag
+    shader/particle_water_depthblurring_h.frag
+    shader/particle_water_depthblurring_v.frag
     shader/phongLighting.frag
-    shader/shadows/lightmap_terrain.vert
-    shader/shadows/lightmap_hand.vert
-    shader/shadows/lightmap.frag
+    shader/shadows/depthmap_terrain.vert
+    shader/shadows/depthmap_hand.vert
+    shader/shadows/depthmapLinearized.frag
     shader/shadows/shadowmapping_terrain.vert
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag
-    shader/shadows/depth_util.frag
+    shader/depth_util.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

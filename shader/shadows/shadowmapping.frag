@@ -16,8 +16,6 @@ uniform vec2 depthSamples[nbSamples];
 const int nbEarlySamples = 5;
 uniform vec2 earlyBailSamples[nbEarlySamples];
 
-float linearize(float depth);
-
 float average_blocker_depth(vec2 coord, float zReceiver, float relativeSearchWidth) {
     float zSum = 0.0;
     int numBlockers = 0;
@@ -35,17 +33,16 @@ bool earlyBailing(vec2 coord, float zReceiver, float relativeSearchWidth);
 
 void main()
 {
-    vec3 fromLightCoord = v_shadowCoord.xyz; // orthographic projection -> xyz/w not needed
-    // float fromLightZ = linearize(fromLightCoord.z) - zBias;
-    float fromLightZ = fromLightCoord.z - zBias;
+    vec2 fromLightCoord = v_shadowCoord.st; // orthographic projection -> xyz/w not needed
+    float fromLightZ = v_shadowCoord.z - zBias; // orthographic projection -> no depth linearisation
     
     float relativeSearchWidth = searchWidth * invViewportSize;
 
-    if (earlyBailing(fromLightCoord.st, fromLightZ, relativeSearchWidth)) {
+    if (earlyBailing(fromLightCoord, fromLightZ, relativeSearchWidth)) {
         return;
     }
     
-    float zBlocker = average_blocker_depth(fromLightCoord.st, fromLightZ, relativeSearchWidth);
+    float zBlocker = average_blocker_depth(fromLightCoord, fromLightZ, relativeSearchWidth);
     
     if(zBlocker == 0.0) {
         shadowValue = 1.0;
@@ -56,7 +53,7 @@ void main()
     float shadow = 0.0;
     float x,y;
     for (int i=0; i < nbSamples; ++i) { 
-            vec2 offset = depthSamples[i] * penumbra + fromLightCoord.st;
+            vec2 offset = depthSamples[i] * penumbra + fromLightCoord;
             float distanceFromLight = texture(lightMap, offset).x;
             shadow += mix( 1.0, 0.0, step(distanceFromLight, fromLightZ));
     }

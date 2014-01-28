@@ -7,7 +7,7 @@
 #include <glow/Program.h>
 #include <glow/Shader.h>
 #include <glowutils/File.h>
-#include <glowutils/Camera.h>
+#include "cameraex.h"
 
 #include <glm/glm.hpp>
 
@@ -143,12 +143,12 @@ void World::toggleBackgroundSound(int id){
 }
 
 void World::updateListener(){
-    auto cam = m_navigation->camera();
-    glm::vec3 forward = glm::normalize(cam->eye() - cam->center());
+    const CameraEx & cam = m_navigation->camera();
+    glm::vec3 forward = glm::normalize(cam.eye() - cam.center());
     m_soundManager->setListenerAttributes(
-    { cam->eye().x, cam->eye().y, cam->eye().z },
+    { cam.eye().x, cam.eye().y, cam.eye().z },
     { forward.x, forward.y, forward.z },
-    { cam->up().x, cam->up().y, cam->up().z }
+    { cam.up().x, cam.up().y, cam.up().z }
     );
     m_soundManager->update();
 }

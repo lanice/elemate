@@ -9,15 +9,15 @@ namespace glow {
     class RenderBufferObject;
 }
 namespace glowutils {
-    class Camera;
     class ScreenAlignedQuad;
 }
+class CameraEx;
 
 class RenderingStep
 {
 public:
     virtual ~RenderingStep();
 
-    virtual void draw(const glowutils::Camera & camera) = 0;
+    virtual void draw(const CameraEx & camera) = 0;
     virtual void resize(int width, int height) = 0;
 };

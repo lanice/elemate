@@ -8,8 +8,8 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 #include <glowutils/FileRegistry.h>
-#include <glowutils/Camera.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
+#include "cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -18,7 +18,6 @@
 #include <assimp/scene.h>
 
 #include "world.h"
-#include "cameraex.h"
 #include "terrain/terrain.h"
 #include "rendering/shadowmappingstep.h"
 #include "lua/luawrapper.h"
@@ -157,11 +156,11 @@ float Hand::heightCheck(float worldX, float worldZ) const
     return transition;
 }
 
-void Hand::drawImplementation(const glowutils::Camera & camera)
+void Hand::drawImplementation(const CameraEx & camera)
 {
     m_program->use();
     m_program->setUniform("modelView", camera.view() * transform());
-    m_program->setUniform("modelViewProjection", camera.viewProjection() * transform());
+    m_program->setUniform("modelViewProjection", camera.viewProjectionEx() * transform());
     m_program->setUniform("rotate", m_rotate);
     m_program->setUniform("cameraposition", camera.eye());
     m_world.setUpLighting(*m_program);
@@ -247,30 +246,36 @@ void Hand::rotate(const float angle)
     m_transform.invalidate();
 }
 
-void Hand::drawLightMapImpl(const CameraEx & lightSource)
+void Hand::drawDepthMapImpl(const CameraEx & camera)
 {
-    m_lightMapProgram->setUniform("lightMVP", lightSource.viewProjectionOrthographic() * transform());
+    m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * transform());
+    m_depthMapProgram->setUniform("znear", camera.zNearEx());
+    m_depthMapProgram->setUniform("zfar", camera.zFar());
+
+    m_depthMapProgram->use();
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+
+    m_depthMapProgram->release();
 }
 
-void Hand::drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource)
+void Hand::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource)
 {
-    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionOrthographic() * transform();
+    glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * transform();
 
-    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjection() * transform());
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * transform());
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 }
 
-void Hand::initLightMappingProgram()
+void Hand::initDepthMapProgram()
 {
-    m_lightMapProgram = new glow::Program();
-    m_lightMapProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/lightmap_hand.vert"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/lightmap.frag"));
+    m_depthMapProgram = new glow::Program();
+    m_depthMapProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_hand.vert"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
 }
 
 void Hand::initShadowMappingProgram()
@@ -278,7 +283,6 @@ void Hand::initShadowMappingProgram()
     m_shadowMappingProgram = new glow::Program();
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_hand.vert"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depth_util.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);

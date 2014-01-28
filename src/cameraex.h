@@ -2,13 +2,21 @@
 
 #include <glowutils/Camera.h>
 
+enum class ProjectionType {
+    perspective,
+    orthographic
+};
+
 class CameraEx : public glowutils::Camera
 {
 public:
-    CameraEx(
+    CameraEx(ProjectionType projection,
         const glm::vec3 & eye = glm::vec3(0.0, 0.0, 1.0)
         , const glm::vec3 & center = glm::vec3(0.0, 0.0, 0.0)
         , const glm::vec3 & up = glm::vec3(0.0, 1.0, 0.0));
+
+    ProjectionType projectionType() const;
+    void setProjectionType(ProjectionType projectionType);
 
     float left() const;
     void setLeft(float left);
@@ -20,30 +28,28 @@ public:
     void setTop(float top);
 
     // hack this, because virtuality lack in glowutils::Camera...
-    /** zNear used for orthographic projection */
-    float zNearOrtho() const;
-    /** set the zNear used for orthographic projection */
-    void setZNearOtho(float zNear);
+    float zNearEx() const;
+    void setZNearEx(float zNear);
+    const glm::mat4 & projectionEx() const;
+    const glm::mat4 & viewProjectionEx() const;
+    const glm::mat4 & projectionInvertedEx() const;
+    const glm::mat4 & viewProjectionInvertedEx() const;
 
-    // lazy matrices getters
-
-    /** projection() is not virtual in glowutils::Camera, that's why we have to hack this */
-    const glm::mat4 & projectionOrthographic() const;
-    const glm::mat4 & viewProjectionOrthographic() const;
-    const glm::mat4 & projectionOrthographicInverted() const;
-    const glm::mat4 & viewProjectionOrthographicInverted() const;
-
-    virtual void changed() const override;
+    /** remove the nonvirtual functions that we can not configure to support orthographic projections */
+    const glm::mat4 & projection() const = delete;
+    const glm::mat4 & viewProjection() const = delete;
+    const glm::mat4 & viewInverted() const = delete;
+    const glm::mat4 & projectionInverted() const = delete;
+    const glm::mat4 & viewProjectionInverted() const = delete;
+    float zNear() const = delete;
+    void setZNear(float zNear) = delete;
 
 protected:
-    float m_zNearOrtho;
+    ProjectionType m_projectionType;
     float m_left;
     float m_right;
     float m_bottom;
     float m_top;
 
-    glowutils::CachedValue<glm::mat4> m_projectionOrthographic;
-    glowutils::CachedValue<glm::mat4> m_projectionOrthographicInverted;
-    glowutils::CachedValue<glm::mat4> m_viewProjectionOrthographic;
-    glowutils::CachedValue<glm::mat4> m_viewProjectionOrthographicInverted;
+    virtual void changed() const override;
 };

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <glowutils/Camera.h>
+#include <glow/global.h>
 
 #include "ui/navigation.h"
 #include "ui/manipulator.h"
@@ -12,6 +12,7 @@ class PhysicsWrapper;
 class World;
 namespace std {         class thread; }
 struct GLFWwindow;
+class CameraEx;
 
 /** The Game Class that invokes a game loop and initializes PhysX.
  *  To receive the initialized physics, call getPhysicsWrapper(). See for its usage the documentation of PhysicsWrapper class.
@@ -32,7 +33,8 @@ public:
 
     Navigation * navigation();
     Manipulator * manipulator();
-    glowutils::Camera * camera();
+    std::shared_ptr<CameraEx> camera();
+    const std::shared_ptr<const CameraEx> camera() const;
     Renderer * renderer();
     PhysicsWrapper * physicsWrapper();
 
@@ -48,7 +50,7 @@ protected:
     PhysicsWrapper * m_physicsWrapper;
     World * m_world;
 
-    glowutils::Camera m_camera;
+    std::shared_ptr<CameraEx> m_camera;
     Navigation m_navigation;
     Manipulator m_manipulator;
 

@@ -4,20 +4,15 @@
 #include <glow/Program.h>
 #include <glowutils/File.h>
 
-#include <PxMaterial.h>
-#include <geometry/PxHeightFieldSample.h>
-#include <geometry/PxHeightFieldDesc.h>
-
 #include "terrain.h"
-#include "elements.h"
 #include "world.h"
 
 WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
-: TerrainTile(terrain, tileID)
+: TerrainTile(terrain, tileID, {"water"})
 {
 }
 
-void WaterTile::bind(const glowutils::Camera & camera)
+void WaterTile::bind(const CameraEx & camera)
 {
     TerrainTile::bind(camera);
 
@@ -50,23 +45,22 @@ void WaterTile::initializeProgram()
     TerrainTile::initializeProgram();
 }
 
-using namespace physx;
-
-void WaterTile::pxSamplesAndMaterials(PxHeightFieldSample * hfSamples, PxReal heightScale, PxMaterial ** &materials)
+uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/) const
 {
-    materials = new PxMaterial*[1];
-
-    // TODO: use water material..
-    materials[0] = Elements::pxMaterial("default");
-
-    unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
-    for (unsigned index = 0; index < numSamples; ++index) {
-        hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = 0;
-        hfSamples[index].height = static_cast<PxI16>(m_heightField->at(index) * heightScale);
-    }
+    return 0u;  // currently water only, no data for different elements
 }
 
-PxU8 WaterTile::pxMaterialIndexAt(unsigned int /*row*/, unsigned int /*column*/) const
+uint8_t WaterTile::elementIndex(const std::string & elementName) const
 {
+    if (elementName != "water")
+        glow::warning("Trying to fetch an element other than water from water terrain level.");
+    assert(elementName == "water");
     return 0u;
 }
+
+void WaterTile::setElement(unsigned int /*row*/, unsigned int /*column*/, uint8_t /*elementIndex*/)
+{
+    glow::warning("setting element type on WaterTile is not supported.");
+    assert(false);
+}
+

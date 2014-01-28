@@ -7,13 +7,9 @@
 using namespace glm;
 
 
-CameraEx::CameraEx(
-const vec3 & eye
-, const vec3 & center
-, const vec3 & up)
+CameraEx::CameraEx(ProjectionType projectionType, const vec3 & eye, const vec3 & center, const vec3 & up)
 : glowutils::Camera(eye, center, up)
-
-, m_zNearOrtho(-10.0f)
+, m_projectionType(projectionType)
 , m_left(-10.0f)
 , m_right(10.0f)
 , m_bottom(-10.0f)
@@ -21,27 +17,37 @@ const vec3 & eye
 {
 }
 
+ProjectionType CameraEx::projectionType() const
+{
+    return m_projectionType;
+}
+
+void CameraEx::setProjectionType(ProjectionType projectionType)
+{
+    m_projectionType = projectionType;
+    m_projection.invalidate();
+    m_projectionInverted.invalidate();
+    m_viewProjection.invalidate();
+    m_viewProjectionInverted.invalidate();
+}
+
 void CameraEx::changed() const
 {
     Camera::changed();
-    m_projectionOrthographic.invalidate();
-    m_projectionOrthographicInverted.invalidate();
-    m_viewProjectionOrthographic.invalidate();
-    m_viewProjectionOrthographicInverted.invalidate();
 }
 
 
-float CameraEx::zNearOrtho() const
+float CameraEx::zNearEx() const
 {
-    return m_zNearOrtho;
+    return m_zNear;
 }
 
-void CameraEx::setZNearOtho(float zNear)
+void CameraEx::setZNearEx(float zNear)
 {
-    if (zNear == m_zNearOrtho)
+    if (zNear == m_zNear)
         return;
 
-    m_zNearOrtho = zNear;
+    m_zNear = zNear;
 
     dirty();
 }
@@ -106,45 +112,51 @@ void CameraEx::setTop(float top)
     dirty();
 }
 
-const mat4 & CameraEx::projectionOrthographic() const
+const mat4 & CameraEx::projectionEx() const
 {
     if (m_dirty)
         update();
 
-    if (!m_projectionOrthographic.isValid())
-        m_projectionOrthographic.setValue(ortho<float>(m_left, m_right, m_bottom, m_top, m_zNearOrtho, m_zFar));
-    return m_projectionOrthographic.value();
+    switch (m_projectionType) {
+    case ProjectionType::perspective:
+        return Camera::projection();
+    case ProjectionType::orthographic:
+        if (!m_projection.isValid())
+            m_projection.setValue(ortho<float>(m_left, m_right, m_bottom, m_top, m_zNear, m_zFar));
+        break;
+    }
+    return m_projection.value();
 }
 
-const mat4 & CameraEx::viewProjectionOrthographic() const
+const mat4 & CameraEx::viewProjectionEx() const
 {
     if (m_dirty)
         update();
 
-    if (!m_viewProjectionOrthographic.isValid())
-        m_viewProjectionOrthographic.setValue(projectionOrthographic() * view());
+    if (!m_viewProjection.isValid())
+        m_viewProjection.setValue(projectionEx() * view());
 
-    return m_viewProjectionOrthographic.value();
+    return m_viewProjection.value();
 }
 
-const mat4 & CameraEx::projectionOrthographicInverted() const
+const mat4 & CameraEx::projectionInvertedEx() const
 {
     if (m_dirty)
         update();
 
-    if (!m_projectionOrthographicInverted.isValid())
-        m_projectionOrthographicInverted.setValue(inverse(projectionOrthographic()));
+    if (!m_projectionInverted.isValid())
+        m_projectionInverted.setValue(inverse(projectionEx()));
 
-    return m_projectionOrthographicInverted.value();
+    return m_projectionInverted.value();
 }
 
-const mat4 & CameraEx::viewProjectionOrthographicInverted() const
+const mat4 & CameraEx::viewProjectionInvertedEx() const
 {
     if (m_dirty)
         update();
 
-    if (!m_viewProjectionOrthographicInverted.isValid())
-        m_viewProjectionOrthographicInverted.setValue(inverse(viewProjectionOrthographic()));
+    if (!m_viewProjectionInverted.isValid())
+        m_viewProjectionInverted.setValue(inverse(viewProjectionEx()));
 
-    return m_viewProjectionOrthographicInverted.value();
+    return m_viewProjectionInverted.value();
 }

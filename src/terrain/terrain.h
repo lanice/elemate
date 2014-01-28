@@ -3,6 +3,7 @@
 #include "rendering/drawable.h"
 
 #include <map>
+#include <set>
 #include <memory>
 
 #include <glow/ref_ptr.h>
@@ -22,6 +23,11 @@ public:
     Terrain(const World & world, const TerrainSettings & settings);
     virtual ~Terrain() override;
 
+    /** set a list of elements that will be used for the draw call */
+    virtual void draw(const CameraEx & camera, const std::initializer_list<std::string> & elements);
+    virtual void drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements);
+    virtual void drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements);
+
     /** PhysX shape containing height field geometry for one tile.
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxShape * pxShape(const TileID & tileID) const;
@@ -35,6 +41,9 @@ public:
     float heightTotalAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
     float heightAt(float x, float z, TerrainLevel level) const;
+    /** @return heighest terrain level at position */
+    TerrainLevel heighestLevelAt(float x, float z) const;
+    void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
@@ -43,9 +52,12 @@ public:
     friend class TerrainInteractor;
 
 protected:
-    virtual void drawImplementation(const glowutils::Camera & camera) override;
-    virtual void drawLightMapImpl(const CameraEx & lightSource) override;
-    virtual void drawShadowMappingImpl(const glowutils::Camera & camera, const CameraEx & lightSource) override;
+    void setDrawElements(const std::initializer_list<std::string> & elements);
+    std::set<TerrainLevel> m_drawLevels;
+
+    virtual void drawImplementation(const CameraEx & camera) override;
+    virtual void drawDepthMapImpl(const CameraEx & camera) override;
+    virtual void drawShadowMappingImpl(const CameraEx & camera, const CameraEx & lightSource) override;
 
     /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);
@@ -67,7 +79,7 @@ protected:
     glow::UIntArray * m_indices;
 
     /** light map and shadow mapping */
-    virtual void initLightMappingProgram() override;
+    virtual void initDepthMapProgram() override;
     virtual void initShadowMappingProgram() override;
 
     static const GLuint s_restartIndex;
@@ -78,6 +90,7 @@ protected:
     * @param terrainTile if world x/z position are in range, this pointer will be set to a valid terrain tile.
     * @return true, if the position is in terrain extent's range. */
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const;
+    bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const;
     /** transform world position into tileID and normalized coordinates in this tile.
     * @param tileID this will set the x, y values of the id, but will not change the level
     * @param normX normZ these parameter will be set the normalized position in the tile, referenced with tileID

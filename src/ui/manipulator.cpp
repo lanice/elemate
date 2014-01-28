@@ -2,6 +2,7 @@
 
 #include <glow/logging.h>
 #include <glow/FrameBufferObject.h>
+#include "cameraex.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/swizzle.hpp>
@@ -19,10 +20,10 @@
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
 m_window(window),
 m_navigation(navigation),
-m_camera(*navigation.camera()),
+m_camera(navigation.camera()),
 m_world(world),
 m_hand(*world.hand),
-m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
+m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedrock")),
 m_grabbedTerrain(false),
 m_renderer(nullptr),
 m_lua(new LuaWrapper())
@@ -47,6 +48,7 @@ void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         m_lua->call("glfwMouseButtonLeft_press");
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
         m_lua->call("glfwMouseButtonLeft_release");
 
@@ -56,6 +58,8 @@ void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
+    const glm::vec3 & handPosition = m_hand.position();
+
     // key press events
     if (action == GLFW_PRESS)
     {
@@ -70,16 +74,21 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_world.togglePause();
             break;
         case GLFW_KEY_F:
-            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, -0.1f);
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+            m_terrainInteractor->gatherElement(handPosition.x, handPosition.z, 0.1f);
+            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_LEFT_ALT:
             m_grabbedTerrain = true;
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
         case GLFW_KEY_R:
-            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel, 0.1f);
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z, TerrainLevel::BaseLevel);
+            m_terrainInteractor->dropElement(handPosition.x, handPosition.z, 0.1f);
+            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
+            break;
+        case GLFW_KEY_C:
+            const std::string & element = m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z);
+            const std::string & solid = m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z);
+            glow::info("material at hand: ""%;"", solid element: ""%;""", element, solid);
             break;
         }
     }
@@ -98,6 +107,22 @@ void Manipulator::handleMouseMoveEvent(double xpos, double ypos)
         glfwSetCursorPos(&m_window, m_lastCursorPos.x, m_lastCursorPos.y);
     } else
         m_lastCursorPos = glm::dvec2(xpos, ypos);
+}
+
+void Manipulator::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
+{
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+    {
+        if (yoffset > 0)
+        {
+            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+        }
+        else {
+            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
+            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+        }
+    }
 }
 
 void Manipulator::updateHandPosition()
