@@ -125,6 +125,16 @@ set(SOURCES
     src/rendering/particlewaterstep.cpp
     src/rendering/shadowmappingstep.cpp
     src/rendering/shadowmappingstep.h
+    src/rendering/string_rendering/CharacterDrawable.h
+    src/rendering/string_rendering/CharacterDrawable.cpp
+    src/rendering/string_rendering/RawFile.h
+    src/rendering/string_rendering/RawFile.cpp
+    src/rendering/string_rendering/StringComposer.h
+    src/rendering/string_rendering/StringComposer.cpp
+    src/rendering/string_rendering/StringDrawer.h
+    src/rendering/string_rendering/StringDrawer.cpp
+    src/userinterface.cpp
+    src/userinterface.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
