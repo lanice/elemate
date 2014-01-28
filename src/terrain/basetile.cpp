@@ -1,5 +1,7 @@
 #include "basetile.h"
 
+#include <algorithm>
+
 #include <glow/Program.h>
 #include <glow/Buffer.h>
 #include <glowutils/File.h>
