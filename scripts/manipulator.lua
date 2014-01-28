@@ -3,16 +3,16 @@
 index = -1
 
 function glfwMouseButtonRight_press()
-    index = createParticleGroup("water")
+    index = psa_createParticleGroup("water")
     io.write(index, "\n")
 end
 
 function glfwMouseButtonLeft_press()
     io.write("Emitting.\n")
-    emit(index, 1000, 0, 0, 0, 0, 1, 0)
+    psa_emit(index, 1000, 0, 0, 0, 0, 1, 0)
 end
 
 function glfwMouseButtonLeft_release()
-    stopEmit(index)
+    psa_stopEmit(index)
     io.write("Emitting stopped.\n")
 end

@@ -131,10 +131,10 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(int)> func3 = [=] (int index)
     { stopEmit(index); return 0; };
 
-    lua->Register("createParticleGroup", func0);
-    lua->Register("createParticle", func1);
-    lua->Register("emit", func2);
-    lua->Register("stopEmit", func3);
+    lua->Register("psa_createParticleGroup", func0);
+    lua->Register("psa_createParticle", func1);
+    lua->Register("psa_emit", func2);
+    lua->Register("psa_stopEmit", func3);
 }
 
 void ParticleScriptAccess::createParticle(const int index, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
