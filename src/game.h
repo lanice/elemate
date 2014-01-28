@@ -7,6 +7,7 @@
 #include "ui/navigation.h"
 #include "ui/manipulator.h"
 #include "rendering/renderer.h"
+#include "userinterface.h"
 
 class PhysicsWrapper;
 class World;
@@ -56,6 +57,7 @@ protected:
     Manipulator m_manipulator;
 
     Renderer m_renderer;
+    UserInterface m_userInterface;
 
 public:
     Game() = delete;

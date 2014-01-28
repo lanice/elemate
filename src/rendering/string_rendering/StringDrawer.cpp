@@ -36,7 +36,7 @@ bool StringDrawer::initialize()
     if (!initializeTexture())
         return false;
     
-    if (!m_stringComposer.readSpecificsFromFile("data/P22UndergroundPro-Medium.txt", s_textureSize))
+    if (!m_stringComposer.readSpecificsFromFile("data/font/P22UndergroundPro-Medium.txt", s_textureSize))
         return false;
     
     m_drawable.initialize();
@@ -48,8 +48,8 @@ bool StringDrawer::initializeProgram()
 {
     m_program = new glow::Program();
 
-    auto vertShader = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "data/string_drawer.vert");
-    auto fragShader = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "data/string_drawer.frag");
+    auto vertShader = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/string_drawer.vert");
+    auto fragShader = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/string_drawer.frag");
 
     m_program->attach(vertShader, fragShader);
     m_program->link();
@@ -61,7 +61,7 @@ bool StringDrawer::initializeTexture()
 {
     m_characterAtlas = new glow::Texture();
     
-    const std::string fileName("data/P22UndergroundPro-Medium.1024.1024.r.ub.raw");
+    const std::string fileName("data/font/P22UndergroundPro-Medium.1024.1024.r.ub.raw");
     
     RawFile file(fileName);
     

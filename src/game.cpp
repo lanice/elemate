@@ -30,6 +30,8 @@ m_renderer(*m_world)
 
     m_world->setNavigation(m_navigation);
     m_manipulator.setRenderer(m_renderer);
+
+    m_userInterface.initialize();
 }
 
 Game::~Game()
@@ -42,7 +44,7 @@ void Game::showMenu()
 {
     m_world->togglePause();
 
-    //User Interface toggle pause Menu
+    m_userInterface.showMainMenu();
 }
 
 void Game::start()
@@ -89,8 +91,9 @@ void Game::loop(double delta)
                 m_navigation.apply();
 
                 m_world->updateVisuals();
-
+                
                 m_renderer(*m_camera);
+                m_userInterface.showHUD();
 
                 glfwSwapBuffers(&m_window);
 
