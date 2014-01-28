@@ -9,13 +9,13 @@
 #include <glm/glm.hpp>
 
 
-namespace glowutils { class Camera; }
 class Terrain;
+class CameraEx;
 
 class Navigation
 {
 public:
-    Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain);
+    Navigation(GLFWwindow & window, const std::shared_ptr<CameraEx> & camera, const std::shared_ptr<Terrain> & terrain);
     virtual ~Navigation();
 
     void setTransformation(const glm::vec3 & eye, const glm::vec3 & center, const glm::vec3 & up);
@@ -27,7 +27,7 @@ public:
     void update(double delta);
     void apply();
 
-    const glowutils::Camera * camera() const;
+    const CameraEx & camera() const;
 
     float rotationAngle() const;
 
@@ -38,7 +38,7 @@ protected:
     void pitch(const float & degree);
 
     GLFWwindow & m_window;
-    glowutils::Camera * m_camera;
+    std::shared_ptr<CameraEx> m_camera;
     std::shared_ptr<Terrain> m_terrain;
 
     glm::vec3 m_center;

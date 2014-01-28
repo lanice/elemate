@@ -8,13 +8,13 @@
 #include <GLFW/glfw3.h>
 
 
-namespace glowutils { class Camera; }
-
 class World;
 class Navigation;
 class Hand;
 class TerrainInteractor;
 class Renderer;
+class CameraEx;
+
 
 class Manipulator : public glowutils::AbstractCoordinateProvider
 {
@@ -25,6 +25,7 @@ public:
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
     void handleMouseButtonEvent(int button, int action, int mods);
     void handleMouseMoveEvent(double xpos, double ypos);
+    void handleScrollEvent(const double & xoffset, const double & yoffset);
 
     void updateHandPosition();
 
@@ -43,7 +44,7 @@ public:
 protected:
     GLFWwindow & m_window;
     const Navigation & m_navigation;
-    const glowutils::Camera & m_camera;
+    const CameraEx & m_camera;
     World & m_world;
     Hand & m_hand;
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;

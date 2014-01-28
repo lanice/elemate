@@ -1,7 +1,7 @@
 #include "navigation.h"
 
 #include <glow/logging.h>
-#include <glowutils/Camera.h>
+#include "cameraex.h"
 
 #include <GLFW/glfw3.h>
 
@@ -15,9 +15,9 @@ static const float c_distanceEyeCenterDefault = 15.f;
 static const float c_speedScale = 0.05f;
 
 
-Navigation::Navigation(GLFWwindow & window, glowutils::Camera & camera, std::shared_ptr<Terrain>& terrain)
+Navigation::Navigation(GLFWwindow & window, const std::shared_ptr<CameraEx> & camera, const std::shared_ptr<Terrain> & terrain)
 : m_window(window)
-, m_camera(&camera)
+, m_camera(camera)
 , m_terrain(terrain)
 , m_center()
 , m_distanceEyeCenter(c_distanceEyeCenterDefault)  
@@ -59,6 +59,9 @@ void Navigation::setTransformation(const glm::vec3 & center, const glm::vec3 & l
 
 void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
 {
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+        return;     // currently used for terrain manipulation
+    
     if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         if (yoffset > 0)
@@ -160,9 +163,9 @@ void Navigation::pitch(const float & angle)
     m_lookAtVector = glm::rotate(m_lookAtVector, angle, glm::cross(m_lookAtVector, glm::vec3(0, 1, 0)));
 }
 
-const glowutils::Camera * Navigation::camera() const
+const CameraEx & Navigation::camera() const
 {
-    return m_camera;
+    return *m_camera.get();
 }
 
 float Navigation::rotationAngle() const

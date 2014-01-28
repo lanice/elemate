@@ -6,6 +6,7 @@
 #include <limits>
 #include <ctime>
 #include <functional>
+#include <algorithm>
 
 #include <glow/Array.h>
 #include <glow/logging.h>
@@ -60,11 +61,13 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
         glow::FloatArray * baseHeightField = createBasicHeightField(m_settings.maxBasicHeightVariance);
         assert(baseHeightField);
 
+        std::initializer_list<std::string> baseElements = { "bedrock", "sand" };
+
         // make landscape more interesting
-        glow::UByteArray * baseTerrainTypeIDs = gougeRiverBed(*baseHeightField);
+        glow::UByteArray * baseTerrainTypeIDs = gougeRiverBed(*baseHeightField, baseElements);
 
         /** create terrain object and pass terrain data */
-        BaseTile * baseTile = new BaseTile(*terrain, tileIDBase);
+        BaseTile * baseTile = new BaseTile(*terrain, tileIDBase, baseElements);
         baseTile->setHeightField(*baseHeightField);
         baseTile->m_terrainTypeData = baseTerrainTypeIDs;
 
@@ -118,14 +121,17 @@ glow::FloatArray * TerrainGenerator::createBasicHeightField(float maxHeightVaria
     return heightField;
 }
 
-glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightField) const
+glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const
 {
     std::function<float(float, float)> riverCourse = [](float normRow, float normColumn)
     {
         return std::abs(5.0f * std::pow(normRow, 3) - normColumn);
     };
 
-    static const float riverScale = 0.15f;
+    const uint8_t bedrockIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "bedrock") - baseElements.begin());
+    const uint8_t sandIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "sand") - baseElements.begin());
+
+    const float riverScale = 0.15f;
 
     unsigned int numSamples = m_settings.rows * m_settings.columns;
 
@@ -148,10 +154,10 @@ glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightFiel
             value *= m_settings.maxHeight;
             heightField.at(index) += value;
             if (heightField.at(index) <= 0) {
-                terrainTypeIDs->at(index) = 2;  // this is dirt
+                terrainTypeIDs->at(index) = sandIndex;
             }
             else {
-                terrainTypeIDs->at(index) = 1;  // this is bedrock
+                terrainTypeIDs->at(index) = bedrockIndex;
             }
         }
     }
@@ -185,16 +191,10 @@ void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
     m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
 }
 
-float TerrainGenerator::samplesPerWorldXCoord() const
+float TerrainGenerator::samplesPerWorldCoord() const
 {
-    return m_settings.samplesPerXCoord();
+    return m_settings.samplesPerWorldCoord();
 }
-
-float TerrainGenerator::samplesPerWorldZCoord() const
-{
-    return m_settings.samplesPerZCoord();
-}
-
 void TerrainGenerator::setTilesPerAxis(unsigned x, unsigned z)
 {
     assert(x >= 1 && z >= 1);

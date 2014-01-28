@@ -4,6 +4,8 @@
 #include <initializer_list>
 #include <limits>
 #include <functional>
+#include <string>
+#include <cmath>
 
 
 enum class TerrainLevel {
@@ -12,6 +14,11 @@ enum class TerrainLevel {
 };
 extern std::initializer_list<TerrainLevel> TerrainLevels;
 
+/** initilize the list that defines which terrain level should hold which element */
+void initElementTerrainLevels();
+
+/** @return the terrain level that holds the element with name elementName */
+TerrainLevel levelForElement(const std::string & elementName);
 
 struct TileID {
     TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0);
@@ -21,7 +28,7 @@ struct TileID {
 };
 
 namespace std {
-    /** lever precedes x, precedes z */
+    /** level precedes x, precedes z */
     template<> struct less<TileID> {
         bool operator()(const TileID& lhs, const TileID& rhs) const;
     };
@@ -31,7 +38,7 @@ struct TerrainSettings {
     TerrainSettings();
     float sizeX;
     float sizeZ;
-    /** maximal possible height value in terrain, as used in the generator */
+    /** Maximal absolute height value in terrain. */
     float maxHeight;
     /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure. */
     float maxBasicHeightVariance;
@@ -57,12 +64,16 @@ struct TerrainSettings {
         assert(((long long) columns*tilesZ) < std::numeric_limits<unsigned>::max());
         return columns * tilesZ;
     }
-    /** number of sample columns per x coordinate */
-    inline float samplesPerXCoord() const { assert(sizeX > 0); return rows / sizeX; }
-    /** number of sample rows per z coordinate */
-    inline float samplesPerZCoord() const { assert(sizeZ > 0); return columns / sizeZ; }
-    /** distance between two sample points along the x axis */
-    inline float intervalX() const { assert(rows >= 2); return sizeX / (rows - 1); }
-    /** distance between two sample points along the z axis */
-    inline float intervalZ() const { assert(columns >= 2); return sizeZ / (columns - 1); }
+    /** number of samples per world coordinate */
+    inline float samplesPerWorldCoord() const {
+        assert(sizeX > 0 && sizeZ > 0);
+        assert(std::abs(rows / sizeX - columns / sizeZ) < std::numeric_limits<float>::epsilon());
+        return rows / sizeX;
+    }
+    /** distance between two sample points along one axis */
+    inline float sampleInterval() const {
+        assert(rows >= 2 && columns >= 2);
+        assert(std::abs(tileSizeX() / (rows - 1) - tileSizeZ() / (columns - 1)) < std::numeric_limits<float>::epsilon());
+        return tileSizeX() / (rows - 1);
+    }
 };

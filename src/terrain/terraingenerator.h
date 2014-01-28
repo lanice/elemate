@@ -30,11 +30,10 @@ public:
     void setExtentsInWorld(float x, float z);
     float xExtens() const;
     float zExtens() const;
-    /** Set number of rows and columns in height field so that the terrain gets xzSamples of height values per world coordinate.
+    /** Set number of rows and columns in height field depending on the sample rate.
       * The applied value may be a bit different as the number of total samples is an integral value. */
-    void applySamplesPerWorldCoord(float xzSamplesPerCoord);
-    float samplesPerWorldXCoord() const;
-    float samplesPerWorldZCoord() const;
+    void applySamplesPerWorldCoord(float samplesPerWorldCoord);
+    float samplesPerWorldCoord() const;
     void setTilesPerAxis(unsigned x, unsigned z);
     int tilesPerXAxis() const;
     int tilesPerZAxis() const;
@@ -57,7 +56,7 @@ private:
 
     /** creates heightfield data with random height shift */
     glow::FloatArray * createBasicHeightField(float maxHeightVariance) const;
-    /** adds a river bed to the heightField
+    /** adds a river bed to the heightField, getting the rock and sand indices from the initializer list
       * @return terrain type id storage in row major order */
-    glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField) const;
+    glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const;
 };

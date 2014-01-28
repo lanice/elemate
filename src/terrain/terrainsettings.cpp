@@ -1,18 +1,38 @@
 #include "terrainsettings.h"
 
+#include <unordered_map>
+
 
 std::initializer_list<TerrainLevel> TerrainLevels = {
     TerrainLevel::BaseLevel,
     TerrainLevel::WaterLevel
 };
 
+std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> s_elementToLevel;
+
+void initElementTerrainLevels()
+{
+    s_elementToLevel.emplace("water", TerrainLevel::WaterLevel);
+    s_elementToLevel.emplace("lava", TerrainLevel::WaterLevel);
+
+    s_elementToLevel.emplace("bedrock", TerrainLevel::BaseLevel);
+    s_elementToLevel.emplace("grassland", TerrainLevel::BaseLevel);
+    s_elementToLevel.emplace("sand", TerrainLevel::BaseLevel);
+}
+
+TerrainLevel levelForElement(const std::string & elementName)
+{
+    assert(s_elementToLevel.find(elementName) != s_elementToLevel.end());
+    return s_elementToLevel.at(elementName);
+}
+
 TerrainSettings::TerrainSettings()
 : sizeX(200)
 , sizeZ(200)
 , maxHeight(20.f)
 , maxBasicHeightVariance(0.05f)
-, rows(20)
-, columns(20)
+, rows(200)
+, columns(200)
 , tilesX(1)
 , tilesZ(1)
 {

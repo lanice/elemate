@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include <glow/logging.h>
+#include "cameraex.h"
 
 #include <GLFW/glfw3.h>
 
@@ -20,7 +21,7 @@ m_window(window),
 m_vsyncEnabled(true),
 m_physicsWrapper(new PhysicsWrapper),
 m_world(new World(*m_physicsWrapper)),
-m_camera(),
+m_camera(std::make_shared<CameraEx>(ProjectionType::perspective)),
 m_navigation(window, m_camera, m_world->terrain),
 m_manipulator(window, m_navigation, *m_world),
 m_renderer(*m_world)
@@ -82,7 +83,7 @@ void Game::loop(double delta)
 
                 m_world->updateVisuals();
 
-                m_renderer(m_camera);
+                m_renderer(*m_camera);
 
                 glfwSwapBuffers(&m_window);
 
@@ -133,9 +134,14 @@ Manipulator * Game::manipulator()
     return & m_manipulator;
 }
 
-glowutils::Camera * Game::camera()
+std::shared_ptr<CameraEx> Game::camera()
 {
-    return & m_camera;
+    return m_camera;
+}
+
+const std::shared_ptr<const CameraEx> Game::camera() const
+{
+    return m_camera;
 }
 
 Renderer * Game::renderer()

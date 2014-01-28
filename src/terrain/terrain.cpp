@@ -7,7 +7,6 @@
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
-#include <glowutils/Camera.h>
 #include <glowutils/File.h>
 
 #include <glm/gtc/random.hpp>
@@ -20,6 +19,7 @@ Terrain::Terrain(const World & world, const TerrainSettings & settings)
 , settings(settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
+, m_drawLevels(TerrainLevels)
 {
 }
 
@@ -31,9 +31,43 @@ Terrain::~Terrain()
     delete m_indices;
 }
 
+
+void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    Drawable::draw(camera);
+    setDrawElements({});
+}
+
+void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    Drawable::drawDepthMap(camera);
+    setDrawElements({});
+}
+
+void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    Drawable::drawShadowMapping(camera, lightSource);
+    setDrawElements({});
+}
+
+void Terrain::setDrawElements(const std::initializer_list<std::string> & elements)
+{
+    if (elements.size() == 0) {
+        m_drawLevels = TerrainLevels;
+        return;
+    }
+
+    m_drawLevels.clear();
+    for (const std::string & name : elements)
+        m_drawLevels.insert(levelForElement(name));
+}
+
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
 
-void Terrain::drawImplementation(const glowutils::Camera & camera)
+void Terrain::drawImplementation(const CameraEx & camera)
 {
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
@@ -44,6 +78,8 @@ void Terrain::drawImplementation(const glowutils::Camera & camera)
     glPrimitiveRestartIndex(s_restartIndex);
 
     for (auto & pair : m_tiles) {
+        if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
+            continue;   // only draw elements that are listed for drawing
         pair.second->bind(camera);
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
         pair.second->unbind();
@@ -131,14 +167,30 @@ const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
     return m_pxActors;
 }
 
+void Terrain::heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const
+{
+    maxHeight = std::numeric_limits<float>::lowest();
+    maxLevel = TerrainLevel::BaseLevel;
+    for (TerrainLevel level : TerrainLevels) {
+        float h = heightAt(x, z, level);
+        if (h > maxHeight) {
+            maxLevel = level;
+            maxHeight = h;
+        }
+    }
+}
+
+TerrainLevel Terrain::heighestLevelAt(float x, float z) const
+{
+    TerrainLevel level; float height;
+    heighestLevelHeightAt(x, z, level, height);
+    return level;
+}
+
 float Terrain::heightTotalAt(float x, float z) const
 {
-    float height = std::numeric_limits<float>::lowest();
-    for (TerrainLevel level : TerrainLevels) {
-        height = std::max(
-            height,
-            heightAt(x, z, level));
-    }
+    TerrainLevel level; float height;
+    heighestLevelHeightAt(x, z, level, height);
     return height;
 }
 
@@ -158,14 +210,24 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
 
 bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const
 {
+    float row_fract = 0.0f, column_fract = 0.0f;
+    return worldToTileRowColumn(x, z, level, terrainTile, row, column, row_fract, column_fract);
+}
+
+bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const
+{
     // only implemented for 1 tile
     assert(settings.tilesX == 1 && settings.tilesZ == 1);
     float normX = (x / settings.sizeX + 0.5f);
     float normZ = (z / settings.sizeZ + 0.5f);
     bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
 
-    row = static_cast<int>(normX * settings.rows) % settings.rows;
-    column = static_cast<int>(normZ * settings.columns) % settings.columns;
+    float row_int = 0.0f, column_int = 0.0f;
+    row_fract = std::modf(normX * settings.rows, &row_int);
+    column_fract = std::modf(normZ * settings.columns, &column_int);
+
+    row = static_cast<unsigned int>(row_int) % settings.rows;
+    column = static_cast<unsigned int>(column_int) % settings.columns;
 
     TileID tileID(level, 0, 0);
 

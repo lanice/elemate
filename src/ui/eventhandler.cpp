@@ -2,6 +2,7 @@
 
 #include <glow/logging.h>
 #include <glowutils/FileRegistry.h>
+#include "cameraex.h"
 
 #include <GLFW/glfw3.h>
 
@@ -76,6 +77,7 @@ void EventHandler::handleScrollEvent(double xoffset, double yoffset)
     // or something like this...
 
     m_game.navigation()->handleScrollEvent(xoffset, yoffset);
+    m_game.manipulator()->handleScrollEvent(xoffset, yoffset);
 }
 
 void EventHandler::handeResizeEvent(int width, int height)
