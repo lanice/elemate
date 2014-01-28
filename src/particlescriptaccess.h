@@ -50,11 +50,13 @@ protected:
     void stopEmit(const int index);
     void setImmutableProperties( const int index, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance);
     void setMutableProperties(const int index, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
+    int numParticleGroups();
+    std::string elementAtIndex(int index);
     /************************************************/    
 
     void setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType);
 
-    std::vector<std::tuple<ParticleGroup *, LuaWrapper *> > m_particleGroups;
+    std::vector<std::tuple<ParticleGroup *, LuaWrapper *, std::string> > m_particleGroups;
     std::vector<int> m_freeIndices;
 
     World * m_worldNotifier;

@@ -44,11 +44,11 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
         int i = m_freeIndices.back();
         assert(std::get<0>(m_particleGroups.at(i)) == nullptr && std::get<1>(m_particleGroups.at(i)) == nullptr);
         m_freeIndices.pop_back();
-        m_particleGroups.at(i) = std::make_tuple(particleGroup, wrapper);
+        m_particleGroups.at(i) = std::make_tuple(particleGroup, wrapper, elementType);
         return i;
     }
 
-    m_particleGroups.push_back(std::make_tuple(particleGroup, wrapper));
+    m_particleGroups.push_back(std::make_tuple(particleGroup, wrapper, elementType));
     m_worldNotifier->registerObserver(particleGroup);
     return static_cast<int>(m_particleGroups.size() - 1);
 }
@@ -131,10 +131,18 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(int)> func3 = [=] (int index)
     { stopEmit(index); return 0; };
 
+    std::function<int()> func4 = [=] ()
+    { return numParticleGroups(); };
+
+    std::function<std::string(int)> func5 = [=] (int index)
+    { return elementAtIndex(index); };
+
     lua->Register("psa_createParticleGroup", func0);
     lua->Register("psa_createParticle", func1);
     lua->Register("psa_emit", func2);
     lua->Register("psa_stopEmit", func3);
+    lua->Register("psa_numParticleGroups", func4);
+    lua->Register("psa_elementAtIndex", func5);
 }
 
 void ParticleScriptAccess::createParticle(const int index, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
@@ -162,3 +170,12 @@ void ParticleScriptAccess::setMutableProperties(const int index, const float res
     std::get<0>(m_particleGroups.at(index))->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness);
 }
 
+int ParticleScriptAccess::numParticleGroups()
+{
+    return static_cast<int>(m_particleGroups.size() - 1);
+}
+
+std::string ParticleScriptAccess::elementAtIndex(int index)
+{
+    return std::get<2>(m_particleGroups.at(index));
+}
