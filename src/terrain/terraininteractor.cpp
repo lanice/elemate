@@ -24,6 +24,8 @@
 
 using namespace physx;
 
+const std::string TerrainInteractor::s_defaultElementName = "default";
+
 float TerrainInteractor::normalDist(float x, float mean, float stddev)
 {
     return  // n(x) = n(x) = 1 / (stddev*sqrt(2*pi)) * exp( - (x-mean)^2 / (2*stddev^2))
@@ -57,7 +59,7 @@ const std::string & TerrainInteractor::topmostElementAt(float worldX, float worl
     unsigned int row, column;
 
     if (!m_terrain->worldToTileRowColumn(worldX, worldZ, topmostLevel, tile, row, column))
-        return "default";
+        return s_defaultElementName;
 
     assert(tile);
 
@@ -76,7 +78,7 @@ const std::string & TerrainInteractor::solidElementAt(float worldX, float worldZ
     unsigned int row, column;
 
     if (!m_terrain->worldToTileRowColumn(worldX, worldZ, TerrainLevel::BaseLevel, tile, row, column))
-        return "default";
+        return s_defaultElementName;
 
     assert(tile);
 

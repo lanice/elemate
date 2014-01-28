@@ -68,6 +68,9 @@ public:
 
     static float normalDist(float x, float mean, float stddev);
 
+    /** element name if the interaction element is not set and for out for range access */
+    static const std::string s_defaultElementName;
+
 private:
     std::shared_ptr<Terrain> m_terrain;
     /** the name of the element this interactor currently works on */

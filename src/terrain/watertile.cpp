@@ -52,6 +52,8 @@ uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/)
 
 uint8_t WaterTile::elementIndex(const std::string & elementName) const
 {
+    if (elementName != "water")
+        glow::warning("Trying to fetch an element other than water from water terrain level.");
     assert(elementName == "water");
     return 0u;
 }
