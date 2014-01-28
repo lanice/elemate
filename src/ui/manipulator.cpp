@@ -13,6 +13,7 @@
 #include "terrain/terraininteractor.h"
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
+#include "lua/luawrapper.h"
 
 
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
@@ -23,21 +24,34 @@ m_world(world),
 m_hand(*world.hand),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain)),
 m_grabbedTerrain(false),
-m_renderer(nullptr)
+m_renderer(nullptr),
+m_lua(new LuaWrapper())
 {
-    m_world.createFountainSound(m_hand.position());
-    ParticleScriptAccess::instance().createParticleGroup("water");
+    // ParticleScriptAccess::instance().createParticleGroup("water");
+
+    m_lua->loadScript("scripts/manipulator.lua");
+    ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
+    // m_terrainInteractor->registerLuaFunctions(m_lua);
 }
 
 Manipulator::~Manipulator()
 {
+    delete m_lua;
 }
 void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
+    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    //     ParticleScriptAccess::instance().particleGroup(0)->emit(100, m_hand.position(), glm::vec3(0,1,0));
+    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+    //     ParticleScriptAccess::instance().particleGroup(0)->stopEmit();
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        ParticleScriptAccess::instance().particleGroup(0)->emit(100, m_hand.position(), glm::vec3(0,1,0));
+        m_lua->call("glfwMouseButtonLeft_press");
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-        ParticleScriptAccess::instance().particleGroup(0)->stopEmit();
+        m_lua->call("glfwMouseButtonLeft_release");
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+        m_lua->call("glfwMouseButtonRight_press");
 }
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
