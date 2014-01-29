@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rendering/string_rendering/StringDrawer.h";
+#include "rendering/string_rendering/StringDrawer.h"
 
 class UserInterface{
 public:
@@ -13,6 +13,9 @@ public:
 
 protected:
     StringDrawer m_stringDrawer;
+
+    void drawPreview();
+    void drawPreviewCircle(float x, float y);
 
 private:
     UserInterface(const UserInterface&) = delete;
