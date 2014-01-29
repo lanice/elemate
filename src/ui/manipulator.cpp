@@ -28,6 +28,7 @@ m_grabbedTerrain(false),
 m_renderer(nullptr),
 m_lua(new LuaWrapper())
 {
+    ParticleScriptAccess::instance().init();
     ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
     m_hand.registerLuaFunctions(m_lua);
     // m_terrainInteractor->registerLuaFunctions(m_lua);
@@ -84,6 +85,9 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
         case GLFW_KEY_R:
             m_terrainInteractor->dropElement(handPosition.x, handPosition.z, 0.1f);
             m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
+            break;
+        case GLFW_KEY_PERIOD:
+            m_lua->call("glfwKeyPeriod_press");
             break;
         case GLFW_KEY_C:
             const std::string & element = m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z);

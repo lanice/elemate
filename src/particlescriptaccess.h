@@ -21,6 +21,9 @@ class ParticleScriptAccess
 public:
     static ParticleScriptAccess& instance();
 
+    /** Must be called from outside to initialize the LuaWrapper instance. */
+    void init();
+
     ~ParticleScriptAccess();
 
     ParticleGroup * particleGroup(const int index);
@@ -80,15 +83,17 @@ protected:
     float stiffness(int index);
     /************************************************/    
 
-    void setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType);
+    void setUpParticleGroup(const int index, const std::string & elementType);
 
-    std::vector<std::tuple<ParticleGroup *, LuaWrapper *, std::string> > m_particleGroups;
+    std::vector<std::tuple<ParticleGroup *, std::string> > m_particleGroups;
     std::vector<int> m_freeIndices;
 
     World * m_worldNotifier;
 
     bool m_gpuParticles;
     uint8_t m_gpuParticlesPauseFlags;
+
+    LuaWrapper * m_lua;
 
     static ParticleScriptAccess s_access;
 };

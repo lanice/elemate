@@ -1,7 +1,6 @@
 -- Lua script for processing incoming events from Manipulator (manipulator.lua)
 
-numParticleGroups = psa_numParticleGroups()
-index = numParticleGroups
+index = psa_numParticleGroups()
 
 function glfwMouseButtonRight_press()
     eleType = "water";
@@ -18,4 +17,12 @@ end
 function glfwMouseButtonLeft_release()
     if index == -1 then return end
     psa_stopEmit(index)
+end
+
+function glfwKeyPeriod_press()
+    for i=0,psa_numParticleGroups() do
+        io.write("Will remove ParticleGroup at index ", i, "\n")
+        psa_removeParticleGroup(i)
+        io.write("Removed ParticleGroup at index ", i, "\n")
+    end
 end
