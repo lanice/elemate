@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <tuple>
+#include <unordered_map>
+#include <utility>
 #include <inttypes.h>
 
 
@@ -26,11 +26,12 @@ public:
 
     ~ParticleScriptAccess();
 
-    ParticleGroup * particleGroup(const int index);
+    ParticleGroup * particleGroup(const int id);
 
-    /** Creates an instance of ParticleGroup and registers it, returning the access index */
+    /** Creates an instance of ParticleGroup and registers it, returning the access id */
     int createParticleGroup(const std::string & elementType = "default");
-    void removeParticleGroup(const int index);
+    void removeParticleGroup(const int id);
+    void clearParticleGroups();
 
     void setNotifier(World * notifier);
 
@@ -48,45 +49,45 @@ protected:
     ParticleScriptAccess();
 
     /** Functions callable from within lua scripts. */
-    void createParticle(const int index, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ);
-    void emit(const int index, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ);
-    void stopEmit(const int index);
-    void setImmutableProperties( const int index, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance);
-    void setMutableProperties(const int index, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
+    void createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ);
+    void emit(const int id, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ);
+    void stopEmit(const int id);
+    void setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance);
+    void setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
     int numParticleGroups();
-    std::string elementAtIndex(int index);
+    std::string elementAtId(int id);
 
-    void setMaxMotionDistance(int index, float maxMotionDistance);
-    void setGridSize(int index, float gridSize);
-    void setRestOffset(int index, float restOffset);
-    void setContactOffset(int index, float contactOffset);
-    void setRestParticleDistance(int index, float restParticleDistance);
-    void setRestitution(int index, float restitution);
-    void setDynamicFriction(int index, float dynamicFriction);
-    void setStaticFriction(int index, float staticFriction);
-    void setDamping(int index, float damping);
-    void setParticleMass(int index, float particleMass);
-    void setViscosity(int index, float viscosity);
-    void setStiffness(int index, float stiffness);
+    void setMaxMotionDistance(int id, float maxMotionDistance);
+    void setGridSize(int id, float gridSize);
+    void setRestOffset(int id, float restOffset);
+    void setContactOffset(int id, float contactOffset);
+    void setRestParticleDistance(int id, float restParticleDistance);
+    void setRestitution(int id, float restitution);
+    void setDynamicFriction(int id, float dynamicFriction);
+    void setStaticFriction(int id, float staticFriction);
+    void setDamping(int id, float damping);
+    void setParticleMass(int id, float particleMass);
+    void setViscosity(int id, float viscosity);
+    void setStiffness(int id, float stiffness);
 
-    float maxMotionDistance(int index);
-    float gridSize(int index);
-    float restOffset(int index);
-    float contactOffset(int index);
-    float restParticleDistance(int index);
-    float restitution(int index);
-    float dynamicFriction(int index);
-    float staticFriction(int index);
-    float damping(int index);
-    float particleMass(int index);
-    float viscosity(int index);
-    float stiffness(int index);
+    float maxMotionDistance(int id);
+    float gridSize(int id);
+    float restOffset(int id);
+    float contactOffset(int id);
+    float restParticleDistance(int id);
+    float restitution(int id);
+    float dynamicFriction(int id);
+    float staticFriction(int id);
+    float damping(int id);
+    float particleMass(int id);
+    float viscosity(int id);
+    float stiffness(int id);
     /************************************************/    
 
-    void setUpParticleGroup(const int index, const std::string & elementType);
+    void setUpParticleGroup(const int id, const std::string & elementType);
 
-    std::vector<std::tuple<ParticleGroup *, std::string> > m_particleGroups;
-    std::vector<int> m_freeIndices;
+    std::unordered_map<int, std::pair<ParticleGroup *, std::string> > m_particleGroups;
+    int m_id;
 
     World * m_worldNotifier;
 
