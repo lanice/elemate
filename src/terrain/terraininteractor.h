@@ -80,7 +80,6 @@ private:
     TerrainLevel m_interactLevel;
 
     float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement);
-    void updatePxHeight(const TerrainTile & tile, unsigned minRow, unsigned maxRow, unsigned minColumn, unsigned maxColumn);
 
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;
