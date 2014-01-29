@@ -107,6 +107,7 @@ protected: // interaction specific functions (see class TerrainInteractor)
     virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) = 0;
 
     void addBufferUpdateRange(GLintptr offset, GLsizeiptr length);
+    glm::uvec2 m_updateRangeMinMax;
     std::forward_list<std::pair<GLintptr, GLsizeiptr>> m_bufferUpdateList;
     virtual void updateGlBuffers();
 

@@ -24,10 +24,17 @@
 #include <gpu/PxParticleGpu.h>
 #endif
 
+#include "hpicgs/Timer.h"
 #include "terrain.h"
 #include "elements.h"
 #include "world.h"
 #include "physicswrapper.h"
+
+namespace {
+    // this values are affected by all tile instances..
+    double updateTime = 0.0;
+    unsigned int nbUpdates = 0u;
+}
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : m_tileID(tileID)
@@ -54,6 +61,9 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 TerrainTile::~TerrainTile()
 {
     delete m_heightField;
+    if (nbUpdates > 0)
+        glow::debug("TerrainTile: t: %; nbUpdates: %;", updateTime, nbUpdates);
+    nbUpdates = 0;
 }
 
 const std::string & TerrainTile::elementAt(unsigned int row, unsigned int column) const
@@ -271,17 +281,27 @@ glm::mat4 TerrainTile::transform() const
 
 void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
 {
+    if (m_updateRangeMinMax.x > offset)
+        m_updateRangeMinMax.x = offset;
+    if (m_updateRangeMinMax.y < offset + length)
+        m_updateRangeMinMax.y = offset + length;
     m_bufferUpdateList.push_front(std::pair<GLintptr, GLsizeiptr>(offset, length));
 }
 
 void TerrainTile::updateGlBuffers()
 {
+    Timer t;
+    nbUpdates++;
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
     m_bufferUpdateList.clear();
+
+    //m_heightBuffer->mapRange()
 
     // TODO update needed data only
     /*for (; !m_bufferUpdateList.empty(); m_bufferUpdateList.pop_front()) {
         auto updateRange = m_bufferUpdateList.front();
 
     }*/
+
+    updateTime += t.elapsed();
 }
