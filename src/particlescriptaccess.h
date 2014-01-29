@@ -56,6 +56,7 @@ protected:
     void setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
     int numParticleGroups();
     std::string elementAtId(int id);
+    int nextParticleGroup(int id);
 
     void setMaxMotionDistance(int id, float maxMotionDistance);
     void setGridSize(int id, float gridSize);

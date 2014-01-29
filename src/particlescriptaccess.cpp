@@ -160,6 +160,9 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<std::string(int)> func5 = [=] (int id)
     { return elementAtId(id); };
 
+    std::function<int(int)> func5a = [=] (int id)
+    { return nextParticleGroup(id); };
+
     lua->Register("psa_createParticleGroup", func0);
     lua->Register("psa_removeParticleGroup", func0a);
     lua->Register("psa_clearParticleGroups", func0b);
@@ -168,6 +171,7 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     lua->Register("psa_stopEmit", func3);
     lua->Register("psa_numParticleGroups", func4);
     lua->Register("psa_elementAtId", func5);
+    lua->Register("psa_nextParticleGroup", func5a);
 
     std::function<int(int, float)> func6 = [=] (int id, float maxMotionDistance)
     { setMaxMotionDistance(id, maxMotionDistance); return 0; };
@@ -280,6 +284,24 @@ int ParticleScriptAccess::numParticleGroups()
 std::string ParticleScriptAccess::elementAtId(int id)
 {
     return m_particleGroups.at(id).second;
+}
+
+int ParticleScriptAccess::nextParticleGroup(int id)
+{
+    auto it = m_particleGroups.find(id);
+
+    if (it == m_particleGroups.end())
+    {
+        if (m_particleGroups.begin() == m_particleGroups.end())
+            return -1;
+        else
+            return m_particleGroups.begin()->first;
+    }
+
+    if (++it == m_particleGroups.end())
+        return m_particleGroups.begin()->first;
+
+    return it->first;
 }
 
 void ParticleScriptAccess::setMaxMotionDistance(int id, float maxMotionDistance)

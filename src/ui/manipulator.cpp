@@ -89,6 +89,9 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
         case GLFW_KEY_PERIOD:
             m_lua->call("glfwKeyPeriod_press");
             break;
+        case GLFW_KEY_TAB:
+            m_lua->call("glfwKeyTab_press");
+            break;
         case GLFW_KEY_C:
             const std::string & element = m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z);
             const std::string & solid = m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z);

@@ -24,3 +24,8 @@ function glfwKeyPeriod_press()
         psa_clearParticleGroups()
         id = psa_numParticleGroups()
 end
+
+function glfwKeyTab_press()
+    id = psa_nextParticleGroup(id)
+    io.write("Selected ParticleGroup ", id, "\n")
+end
