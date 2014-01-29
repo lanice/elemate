@@ -133,8 +133,8 @@ set(SOURCES
     src/rendering/string_rendering/StringComposer.cpp
     src/rendering/string_rendering/StringDrawer.h
     src/rendering/string_rendering/StringDrawer.cpp
-    src/userinterface.cpp
-    src/userinterface.h
+    src/ui/userinterface.cpp
+    src/ui/userinterface.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 

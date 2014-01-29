@@ -15,7 +15,7 @@ void UserInterface::initialize()
 
 void UserInterface::showHUD()
 {
-    m_stringDrawer.paint("Active element: water", glm::mat4(0.5, 0, 0, 0, 
+    m_stringDrawer.paint("Active element: wotör", glm::mat4(0.5, 0, 0, 0, 
                                                             0, 0.5, 0, 0, 
                                                             0, 0, 0.5, 0, 
                                                             -0.95, -0.95, 0, 1), StringDrawer::Alignment::kAlignLeft);
