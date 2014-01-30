@@ -48,6 +48,8 @@ protected:
 
     const World & m_world;
 
+    float timef;
+
     void initialize();
 
     typedef std::pair<std::string, glow::ref_ptr<glow::Texture>> NamedTexture;

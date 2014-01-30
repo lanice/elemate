@@ -15,7 +15,7 @@ layout(location = 0)out vec4 fragColor;
 
 float linearize(float depth);
 vec4 waterColor(vec2 v_uv);
-vec4 lavaColor(vec3 pos);
+vec4 lavaColor(vec2 v_uv);
 
 void main()
 {

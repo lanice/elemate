@@ -13,7 +13,6 @@
 #include "world.h"
 #include "terrain/terrain.h"
 
-
 ParticleWaterStep::ParticleWaterStep()
 {
     // first step: get depth image
@@ -47,13 +46,13 @@ ParticleWaterStep::ParticleWaterStep()
     glow::Program * blurHorizontalProgram = new glow::Program();
     blurHorizontalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_h.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_v.frag"));
     addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
 
     glow::Program * blurVerticalProgram = new glow::Program();
     blurVerticalProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_v.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_h.frag"));
     addProcess(*m_postTexA, m_postTexB, *blurVerticalProgram);
 
     m_depthResultTex = m_postTexB;
