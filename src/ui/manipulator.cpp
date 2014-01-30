@@ -44,24 +44,18 @@ Manipulator::~Manipulator()
 }
 void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        m_lua->call("glfwMouseButtonLeft_press");
-
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-        m_lua->call("glfwMouseButtonLeft_release");
-
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-        m_lua->call("glfwMouseButtonRight_press");
+    m_lua->call("handleMouseButtonEvent", button, action);
 }
 
 void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
+    m_lua->call("handleKeyEvent", key, action);
     const glm::vec3 & handPosition = m_hand.position();
 
     // key press events
     if (action == GLFW_PRESS)
     {
-        switch (key) {
+        switch (key){
         case GLFW_KEY_I:
             m_world.toggleBackgroundSound(0);
             break;
@@ -71,32 +65,10 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
         case GLFW_KEY_P:
             m_world.togglePause();
             break;
-        case GLFW_KEY_F:
-            m_terrainInteractor->gatherElement(handPosition.x, handPosition.z, 0.1f);
-            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
-            break;
-        case GLFW_KEY_LEFT_ALT:
-            m_grabbedTerrain = true;
-            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
-            break;
-        case GLFW_KEY_R:
-            m_terrainInteractor->dropElement(handPosition.x, handPosition.z, 0.1f);
-            m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
-            break;
         case GLFW_KEY_C:
             glow::info("material at hand: ""%;"", solid element: ""%;""", m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z), m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z));
             break;
-        case GLFW_KEY_PERIOD:
-            m_lua->call("glfwKeyPeriod_press");
-            break;
-        case GLFW_KEY_TAB:
-            m_lua->call("glfwKeyTab_press");
-            break;
         }
-    }
-
-    if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE) {
-        m_grabbedTerrain = false;
     }
 }
 

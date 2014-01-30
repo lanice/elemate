@@ -1,31 +1,65 @@
 -- Lua script for processing incoming events from Manipulator (manipulator.lua)
 
-id = psa_numParticleGroups()
+-- Load GLFW constants
+dofile "scripts/glfw.lua"
 
-function glfwMouseButtonRight_press()
-    eleType = "water";
-    id = psa_createParticleGroup(eleType)
+local particleGroupId = psa_numParticleGroups()
+
+local function createParticleGroup(eleType)
+    local id = psa_createParticleGroup(eleType)
     io.write("Created ParticleGroup '", eleType, "' at id ", id, "\n")
+    return id
 end
 
-function glfwMouseButtonLeft_press()
-    if id == -1 then io.write("No ParticleGroup created.\n") return end
-    io.write("Emit '", psa_elementAtId(id), "' particles.\n")
-    psa_emit(id, 1000, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
+function handleMouseButtonEvent( button, action )
+    if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_PRESS then
+        if particleGroupId == -1 then
+            io.write("No ParticleGroup created.\n")
+        else
+            io.write("Emit '", psa_elementAtId(particleGroupId), "' particles.\n")
+            psa_emit(particleGroupId, 100, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
+        end
+    end
+    if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_RELEASE then
+        if particleGroupId ~= -1 then
+            psa_stopEmit(particleGroupId)
+        end
+    end
+
+    if button == GLFW_MOUSE_BUTTON_RIGHT and action == GLFW_PRESS then
+        particleGroupId = createParticleGroup("water")
+    end
 end
 
-function glfwMouseButtonLeft_release()
-    if id == -1 then return end
-    psa_stopEmit(id)
-end
+function handleKeyEvent( inputKey, action )
+    local key = inputKey
+    local posX = hand_posX()
+    local posZ = hand_posZ()
 
-function glfwKeyPeriod_press()
-        io.write("Clear ParticleGroups.\n")
-        psa_clearParticleGroups()
-        id = psa_numParticleGroups()
-end
+    if action == GLFW_PRESS then
 
-function glfwKeyTab_press()
-    id = psa_nextParticleGroup(id)
-    io.write("Selected ParticleGroup ", id, "\n")
+        if key == GLFW_KEY_F then
+            terrain_gatherElement(posX, posZ, 0.1)
+            terrain_heightGrab(posX, posZ)
+        elseif key == GLFW_KEY_LEFT_ALT then
+            manipulator_setGrabbedTerrain(true)
+            terrain_heightGrab(posX, posZ)
+        elseif key == GLFW_KEY_R then
+            terrain_dropElement(posX, posZ, 0.1)
+            terrain_heightGrab(posX, posZ)
+        elseif key == GLFW_KEY_PERIOD then
+            io.write("Clear ParticleGroups.\n")
+            psa_clearParticleGroups()
+            particleGroupId = psa_numParticleGroups()
+        elseif key == GLFW_KEY_TAB then
+            particleGroupId = psa_nextParticleGroup(particleGroupId)
+            io.write("Selected ParticleGroup ", particleGroupId, "\n")
+        end
+
+    elseif action == GLFW_RELEASE then
+
+        if key == GLFW_KEY_LEFT_ALT then
+            manipulator_setGrabbedTerrain(false)
+        end
+    end
 end
