@@ -11,6 +11,8 @@
 
 #include "imagereader.h"
 
+const float UserInterface::kDefaultPreviewHeight = 0.1f;
+
 UserInterface::UserInterface()
 {
 }
@@ -54,6 +56,8 @@ void UserInterface::initialize()
 
     loadInitTexture("bedrock");
     loadInitTexture("sand");
+    loadInitTexture("water");
+    loadInitTexture("lava");
 }
 
 void UserInterface::showHUD()
@@ -71,21 +75,19 @@ void UserInterface::showMainMenu()
 
 void UserInterface::drawPreview()
 {
-    drawPreviewCircle(0.94f, -0.95f, "bedrock");
-    drawPreviewCircle(0.83f, -0.95f, "sand");
-    drawPreviewCircle(0.72f, -0.95f, "sand");
-    drawPreviewCircle(0.61f, -0.95f, "bedrock");
+    drawPreviewCircle(1.0f - 1 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "water", kDefaultPreviewHeight);
+    drawPreviewCircle(1.0f - 3 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "lava", kDefaultPreviewHeight);
+    drawPreviewCircle(1.0f - 5 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "sand", kDefaultPreviewHeight);
+    drawPreviewCircle(1.0f - 7 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "bedrock", kDefaultPreviewHeight);
 }
 
-void UserInterface::drawPreviewCircle(float x, float y, const std::string& element)
+void UserInterface::drawPreviewCircle(float x, float y, const std::string& element, float height)
 {
-    const float WIDTH = 0.10f; //Abhänging von Breite --> resize
-
     m_textures.at(element)->bind(GL_TEXTURE0);
 
     m_program->setUniform("x", x);
     m_program->setUniform("y", y);
-    m_program->setUniform("width", WIDTH);
+    m_program->setUniform("width", height);
     m_program->setUniform("ratio", m_viewport.x/m_viewport.y);
 
     m_program->use();
@@ -107,16 +109,18 @@ void UserInterface::resize(int width, int height)
 
 void UserInterface::loadInitTexture(const std::string & elementName)
 {
+    const int TEXTURE_SIZE = 256;
+
     glow::ref_ptr<glow::Texture> texture = new glow::Texture(GL_TEXTURE_2D);
     texture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     texture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
     texture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    RawImage image("data/textures/" + elementName + ".raw", 1024, 1024);
+    RawImage image("data/textures/preview/" + elementName + "_preview.raw", TEXTURE_SIZE, TEXTURE_SIZE);
 
     texture->bind();
-    texture->image2D(0, GL_RGB8, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
+    texture->image2D(0, GL_RGB8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
     texture->unbind();
 
     m_textures.emplace(elementName, texture);

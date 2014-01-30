@@ -22,6 +22,8 @@ public:
 
     void resize(int width, int height);
 protected:
+    static const float kDefaultPreviewHeight;
+
     StringDrawer m_stringDrawer;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
@@ -30,7 +32,7 @@ protected:
     std::unordered_map<std::string, glow::ref_ptr<glow::Texture>>   m_textures;
 
     void drawPreview();
-    void drawPreviewCircle(float x, float y, const std::string& element);
+    void drawPreviewCircle(float x, float y, const std::string& element, float height);
 
     void loadInitTexture(const std::string & elementName);
 

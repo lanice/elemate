@@ -10,8 +10,8 @@ void main()
     if(length(v_uv) > 1.0)
         discard;
 
-    fragColor = texture(element_texture,(v_uv*0.5+0.5)*0.1);
+    fragColor = texture(element_texture,(v_uv*0.5+0.5));
     
-    if (length(v_uv) > 0.95)
-        fragColor = vec4(0);    
+    if (length(v_uv) > 0.9)
+        fragColor = vec4(1.0,1.0,0.0,1.0)*(1.31-length(v_uv));    
 }
