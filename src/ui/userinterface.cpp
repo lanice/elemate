@@ -13,7 +13,9 @@
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
 
-UserInterface::UserInterface()
+UserInterface::UserInterface() :
+  m_visibleHUD(true)
+  , m_mainMenuOnTop(false)
 {
 }
 
@@ -47,12 +49,17 @@ void UserInterface::initialize()
 
     m_vao->unbind();
 
-    m_program = new glow::Program();
-    m_program->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER,   "shader/preview.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/preview.frag"));
+    m_previewProgram = new glow::Program();
+    m_previewProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/ui/preview.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/ui/preview.frag"));
 
-    m_program->setUniform("element_texture", 0);
+    m_previewProgram->setUniform("element_texture", 0);
+
+    m_screenProgram = new glow::Program();
+    m_screenProgram->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/ui/screen.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/ui/screen.frag"));
 
     loadInitTexture("bedrock");
     loadInitTexture("sand");
@@ -60,17 +67,29 @@ void UserInterface::initialize()
     loadInitTexture("lava");
 }
 
-void UserInterface::showHUD()
+void UserInterface::draw()
 {
-    m_stringDrawer.paint("Active element: wotör", glm::mat4(0.5, 0, 0, 0, 
-                                                            0, 0.5, 0, 0, 
-                                                            0, 0, 0.5, 0, 
-                                                            -0.95, -0.95, 0, 1), StringDrawer::Alignment::kAlignLeft);
+    drawHUD();
+    drawMainMenu();
+}
+
+void UserInterface::drawHUD()
+{
+    if (!m_visibleHUD)
+        return;
     drawPreview();
 }
 
-void UserInterface::showMainMenu()
+void UserInterface::drawMainMenu()
 {
+    if (!m_mainMenuOnTop)
+        return;
+
+    drawGreyScreen();
+    m_stringDrawer.paint("Main Menu", glm::mat4(0.5, 0, 0, 0, 
+                                                            0, 0.5, 0, 0, 
+                                                            0, 0, 0.5, 0, 
+                                                            -0.95, +0.95, 0, 1), StringDrawer::Alignment::kAlignLeft);
 }
 
 void UserInterface::drawPreview()
@@ -85,20 +104,33 @@ void UserInterface::drawPreviewCircle(float x, float y, const std::string& eleme
 {
     m_textures.at(element)->bind(GL_TEXTURE0);
 
-    m_program->setUniform("x", x);
-    m_program->setUniform("y", y);
-    m_program->setUniform("width", height);
-    m_program->setUniform("ratio", m_viewport.x/m_viewport.y);
+    m_previewProgram->setUniform("x", x);
+    m_previewProgram->setUniform("y", y);
+    m_previewProgram->setUniform("width", height);
+    m_previewProgram->setUniform("ratio", m_viewport.x / m_viewport.y);
 
-    m_program->use();
+    m_previewProgram->use();
     m_vao->bind();
 
-    m_vao->drawArrays(GL_TRIANGLE_STRIP,0,4);
+    m_vao->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     m_vao->unbind();
-    m_program->release();
+    m_previewProgram->release();
 
     m_textures.at(element)->unbind(GL_TEXTURE0);
+}
+
+void UserInterface::drawGreyScreen()
+{
+    glEnable(GL_BLEND);
+    m_screenProgram->use();
+    m_vao->bind();
+
+    m_vao->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    m_vao->unbind();
+    m_screenProgram->release();
+    glDisable(GL_BLEND);
 }
 
 void UserInterface::resize(int width, int height)
@@ -124,4 +156,20 @@ void UserInterface::loadInitTexture(const std::string & elementName)
     texture->unbind();
 
     m_textures.emplace(elementName, texture);
+}
+
+
+void UserInterface::toggleHUD()
+{
+    m_visibleHUD = !m_visibleHUD;
+}
+
+void UserInterface::toggleMainMenu()
+{
+    m_mainMenuOnTop = !m_mainMenuOnTop;
+}
+
+bool UserInterface::isMainMenuOnTop() const 
+{
+    return m_mainMenuOnTop;
 }

@@ -17,19 +17,31 @@ public:
     ~UserInterface();
 
     void initialize();
-    void showHUD();
-    void showMainMenu();
+    void draw();
+    void toggleHUD();
+    void toggleMainMenu();
+
+    bool isMainMenuOnTop() const;
 
     void resize(int width, int height);
 protected:
     static const float kDefaultPreviewHeight;
 
+    bool m_mainMenuOnTop;
+    bool m_visibleHUD;
+
     StringDrawer m_stringDrawer;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
-    glow::ref_ptr<glow::Program>           m_program;
+    glow::ref_ptr<glow::Program>           m_previewProgram;
+    glow::ref_ptr<glow::Program>           m_screenProgram;
     glm::vec2                              m_viewport;
     std::unordered_map<std::string, glow::ref_ptr<glow::Texture>>   m_textures;
+
+    void drawHUD();
+    void drawMainMenu();
+
+    void drawGreyScreen();
 
     void drawPreview();
     void drawPreviewCircle(float x, float y, const std::string& element, float height);

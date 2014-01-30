@@ -43,8 +43,7 @@ Game::~Game()
 void Game::showMenu()
 {
     m_world->togglePause();
-
-    m_userInterface.showMainMenu();
+    m_userInterface.toggleMainMenu();
 }
 
 void Game::start()
@@ -93,7 +92,7 @@ void Game::loop(double delta)
                 m_world->updateVisuals();
                 
                 m_renderer(*m_camera);
-                m_userInterface.showHUD();
+                m_userInterface.draw();
 
                 glfwSwapBuffers(&m_window);
 
