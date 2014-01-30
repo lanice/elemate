@@ -1,5 +1,12 @@
 #include "userinterface.h"
 
+#include "glow/Array.h"
+#include "glow/Buffer.h"
+#include "glow/VertexArrayObject.h"
+#include "glow/VertexAttributeBinding.h"
+#include "glow/Program.h"
+#include "glowutils/File.h"
+
 UserInterface::UserInterface()
 {
 }
@@ -11,6 +18,33 @@ UserInterface::~UserInterface()
 void UserInterface::initialize()
 {
     m_stringDrawer.initialize();
+    glow::Vec2Array points({
+        glm::vec2(+1.f, -1.f)
+        , glm::vec2(+1.f, +1.f)
+        , glm::vec2(-1.f, -1.f)
+        , glm::vec2(-1.f, +1.f)
+    });
+
+    glow::Buffer* vbo = new glow::Buffer(GL_ARRAY_BUFFER);
+    vbo->setData(points, GL_STATIC_DRAW);
+
+    m_vao = new glow::VertexArrayObject();
+
+    m_vao->bind();
+
+    glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
+
+    vertexBinding->setAttribute(0);
+    vertexBinding->setBuffer(vbo, 0, sizeof(glm::vec2));
+    vertexBinding->setFormat(2, GL_FLOAT, GL_FALSE, 0);
+    m_vao->enable(0);
+
+    m_vao->unbind();
+
+    m_program = new glow::Program();
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER,   "shader/preview.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/preview.frag"));
 }
 
 void UserInterface::showHUD()
@@ -28,55 +62,31 @@ void UserInterface::showMainMenu()
 
 void UserInterface::drawPreview()
 {
-    drawPreviewCircle(0.94, -0.95);
-    drawPreviewCircle(0.83, -0.95);
-    drawPreviewCircle(0.72, -0.95);
-    drawPreviewCircle(0.61, -0.95);
+    drawPreviewCircle(0.94f, -0.95f);
+    drawPreviewCircle(0.83f, -0.95f);
+    drawPreviewCircle(0.72f, -0.95f);
+    drawPreviewCircle(0.61f, -0.95f);
 }
 
 void UserInterface::drawPreviewCircle(float x, float y)
 {
-    const int   POINTS = 3*360;
-    const float RADIUS = 0.05;
+    const float WIDTH = 0.05; //Abhänging von Breite --> resize
 
-    float points[POINTS];
+    m_program->setUniform("x", x);
+    m_program->setUniform("y", y);
+    m_program->setUniform("width", WIDTH);
+    m_program->setUniform("ratio", m_viewport.x/m_viewport.y);
 
-    for (int i = 0; i < POINTS; i+=3)
-    {
-        double theta = i/float(POINTS)*3.14*2;
-        points[i + 2] = 0;
-        points[i + 1] = y + cosf(theta) * RADIUS;
-        points[i + 0] = x + sinf(theta) * RADIUS;
-    }
+    m_program->use();
+    m_vao->bind();
 
-    unsigned int vbo = 0;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, POINTS * sizeof (float), points, GL_STATIC_DRAW);
+    m_vao->drawArrays(GL_TRIANGLE_STRIP,0,4);
 
-    unsigned int vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    m_vao->unbind();
+    m_program->release();
+}
 
-    const char* vertex_shader =
-        "#version 400\n"
-        "in vec3 vp;"
-        "void main () {"
-        "  gl_Position = vec4 (vp, 1.0);"
-        "}";
-
-    const char* fragment_shader =
-        "#version 400\n"
-        "in vec3 vp;"
-        "void main () {"
-        "  gl_Position = vec4 (vp, 1.0);"
-        "}";
-
-
-    glBindVertexArray(vao);
-    // draw points 0-3 from the currently bound VAO with current in-use shader
-    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS/3);
+void UserInterface::resize(int width, int height)
+{
+    m_viewport = glm::vec2(width, height);
 }

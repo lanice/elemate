@@ -86,7 +86,5 @@ void EventHandler::handleScrollEvent(double xoffset, double yoffset)
 void EventHandler::handeResizeEvent(int width, int height)
 {
     glViewport(0, 0, width, height);
-    m_game.camera()->setViewport(width, height);
-
-    m_game.renderer()->resize(width, height);
+    m_game.resize(width, height);
 }

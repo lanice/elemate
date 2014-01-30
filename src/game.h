@@ -32,6 +32,7 @@ public:
     void setVSync(bool enabled);
     void toggleVSync();
     bool vSyncEnabled() const;
+    void resize(int width, int height);
 
     Navigation * navigation();
     Manipulator * manipulator();

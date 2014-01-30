@@ -163,3 +163,10 @@ PhysicsWrapper * Game::physicsWrapper()
 {
     return m_physicsWrapper;
 }
+
+void Game::resize(int width, int height)
+{
+    m_camera->setViewport(width, height);
+    m_renderer.resize(width, height);
+    m_userInterface.resize(width, height);
+}
