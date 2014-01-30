@@ -71,7 +71,9 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
         } else {
             m_distanceEyeCenter += 0.5f;
         }
-    } else {
+    }
+    else if (glfwGetKey(&m_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
         glm::vec3 eye = m_camera->eye();
         if (yoffset < 0)
         {

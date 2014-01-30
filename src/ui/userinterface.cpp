@@ -258,17 +258,33 @@ void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*
     }
 }
 
-void UserInterface::handleScrollEvent(double /*xoffset*/, double /*yoffset*/)
+void UserInterface::handleScrollEvent(double /*xoffset*/, double yoffset)
 {
-
+    if (yoffset > 0)
+    {
+        if (isMainMenuOnTop())
+            m_activeMenuEntry = m_activeMenuEntry > 0 ?
+                                    m_activeMenuEntry - 1
+                                    : static_cast<unsigned int>(m_menuEntries.size()) - 1;
+        //else if (hasActiveHUD())
+            //Scroll active elements
+    }
+    else 
+    {
+        if (isMainMenuOnTop())
+            m_activeMenuEntry = (m_activeMenuEntry + 1) % m_menuEntries.size();
+        //else if (hasActiveHUD())
+            //Scroll active elements
+    }
 }
 
 void UserInterface::handleMouseMoveEvent(double /*xpos*/, double /*ypos*/)
 {
-
+    //No representation of our cursor, therefore no reaction
 }
 
-void UserInterface::handleMouseButtonEvent(int /*button*/, int /*action*/, int /*mods*/)
+void UserInterface::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
-
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && isMainMenuOnTop())
+        invokeMenuEntryFunction();
 }
