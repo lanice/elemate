@@ -1,7 +1,7 @@
 #version 410
 
-uniform mat4 positionTransform;
-uniform mat4 textureCoordTransform;
+uniform mat4  positionTransform;
+uniform mat4  textureCoordTransform;
 
 layout (location = 0) in vec2 a_vertex;
 

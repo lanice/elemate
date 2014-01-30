@@ -30,6 +30,7 @@ public:
                const glm::mat4 & modelMatrix,
                Alignment alignment = kAlignLeft,
                const glm::vec3 color = glm::vec3(1.0f));
+    void resize(int width, int height);
 
 protected:
     bool initializeProgram();
@@ -43,6 +44,7 @@ protected:
     
     glow::ref_ptr<glow::Program> m_program;
     glow::ref_ptr<glow::Texture> m_characterAtlas;
+    glm::vec2                    m_viewport;
 
     CharacterDrawable m_drawable;
     StringComposer m_stringComposer;

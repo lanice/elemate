@@ -4,6 +4,8 @@
 #include "glow/ref_ptr.h"
 #include "glm/glm.hpp"
 
+#include <unordered_map>
+
 namespace glow{
     class VertexArrayObject;
     class Program;
@@ -20,14 +22,17 @@ public:
 
     void resize(int width, int height);
 protected:
-    StringDrawer                           m_stringDrawer;
+    StringDrawer m_stringDrawer;
+
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Program>           m_program;
-
-    glm::vec2 m_viewport;
+    glm::vec2                              m_viewport;
+    std::unordered_map<std::string, glow::ref_ptr<glow::Texture>>   m_textures;
 
     void drawPreview();
-    void drawPreviewCircle(float x, float y);
+    void drawPreviewCircle(float x, float y, const std::string& element);
+
+    void loadInitTexture(const std::string & elementName);
 
 private:
     UserInterface(const UserInterface&) = delete;

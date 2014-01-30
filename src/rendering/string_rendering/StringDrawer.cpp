@@ -100,7 +100,8 @@ void StringDrawer::paint(
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     
     glm::mat4 transform = modelMatrix * alignmentTransform(list, alignment);
-    
+    glm::vec2 aspectRatio(1,m_viewport.x/ m_viewport.y);
+
     for each (auto* currentSpecifics in list)
     {
         glm::mat4 positionTransform;
@@ -111,7 +112,7 @@ void StringDrawer::paint(
         
         positionTransform *= transform;
         positionTransform *= glm::translate(glm::vec3(currentSpecifics->offset, 0.0f));
-        positionTransform *= glm::scale(glm::vec3(currentSpecifics->size, 1.0f));
+        positionTransform *= glm::scale(glm::vec3(currentSpecifics->size*aspectRatio, 1.0f));
         
         m_program->setUniform("positionTransform", positionTransform);
         m_program->setUniform("textureCoordTransform", textureCoordTransform);
@@ -150,4 +151,9 @@ glm::mat4 StringDrawer::alignmentTransform(const std::list<CharacterSpecifics *>
     }
     
     return glm::translate(offset, 0.0f, 0.0f);
+}
+
+void StringDrawer::resize(int width, int height)
+{
+    m_viewport = glm::vec2(width, height);
 }
