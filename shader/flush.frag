@@ -15,7 +15,7 @@ layout(location = 0)out vec4 fragColor;
 
 float linearize(float depth);
 vec4 waterColor(vec2 v_uv);
-vec4 lavaColor(vec2 v_uv);
+vec4 lavaColor(vec3 pos);
 
 void main()
 {
@@ -30,7 +30,8 @@ void main()
     float waterZ = texture(waterDepth, v_uv).r;
     vec4 sceneC = texture(sceneColor, v_uv);
     vec4 handC = texture(handColor, v_uv);
-    vec4 waterC = lavaColor(v_uv);
+    vec4 waterC = waterColor(v_uv);
+    vec4 lavaC = lavaColor(10*vec3(v_uv.xy,-v_uv.y));
     float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
 
     fragColor = vec4(handZ);
@@ -45,7 +46,7 @@ void main()
 	fragColor = 
     
     mix(
-        (1-waterC.w * (1-shadowFactor)) * waterC,
+        (1-lavaC.w * (1-shadowFactor)) * lavaC,
 		shadowFactor * sceneHandColor,
 		step(sceneHandZ,waterZ)
 	);
