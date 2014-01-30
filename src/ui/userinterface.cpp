@@ -9,13 +9,19 @@
 
 #include "glowutils/File.h"
 
+#include "GLFW/glfw3.h"
+
 #include "imagereader.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
+const glm::vec3 UserInterface::kDefaultMenuEntryColor = glm::vec3(1.0f,1.0f,1.0f);
+const glm::vec3 UserInterface::kDefaultHighlightedMenuEntryColor = glm::vec3(0.8f, 0.8f, 0.3f);
 
-UserInterface::UserInterface() :
-  m_visibleHUD(true)
-  , m_mainMenuOnTop(false)
+UserInterface::UserInterface(GLFWwindow& window) :
+  m_activeHUD(true)
+, m_mainMenuOnTop(false)
+, m_window(window)
+, m_activeMenuEntry(0)
 {
 }
 
@@ -65,6 +71,10 @@ void UserInterface::initialize()
     loadInitTexture("sand");
     loadInitTexture("water");
     loadInitTexture("lava");
+
+    m_menuEntries.reserve(2);
+    m_menuEntries.push_back("Fortsetzen");
+    m_menuEntries.push_back("Beenden");
 }
 
 void UserInterface::draw()
@@ -75,8 +85,9 @@ void UserInterface::draw()
 
 void UserInterface::drawHUD()
 {
-    if (!m_visibleHUD)
+    if (!m_activeHUD)
         return;
+
     drawPreview();
 }
 
@@ -86,10 +97,7 @@ void UserInterface::drawMainMenu()
         return;
 
     drawGreyScreen();
-    m_stringDrawer.paint("Main Menu", glm::mat4(0.5, 0, 0, 0, 
-                                                            0, 0.5, 0, 0, 
-                                                            0, 0, 0.5, 0, 
-                                                            -0.95, +0.95, 0, 1), StringDrawer::Alignment::kAlignLeft);
+    drawMenuEntries();
 }
 
 void UserInterface::drawPreview()
@@ -133,6 +141,24 @@ void UserInterface::drawGreyScreen()
     glDisable(GL_BLEND);
 }
 
+void UserInterface::drawMenuEntries()
+{
+    glm::vec3 color;
+    for (unsigned int i = 0; i < m_menuEntries.size(); i++){
+        if (i == m_activeMenuEntry)
+            color = kDefaultHighlightedMenuEntryColor;
+        else
+            color = kDefaultMenuEntryColor;
+        m_stringDrawer.paint(m_menuEntries[i],
+            glm::mat4(1, 0, 0, 0,
+                      0, 1, 0, 0,
+                      0, 0, 1, 0,
+                      0, 0.5-(i*1.0/m_menuEntries.size()), 0, 1),
+                      StringDrawer::Alignment::kAlignCenter,
+                      color);
+    }    
+}
+
 void UserInterface::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
@@ -161,7 +187,7 @@ void UserInterface::loadInitTexture(const std::string & elementName)
 
 void UserInterface::toggleHUD()
 {
-    m_visibleHUD = !m_visibleHUD;
+    m_activeHUD = !m_activeHUD;
 }
 
 void UserInterface::toggleMainMenu()
@@ -172,4 +198,62 @@ void UserInterface::toggleMainMenu()
 bool UserInterface::isMainMenuOnTop() const 
 {
     return m_mainMenuOnTop;
+}
+
+bool UserInterface::hasActiveHUD() const
+{
+    return m_activeHUD;
+}
+
+void UserInterface::invokeMenuEntryFunction()
+{
+    switch (m_activeMenuEntry)
+    {
+        case 0:     // Resume
+            toggleMainMenu();
+            break;
+        case 1:     // Exit
+            glfwSetWindowShouldClose(&m_window, GL_TRUE);
+            break;
+        default:
+            break;
+    }
+}
+
+void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*mods*/)
+{
+    if (action == GLFW_PRESS) {
+        switch (key) {
+            case GLFW_KEY_W:    // Fallthrough
+            case GLFW_KEY_UP:
+                m_activeMenuEntry = m_activeMenuEntry > 0 ? m_activeMenuEntry - 1 : m_menuEntries.size() - 1; 
+                break;
+            case GLFW_KEY_S:
+            case GLFW_KEY_DOWN: // Fallthrough
+                m_activeMenuEntry = (m_activeMenuEntry + 1) % m_menuEntries.size();
+                break;
+            case GLFW_KEY_F:    // Fallthrough
+            case GLFW_KEY_E:    // Fallthrough
+            case GLFW_KEY_ENTER:
+                invokeMenuEntryFunction();
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void UserInterface::handleScrollEvent(double /*xoffset*/, double /*yoffset*/)
+{
+
+}
+
+void UserInterface::handleMouseMoveEvent(double /*xpos*/, double /*ypos*/)
+{
+
+}
+
+void UserInterface::handleMouseButtonEvent(int /*button*/, int /*action*/, int /*mods*/)
+{
+
 }

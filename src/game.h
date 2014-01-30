@@ -27,7 +27,7 @@ public:
 
     /** Starts the Game Loop until recieving a window close event. */
     void start();
-    void showMenu();
+    void toggleMenu();
 
     void setVSync(bool enabled);
     void toggleVSync();
@@ -36,6 +36,8 @@ public:
 
     Navigation * navigation();
     Manipulator * manipulator();
+    UserInterface * userInterface();
+
     std::shared_ptr<CameraEx> camera();
     const std::shared_ptr<const CameraEx> camera() const;
     Renderer * renderer();
