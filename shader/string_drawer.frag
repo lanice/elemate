@@ -1,4 +1,4 @@
-#version 410
+#version 330 core
 
 uniform sampler2D characterAtlas;
 uniform vec3 color;

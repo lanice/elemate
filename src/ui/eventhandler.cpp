@@ -36,7 +36,11 @@ void EventHandler::handleMouseButtonEvent(int button, int action, int mods)
     
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
-
+    if (m_game.userInterface()->isMainMenuOnTop())
+    {
+        m_game.userInterface()->handleKeyEvent(key, scancode, action, mods);
+        return;
+    }
     if (action == GLFW_PRESS) {
         switch (key) {
         case GLFW_KEY_ESCAPE:
@@ -57,12 +61,6 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             m_game.physicsWrapper()->toogleUseGpuParticles();
             break;
         }
-    }
-
-    if (m_game.userInterface()->isMainMenuOnTop())
-    {
-        m_game.userInterface()->handleKeyEvent(key, scancode, action, mods);
-        return;
     }
 
     m_game.navigation()->handleKeyEvent(key, scancode, action, mods);

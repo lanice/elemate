@@ -168,6 +168,8 @@ set(SHADER
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag
     shader/depth_util.frag
+    shader/string_drawer.vert
+    shader/string_drawer.frag
     shader/ui/preview.vert
     shader/ui/preview.frag
     shader/ui/screen.vert

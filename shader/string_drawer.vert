@@ -1,4 +1,4 @@
-#version 410
+#version 330 core
 
 uniform mat4  positionTransform;
 uniform mat4  textureCoordTransform;
