@@ -95,8 +95,9 @@ void Renderer::initialize()
     m_quadProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag"));
-
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/material.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag")
+    );
 
     m_flushSources =
     { sceneColor, sceneDepth, handColor, handDepth,

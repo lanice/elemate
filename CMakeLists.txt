@@ -134,6 +134,7 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 set(SHADER
     shader/flush.vert
     shader/flush.frag
+    shader/material.frag
     shader/passthrough.frag
     shader/terrain_base.vert
     shader/terrain_base.geo

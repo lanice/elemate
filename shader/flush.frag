@@ -14,7 +14,8 @@ uniform sampler2D lightMap;
 layout(location = 0)out vec4 fragColor;
 
 float linearize(float depth);
-vec4 waterColor();
+vec4 waterColor(vec2 v_uv);
+vec4 lavaColor(vec2 v_uv);
 
 void main()
 {
@@ -29,7 +30,8 @@ void main()
     float waterZ = texture(waterDepth, v_uv).r;
     vec4 sceneC = texture(sceneColor, v_uv);
     vec4 handC = texture(handColor, v_uv);
-    vec4 waterC = waterColor();
+    vec4 waterC = lavaColor(v_uv);
+    float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
 
     fragColor = vec4(handZ);
     // return;
@@ -41,39 +43,10 @@ void main()
     float sceneHandZ = min(sceneZ, handZ);
 
 	fragColor = 
-     (texture(shadowMap, v_uv).x * 0.7 + 0.3) * 
+    
     mix(
-        waterC,
-		sceneHandColor,
+        (1-waterC.w * (1-shadowFactor)) * waterC,
+		shadowFactor * sceneHandColor,
 		step(sceneHandZ,waterZ)
 	);
-}
-
-vec4 waterColor(){
-        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 0.8);
-        vec4 waterCol = (6*texture(
-            sceneColor, 
-            v_uv + resVector.xy/10/resVector.z
-        )+vec4(0.1,0.8,1,1))/7;
-
-		return mix(
-            mix(
-                vec4(0,0,0.4,1),
-                waterCol,
-                0.8+
-                0.2*abs(dot(
-                    texture(waterNormals, v_uv).xyz,
-                    normalize(vec3(0,1,0.1))
-                ))
-            ),
-            vec4(0.9,0.9,0.9,0.8),
-            smoothstep(
-                0.96,
-                0.98,
-                dot(
-                    texture(waterNormals, v_uv).rgb,
-                    normalize(vec3(0,1,0.1))
-                )
-            )
-        );
 }
