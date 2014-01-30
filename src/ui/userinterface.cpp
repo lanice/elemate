@@ -6,11 +6,14 @@
 #include "glow/VertexAttributeBinding.h"
 #include "glow/Program.h"
 #include "glow/Texture.h"
+#include <glow/logging.h>
 
 #include "glowutils/File.h"
+#include <glowutils/FileRegistry.h>
 
 #include "GLFW/glfw3.h"
 
+#include "lua/luawrapper.h"
 #include "imagereader.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
@@ -74,6 +77,7 @@ void UserInterface::initialize()
 
     m_menuEntries.reserve(2);
     m_menuEntries.push_back("Fortsetzen");
+    m_menuEntries.push_back("Elemente neu laden");
     m_menuEntries.push_back("Beenden");
 }
 
@@ -212,7 +216,16 @@ void UserInterface::invokeMenuEntryFunction()
         case 0:     // Resume
             toggleMainMenu();
             break;
-        case 1:     // Exit
+        case 1:     // Reload Scripts
+            glow::info("Updating shader...");
+            glowutils::FileRegistry::instance().reloadAll();
+            glow::info("Updating shader done.");
+            glow::info("Reloading lua scripts...");
+            LuaWrapper::reloadAll();
+            glow::info("Reloading lua scripts done.");
+            toggleMainMenu();
+            break;
+        case 2:     // Exit
             glfwSetWindowShouldClose(&m_window, GL_TRUE);
             break;
         default:
@@ -226,7 +239,9 @@ void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*
         switch (key) {
             case GLFW_KEY_W:    // Fallthrough
             case GLFW_KEY_UP:
-                m_activeMenuEntry = m_activeMenuEntry > 0 ? m_activeMenuEntry - 1 : m_menuEntries.size() - 1; 
+                m_activeMenuEntry = m_activeMenuEntry > 0 ? 
+                                        m_activeMenuEntry - 1 
+                                      : static_cast<unsigned int>(m_menuEntries.size()) - 1; 
                 break;
             case GLFW_KEY_S:
             case GLFW_KEY_DOWN: // Fallthrough

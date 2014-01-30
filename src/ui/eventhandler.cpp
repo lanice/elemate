@@ -11,7 +11,6 @@
 #include "physicswrapper.h"
 #include "lua/luawrapper.h"
 
-
 EventHandler::EventHandler(GLFWwindow & window, Game & game)
 : m_window(window)
 , m_game(game)
