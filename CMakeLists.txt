@@ -135,6 +135,8 @@ set(SOURCES
     src/rendering/string_rendering/StringDrawer.cpp
     src/ui/userinterface.cpp
     src/ui/userinterface.h
+    src/ui/menupage.cpp
+    src/ui/menupage.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -166,6 +168,10 @@ set(SHADER
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag
     shader/depth_util.frag
+    shader/ui/preview.vert
+    shader/ui/preview.frag
+    shader/ui/screen.vert
+    shader/ui/screen.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

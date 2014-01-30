@@ -15,6 +15,7 @@
 
 #include "lua/luawrapper.h"
 #include "imagereader.h"
+#include "menupage.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
 const glm::vec3 UserInterface::kDefaultMenuEntryColor = glm::vec3(1.0f,1.0f,1.0f);
@@ -24,7 +25,6 @@ UserInterface::UserInterface(GLFWwindow& window) :
   m_activeHUD(true)
 , m_mainMenuOnTop(false)
 , m_window(window)
-, m_activeMenuEntry(0)
 {
 }
 
@@ -75,10 +75,26 @@ void UserInterface::initialize()
     loadInitTexture("water");
     loadInitTexture("lava");
 
-    m_menuEntries.reserve(2);
-    m_menuEntries.push_back("Fortsetzen");
-    m_menuEntries.push_back("Elemente neu laden");
-    m_menuEntries.push_back("Beenden");
+    m_activeMenu = "MainMenu";
+    m_menus.reserve(3);
+    m_menus.emplace("MainMenu", new MenuPage("MainMenu"));
+    m_menus["MainMenu"]->addEntry("Fortsetzen");
+    m_menus["MainMenu"]->addEntry("Elemente neu laden");
+    m_menus["MainMenu"]->addEntry("Hilfe");
+    m_menus["MainMenu"]->addEntry("Beenden");
+    m_menus.emplace("Settings", new MenuPage("Settings"));
+    m_menus["Settings"]->addEntry("Zurück zur Hauptseite");
+    m_menus["Settings"]->addEntry("GPU Berechnung umschalten");
+    m_menus["Settings"]->addEntry("VSync umschalten ");
+    m_menus.emplace("Help", new MenuPage("Help"));
+    m_menus["Help"]->addEntry("Zurück zur Hauptseite");
+    m_menus["Help"]->addEntry("");
+    m_menus["Help"]->addEntry("Linksklicken zum Freisetzen des aktiven Elements");
+    m_menus["Help"]->addEntry("Scrollen zum Wählen des aktiven Elements");
+    m_menus["Help"]->addEntry("Rechtsklicken zum Sammeln eines Elements");
+    m_menus["Help"]->addEntry("Strg halten und scrollen zum Kippen der Kamera");
+    m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
+    m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
 }
 
 void UserInterface::draw()
@@ -148,16 +164,17 @@ void UserInterface::drawGreyScreen()
 void UserInterface::drawMenuEntries()
 {
     glm::vec3 color;
-    for (unsigned int i = 0; i < m_menuEntries.size(); i++){
-        if (i == m_activeMenuEntry)
+    float distance = 1.0f / m_menus[m_activeMenu]->entryCount();
+    for (unsigned int i = 0; i < m_menus[m_activeMenu]->entryCount(); i++){
+        if (i == m_menus[m_activeMenu]->activeEntry())
             color = kDefaultHighlightedMenuEntryColor;
         else
             color = kDefaultMenuEntryColor;
-        m_stringDrawer.paint(m_menuEntries[i],
-            glm::mat4(1, 0, 0, 0,
-                      0, 1, 0, 0,
-                      0, 0, 1, 0,
-                      0, 0.5-(i*1.0/m_menuEntries.size()), 0, 1),
+        m_stringDrawer.paint(m_menus[m_activeMenu]->entryCaption(i),
+            glm::mat4(0.5, 0, 0, 0,
+                      0, 0.5, 0, 0,
+                      0, 0, 0.5, 0,
+                      0, 0.5 - (i*distance), 0, 1),
                       StringDrawer::Alignment::kAlignCenter,
                       color);
     }    
@@ -197,6 +214,7 @@ void UserInterface::toggleHUD()
 void UserInterface::toggleMainMenu()
 {
     m_mainMenuOnTop = !m_mainMenuOnTop;
+    m_activeMenu = "MainMenu";
 }
 
 bool UserInterface::isMainMenuOnTop() const 
@@ -211,26 +229,62 @@ bool UserInterface::hasActiveHUD() const
 
 void UserInterface::invokeMenuEntryFunction()
 {
-    switch (m_activeMenuEntry)
-    {
-        case 0:     // Resume
-            toggleMainMenu();
-            break;
-        case 1:     // Reload Scripts
-            glow::info("Updating shader...");
-            glowutils::FileRegistry::instance().reloadAll();
-            glow::info("Updating shader done.");
-            glow::info("Reloading lua scripts...");
-            LuaWrapper::reloadAll();
-            glow::info("Reloading lua scripts done.");
-            toggleMainMenu();
-            break;
-        case 2:     // Exit
-            glfwSetWindowShouldClose(&m_window, GL_TRUE);
-            break;
-        default:
-            break;
-    }
+    if (m_activeMenu == "MainMenu")
+        switch (m_menus[m_activeMenu]->activeEntry())
+        {
+            case 0:     // Resume
+                toggleMainMenu();
+                break;
+            case 1:     // Reload Scripts
+                glow::info("Updating shader...");
+                glowutils::FileRegistry::instance().reloadAll();
+                glow::info("Updating shader done.");
+                glow::info("Reloading lua scripts...");
+                LuaWrapper::reloadAll();
+                glow::info("Reloading lua scripts done.");
+                toggleMainMenu();
+                break;
+            case 2:     // Help
+                m_activeMenu = "Help";
+                break;
+            case 3:     // Settings
+                /* Settings have no effect, therefore disabled
+                m_activeMenu = "Settings";
+                break;
+            case 4:     //Exit 
+                */
+                glfwSetWindowShouldClose(&m_window, GL_TRUE);
+                break;
+            default:
+                toggleMainMenu();
+                break;
+        }
+    else if (m_activeMenu == "Help")
+        switch (m_menus[m_activeMenu]->activeEntry())
+        {
+            case 0:     // Back to Main Menu
+                m_activeMenu = "MainMenu";
+                break;
+            default:
+                break;
+        }
+    else if (m_activeMenu == "Settings")
+        switch (m_menus[m_activeMenu]->activeEntry())
+        {
+            case 0:     // Back to Main Menu
+                m_activeMenu = "MainMenu";
+                break;
+            case 1:     // Toggle GPU Calculation
+                // Toggle GPU calculation
+                break;
+            case 2:     // Toggle VSync
+                // Toggle VSync
+                break;
+            default:
+                break;
+        }
+    else
+        toggleMainMenu();
 }
 
 void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*mods*/)
@@ -239,13 +293,11 @@ void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*
         switch (key) {
             case GLFW_KEY_W:    // Fallthrough
             case GLFW_KEY_UP:
-                m_activeMenuEntry = m_activeMenuEntry > 0 ? 
-                                        m_activeMenuEntry - 1 
-                                      : static_cast<unsigned int>(m_menuEntries.size()) - 1; 
+                m_menus[m_activeMenu]->highlightPreviousEntry();
                 break;
             case GLFW_KEY_S:
             case GLFW_KEY_DOWN: // Fallthrough
-                m_activeMenuEntry = (m_activeMenuEntry + 1) % m_menuEntries.size();
+                m_menus[m_activeMenu]->highlightNextEntry();
                 break;
             case GLFW_KEY_F:    // Fallthrough
             case GLFW_KEY_E:    // Fallthrough
@@ -263,16 +315,14 @@ void UserInterface::handleScrollEvent(double /*xoffset*/, double yoffset)
     if (yoffset > 0)
     {
         if (isMainMenuOnTop())
-            m_activeMenuEntry = m_activeMenuEntry > 0 ?
-                                    m_activeMenuEntry - 1
-                                    : static_cast<unsigned int>(m_menuEntries.size()) - 1;
+            m_menus[m_activeMenu]->highlightPreviousEntry();
         //else if (hasActiveHUD())
             //Scroll active elements
     }
     else 
     {
         if (isMainMenuOnTop())
-            m_activeMenuEntry = (m_activeMenuEntry + 1) % m_menuEntries.size();
+            m_menus[m_activeMenu]->highlightNextEntry();
         //else if (hasActiveHUD())
             //Scroll active elements
     }
@@ -287,4 +337,6 @@ void UserInterface::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && isMainMenuOnTop())
         invokeMenuEntryFunction();
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS && isMainMenuOnTop())
+        m_activeMenu = "MainMenu";
 }

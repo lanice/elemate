@@ -5,11 +5,14 @@
 #include "glm/glm.hpp"
 
 #include <unordered_map>
+#include <string>
 
 namespace glow{
     class VertexArrayObject;
     class Program;
 }
+
+class MenuPage;
 struct GLFWwindow;
 
 class UserInterface{
@@ -49,8 +52,8 @@ protected:
 
     GLFWwindow& m_window;
 
-    std::vector<std::string> m_menuEntries;
-    unsigned int             m_activeMenuEntry;
+    std::unordered_map<std::string, MenuPage*> m_menus;
+    std::string            m_activeMenu;
 
     void drawHUD();
     void drawMainMenu();

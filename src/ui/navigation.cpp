@@ -67,10 +67,10 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
         if (yoffset > 0)
         {
             if (m_distanceEyeCenter <= 2.f) return;
-            m_distanceEyeCenter -= 0.5f;
-        } else {
-            m_distanceEyeCenter += 0.5f;
-        }
+                m_distanceEyeCenter -= 0.5f;
+            } else {
+                m_distanceEyeCenter += 0.5f;
+            }
     }
     else if (glfwGetKey(&m_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
@@ -78,10 +78,10 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
         if (yoffset < 0)
         {
             if (eye.y <= m_terrain->heightTotalAt(eye.x, eye.z) + 1.f) return;
-            pitch(2.f);
+                pitch(2.f);
         } else {
             if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
-            pitch(-2.f);
+                pitch(-2.f);
         }
     }
 }
