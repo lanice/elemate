@@ -102,7 +102,7 @@ void StringDrawer::paint(
     glm::mat4 transform = modelMatrix * alignmentTransform(list, alignment);
     glm::vec2 aspectRatio(1,m_viewport.x/ m_viewport.y);
 
-    for each (auto* currentSpecifics in list)
+    for (auto* currentSpecifics : list)
     {
         glm::mat4 positionTransform;
         glm::mat4 textureCoordTransform;
