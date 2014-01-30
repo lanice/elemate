@@ -43,6 +43,10 @@ public:
         , const glm::mat4 & viewProjectionInverted) override;
 
 protected:
+    void registerLuaFunctions(LuaWrapper * lua);
+
+    void setGrabbedTerrain(bool grabbed);
+
     GLFWwindow & m_window;
     const Navigation & m_navigation;
     const CameraEx & m_camera;

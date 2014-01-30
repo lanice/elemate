@@ -28,10 +28,12 @@ m_grabbedTerrain(false),
 m_renderer(nullptr),
 m_lua(new LuaWrapper())
 {
+    registerLuaFunctions(m_lua);
+
     ParticleScriptAccess::instance().init();
     ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
     m_hand.registerLuaFunctions(m_lua);
-    // m_terrainInteractor->registerLuaFunctions(m_lua);
+    m_terrainInteractor->registerLuaFunctions(m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
 }
@@ -42,11 +44,6 @@ Manipulator::~Manipulator()
 }
 void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
-    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    //     ParticleScriptAccess::instance().particleGroup(0)->emit(100, m_hand.position(), glm::vec3(0,1,0));
-    // if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-    //     ParticleScriptAccess::instance().particleGroup(0)->stopEmit();
-
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         m_lua->call("glfwMouseButtonLeft_press");
 
@@ -86,16 +83,14 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
             m_terrainInteractor->dropElement(handPosition.x, handPosition.z, 0.1f);
             m_terrainInteractor->heightGrab(handPosition.x, handPosition.z);
             break;
+        case GLFW_KEY_C:
+            glow::info("material at hand: ""%;"", solid element: ""%;""", m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z), m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z));
+            break;
         case GLFW_KEY_PERIOD:
             m_lua->call("glfwKeyPeriod_press");
             break;
         case GLFW_KEY_TAB:
             m_lua->call("glfwKeyTab_press");
-            break;
-        case GLFW_KEY_C:
-            const std::string & element = m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z);
-            const std::string & solid = m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z);
-            glow::info("material at hand: ""%;"", solid element: ""%;""", element, solid);
             break;
         }
     }
@@ -166,4 +161,17 @@ const glm::vec3 Manipulator::objAt(
     , const glm::mat4 & viewProjectionInverted)
 {
     return unproject(m_camera, viewProjectionInverted, depth, windowCoordinates);
+}
+
+void Manipulator::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<int(bool)> func0 = [=] (bool grabbed)
+    { setGrabbedTerrain(grabbed); return 0; };
+
+    lua->Register("manipulator_setGrabbedTerrain", func0);
+}
+
+void Manipulator::setGrabbedTerrain(bool grabbed)
+{
+    m_grabbedTerrain = grabbed;
 }

@@ -21,6 +21,7 @@
 #include "terrain.h"
 #include "terraintile.h"
 #include "physicswrapper.h"
+#include "lua/luawrapper.h"
 
 using namespace physx;
 
@@ -322,4 +323,32 @@ std::shared_ptr<const Terrain> TerrainInteractor::terrain() const
 void TerrainInteractor::setTerrain(std::shared_ptr<Terrain>& terrain)
 {
     m_terrain = terrain;
+}
+
+void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<float(float, float)> func0 = [=] (float worldX, float worldZ)
+    { return heightAt(worldX, worldZ); };
+
+    std::function<bool(float, float)> func1 = [=] (float worldX, float worldZ)
+    { return isHeighestAt(worldX, worldZ); };
+
+    std::function<float(float, float, float)> func2 = [=] (float worldX, float worldZ, float delta)
+    { return changeHeight(worldX, worldZ, delta); };
+
+    std::function<float(float, float, float)> func3 = [=] (float worldX, float worldZ, float heightDelta)
+    { return dropElement(worldX, worldZ, heightDelta); };
+
+    std::function<float(float, float, float)> func4 = [=] (float worldX, float worldZ, float heightDelta)
+    { return gatherElement(worldX, worldZ, heightDelta); };
+
+    std::function<float(float, float)> func5 = [=] (float worldX, float worldZ)
+    { return terrainHeightAt(worldX, worldZ); };
+
+    lua->Register("terrain_heightAt", func0);
+    lua->Register("terrain_isHeighestAt", func1);
+    lua->Register("terrain_changeHeight", func2);
+    lua->Register("terrain_dropElement", func3);
+    lua->Register("terrain_gatherElement", func4);
+    lua->Register("terrain_terrainHeightAt", func5);
 }
