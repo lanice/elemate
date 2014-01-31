@@ -249,7 +249,7 @@ void Hand::drawDepthMapImpl(const CameraEx & camera)
 {
     m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * transform());
     m_depthMapProgram->setUniform("znear", camera.zNearEx());
-    m_depthMapProgram->setUniform("zfar", camera.zFar());
+    m_depthMapProgram->setUniform("zfar", camera.zFarEx());
 
     m_depthMapProgram->use();
 

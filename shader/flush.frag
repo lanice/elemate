@@ -18,7 +18,7 @@ vec4 waterColor();
 
 void main()
 {
-    fragColor = vec4(texture(shadowMap, v_uv).xxx, 1.0);
+    // fragColor = vec4(texture(shadowMap, v_uv).xxx, 1.0);
     // fragColor = vec4(texture(lightMap, v_uv).xxx, 1.0);
     // fragColor = vec4(texture(waterDepth, v_uv).xxx, 1.0);
     // return;

@@ -25,7 +25,7 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     if (camera.projectionType() == ProjectionType::perspective) {
         program = m_depthMapLinearizedProgram;
         program->setUniform("znear", camera.zNearEx());
-        program->setUniform("zfar", camera.zFar());
+        program->setUniform("zfar", camera.zFarEx());
     }
     else { // not needed for the orthographic projection
         program = m_depthMapProgram; 

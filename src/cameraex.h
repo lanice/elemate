@@ -28,6 +28,8 @@ public:
     void setTop(float top);
 
     // hack this, because virtuality lack in glowutils::Camera...
+    float zFarEx() const;
+    void setZFarEx(float zNear);
     float zNearEx() const;
     void setZNearEx(float zNear);
     const glm::mat4 & projectionEx() const;
@@ -38,9 +40,10 @@ public:
     /** remove the nonvirtual functions that we can not configure to support orthographic projections */
     const glm::mat4 & projection() const = delete;
     const glm::mat4 & viewProjection() const = delete;
-    const glm::mat4 & viewInverted() const = delete;
     const glm::mat4 & projectionInverted() const = delete;
     const glm::mat4 & viewProjectionInverted() const = delete;
+    float zFar() const = delete;
+    void setZFar(float zFar) = delete;
     float zNear() const = delete;
     void setZNear(float zNear) = delete;
 

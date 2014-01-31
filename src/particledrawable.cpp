@@ -71,7 +71,7 @@ void ParticleDrawable::draw(const CameraEx & camera)
     m_program->setUniform("lookAtRight", lookAtRight);
     m_program->setUniform("lookAtFront", glm::normalize(viewDir));
     m_program->setUniform("znear", camera.zNearEx());
-    m_program->setUniform("zfar", camera.zFar());
+    m_program->setUniform("zfar", camera.zFarEx());
 
     m_vao->bind();
 

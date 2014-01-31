@@ -163,7 +163,7 @@ void Renderer::flushStep(const CameraEx & camera)
         m_flushSources.at(i).second->bind(GL_TEXTURE0 + i);
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
-    m_quad->program()->setUniform("zfar", camera.zFar());
+    m_quad->program()->setUniform("zfar", camera.zFarEx());
 
     m_quad->draw();
 
