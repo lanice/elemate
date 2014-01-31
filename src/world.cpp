@@ -49,11 +49,11 @@ World::World(PhysicsWrapper & physicsWrapper)
     initShader();
 
     TerrainGenerator terrainGen;
-    terrainGen.setExtentsInWorld(50, 50);
-    terrainGen.applySamplesPerWorldCoord(10.f);
-    terrainGen.setTilesPerAxis(1, 1);
-    terrainGen.setMaxHeight(20.0f);
-    terrainGen.setMaxBasicHeightVariance(0.05f);
+    //terrainGen.setExtentsInWorld(100, 100);
+    //terrainGen.applySamplesPerWorldCoord(3.f);
+    //terrainGen.setTilesPerAxis(1, 1);
+    //terrainGen.setMaxHeight(20.0f);
+    //terrainGen.setMaxBasicHeightVariance(0.05f);
 
     terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
 

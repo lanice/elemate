@@ -47,6 +47,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
 , m_heightField(nullptr)
+, m_pxShape(nullptr)
 {
     terrain.registerTile(tileID, *this);
 
@@ -58,6 +59,8 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
         0, 1, 0, 0,
         0, 0, terrain.settings.sampleInterval(), 0,
         minX, 0, minZ, 1);
+
+    clearBufferUpdateRange();
 }
 
 TerrainTile::~TerrainTile()
@@ -115,7 +118,15 @@ void TerrainTile::unbind()
 
 void TerrainTile::setHeightField(glow::FloatArray & heightField)
 {
+    assert(heightField.size() == m_terrain.settings.columns * m_terrain.settings.rows);
     m_heightField = &heightField;
+    addBufferUpdateRange(0, heightField.size());
+    addToPxUpdateBox(0, m_terrain.settings.rows - 1, 0, m_terrain.settings.columns - 1);
+}
+
+void TerrainTile::initialize()
+{
+    clearBufferUpdateRange();
 
     m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
@@ -124,10 +135,7 @@ void TerrainTile::setHeightField(glow::FloatArray & heightField)
     m_heightTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
     m_heightBuffer->unbind();
-}
 
-void TerrainTile::initialize()
-{
     m_isInitialized = true;
 }
 
@@ -312,6 +320,12 @@ void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
     m_bufferUpdateList.push_front(std::pair<GLintptr, GLsizeiptr>(offset, length));
 }
 
+void TerrainTile::clearBufferUpdateRange()
+{
+    m_bufferUpdateList.clear();
+    m_updateRangeMinMax = glm::detail::tvec2<GLintptr>(std::numeric_limits<GLintptr>::max(), std::numeric_limits<GLintptr>::min());
+}
+
 TerrainTile::UIntBoundingBox::UIntBoundingBox()
 : minRow(std::numeric_limits<unsigned int>::max())
 , maxRow(std::numeric_limits<unsigned int>::min())
@@ -391,7 +405,7 @@ void TerrainTile::updatePxHeight()
     PhysicsWrapper::getInstance()->restoreGPUAccelerated();
 
 #ifdef PX_WINDOWS
-    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
+    if (PhysicsWrapper::getInstance()->useGpuParticles()) {
         PxParticleGpu::releaseHeightFieldMirror(*hf);
         PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
     }

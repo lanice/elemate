@@ -59,4 +59,6 @@ private:
     /** adds a river bed to the heightField, getting the rock and sand indices from the initializer list
       * @return terrain type id storage in row major order */
     glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const;
+    // http://www.gameprogrammer.com/fractal.html#diamond algorithm for terrain creation
+    void diamondSquare(TerrainTile & tile) const;
 };

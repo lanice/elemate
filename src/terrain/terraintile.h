@@ -110,6 +110,7 @@ protected: // interaction specific functions (see class TerrainInteractor)
     virtual void updateBuffers();
 
     void addBufferUpdateRange(GLintptr offset, GLsizeiptr length);
+    void clearBufferUpdateRange();
     glm::detail::tvec2<GLintptr> m_updateRangeMinMax;
     std::forward_list<std::pair<GLintptr, GLsizeiptr>> m_bufferUpdateList;
 
