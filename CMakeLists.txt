@@ -150,6 +150,8 @@ set(SHADER
     shader/particle_water_depthblurring_v.frag
     shader/phongLighting.frag
     shader/shadows/depthmap_terrain.vert
+    shader/shadows/depthmap_terrain.frag
+    shader/shadows/depthmap_terrain_linearized.frag
     shader/shadows/depthmap_hand.vert
     shader/shadows/depthmapLinearized.frag
     shader/shadows/shadowmapping_terrain.vert
