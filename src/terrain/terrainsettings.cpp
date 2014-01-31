@@ -27,12 +27,12 @@ TerrainLevel levelForElement(const std::string & elementName)
 }
 
 TerrainSettings::TerrainSettings()
-: sizeX(5)
-, sizeZ(5)
-, maxHeight(5.f)
+: sizeX(400)
+, sizeZ(400)
+, maxHeight(40.f)
 , maxBasicHeightVariance(0.05f)
-, rows(5)
-, columns(5)
+, rows(1025)
+, columns(1025)
 , tilesX(1)
 , tilesZ(1)
 {

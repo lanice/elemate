@@ -20,16 +20,14 @@
 #include "watertile.h"
 
 // Mersenne Twister, preconfigured
-// keep one global instance, !per thread!
-
 namespace {
     std::mt19937 rng;
 }
 
 using namespace physx;
 
-namespace {
-    uint32_t seed_val = static_cast<uint32_t>(std::time(0));
+namespace {// 1, 3, 8 for 513, 5(look around!) for 1025
+    uint32_t seed_val = 5u;
     bool initRng() {
         rng.seed(seed_val);
         return true;
@@ -137,7 +135,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
     const unsigned fieldEdgeLength = m_settings.rows;
     const float maxHeight = m_settings.maxHeight;
 
-    float randomMax = maxHeight;
+    float randomMax = 50.0f;
     std::function<float(float)> clampHeight = [maxHeight](float value) {
         if (value > maxHeight)
             value = maxHeight;
@@ -146,8 +144,8 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
         return value;
     };
 
-    std::function<void(unsigned int, unsigned int, unsigned int, std::function<float()>&)> squareStep = 
-        [&tile, fieldEdgeLength, &clampHeight](unsigned int diamondRadius, unsigned int diamondCenterRow, unsigned int diamondCenterColumn, std::function<float()>& heightRnd)
+    std::function<void(unsigned int, unsigned int, unsigned int, std::function<float(unsigned int, unsigned int)>&)> squareStep =
+        [&tile, fieldEdgeLength, &clampHeight](unsigned int diamondRadius, unsigned int diamondCenterRow, unsigned int diamondCenterColumn, std::function<float(unsigned int, unsigned int)>& heightRnd)
     {
         // get the existing data values first: if we get out of the valid range, wrap around, to the next existing value on the other field side
         int upperRow = signed(diamondCenterRow) - signed(diamondRadius);
@@ -168,7 +166,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
             + tile.heightAt(diamondCenterRow, leftColumn)
             + tile.heightAt(diamondCenterRow, rightColumn))
             * 0.25f
-            + heightRnd();
+            + heightRnd(diamondCenterRow, diamondCenterColumn);
         tile.setHeight(diamondCenterRow, diamondCenterColumn, clampHeight(value));
 
         // in case we are at the borders of the tile: also set the value at the opposite border, to allow seamless tile wrapping
@@ -184,7 +182,13 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
     {
         const unsigned int currentEdgeLength = len;
         std::uniform_real_distribution<float> dist(-randomMax, randomMax);
-        std::function<float()> heightRnd = std::bind(dist, rng);
+        std::function<float(unsigned int, unsigned int)> heightRndPos =
+            [fieldEdgeLength, &dist](unsigned int row, unsigned int column) {
+            glm::vec2 pos(row, column);
+            pos = pos / (fieldEdgeLength - 1.0f) * 2.0f - 1.0f;
+            return float(glm::length(pos)) * dist(rng);
+            //return std::abs(float(row + column) / float(2 * fieldEdgeLength - 2) * 2.0f - 1.0f) * dist(rng);
+        };
         // create diamonds
         for (unsigned int rowN = 0; rowN < nbSquareRows; ++rowN) {
             const unsigned int row = rowN * (currentEdgeLength - 1);
@@ -199,7 +203,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
                     + tile.heightAt(row, column + currentEdgeLength - 1)
                     + tile.heightAt(row + currentEdgeLength - 1, column + currentEdgeLength - 1))
                     * 0.25f
-                    + heightRnd();
+                    + heightRndPos(midpointRow, midpointColumn);
 
                 tile.setHeight(midpointRow, midpointColumn, clampHeight(heightValue));
             }
@@ -215,16 +219,16 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
 
                 unsigned int rightDiamondColumn = seedpointColumn + currentEdgeLength / 2;
                 if (rightDiamondColumn < m_settings.columns)
-                    squareStep(diamondRadius, seedpointRow, rightDiamondColumn, heightRnd);
+                    squareStep(diamondRadius, seedpointRow, rightDiamondColumn, heightRndPos);
 
                 unsigned int bottomDiamondRow = seedpointRow + currentEdgeLength / 2;
                 if (bottomDiamondRow < m_settings.rows)
-                    squareStep(diamondRadius, bottomDiamondRow, seedpointColumn, heightRnd);
+                    squareStep(diamondRadius, bottomDiamondRow, seedpointColumn, heightRndPos);
             }
         }
 
         nbSquareRows *= 2;
-        randomMax *= 0.75;
+        randomMax *= 0.5;
     }
 }
 
