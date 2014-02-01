@@ -26,6 +26,8 @@ public:
 
 protected:
     void parseCharacterLine(const std::string & line, float textureSize);
+    size_t parseValues(const std::string& line, std::list<std::string>& resultBuffer);
+    std::string findFontName(const std::string& line);
 
     std::unordered_map<unsigned int, CharacterSpecifics *> m_characterSpecifics;
 };

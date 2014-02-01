@@ -1,7 +1,6 @@
 #include "StringComposer.h"
 
 #include <glow/logging.h>
-#include <regex>
 #include <fstream>
 
 StringComposer::StringComposer()
@@ -45,11 +44,7 @@ bool StringComposer::readSpecificsFromFile(const std::string & fileName, float t
     std::string line;
     getline(file, line);
     
-    std::regex font_regex("\"(.+)\"");
-    auto words_begin = std::sregex_iterator(line.begin(), line.end(), font_regex);
-    std::sregex_iterator i = words_begin;
-
-    glow::debug() << "Reading info of font" << (i++)->str();
+    glow::debug() << "Reading info of font" << findFontName(line);
 
     getline(file, line); //Additional line ...
 
@@ -63,21 +58,20 @@ bool StringComposer::readSpecificsFromFile(const std::string & fileName, float t
 
 void StringComposer::parseCharacterLine(const std::string & line, float textureSize)
 {
-    std::regex words_regex("=[^\\s]+");
-    auto words_begin = std::sregex_iterator(line.begin(), line.end(), words_regex);
-    auto words_end = std::sregex_iterator();
-    std::sregex_iterator i = words_begin;
+    std::list<std::string> parsedValues;
+    parseValues(line, parsedValues);
+    auto i = parsedValues.begin();
 
-    unsigned int id = std::stoi((i++)->str().substr(1));
+    unsigned int id = std::stoi(*(i++));
     
-    float x = std::stof((i++)->str().substr(1));
-    float y = std::stof((i++)->str().substr(1));
-    float width = std::stof((i++)->str().substr(1));
-    float height = std::stof((i++)->str().substr(1));
-    float xOffset = std::stof((i++)->str().substr(1));
-    float yOffset = std::stof((i++)->str().substr(1));
+    float x = std::stof(*(i++));
+    float y = std::stof(*(i++));
+    float width = std::stof(*(i++));
+    float height = std::stof(*(i++));
+    float xOffset = std::stof(*(i++));
+    float yOffset = std::stof(*(i++));
     
-    float xAdvance = std::stof((i++)->str().substr(1)) / textureSize;
+    float xAdvance = std::stof(*(i++)) / textureSize;
     
     glm::vec2 position = glm::vec2(x, textureSize - (y + height)) / textureSize;
     glm::vec2 size = glm::vec2(width, height) / textureSize;
@@ -85,4 +79,47 @@ void StringComposer::parseCharacterLine(const std::string & line, float textureS
     
     auto specifics = new CharacterSpecifics { position, size, offset, xAdvance };
     m_characterSpecifics.emplace(id, specifics);
+}
+
+size_t StringComposer::parseValues(const std::string& line, std::list<std::string>& resultBuffer)
+{
+    resultBuffer.clear();
+
+    bool valid = false;
+    std::string nextValue;
+    for (unsigned int i = 0; i < line.size(); i++)
+    {
+        if (line[i] == '=')
+        {
+            nextValue = "";
+            valid = true;
+        }
+        else if (line[i] == ' ')
+        {
+            if (nextValue.size() > 0 && valid){
+                resultBuffer.push_back(nextValue);
+                nextValue.clear();
+                valid = false;
+            }
+        }
+        else
+        {
+            nextValue += line[i];
+        }
+    }
+    if (nextValue.size() > 0 && valid){
+        resultBuffer.push_back(nextValue);
+        nextValue.clear();
+        valid = false;
+    }
+    return resultBuffer.size();
+}
+
+std::string StringComposer::findFontName(const std::string& line)
+{
+    std::string nextValue;
+    std::size_t found = line.find("\"");
+    if (found != std::string::npos)
+        return line.substr(found);
+    return "";
 }
