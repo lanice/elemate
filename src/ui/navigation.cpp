@@ -22,7 +22,7 @@ Navigation::Navigation(GLFWwindow & window, const std::shared_ptr<CameraEx> & ca
 , m_center()
 , m_distanceEyeCenter(c_distanceEyeCenterDefault)  
 {
-    setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
+    setTransformation(glm::vec3(-75, 0, 135), glm::vec3(-64, 7, 140), c_distanceEyeCenterDefault);
 }
 
 Navigation::~Navigation()

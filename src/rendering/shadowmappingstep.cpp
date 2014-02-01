@@ -89,8 +89,8 @@ void ShadowMappingStep::calculateLightMatrix(const CameraEx & camera)
     m_lightCam->setEye(glm::vec3(camera.eye().x, 0.0f, camera.eye().z));
     m_lightCam->setCenter(m_lightCam->eye() - m_world.sunPosition());
     const float shadowWidth = camera.zFarEx();
-    m_lightCam->setLeft(-shadowWidth*2.0f);
-    m_lightCam->setRight(shadowWidth*2.0f);
+    m_lightCam->setLeft(-shadowWidth*1.5f);
+    m_lightCam->setRight(shadowWidth*1.5f);
     m_lightCam->setZFarEx(shadowWidth);
     m_lightCam->setZNearEx(-shadowWidth);
 }
