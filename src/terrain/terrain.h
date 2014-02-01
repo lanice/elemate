@@ -8,6 +8,8 @@
 
 #include <glow/ref_ptr.h>
 #include <glow/Array.h>
+#include <glowutils/AxisAlignedBoundingBox.h>
+#include <glowutils/CachedValue.h>
 
 #include "terrainsettings.h"
 
@@ -44,6 +46,11 @@ public:
     /** @return heighest terrain level at position */
     TerrainLevel heighestLevelAt(float x, float z) const;
     void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
+    /** @return the axis aligned bouding box including all tiles */
+    const glowutils::AxisAlignedBoundingBox & boudingBox() const;
+    void setBorderWidth(float border);
+    /** @return the bouding box reduced by the border width */
+    const glowutils::AxisAlignedBoundingBox & validBoundingBox() const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
@@ -70,6 +77,10 @@ protected:
     unsigned minTileXID;
     /** lowest tile id in z direction */
     unsigned minTileZID;
+
+    glowutils::AxisAlignedBoundingBox m_boudingBox;
+    float m_borderWidth;
+    glowutils::CachedValue<glowutils::AxisAlignedBoundingBox> m_validBoudingBox;
 
     virtual void initialize() override;
     void generateVertices();

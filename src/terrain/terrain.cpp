@@ -8,6 +8,7 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
+#include "cameraex.h"
 
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +21,10 @@ Terrain::Terrain(const World & world, const TerrainSettings & settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
 , m_drawLevels(TerrainLevels)
+, m_borderWidth(0.0f)
 {
+    m_boudingBox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
+    m_boudingBox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
 }
 
 Terrain::~Terrain()
@@ -34,6 +38,7 @@ Terrain::~Terrain()
 
 void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::string> & elements)
 {
+    setBorderWidth(camera.zFarEx());
     setDrawElements(elements);
     Drawable::draw(camera);
     setDrawElements({});
@@ -86,6 +91,40 @@ void Terrain::drawImplementation(const CameraEx & camera)
     }
 
     glDisable(GL_PRIMITIVE_RESTART);
+}
+
+const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
+{
+    return m_boudingBox;
+}
+
+void Terrain::setBorderWidth(float border)
+{
+    if (m_borderWidth == border)
+        return;
+    
+    m_borderWidth = border;
+    m_validBoudingBox.invalidate();
+}
+
+const glowutils::AxisAlignedBoundingBox & Terrain::validBoundingBox() const
+{
+    if (m_validBoudingBox.isValid())
+        return m_validBoudingBox.value();
+
+    glowutils::AxisAlignedBoundingBox newBox;
+
+    newBox.extend(glm::vec3(
+        m_boudingBox.urb().x - m_borderWidth,
+        m_boudingBox.urb().y,
+        m_boudingBox.urb().z - m_borderWidth));
+    newBox.extend(glm::vec3(
+        m_boudingBox.llf().x + m_borderWidth,
+        m_boudingBox.llf().y,
+        m_boudingBox.llf().z + m_borderWidth));
+
+    m_validBoudingBox.setValue(newBox);
+    return m_validBoudingBox.value();
 }
 
 void Terrain::initialize()
