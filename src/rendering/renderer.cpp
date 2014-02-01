@@ -32,8 +32,6 @@ void Renderer::initialize()
 {
     glow::DebugMessageOutput::enable();
 
-    glClearColor(1, 1, 1, 1);
-
     glDepthFunc(GL_LEQUAL);
     glClearDepth(1.0);
 
@@ -132,6 +130,7 @@ void Renderer::sceneStep(const CameraEx & camera)
 
     m_fboByName.at("scene")->bind();
 
+    glClearColor(m_world.skyColor().x, m_world.skyColor().y, m_world.skyColor().z, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->draw(camera, { "bedrock" });

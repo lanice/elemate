@@ -105,6 +105,8 @@ void TerrainTile::bind(const CameraEx & camera)
     m_program->setUniform("modelView", modelView);
     glm::mat4 modelViewProjection = camera.viewProjectionEx() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
+    m_program->setUniform("znear", camera.zNearEx());
+    m_program->setUniform("zfar", camera.zFarEx());
 
     m_terrain.m_world.setUpLighting(*m_program);
 }

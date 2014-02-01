@@ -5,9 +5,11 @@ in vec3 g_normal;
 in vec3 g_viewPos;
 flat in int g_texIndex;
 
-uniform vec3 lightdir2;
+uniform float zfar;
 
+uniform vec3 lightdir2;
 uniform mat4 light2;
+uniform vec3 skyColor;
 
 uniform mat4 element_bedrock;
 uniform mat4 element_sand;
@@ -43,4 +45,6 @@ void main()
     }
     
     fragColor = mix(lightColor, textureColor, 0.5);
+    fragColor = mix(fragColor, vec4(skyColor, 1.0), // blend at the horizon 
+        max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0));
 }

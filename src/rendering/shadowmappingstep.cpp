@@ -122,6 +122,7 @@ void ShadowMappingStep::draw(const CameraEx & camera)
 
     m_lightTex->bind(GL_TEXTURE0 + s_lightmapSlot);
     m_shadowFbo->bind();
+    glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->drawShadowMapping(camera, *m_lightCam, { "bedrock" });
