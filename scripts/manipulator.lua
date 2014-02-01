@@ -47,6 +47,8 @@ function handleKeyEvent( inputKey, action )
         elseif key == GLFW_KEY_R then
             terrain_dropElement(posX, posZ, 0.1)
             terrain_heightGrab(posX, posZ)
+        elseif key == GLFW_KEY_P then
+            world_togglePause()
         elseif key == GLFW_KEY_PERIOD then
             io.write("Clear ParticleGroups.\n")
             psa_clearParticleGroups()

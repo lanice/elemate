@@ -33,6 +33,7 @@ m_lua(new LuaWrapper())
     ParticleScriptAccess::instance().init();
     ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
     m_hand.registerLuaFunctions(m_lua);
+    m_world.registerLuaFunctions(m_lua);
     m_terrainInteractor->registerLuaFunctions(m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
@@ -53,22 +54,9 @@ void Manipulator::handleKeyEvent(const int & key, const int & /*scancode*/, cons
     const glm::vec3 & handPosition = m_hand.position();
 
     // key press events
-    if (action == GLFW_PRESS)
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
     {
-        switch (key){
-        case GLFW_KEY_I:
-            m_world.toggleBackgroundSound(0);
-            break;
-        case GLFW_KEY_O:
-            m_world.toggleBackgroundSound(0);
-            break;
-        case GLFW_KEY_P:
-            m_world.togglePause();
-            break;
-        case GLFW_KEY_C:
-            glow::info("material at hand: ""%;"", solid element: ""%;""", m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z), m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z));
-            break;
-        }
+        glow::info("material at hand: ""%;"", solid element: ""%;""", m_terrainInteractor->topmostElementAt(handPosition.x, handPosition.z), m_terrainInteractor->solidElementAt(handPosition.x, handPosition.z));
     }
 }
 

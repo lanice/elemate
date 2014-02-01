@@ -21,6 +21,7 @@
 #include "terrain/terrain.h"
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
+#include "lua/luawrapper.h"
 
 World * World::s_instance = nullptr;
 
@@ -188,6 +189,18 @@ void World::setUpLighting(glow::Program & program) const
     program.setUniform("sunlight", sunlight());
     program.setUniform("lightdir2", lightdir2);
     program.setUniform("light2", lightMat2);
+}
+
+void World::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<int()> func0 = [=] ()
+    { togglePause(); return 0; };
+
+    std::function<int(int)> func1 = [=] (int id)
+    { toggleBackgroundSound(id); return 0; };
+
+    lua->Register("world_togglePause", func0);
+    lua->Register("world_toggleBackgroundSound", func1);
 }
 
 glow::Shader * World::sharedShader(GLenum type, const std::string & filename) const
