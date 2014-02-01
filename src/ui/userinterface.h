@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 namespace glow{
     class VertexArrayObject;
@@ -53,7 +54,10 @@ protected:
     GLFWwindow& m_window;
 
     std::unordered_map<std::string, MenuPage*> m_menus;
-    std::string            m_activeMenu;
+    std::string                                m_activeMenu;
+
+    std::vector<std::string> m_elementPreviews;
+    unsigned int             m_activeElement;
 
     void drawHUD();
     void drawMainMenu();
@@ -62,7 +66,7 @@ protected:
     void drawMenuEntries();
 
     void drawPreview();
-    void drawPreviewCircle(float x, float y, const std::string& element, float height);
+    void drawPreviewCircle(float x, float y, const std::string& element, float height, bool highlighted);
 
     void loadInitTexture(const std::string & elementName);
 

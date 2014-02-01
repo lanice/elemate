@@ -79,9 +79,9 @@ void EventHandler::handleMouseMoveEvent(double xpos, double ypos)
 
 void EventHandler::handleScrollEvent(double xoffset, double yoffset)
 {
+    m_game.userInterface()->handleScrollEvent(xoffset, yoffset);
     if (m_game.userInterface()->isMainMenuOnTop())
     {
-        m_game.userInterface()->handleScrollEvent(xoffset, yoffset);
         return;
     }
 

@@ -25,6 +25,7 @@ UserInterface::UserInterface(GLFWwindow& window) :
   m_activeHUD(true)
 , m_mainMenuOnTop(false)
 , m_window(window)
+, m_activeElement(0)
 {
 }
 
@@ -69,6 +70,9 @@ void UserInterface::initialize()
     m_screenProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/ui/screen.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/ui/screen.frag"));
+
+    m_elementPreviews.clear();
+    m_elementPreviews.reserve(4);
 
     loadInitTexture("bedrock");
     loadInitTexture("sand");
@@ -122,13 +126,12 @@ void UserInterface::drawMainMenu()
 
 void UserInterface::drawPreview()
 {
-    drawPreviewCircle(1.0f - 1 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "water", kDefaultPreviewHeight);
-    drawPreviewCircle(1.0f - 3 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "lava", kDefaultPreviewHeight);
-    drawPreviewCircle(1.0f - 5 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "sand", kDefaultPreviewHeight);
-    drawPreviewCircle(1.0f - 7 * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, "bedrock", kDefaultPreviewHeight);
+    for (unsigned int i = 0; i < m_elementPreviews.size(); i++){
+        drawPreviewCircle(1.0f - (1+2*i) * kDefaultPreviewHeight, -0.97f + kDefaultPreviewHeight, m_elementPreviews[i], kDefaultPreviewHeight, m_activeElement==i);
+    }
 }
 
-void UserInterface::drawPreviewCircle(float x, float y, const std::string& element, float height)
+void UserInterface::drawPreviewCircle(float x, float y, const std::string& element, float height, bool highlighted)
 {
     m_textures.at(element)->bind(GL_TEXTURE0);
 
@@ -136,6 +139,7 @@ void UserInterface::drawPreviewCircle(float x, float y, const std::string& eleme
     m_previewProgram->setUniform("y", y);
     m_previewProgram->setUniform("width", height);
     m_previewProgram->setUniform("ratio", m_viewport.x / m_viewport.y);
+    m_previewProgram->setUniform("highlighted", static_cast<int>(highlighted));
 
     m_previewProgram->use();
     m_vao->bind();
@@ -188,6 +192,8 @@ void UserInterface::resize(int width, int height)
 
 void UserInterface::loadInitTexture(const std::string & elementName)
 {
+    m_elementPreviews.push_back(elementName);
+
     const int TEXTURE_SIZE = 256;
 
     glow::ref_ptr<glow::Texture> texture = new glow::Texture(GL_TEXTURE_2D);
@@ -316,15 +322,17 @@ void UserInterface::handleScrollEvent(double /*xoffset*/, double yoffset)
     {
         if (isMainMenuOnTop())
             m_menus[m_activeMenu]->highlightPreviousEntry();
-        //else if (hasActiveHUD())
-            //Scroll active elements
+        else if (hasActiveHUD())
+            m_activeElement = (m_activeElement + 1) % m_elementPreviews.size();
     }
     else 
     {
         if (isMainMenuOnTop())
             m_menus[m_activeMenu]->highlightNextEntry();
-        //else if (hasActiveHUD())
-            //Scroll active elements
+        else if (hasActiveHUD())
+            m_activeElement = m_activeElement > 0 ?
+            m_activeElement - 1
+            : static_cast<unsigned int>(m_elementPreviews.size()) - 1;
     }
 }
 
