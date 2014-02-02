@@ -8,6 +8,8 @@ out vec3 v_viewPos;
 out vec4 v_projPos;
 out vec3 v_normal;
 
+out uint v_isVisible;   // 0==false
+
 uniform mat4 modelTransform;
 uniform mat4 modelView;
 uniform mat4 modelViewProjection;
@@ -23,13 +25,18 @@ void main()
     v_vertex = _vertex;
     
     vec4 vertex = vec4(_vertex.x, height, _vertex.y, 1.0);
+    v_projPos = modelViewProjection * vertex;
+    vec3 normProjPos = v_projPos.xyz / v_projPos.w;
+    
+    v_isVisible = uint(
+        normProjPos.x >= -1 && normProjPos.x <= 1
+        && normProjPos.y >= -1 && normProjPos.y <= 1
+        && normProjPos.z >= 0 && normProjPos.z <= 1);
     
     v_worldPos = (modelTransform * vertex).xyz;
     
     vec4 viewPos4 = modelView * vertex;
     v_viewPos = viewPos4.xyz / viewPos4.w;
-    
-    v_projPos = modelViewProjection * vertex;
     
     // normal calculation, see http://stackoverflow.com/a/5284527
     float height_left = texelFetch(heightField, texIndex - int(tileRowsColumns.s)).x;
