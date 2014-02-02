@@ -41,21 +41,38 @@ function handleKeyEvent( inputKey, action )
         if key == GLFW_KEY_F then
             terrain_gatherElement(posX, posZ, 0.1)
             terrain_heightGrab(posX, posZ)
+
         elseif key == GLFW_KEY_LEFT_ALT then
             manipulator_setGrabbedTerrain(true)
             terrain_heightGrab(posX, posZ)
+
         elseif key == GLFW_KEY_R then
             terrain_dropElement(posX, posZ, 0.1)
             terrain_heightGrab(posX, posZ)
+
         elseif key == GLFW_KEY_P then
             world_togglePause()
+
         elseif key == GLFW_KEY_PERIOD then
             io.write("Clear ParticleGroups.\n")
             psa_clearParticleGroups()
             particleGroupId = psa_numParticleGroups()
+
         elseif key == GLFW_KEY_TAB then
             particleGroupId = psa_nextParticleGroup(particleGroupId)
             io.write("Selected ParticleGroup ", particleGroupId, "\n")
+
+        elseif key == GLFW_KEY_1 then
+            hud_setActiveElement(3)
+
+        elseif key == GLFW_KEY_2 then
+            hud_setActiveElement(2)
+
+        elseif key == GLFW_KEY_3 then
+            hud_setActiveElement(1)
+
+        elseif key == GLFW_KEY_4 then
+            hud_setActiveElement(0)
         end
 
     elseif action == GLFW_RELEASE then

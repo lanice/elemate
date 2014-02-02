@@ -16,6 +16,7 @@ EventHandler::EventHandler(GLFWwindow & window, Game & game)
 , m_game(game)
 {
      glfwSetInputMode(&window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+     m_game.userInterface()->registerLuaFunctions(m_game.manipulator()->lua());
 }
 
 EventHandler::~EventHandler()

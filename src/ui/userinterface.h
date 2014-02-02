@@ -15,6 +15,7 @@ namespace glow{
 
 class MenuPage;
 struct GLFWwindow;
+class LuaWrapper;
 
 class UserInterface{
 public:
@@ -35,6 +36,9 @@ public:
     void handleMouseButtonEvent(int button, int action, int mods);
 
     void resize(int width, int height);
+
+    void registerLuaFunctions(LuaWrapper * lua);
+    
 protected:
     static const float kDefaultPreviewHeight;
     static const glm::vec3 kDefaultMenuEntryColor;

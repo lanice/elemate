@@ -105,6 +105,11 @@ void Manipulator::setRenderer(Renderer & renderer)
     m_renderer->addSceneFboReader(std::bind(&Manipulator::updateHandPosition, this));
 }
 
+LuaWrapper * Manipulator::lua()
+{
+    return m_lua;
+}
+
 const float Manipulator::depthAt(const glm::ivec2 & windowCoordinates)
 {
     return AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);

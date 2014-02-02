@@ -32,6 +32,8 @@ public:
 
     void setRenderer(Renderer & renderer);
 
+    LuaWrapper * lua();
+
     virtual const float depthAt(const glm::ivec2 & windowCoordinates) override;
 
     using AbstractCoordinateProvider::objAt;

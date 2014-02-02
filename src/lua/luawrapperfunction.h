@@ -46,6 +46,7 @@ namespace Luaw
     void _push(lua_State * state, bool &&value);
     void _push(lua_State * state, int &&value);
     void _push(lua_State * state, unsigned long &&value);
+    void _push(lua_State * state, unsigned int &&value);
     void _push(lua_State * state, float &&value);
     void _push(lua_State * state, double &&value);
     void _push(lua_State * state, std::string &&value);

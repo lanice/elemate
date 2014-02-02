@@ -75,9 +75,9 @@ void UserInterface::initialize()
     m_elementPreviews.reserve(4);
 
     loadInitTexture("bedrock");
+    loadInitTexture("lava");
     loadInitTexture("sand");
     loadInitTexture("water");
-    loadInitTexture("lava");
 
     m_activeMenu = "MainMenu";
     m_menus.reserve(3);
@@ -322,17 +322,17 @@ void UserInterface::handleScrollEvent(double /*xoffset*/, double yoffset)
     {
         if (isMainMenuOnTop())
             m_menus[m_activeMenu]->highlightPreviousEntry();
-        else if (hasActiveHUD())
-            m_activeElement = (m_activeElement + 1) % m_elementPreviews.size();
+        // else if (hasActiveHUD())
+        //     m_activeElement = (m_activeElement + 1) % m_elementPreviews.size();
     }
     else 
     {
         if (isMainMenuOnTop())
             m_menus[m_activeMenu]->highlightNextEntry();
-        else if (hasActiveHUD())
-            m_activeElement = m_activeElement > 0 ?
-            m_activeElement - 1
-            : static_cast<unsigned int>(m_elementPreviews.size()) - 1;
+        // else if (hasActiveHUD())
+        //     m_activeElement = m_activeElement > 0 ?
+        //     m_activeElement - 1
+        //     : static_cast<unsigned int>(m_elementPreviews.size()) - 1;
     }
 }
 
@@ -347,4 +347,16 @@ void UserInterface::handleMouseButtonEvent(int button, int action, int /*mods*/)
         invokeMenuEntryFunction();
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS && isMainMenuOnTop())
         m_activeMenu = "MainMenu";
+}
+
+void UserInterface::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<unsigned int()> func0 = [=] ()
+    { return m_activeElement; };
+
+    std::function<unsigned int(unsigned int)> func1 = [=] (unsigned int index)
+    { m_activeElement = index; return 0;};
+
+    lua->Register("hud_activeElement", func0);
+    lua->Register("hud_setActiveElement", func1);
 }
