@@ -24,18 +24,27 @@ m_world(new World(*m_physicsWrapper)),
 m_camera(std::make_shared<CameraEx>(ProjectionType::perspective)),
 m_navigation(window, m_camera, m_world->terrain),
 m_manipulator(window, m_navigation, *m_world),
-m_renderer(*m_world)
+m_renderer(*m_world),
+m_userInterface(window)
 {
     setVSync(m_vsyncEnabled);
 
     m_world->setNavigation(m_navigation);
     m_manipulator.setRenderer(m_renderer);
+
+    m_userInterface.initialize();
 }
 
 Game::~Game()
 {
     delete m_world;
     delete m_physicsWrapper;
+}
+
+void Game::toggleMenu()
+{
+    m_world->togglePause();
+    m_userInterface.toggleMainMenu();
 }
 
 void Game::start()
@@ -82,8 +91,9 @@ void Game::loop(double delta)
                 m_navigation.apply();
 
                 m_world->updateVisuals();
-
+                
                 m_renderer(*m_camera);
+                m_userInterface.draw();
 
                 glfwSwapBuffers(&m_window);
 
@@ -152,4 +162,16 @@ Renderer * Game::renderer()
 PhysicsWrapper * Game::physicsWrapper()
 {
     return m_physicsWrapper;
+}
+
+void Game::resize(int width, int height)
+{
+    m_camera->setViewport(width, height);
+    m_renderer.resize(width, height);
+    m_userInterface.resize(width, height);
+}
+
+UserInterface * Game::userInterface()
+{
+    return &m_userInterface;
 }
