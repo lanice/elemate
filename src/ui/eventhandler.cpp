@@ -38,7 +38,10 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
     if (m_game.userInterface()->isMainMenuOnTop())
     {
-        m_game.userInterface()->handleKeyEvent(key, scancode, action, mods);
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+            m_game.toggleMenu();
+        else
+            m_game.userInterface()->handleKeyEvent(key, scancode, action, mods);
         return;
     }
     if (action == GLFW_PRESS) {
