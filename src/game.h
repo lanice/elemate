@@ -7,6 +7,7 @@
 #include "ui/navigation.h"
 #include "ui/manipulator.h"
 #include "rendering/renderer.h"
+#include "ui/userinterface.h"
 
 class PhysicsWrapper;
 class World;
@@ -26,13 +27,17 @@ public:
 
     /** Starts the Game Loop until recieving a window close event. */
     void start();
+    void toggleMenu();
 
     void setVSync(bool enabled);
     void toggleVSync();
     bool vSyncEnabled() const;
+    void resize(int width, int height);
 
     Navigation * navigation();
     Manipulator * manipulator();
+    UserInterface * userInterface();
+
     std::shared_ptr<CameraEx> camera();
     const std::shared_ptr<const CameraEx> camera() const;
     Renderer * renderer();
@@ -55,6 +60,7 @@ protected:
     Manipulator m_manipulator;
 
     Renderer m_renderer;
+    UserInterface m_userInterface;
 
 public:
     Game() = delete;
