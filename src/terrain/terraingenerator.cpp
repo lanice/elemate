@@ -59,10 +59,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
         glow::FloatArray * baseHeightField = createBasicHeightField(0);
         assert(baseHeightField);
 
-        std::initializer_list<std::string> baseElements = { "bedrock", "sand" };
-
-        // make landscape more interesting
-        //glow::UByteArray * baseTerrainTypeIDs = gougeRiverBed(*baseHeightField, baseElements);
+        std::initializer_list<std::string> baseElements = { "bedrock", "sand", "grassland" };
 
         // create empty heightfield
         unsigned int numSamples = m_settings.rows * m_settings.columns;
@@ -76,6 +73,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
 
         // create the terain using diamond square algorithm
         diamondSquare(*baseTile);
+        // and apply the elements to the landscape
+        applyElementsByHeight(*baseTile);
 
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
         TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
@@ -229,6 +228,31 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
 
         nbSquareRows *= 2;
         randomMax *= 0.5;
+    }
+}
+
+void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
+{
+    uint8_t sand = tile.elementIndex("sand");
+    uint8_t grassland = tile.elementIndex("grassland");
+    uint8_t bedrock = tile.elementIndex("bedrock");
+
+    float sandMaxHeight = 0.5f;     // under water + shore
+    float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
+
+    for (unsigned int row = 0; row < m_settings.rows; ++row) {
+        for (unsigned int column = 0; column < m_settings.columns; ++column) {
+            float height = tile.heightAt(row, column);
+            if (height < sandMaxHeight) {
+                tile.setElement(row, column, sand);
+                continue;
+            }
+            if (height < grasslandMaxHeight) {
+                tile.setElement(row, column, grassland);
+                continue;
+            }
+            tile.setElement(row, column, bedrock);
+        }
     }
 }
 

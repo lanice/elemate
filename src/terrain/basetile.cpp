@@ -62,6 +62,7 @@ void BaseTile::initialize()
 
     loadInitTexture("bedrock", 2);
     loadInitTexture("sand", 3);     // http://opengameart.org/content/50-free-textures
+    loadInitTexture("grassland", 4);
 }
 
 void BaseTile::initializeProgram()
