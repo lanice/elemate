@@ -240,9 +240,13 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     float sandMaxHeight = 0.5f;     // under water + shore
     float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
 
-    for (unsigned int row = 0; row < m_settings.rows; ++row) {
-        for (unsigned int column = 0; column < m_settings.columns; ++column) {
-            float height = tile.heightAt(row, column);
+    for (unsigned int row = 0; row < m_settings.rows - 1; ++row) {
+        for (unsigned int column = 0; column < m_settings.columns - 1; ++column) {
+            float height = 0.25f * (
+                tile.heightAt(row, column)
+                + tile.heightAt(row + 1, column)
+                + tile.heightAt(row, column + 1)
+                + tile.heightAt(row + 1, column + 1));
             if (height < sandMaxHeight) {
                 tile.setElement(row, column, sand);
                 continue;
