@@ -9,7 +9,7 @@ StringComposer::StringComposer()
 
 StringComposer::~StringComposer()
 {
-    for each (auto pair in m_characterSpecifics)
+    for (auto pair : m_characterSpecifics)
         delete pair.second;
     m_characterSpecifics.clear();
 }
@@ -18,7 +18,7 @@ std::list<CharacterSpecifics *> StringComposer::characterSequence(const std::str
 {
     std::list<CharacterSpecifics *> characterSequence;
     
-    for (int i = 0; i < string.length(); i++) {
+    for (size_t i = 0; i < string.length(); i++) {
         unsigned char id = string[i];
         
         if (m_characterSpecifics.end() == m_characterSpecifics.find(id))
