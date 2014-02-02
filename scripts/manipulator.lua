@@ -7,6 +7,9 @@ local particleGroupId = psa_numParticleGroups()
 local elementTable = {"water", "sand", "lava", "stone"}
 local elements = {}
 
+local isEmitting = false
+local emitParameters = {}
+
 local function createParticleGroup( eleType )
     local id = psa_createParticleGroup(eleType)
     io.write("Created ParticleGroup '", eleType, "' at id ", id, "\n")
@@ -23,18 +26,43 @@ local function selectElement( eleType )
     end
 end
 
+local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
+    emitParameters[1] = particleGroupId
+    emitParameters[2] = rate
+    emitParameters[3] = posX
+    emitParameters[4] = posY
+    emitParameters[5] = posZ
+    emitParameters[6] = dirX
+    emitParameters[7] = dirY
+    emitParameters[8] = dirZ
+
+    psa_emit(particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ)
+end
+
+function updateHandPosition( posX, posY, posZ )
+    emitParameters[3] = posX
+    emitParameters[4] = posY
+    emitParameters[5] = posZ
+
+    if (isEmitting == true) then
+        psa_emit(emitParameters[1], emitParameters[2], emitParameters[3], emitParameters[4], emitParameters[5], emitParameters[6], emitParameters[7], emitParameters[8])
+    end
+end
+
 function handleMouseButtonEvent( button, action )
     if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_PRESS then
         if particleGroupId == -1 then
             io.write("No ParticleGroup created.\n")
         else
             io.write("Emit '", psa_elementAtId(particleGroupId), "' particles.\n")
-            psa_emit(particleGroupId, 100, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
+            emit(particleGroupId, 500, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
+            isEmitting = true
         end
     end
     if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_RELEASE then
         if particleGroupId ~= -1 then
             psa_stopEmit(particleGroupId)
+            isEmitting = false
         end
     end
 end
