@@ -319,21 +319,9 @@ void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*
 void UserInterface::handleScrollEvent(double /*xoffset*/, double yoffset)
 {
     if (yoffset > 0)
-    {
-        if (isMainMenuOnTop())
-            m_menus[m_activeMenu]->highlightPreviousEntry();
-        // else if (hasActiveHUD())
-        //     m_activeElement = (m_activeElement + 1) % m_elementPreviews.size();
-    }
+        m_menus[m_activeMenu]->highlightPreviousEntry();
     else 
-    {
-        if (isMainMenuOnTop())
-            m_menus[m_activeMenu]->highlightNextEntry();
-        // else if (hasActiveHUD())
-        //     m_activeElement = m_activeElement > 0 ?
-        //     m_activeElement - 1
-        //     : static_cast<unsigned int>(m_elementPreviews.size()) - 1;
-    }
+        m_menus[m_activeMenu]->highlightNextEntry();
 }
 
 void UserInterface::handleMouseMoveEvent(double /*xpos*/, double /*ypos*/)
