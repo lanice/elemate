@@ -85,6 +85,10 @@ void Manipulator::handleScrollEvent(const double & /*xoffset*/, const double & y
             m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
         }
     }
+    else if (glfwGetKey(&m_window, GLFW_KEY_X) == GLFW_PRESS)
+    {
+        m_lua->call("handleScrollEvent", yoffset);
+    }
 }
 
 void Manipulator::updateHandPosition()

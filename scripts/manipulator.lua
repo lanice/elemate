@@ -10,6 +10,9 @@ local elements = {}
 local isEmitting = false
 local emitParameters = {}
 
+local MIN_RESTPARTICLEDISTANCE = 0.05
+local MAX_RESTPARTICLEDISTANCE = 10.0
+
 local function createParticleGroup( eleType )
     local id = psa_createParticleGroup(eleType)
     io.write("Created ParticleGroup '", eleType, "' at id ", id, "\n")
@@ -63,6 +66,15 @@ function handleMouseButtonEvent( button, action )
         if particleGroupId ~= -1 then
             psa_stopEmit(particleGroupId)
             isEmitting = false
+        end
+    end
+end
+
+function handleScrollEvent( yoffset )
+    if particleGroupId ~= -1 then
+        local dist = psa_restParticleDistance(particleGroupId)+(0.1*yoffset)
+        if dist > MIN_RESTPARTICLEDISTANCE and dist < MAX_RESTPARTICLEDISTANCE then
+            psa_setRestParticleDistance(particleGroupId, dist)
         end
     end
 end
