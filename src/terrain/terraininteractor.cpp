@@ -18,17 +18,11 @@
 #include <gpu/PxParticleGpu.h>
 #endif
 
-#include "hpicgs/Timer.h"
 #include "terrain.h"
 #include "terraintile.h"
 #include "physicswrapper.h"
 
 using namespace physx;
-namespace {
-    // this values are affected by all instances..
-    long double updateTime = 0.0;
-    unsigned int nbUpdates = 0u;
-}
 
 const std::string TerrainInteractor::s_defaultElementName = "default";
 
@@ -44,14 +38,6 @@ TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain, const st
 , m_interactElement(interactElement)
 , m_interactLevel(levelForElement(interactElement))
 {
-}
-
-TerrainInteractor::~TerrainInteractor()
-{
-    if (nbUpdates > 0) {
-        glow::debug("TerrainInter t: %; nbUpdates: %;", updateTime, nbUpdates);
-    }
-    nbUpdates = 0;
 }
 
 const std::string & TerrainInteractor::interactElement() const
@@ -182,8 +168,6 @@ float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLe
 
 float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
 {
-    Timer t1;
-    nbUpdates++;
     float stddev = 7.0f; // TODO: script this, element specific value
     assert(stddev > 0);
 
@@ -249,8 +233,6 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
     }
 
     tile.addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
-
-    updateTime += t1.elapsed();
 
     return value;
 }

@@ -25,18 +25,10 @@
 #include <gpu/PxParticleGpu.h>
 #endif
 
-#include "hpicgs/Timer.h"
 #include "terrain.h"
 #include "elements.h"
 #include "world.h"
 #include "physicswrapper.h"
-
-namespace {
-    // this values are affected by all tile instances..
-    long double updateTime = 0.0;
-    long double updateTimePx = 0.0;
-    unsigned int nbUpdates = 0u;
-}
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : m_tileID(tileID)
@@ -66,11 +58,6 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 TerrainTile::~TerrainTile()
 {
     delete m_heightField;
-    if (nbUpdates > 0) {
-        glow::debug("TerrainTile: t: %; nbUpdates: %;", updateTime, nbUpdates);
-        glow::debug("PxHeightfiel t: %; nbUpdates: %;", updateTimePx, nbUpdates);
-    }
-    nbUpdates = 0;
 }
 
 const std::string & TerrainTile::elementAt(unsigned int row, unsigned int column) const
@@ -295,8 +282,6 @@ glm::mat4 TerrainTile::transform() const
 
 void TerrainTile::updateBuffers()
 {
-    Timer t;
-    nbUpdates++;
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
     m_bufferUpdateList.clear();
 
@@ -307,8 +292,6 @@ void TerrainTile::updateBuffers()
         auto updateRange = m_bufferUpdateList.front();
 
     }*/
-
-    updateTime += t.elapsed();
 
     updatePxHeight();
 }
@@ -350,8 +333,6 @@ void TerrainTile::addToPxUpdateBox(unsigned int minRow, unsigned int maxRow, uns
 
 void TerrainTile::updatePxHeight()
 {
-    Timer t;
-
     PxHeightFieldGeometry geometry;
     bool result = m_pxShape->getHeightFieldGeometry(geometry);
     assert(result);
@@ -407,13 +388,11 @@ void TerrainTile::updatePxHeight()
     PhysicsWrapper::getInstance()->restoreGPUAccelerated();
 
 #ifdef PX_WINDOWS
-    if (PhysicsWrapper::getInstance()->useGpuParticles()) {
+    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
         PxParticleGpu::releaseHeightFieldMirror(*hf);
         PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
     }
 #endif
 
     m_pxUpdateBox = UIntBoundingBox();
-
-    updateTimePx += t.elapsed();
 }

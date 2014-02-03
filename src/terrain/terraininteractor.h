@@ -13,7 +13,6 @@ public:
     /** Creates an Interactor for the specified terrain.
       * @param interactElement select the element this interactor works with */
     TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactElement);
-    ~TerrainInteractor();
 
     const std::string & interactElement() const;
     void setInteractElement(const std::string & elementName);

@@ -6,17 +6,10 @@
 #include <glow/Buffer.h>
 #include <glowutils/File.h>
 
-#include "hpicgs/Timer.h"
 #include "terrain.h"
 #include "imagereader.h"
 #include "world.h"
 
-
-namespace {
-    // this values are affected by all tile instances..
-    long double updateTime = 0.0;
-    unsigned int nbUpdates = 0u;
-}
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : TerrainTile(terrain, tileID, elementNames)
@@ -29,10 +22,6 @@ BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initiali
 BaseTile::~BaseTile()
 {
     delete m_terrainTypeData;
-    if (nbUpdates > 0) {
-        glow::debug("BaseTile:    t: %; nbUpdates: %;", updateTime, nbUpdates);
-    }
-    nbUpdates = 0;
 }
 
 void BaseTile::bind(const CameraEx & camera)
@@ -120,10 +109,7 @@ void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
 
 void BaseTile::updateBuffers()
 {
-    Timer t;
     m_terrainTypeBuffer->setData(*m_terrainTypeData, GL_DYNAMIC_DRAW);
-    updateTime += t.elapsed();
-    nbUpdates++;
 
     TerrainTile::updateBuffers();
 }
