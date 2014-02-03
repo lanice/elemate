@@ -20,8 +20,9 @@ LuaWrapper::LuaWrapper()
 LuaWrapper::~LuaWrapper()
 {
     if (m_state == nullptr) return;
-    lua_close(m_state);
     s_instances.remove(this);
+    m_functions.clear();
+    lua_close(m_state);
 }
 
 
