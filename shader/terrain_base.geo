@@ -8,10 +8,11 @@ in vec3 v_normal[3];
 
 in uint v_isVisible[3];
 
-flat out int g_texIndex;
 out vec3 g_viewPos;
 out vec3 g_normal;
 out vec3 g_worldPos;
+out vec2 g_rowColumn;
+out vec2 g_quadRelativePos;
 
 uniform uvec2 tileRowsColumns;
 
@@ -28,17 +29,15 @@ void main()
     // We need this to match openGL terrainIDs with physx materialIDs, which define the quad on the bottom right of a vertex.
 
     vec2 minRowColumn = vec2(min(v_vertex[0], min(v_vertex[1], v_vertex[2])));
-    // use int index (not uint) as expected by texelFetch
-    int texIndex = int(minRowColumn.t) + int(minRowColumn.s) * int(tileRowsColumns.t);
     
     for (int i=0; i < 3; ++i) {
-        g_texIndex = texIndex;
-        
         g_normal = v_normal[i];
-        
         g_worldPos = v_worldPos[i];
-        
         g_viewPos = v_viewPos[i];
+        g_quadRelativePos = vec2(   // relative position of minRowColumn vertex is (0,0)
+            bvec2(minRowColumn.s != v_vertex[i].s,      // false = 0.0, true = 1.0
+                  minRowColumn.t != v_vertex[i].t));
+        g_rowColumn = minRowColumn + g_quadRelativePos - vec2(0.5);
         gl_Position = v_projPos[i];
         EmitVertex();
     }

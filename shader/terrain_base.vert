@@ -24,7 +24,7 @@ void main()
 
     v_vertex = _vertex;
     
-    vec4 vertex = vec4(_vertex.x, height, _vertex.y, 1.0);
+    vec4 vertex = vec4(_vertex.s, height, _vertex.t, 1.0);
     v_projPos = modelViewProjection * vertex;
     vec3 normProjPos = v_projPos.xyz / v_projPos.w;
     
