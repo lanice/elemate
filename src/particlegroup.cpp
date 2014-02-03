@@ -122,6 +122,24 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
     delete[] velocities;
 }
 
+void ParticleGroup::releaseParticles(const uint32_t numParticles, const glow::UIntArray & indices)
+{
+    PxU32 * indexBuffer = new PxU32[numParticles];
+
+    for (PxU32 i = 0; i < numParticles; ++i)
+    {
+        PxU32 index = indices.at(i);
+        indexBuffer[i] = index;
+        m_freeIndices.push_back(index);
+    }
+
+    PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
+
+    m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+
+    delete[] indexBuffer;
+}
+
 void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 & velocity)
 {
     glow::Vec3Array positions, velocities;
@@ -167,9 +185,19 @@ void ParticleGroup::updateVisuals()
 
     m_particleDrawable->updateParticles(readData);
 
+    // Get drained Particles
+    glow::UIntArray indices;
+    PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt)
+        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_DRAIN)
+            indices << i;
+
     readData->unlock();
 
     m_particleDrawable->setParticleSize(m_particleSystem->getRestParticleDistance());
+
+    releaseParticles(indices.size(), indices);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
