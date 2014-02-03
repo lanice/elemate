@@ -138,8 +138,6 @@ set(SHADER
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
-    shader/terrain_water.vert
-    shader/terrain_water.frag
     shader/hand.frag
     shader/hand.vert
     shader/particle_water.vert
@@ -150,8 +148,7 @@ set(SHADER
     shader/particle_water_depthblurring_v.frag
     shader/phongLighting.frag
     shader/shadows/depthmap_terrain.vert
-    shader/shadows/depthmap_terrain.frag
-    shader/shadows/depthmap_terrain_linearized.frag
+    shader/shadows/depthmap_terrain.geo
     shader/shadows/depthmap_hand.vert
     shader/shadows/depthmapLinearized.frag
     shader/shadows/shadowmapping_terrain.vert

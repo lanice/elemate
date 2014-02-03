@@ -98,8 +98,9 @@ void Terrain::initDepthMapProgram()
 {
     m_depthMapProgram = new glow::Program();
     m_depthMapProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depthmap_terrain.frag"));
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
     m_depthMapProgram->setUniform("baseHeightField", 1);
     m_depthMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
@@ -107,9 +108,10 @@ void Terrain::initDepthMapProgram()
 
     m_depthMapLinearizedProgram = new glow::Program();
     m_depthMapLinearizedProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/shadows/depthmap_terrain_linearized.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
     m_depthMapLinearizedProgram->setUniform("heightField", 0);
     m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);
     m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
