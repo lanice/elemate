@@ -178,10 +178,10 @@ void Renderer::resize(int width, int height)
     m_sceneColor->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     m_sceneDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_sceneFbo->printStatus(true);
-    assert(m_sceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    //assert(m_sceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_sceneWithHandDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    //assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     for (auto step : m_steps) {
         assert(step);

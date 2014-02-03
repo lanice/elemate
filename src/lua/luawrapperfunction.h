@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(MSVC)
+#pragma warning (disable : 4100)
+#endif
+
 #include <string>
 #include <tuple>
 #include <functional>
@@ -141,3 +145,7 @@ public:
 public:
     void operator=(LuaFunction &) = delete;
 };
+
+#if defined(MSVC)
+#pragma warning (default : 4100)
+#endif

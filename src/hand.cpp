@@ -290,13 +290,13 @@ void Hand::initShadowMappingProgram()
 
 void Hand::registerLuaFunctions(LuaWrapper * lua)
 {
-    std::function<int()> func0 = [=] ()
+    std::function<float()> func0 = [=] ()
     { return position().x; };
 
-    std::function<int()> func1 = [=] ()
+    std::function<float()> func1 = [=]()
     { return position().y; };
 
-    std::function<int()> func2 = [=] ()
+    std::function<float()> func2 = [=]()
     { return position().z; };
 
     lua->Register("hand_posX", func0);
