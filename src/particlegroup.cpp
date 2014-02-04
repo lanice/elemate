@@ -215,6 +215,8 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     assert(m_particleSystem);
     assert(m_scene);
 
+    PxSceneWriteLock scopedLock(* m_scene);
+
     m_scene->removeActor(*m_particleSystem);
 
     m_particleSystem->setMaxMotionDistance(maxMotionDistance);
