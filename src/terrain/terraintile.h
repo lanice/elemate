@@ -2,6 +2,7 @@
 
 #include <forward_list>
 #include <cstdint>
+#include <tuple>
 
 #include <glow/ref_ptr.h>
 #include <glow/Array.h>
@@ -106,9 +107,20 @@ protected: // interaction specific functions (see class TerrainInteractor)
     /** set the internal element index at the row/column position to elementIndex.  */
     virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) = 0;
 
+    virtual void updateBuffers();
+
     void addBufferUpdateRange(GLintptr offset, GLsizeiptr length);
+    void clearBufferUpdateRange();
+    glm::detail::tvec2<GLintptr> m_updateRangeMinMax;
     std::forward_list<std::pair<GLintptr, GLsizeiptr>> m_bufferUpdateList;
-    virtual void updateGlBuffers();
+
+    void updatePxHeight();
+    void addToPxUpdateBox(unsigned int minRow, unsigned int maxRow, unsigned int minColumn, unsigned int maxColumn);
+    struct UIntBoundingBox {
+        UIntBoundingBox();
+        unsigned int minRow; unsigned int maxRow; unsigned int minColumn; unsigned int maxColumn;
+    };
+    UIntBoundingBox m_pxUpdateBox;
 
 public:
     TerrainTile() = delete;

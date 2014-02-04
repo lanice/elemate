@@ -13,12 +13,12 @@ set(PROJECT_NAME ${META_PROJECT_NAME})
 project(${PROJECT_NAME} C CXX)
 
 
-option(OPTION_LIMIT_CONFIGS "Generate limited configs (Release; Debug)" ON)
+option(OPTION_LIMIT_CONFIGS  "Generate limited configs (Release;Debug;RelWithDebInfo)" ON)
 option(OPTION_LOCAL_INSTALL "Install to local directory instead of system" OFF)
 
 
 if(OPTION_LIMIT_CONFIGS)
-    set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited Configs" FORCE)
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "Limited Configs" FORCE)
 endif()
 
 
@@ -151,8 +151,6 @@ set(SHADER
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
-    shader/terrain_water.vert
-    shader/terrain_water.frag
     shader/hand.frag
     shader/hand.vert
     shader/particle_water.vert
@@ -163,6 +161,7 @@ set(SHADER
     shader/particle_water_depthblurring_v.frag
     shader/phongLighting.frag
     shader/shadows/depthmap_terrain.vert
+    shader/shadows/depthmap_terrain.geo
     shader/shadows/depthmap_hand.vert
     shader/shadows/depthmapLinearized.frag
     shader/shadows/shadowmapping_terrain.vert
@@ -216,15 +215,18 @@ add_executable( ${PROJECT_NAME} ${SOURCES})
 # set c++ compiler options globally
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_RELEASE}" )
 set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_DEBUG}" )
+set ( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_RELWITHDEBINFO}" )
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_DEFINITIONS_DEBUG   "${DEFAULT_COMPILE_DEFS_DEBUG}"
     COMPILE_DEFINITIONS_RELEASE "${DEFAULT_COMPILE_DEFS_RELEASE}"
+    COMPILE_DEFINITIONS_RELWITHDEBINFO "${DEFAULT_COMPILE_DEFS_RELWITHDEBINFO}"
     #COMPILE_FLAGS               "${DEFAULT_COMPILE_FLAGS}"
     LINK_FLAGS_DEBUG            "${DEFAULT_LINKER_FLAGS_DEBUG}"
     LINK_FLAGS_RELEASE          "${DEFAULT_LINKER_FLAGS_RELEASE}"
+    LINK_FLAGS_RELWITHDEBINFO   "${DEFAULT_LINKER_FLAGS_RELWITHDEBINFO}"
 )
 
 config_project( ${PROJECT_NAME} OPENGL 0 )

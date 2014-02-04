@@ -11,6 +11,8 @@ uniform vec3 camDirection;
 vec4 waterColor(vec2 v_uv){
     vec3 light = normalize(vec3(0.0,1.0,-0.5));
     vec3 normal = (vec4(texture(waterNormals, v_uv).xyz,1.0)*view).xyz;
+
+    return vec4(vec3(normal),0.5);
     vec3 resVector = refract(vec3(0.0,0.0,-1.0),normal , 0.8);
     vec3 waterCol = (5*texture(
                             sceneColor, 
@@ -55,7 +57,7 @@ vec4 lavaColor(vec2 v_uv){
 
     vec3 light = normalize(vec3(0.0,1.0,-0.5));
     vec3 normal = (vec4(texture(waterNormals, v_uv).xyz,1.0)*view).xyz;
-    vec3 lavaCol = vec3(1.0,0.1,0.1);
+    vec3 lavaCol = vec3(0.5,0.01,0.01);
 
     return vec4(mix(
         mix(

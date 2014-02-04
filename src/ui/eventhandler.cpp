@@ -16,6 +16,7 @@ EventHandler::EventHandler(GLFWwindow & window, Game & game)
 , m_game(game)
 {
      glfwSetInputMode(&window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+     m_game.userInterface()->registerLuaFunctions(m_game.manipulator()->lua());
 }
 
 EventHandler::~EventHandler()
@@ -82,9 +83,9 @@ void EventHandler::handleMouseMoveEvent(double xpos, double ypos)
 
 void EventHandler::handleScrollEvent(double xoffset, double yoffset)
 {
-    m_game.userInterface()->handleScrollEvent(xoffset, yoffset);
     if (m_game.userInterface()->isMainMenuOnTop())
     {
+        m_game.userInterface()->handleScrollEvent(xoffset, yoffset);
         return;
     }
 

@@ -21,7 +21,6 @@ namespace physx {
     class PxRigidStatic;
     class PxCudaContextManager;
 }
-class LuaWrapper;
 
 
 class ElematePxErrorCallback : public physx::PxErrorCallback
@@ -97,7 +96,6 @@ protected:
     physx::PxCudaContextManager*                    m_cudaContextManager;
 
     bool                                            m_gpuParticles;
-    LuaWrapper*                                     m_lua;
     
     static PhysicsWrapper * s_instance;
 

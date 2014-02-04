@@ -22,7 +22,7 @@ Navigation::Navigation(GLFWwindow & window, const std::shared_ptr<CameraEx> & ca
 , m_center()
 , m_distanceEyeCenter(c_distanceEyeCenterDefault)  
 {
-    setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
+    setTransformation(glm::vec3(116.415, 16.149, 111.774), glm::vec3(104.737, 8.405, 97.194), glm::vec3(0, 1, 0));
 }
 
 Navigation::~Navigation()
@@ -72,7 +72,7 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
                 m_distanceEyeCenter += 0.5f;
             }
     }
-    else if (glfwGetKey(&m_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    else if (glfwGetKey(&m_window, GLFW_KEY_X) != GLFW_PRESS)
     {
         glm::vec3 eye = m_camera->eye();
         if (yoffset < 0)
@@ -89,44 +89,45 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
 void Navigation::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-        setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
+        setTransformation(glm::vec3(116.415, 16.149, 111.774), glm::vec3(104.737, 8.405, 97.194), glm::vec3(0, 1, 0));
 }
 
 void Navigation::update(double delta)
 {
     float frameScale = static_cast<float>(delta * 100);
-    if (glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
-    {
-        glm::vec3 newCenter = m_center;
-        float boost = 1.f;
+    if (!glfwGetWindowAttrib(&m_window, GLFW_FOCUSED))
+        return;
 
-        if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-            boost = 5.f;
+    glm::vec3 newCenter = m_center;
+    glm::vec3 resultCenter = m_center;
+    float boost = 1.f;
 
-        if (glfwGetKey(&m_window, GLFW_KEY_W) == GLFW_PRESS)
-            move(newCenter, glm::vec3(0, 0, -1));
-        if (glfwGetKey(&m_window, GLFW_KEY_A) == GLFW_PRESS)
-            move(newCenter, glm::vec3(-1, 0, 0));
-        if (glfwGetKey(&m_window, GLFW_KEY_S) == GLFW_PRESS)
-            move(newCenter, glm::vec3(0, 0, 1));
-        if (glfwGetKey(&m_window, GLFW_KEY_D) == GLFW_PRESS)
-            move(newCenter, glm::vec3(1, 0, 0));
+    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        boost = 5.f;
 
-        if (glfwGetKey(&m_window, GLFW_KEY_Q) == GLFW_PRESS)
-            rotate(-1.f * boost * frameScale);
-        if (glfwGetKey(&m_window, GLFW_KEY_E) == GLFW_PRESS)
-            rotate(1.f * boost * frameScale);
+    if (glfwGetKey(&m_window, GLFW_KEY_W) == GLFW_PRESS)
+        move(newCenter, glm::vec3(0, 0, -1));
+    if (glfwGetKey(&m_window, GLFW_KEY_A) == GLFW_PRESS)
+        move(newCenter, glm::vec3(-1, 0, 0));
+    if (glfwGetKey(&m_window, GLFW_KEY_S) == GLFW_PRESS)
+        move(newCenter, glm::vec3(0, 0, 1));
+    if (glfwGetKey(&m_window, GLFW_KEY_D) == GLFW_PRESS)
+        move(newCenter, glm::vec3(1, 0, 0));
 
+    if (glfwGetKey(&m_window, GLFW_KEY_Q) == GLFW_PRESS)
+        rotate(-1.f * boost * frameScale);
+    if (glfwGetKey(&m_window, GLFW_KEY_E) == GLFW_PRESS)
+        rotate(1.f * boost * frameScale);
 
-        if (newCenter != m_center)
-        {
-            m_center += glm::normalize(newCenter - m_center) * c_speedScale * boost * frameScale;
+    if (newCenter != m_center) {
+        resultCenter += glm::normalize(newCenter - m_center) * c_speedScale * boost * frameScale;
+        resultCenter = glm::vec3(
+            resultCenter.x,
+            m_terrain->heightTotalAt(resultCenter.x, resultCenter.z),
+            resultCenter.z);
 
-            m_center = glm::vec3(
-                m_center.x,
-                m_terrain->heightTotalAt(m_center.x, m_center.z),
-                m_center.z);
-        }
+        if (m_terrain->validBoundingBox().inside(resultCenter))
+            m_center = resultCenter;
     }
 }
 

@@ -127,6 +127,17 @@ void StringDrawer::paint(
     glDisable(GL_BLEND);
 }
 
+void StringDrawer::paint(const TextObject& textObject)
+{
+    paint(textObject.text, 
+        glm::mat4(  textObject.scale, 0, 0, 0,
+                    0, textObject.scale, 0, 0,
+                    0, 0, textObject.scale, 0,
+                    textObject.x, textObject.y, textObject.z, 1),
+                    StringDrawer::Alignment::kAlignLeft,
+                    glm::vec3(textObject.red, textObject.green, textObject.blue));
+}
+
 glm::mat4 StringDrawer::alignmentTransform(const std::list<CharacterSpecifics *> & list, Alignment alignment) const
 {
     float offset=0.0F;

@@ -33,8 +33,6 @@ void Renderer::initialize()
 {
     glow::DebugMessageOutput::enable();
 
-    glClearColor(1, 1, 1, 1);
-
     glDepthFunc(GL_LEQUAL);
     glClearDepth(1.0);
 
@@ -134,6 +132,7 @@ void Renderer::sceneStep(const CameraEx & camera)
 
     m_fboByName.at("scene")->bind();
 
+    glClearColor(m_world.skyColor().x, m_world.skyColor().y, m_world.skyColor().z, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->draw(camera, { "bedrock" });
@@ -165,7 +164,7 @@ void Renderer::flushStep(const CameraEx & camera)
         m_flushSources.at(i).second->bind(GL_TEXTURE0 + i);
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
-    m_quad->program()->setUniform("zfar", camera.zFar());
+    m_quad->program()->setUniform("zfar", camera.zFarEx());
     m_quad->program()->setUniform("timef", int(m_world.getTime()));
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
@@ -186,12 +185,12 @@ void Renderer::resize(int width, int height)
     m_textureByName.at("sceneColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("scene")->printStatus(true);
-    assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    // assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_textureByName.at("handColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("hand")->printStatus(true);
-    assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    // assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     for (auto step : m_steps) {
         assert(step);

@@ -21,6 +21,7 @@
 #include "terrain.h"
 #include "terraintile.h"
 #include "physicswrapper.h"
+#include "lua/luawrapper.h"
 
 using namespace physx;
 
@@ -232,74 +233,9 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
         tile.addBufferUpdateRange(minColumn + r * settings.columns, 1u + effectRadius * 2u);
     }
 
-    updatePxHeight(tile, minRow, maxRow, minColumn, maxColumn);
+    tile.addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
 
     return value;
-}
-
-void TerrainInteractor::updatePxHeight(const TerrainTile & tile, unsigned minRow, unsigned maxRow, unsigned minColumn, unsigned maxColumn)
-{
-    PxShape & pxShape = *tile.pxShape();
-    PxHeightFieldGeometry geometry;
-    bool result = pxShape.getHeightFieldGeometry(geometry);
-    assert(result);
-    if (!result) {
-        glow::warning("TerrainInteractor::setPxHeight could not get heightfield geometry from px shape");
-        return;
-    }
-    PxHeightField * hf = geometry.heightField;
-
-    assert(minRow <= maxRow && minColumn <= maxColumn);
-    unsigned int nbRows = maxRow - minRow + 1;
-    unsigned int nbColumns = maxColumn - minColumn + 1;
-    unsigned int fieldSize = nbRows * nbColumns;
-
-    PxHeightFieldSample * samplesM = new PxHeightFieldSample[fieldSize];
-    for (unsigned int r = 0; r < nbRows; ++r) {
-        unsigned int rowOffset = r * nbColumns;
-        for (unsigned int c = 0; c < nbColumns; ++c) {
-            const unsigned int index = c + rowOffset;
-            const float terrainHeight = tile.heightAt(r + minRow, c + minColumn);
-            samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
-            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = tile.elementIndexAt(r + minRow, c + minColumn);
-        }
-    }
-
-    PxHeightFieldDesc descM;
-    descM.nbColumns = nbColumns;
-    descM.nbRows = nbRows;
-    descM.samples.data = samplesM;
-    descM.format = hf->getFormat();
-    descM.samples.stride = hf->getSampleStride();
-    descM.thickness = hf->getThickness();
-    descM.convexEdgeThreshold = hf->getConvexEdgeThreshold();
-    descM.flags = hf->getFlags();
-
-    PhysicsWrapper::getInstance()->pauseGPUAcceleration();
-
-    bool success = hf->modifySamples(minColumn, minRow, descM);
-    assert(success);
-    if (!success) {
-        glow::warning("TerrainInteractor::setPxHeight could not modify heightfield.");
-        return;
-    }
-
-    PxHeightFieldGeometry newGeometry(hf, PxMeshGeometryFlags(), geometry.heightScale, geometry.rowScale, geometry.columnScale);
-    assert(PxGetPhysics().getNbScenes() == 1);
-    PxScene * pxScenePtrs[1];
-    PxGetPhysics().getScenes(pxScenePtrs, 1);
-    pxScenePtrs[0]->lockWrite();
-    pxShape.setGeometry(newGeometry);
-    pxScenePtrs[0]->unlockWrite();
-
-    PhysicsWrapper::getInstance()->restoreGPUAccelerated();
-
-#ifdef PX_WINDOWS
-    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
-        PxParticleGpu::releaseHeightFieldMirror(*hf);
-        PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
-    }
-#endif
 }
 
 float TerrainInteractor::heightGrab(float worldX, float worldZ)
@@ -322,4 +258,36 @@ std::shared_ptr<const Terrain> TerrainInteractor::terrain() const
 void TerrainInteractor::setTerrain(std::shared_ptr<Terrain>& terrain)
 {
     m_terrain = terrain;
+}
+
+void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<float(float, float)> func0 = [=] (float worldX, float worldZ)
+    { return heightAt(worldX, worldZ); };
+
+    std::function<bool(float, float)> func1 = [=] (float worldX, float worldZ)
+    { return isHeighestAt(worldX, worldZ); };
+
+    std::function<float(float, float, float)> func2 = [=] (float worldX, float worldZ, float delta)
+    { return changeHeight(worldX, worldZ, delta); };
+
+    std::function<float(float, float, float)> func3 = [=] (float worldX, float worldZ, float heightDelta)
+    { return dropElement(worldX, worldZ, heightDelta); };
+
+    std::function<float(float, float, float)> func4 = [=] (float worldX, float worldZ, float heightDelta)
+    { return gatherElement(worldX, worldZ, heightDelta); };
+
+    std::function<float(float, float)> func5 = [=] (float worldX, float worldZ)
+    { return terrainHeightAt(worldX, worldZ); };
+
+    std::function<float(float, float)> func6 = [=] (float worldX, float worldZ)
+    { return heightGrab(worldX, worldZ); };
+
+    lua->Register("terrain_heightAt", func0);
+    lua->Register("terrain_isHeighestAt", func1);
+    lua->Register("terrain_changeHeight", func2);
+    lua->Register("terrain_dropElement", func3);
+    lua->Register("terrain_gatherElement", func4);
+    lua->Register("terrain_terrainHeightAt", func5);
+    lua->Register("terrain_heightGrab", func6);
 }

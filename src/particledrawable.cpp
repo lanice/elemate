@@ -18,6 +18,8 @@
 
 #include "world.h"
 
+using namespace physx;
+
 std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
 ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
@@ -71,7 +73,7 @@ void ParticleDrawable::draw(const CameraEx & camera)
     m_program->setUniform("lookAtRight", lookAtRight);
     m_program->setUniform("lookAtFront", glm::normalize(viewDir));
     m_program->setUniform("znear", camera.zNearEx());
-    m_program->setUniform("zfar", camera.zFar());
+    m_program->setUniform("zfar", camera.zFarEx());
 
     m_vao->bind();
 
@@ -118,42 +120,32 @@ void ParticleDrawable::updateBuffers()
     m_needBufferUpdate = false;
 }
 
-void ParticleDrawable::addParticles(unsigned int numParticles, const physx::PxVec3 * particlePositionBuffer)
-{
-    assert(numParticles <= m_maxParticleCount);
-
-    m_currentNumParticles += numParticles;
-    if (m_currentNumParticles > m_maxParticleCount)
-        m_currentNumParticles = m_maxParticleCount;
-    
-    for (unsigned i = 0; i < numParticles; ++i) {
-        const physx::PxVec3 & vertex = particlePositionBuffer[i];
-        m_vertices->at(i) = glm::vec3(vertex.x, vertex.y, vertex.z);
-    }
-
-    m_needBufferUpdate = true;
-}
-
-void ParticleDrawable::updateParticles(const physx::PxParticleReadData * readData)
+void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 {
     unsigned numParticles = readData->nbValidParticles;
 
     if (numParticles == 0)
         return;
 
-    // assert(numParticles <= m_maxParticleCount);
+    assert(numParticles <= m_maxParticleCount);
     if (numParticles > m_maxParticleCount) {
         glow::warning("ParticleDrawable::updateParticles: recieving more valid new particles than expected (%;)", numParticles);
         numParticles = m_maxParticleCount;
     }
 
-    auto pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+    unsigned int nextPointIndex = 0;
 
-    for (unsigned i = 0; i < numParticles; ++i, ++pxPositionIt) {
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt) {
         assert(pxPositionIt.ptr());
-        const physx::PxVec3 & vertex = *pxPositionIt.ptr();
-        m_vertices->at(i) = glm::vec3(vertex.x, vertex.y, vertex.z);
+        if (*pxFlagIt & PxParticleFlag::eVALID) {
+            const physx::PxVec3 & vertex = *pxPositionIt;
+            m_vertices->at(nextPointIndex++) = glm::vec3(vertex.x, vertex.y, vertex.z);
+        }
     }
+
+    m_currentNumParticles = nextPointIndex;
 
     m_needBufferUpdate = true;
 }

@@ -7,6 +7,7 @@
 
 class Terrain;
 class TerrainTile;
+class LuaWrapper;
 
 class TerrainInteractor {
 public:
@@ -68,6 +69,8 @@ public:
 
     static float normalDist(float x, float mean, float stddev);
 
+    void registerLuaFunctions(LuaWrapper * lua);
+
     /** element name if the interaction element is not set and for out for range access */
     static const std::string s_defaultElementName;
 
@@ -79,7 +82,6 @@ private:
     TerrainLevel m_interactLevel;
 
     float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement);
-    void updatePxHeight(const TerrainTile & tile, unsigned minRow, unsigned maxRow, unsigned minColumn, unsigned maxColumn);
 
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;

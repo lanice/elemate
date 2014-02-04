@@ -20,8 +20,9 @@ LuaWrapper::LuaWrapper()
 LuaWrapper::~LuaWrapper()
 {
     if (m_state == nullptr) return;
-    lua_close(m_state);
     s_instances.remove(this);
+    m_functions.clear();
+    lua_close(m_state);
 }
 
 
@@ -43,8 +44,14 @@ void LuaWrapper::loadScript(const std::string & script)
 
 void LuaWrapper::removeScript(const std::string & script)
 {
-    for (std::vector<std::string>::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it)
-        if (*it == script) it = m_scripts.erase(it) - 1;
+    unsigned int current_position = 0;
+    while (current_position < m_scripts.size())
+    {
+        if (m_scripts[current_position] == script)
+            m_scripts.erase(m_scripts.begin()+current_position);
+        else // So it won't skip future scripts with equal names
+            current_position++;
+    }
 }
 
 void LuaWrapper::reloadScripts()

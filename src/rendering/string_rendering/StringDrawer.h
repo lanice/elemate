@@ -17,6 +17,12 @@ namespace glow
     class Texture;
 }
 
+struct TextObject{
+    std::string text;
+    float x, y, z, scale;
+    float red, green, blue;
+};
+
 class StringDrawer
 {
 public:
@@ -30,6 +36,7 @@ public:
                const glm::mat4 & modelMatrix,
                Alignment alignment = kAlignLeft,
                const glm::vec3 color = glm::vec3(1.0f));
+    void paint(const TextObject& textObject);
     void resize(int width, int height);
 
 protected:

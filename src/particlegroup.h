@@ -50,13 +50,17 @@ public:
         );
     ~ParticleGroup();
 
+    physx::PxParticleFluid * particleSystem();
+    physx::PxScene * physxScene();
+
     /** Make sure numParticles matches size of position matches size of velocities! */
     void createParticles(const uint32_t numParticles, const glow::Vec3Array & positions, const glow::Vec3Array & velocities);
+    void releaseParticles(const uint32_t numParticles, const glow::UIntArray & indices);
     /** Create a single particle at given position with given velocity. */
     void createParticle(const glm::vec3 & position, const glm::vec3 & velocity);
 
     /** Emit particles with ratio as particles per second. */
-    void emit(float ratio, const glm::vec3 & position, const glm::vec3 & direction);
+    void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
     void stopEmit();
 
     /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
@@ -89,6 +93,8 @@ public:
 
 
 protected:
+    void releaseOldParticles(const uint32_t numParticles);
+
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
@@ -98,6 +104,7 @@ protected:
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
+    uint32_t m_lastFreeIndex;
 
     float m_emitRatio;
     glm::vec3 m_emitPosition;

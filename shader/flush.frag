@@ -19,7 +19,7 @@ vec4 lavaColor(vec2 v_uv);
 
 void main()
 {
-    fragColor = vec4(texture(shadowMap, v_uv).xxx, 1.0);
+    // fragColor = vec4(texture(shadowMap, v_uv).xxx, 1.0);
     // fragColor = vec4(texture(lightMap, v_uv).xxx, 1.0);
     // fragColor = vec4(texture(waterDepth, v_uv).xxx, 1.0);
     // return;
@@ -34,19 +34,13 @@ void main()
     vec4 lavaC = lavaColor(v_uv);
     float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
 
-    fragColor = vec4(handZ);
-    // return;
-    vec4 sceneHandColor;
-    if (sceneZ < handZ)
-        sceneHandColor = sceneC;
-    else
-        sceneHandColor = handC;
+    vec4 sceneHandColor = mix(texture(handColor, v_uv), texture(sceneColor, v_uv), step(sceneZ, handZ));
     float sceneHandZ = min(sceneZ, handZ);
 
 	fragColor = 
     
     mix(
-        (1-lavaC.w * (1-shadowFactor)) * lavaC,
+        (1-lavaC.w * (1-shadowFactor)) * waterC,
 		shadowFactor * sceneHandColor,
 		step(sceneHandZ,waterZ)
 	);

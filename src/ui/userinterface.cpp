@@ -25,7 +25,7 @@ UserInterface::UserInterface(GLFWwindow& window) :
   m_activeHUD(true)
 , m_mainMenuOnTop(false)
 , m_window(window)
-, m_activeElement(0)
+, m_activeElement(1000) //Definitely out of range --> no initial highlighting
 {
 }
 
@@ -75,15 +75,14 @@ void UserInterface::initialize()
     m_elementPreviews.reserve(4);
 
     loadInitTexture("bedrock");
+    loadInitTexture("lava");
     loadInitTexture("sand");
     loadInitTexture("water");
-    loadInitTexture("lava");
 
     m_activeMenu = "MainMenu";
     m_menus.reserve(3);
     m_menus.emplace("MainMenu", new MenuPage("MainMenu"));
     m_menus["MainMenu"]->addEntry("Fortsetzen");
-    m_menus["MainMenu"]->addEntry("Elemente neu laden");
     m_menus["MainMenu"]->addEntry("Hilfe");
     m_menus["MainMenu"]->addEntry("Beenden");
     m_menus.emplace("Settings", new MenuPage("Settings"));
@@ -113,6 +112,9 @@ void UserInterface::drawHUD()
         return;
 
     drawPreview();
+    for (const auto& text : m_hudTexts){
+        m_stringDrawer.paint(text);
+    }
 }
 
 void UserInterface::drawMainMenu()
@@ -241,23 +243,14 @@ void UserInterface::invokeMenuEntryFunction()
             case 0:     // Resume
                 toggleMainMenu();
                 break;
-            case 1:     // Reload Scripts
-                glow::info("Updating shader...");
-                glowutils::FileRegistry::instance().reloadAll();
-                glow::info("Updating shader done.");
-                glow::info("Reloading lua scripts...");
-                LuaWrapper::reloadAll();
-                glow::info("Reloading lua scripts done.");
-                toggleMainMenu();
-                break;
-            case 2:     // Help
+            case 1:     // Help
                 m_activeMenu = "Help";
                 break;
-            case 3:     // Settings
+            case 2:     // Settings
                 /* Settings have no effect, therefore disabled
                 m_activeMenu = "Settings";
                 break;
-            case 4:     //Exit 
+            case 3:     //Exit 
                 */
                 glfwSetWindowShouldClose(&m_window, GL_TRUE);
                 break;
@@ -319,21 +312,9 @@ void UserInterface::handleKeyEvent(int key, int /*scancode*/, int action, int /*
 void UserInterface::handleScrollEvent(double /*xoffset*/, double yoffset)
 {
     if (yoffset > 0)
-    {
-        if (isMainMenuOnTop())
-            m_menus[m_activeMenu]->highlightPreviousEntry();
-        else if (hasActiveHUD())
-            m_activeElement = (m_activeElement + 1) % m_elementPreviews.size();
-    }
+        m_menus[m_activeMenu]->highlightPreviousEntry();
     else 
-    {
-        if (isMainMenuOnTop())
-            m_menus[m_activeMenu]->highlightNextEntry();
-        else if (hasActiveHUD())
-            m_activeElement = m_activeElement > 0 ?
-            m_activeElement - 1
-            : static_cast<unsigned int>(m_elementPreviews.size()) - 1;
-    }
+        m_menus[m_activeMenu]->highlightNextEntry();
 }
 
 void UserInterface::handleMouseMoveEvent(double /*xpos*/, double /*ypos*/)
@@ -347,4 +328,42 @@ void UserInterface::handleMouseButtonEvent(int button, int action, int /*mods*/)
         invokeMenuEntryFunction();
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS && isMainMenuOnTop())
         m_activeMenu = "MainMenu";
+}
+
+void UserInterface::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<unsigned int()> func0 = [=] ()
+    { return m_activeElement; };
+
+    std::function<unsigned int(unsigned int)> func1 = [=] (unsigned int index)
+    { m_activeElement = index; return 0;};
+
+    std::function<unsigned int()> clearTexts = [=]()
+    { m_hudTexts.clear(); return 0; };
+
+    std::function<unsigned int(std::string)> debugText = [=](std::string debug_message)
+    {   
+        m_hudTexts.clear();
+        TextObject t; t.text = debug_message;
+        t.x = -1.0f; t.y = -0.95f; t.z = 0.0f; t.scale = 0.5f;
+        t.red = 0.5f; t.blue = t.green = 0.0f;
+        m_hudTexts.push_back(t);
+        return 0; 
+    };
+
+    std::function<unsigned int(std::string, float, float, float, float, float, float, float)> writeText = [=]
+        (std::string debug_message, float x, float y, float z, float scale, float red, float green, float blue)
+    {   
+        TextObject t; t.text = debug_message; 
+        t.x = x; t.y = y; t.z = z; t.scale = scale;
+        t.red = red; t.blue = blue; t.green = green;
+        m_hudTexts.push_back(t);
+        return 0; 
+    };
+
+    lua->Register("hud_activeElement", func0);
+    lua->Register("hud_setActiveElement", func1);
+    lua->Register("hud_addText", writeText);
+    lua->Register("hud_clearTexts", clearTexts);
+    lua->Register("hud_debugText", debugText);
 }

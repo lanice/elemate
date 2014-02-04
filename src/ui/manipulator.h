@@ -13,6 +13,7 @@ class Navigation;
 class Hand;
 class TerrainInteractor;
 class Renderer;
+class LuaWrapper;
 class CameraEx;
 
 
@@ -31,6 +32,8 @@ public:
 
     void setRenderer(Renderer & renderer);
 
+    LuaWrapper * lua();
+
     virtual const float depthAt(const glm::ivec2 & windowCoordinates) override;
 
     using AbstractCoordinateProvider::objAt;
@@ -42,6 +45,10 @@ public:
         , const glm::mat4 & viewProjectionInverted) override;
 
 protected:
+    void registerLuaFunctions(LuaWrapper * lua);
+
+    void setGrabbedTerrain(bool grabbed);
+
     GLFWwindow & m_window;
     const Navigation & m_navigation;
     const CameraEx & m_camera;
@@ -50,6 +57,7 @@ protected:
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;
     bool m_grabbedTerrain;
     Renderer * m_renderer;
+    LuaWrapper * m_lua;
 
     glm::dvec2 m_lastCursorPos;
 

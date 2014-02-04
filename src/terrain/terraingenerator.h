@@ -14,6 +14,7 @@ namespace physx {
 
 class Terrain;
 class TerrainTile;
+class BaseTile;
 class World;
 
 /** Generator for height field terrains
@@ -59,4 +60,8 @@ private:
     /** adds a river bed to the heightField, getting the rock and sand indices from the initializer list
       * @return terrain type id storage in row major order */
     glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const;
+    /** http://www.gameprogrammer.com/fractal.html#diamond algorithm for terrain creation */
+    void diamondSquare(TerrainTile & tile) const;
+    /** apply sand, grassland and bedrock terrain elements depending on the height values */
+    void applyElementsByHeight(BaseTile & tile) const;
 };

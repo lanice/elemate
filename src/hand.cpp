@@ -20,6 +20,7 @@
 #include "world.h"
 #include "terrain/terrain.h"
 #include "rendering/shadowmappingstep.h"
+#include "lua/luawrapper.h"
 
 const std::string Hand::s_modelFilename = "data/models/hand.3DS";
 
@@ -249,7 +250,7 @@ void Hand::drawDepthMapImpl(const CameraEx & camera)
 {
     m_depthMapProgram->setUniform("depthMVP", camera.viewProjectionEx() * transform());
     m_depthMapProgram->setUniform("znear", camera.zNearEx());
-    m_depthMapProgram->setUniform("zfar", camera.zFar());
+    m_depthMapProgram->setUniform("zfar", camera.zFarEx());
 
     m_depthMapProgram->use();
 
@@ -285,4 +286,20 @@ void Hand::initShadowMappingProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
+}
+
+void Hand::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<float()> func0 = [=] ()
+    { return position().x; };
+
+    std::function<float()> func1 = [=]()
+    { return position().y; };
+
+    std::function<float()> func2 = [=]()
+    { return position().z; };
+
+    lua->Register("hand_posX", func0);
+    lua->Register("hand_posY", func1);
+    lua->Register("hand_posZ", func2);
 }

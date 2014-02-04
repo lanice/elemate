@@ -7,6 +7,7 @@ namespace glow {
 #include <glow/Texture.h>
 #include <glow/RenderBufferObject.h>
 #include <glow/Program.h>
+#include <glowutils/AxisAlignedBoundingBox.h>
 #include "cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -45,27 +46,19 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
 : m_world(world)
 , m_lightCam(new CameraEx(ProjectionType::orthographic))
 {
-    const TerrainSettings & ts = m_world.terrain->settings;
-    const float right = ts.sizeX * 0.5f;
-    const float top = ts.maxHeight;
-    const float far = ts.sizeZ * 0.5f;
-
-    m_lightCam->setEye(m_world.sunPosition());
-    m_lightCam->setCenter(glm::vec3(0, 0, 0));
     m_lightCam->setUp(glm::vec3(0, 1, 0));
-    m_lightCam->setLeft(-right);
-    m_lightCam->setRight(right);
-    m_lightCam->setTop(top);
-    m_lightCam->setBottom(-top);
-    m_lightCam->setZFar(far);
-    m_lightCam->setZNearEx(-far);
+    m_lightCam->setTop(m_world.terrain->settings.maxHeight);
+    m_lightCam->setBottom(-m_world.terrain->settings.maxHeight);
     m_lightCam->setViewport(2048, 2048);
 
     m_lightTex = new glow::Texture(GL_TEXTURE_2D);
-    m_lightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_lightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_lightTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_lightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_lightTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_lightTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_lightTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    m_lightTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float lightBorderColor[4] = { 1, 1, 1, 1 };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, lightBorderColor);
+    CheckGLError();
     m_lightTex->image2D(0, GL_DEPTH_COMPONENT32F, m_lightCam->viewport().x, m_lightCam->viewport().y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
     m_lightFbo = new glow::FrameBufferObject();
@@ -91,10 +84,23 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_shadowFbo->unbind();
 }
 
+void ShadowMappingStep::calculateLightMatrix(const CameraEx & camera)
+{
+    m_lightCam->setEye(glm::vec3(camera.eye().x, 0.0f, camera.eye().z));
+    m_lightCam->setCenter(m_lightCam->eye() - m_world.sunPosition());
+    const float shadowWidth = camera.zFarEx();
+    m_lightCam->setLeft(-shadowWidth*1.5f);
+    m_lightCam->setRight(shadowWidth*1.5f);
+    m_lightCam->setZFarEx(shadowWidth);
+    m_lightCam->setZNearEx(-shadowWidth);
+}
+
 void ShadowMappingStep::drawLightMap(const CameraEx & camera)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
+
+    calculateLightMatrix(camera);
 
     glViewport(0, 0, m_lightCam->viewport().x, m_lightCam->viewport().y);
 
@@ -116,6 +122,7 @@ void ShadowMappingStep::draw(const CameraEx & camera)
 
     m_lightTex->bind(GL_TEXTURE0 + s_lightmapSlot);
     m_shadowFbo->bind();
+    glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->drawShadowMapping(camera, *m_lightCam, { "bedrock" });
