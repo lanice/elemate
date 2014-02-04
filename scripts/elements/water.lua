@@ -3,10 +3,10 @@
 -- immutable properties
 function setImmutableProperties( index )
     maxMotionDistance = 0.06
-    gridSize = 0.64
-    restOffset = 0.07
-    contactOffset = 0.08
-    restParticleDistance = 0.09
+    gridSize = 0.5
+    restOffset = 0.1
+    contactOffset = 0.1
+    restParticleDistance = 0.1
 
     psa_setImmutableProperties(index, maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance)
 end
