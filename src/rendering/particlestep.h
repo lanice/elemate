@@ -5,10 +5,10 @@
 
 #include "renderingstep.h"
 
-class ParticleWaterStep : public RenderingStep
+class ParticleStep : public RenderingStep
 {
 public:
-    ParticleWaterStep();
+    ParticleStep();
 
     virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;

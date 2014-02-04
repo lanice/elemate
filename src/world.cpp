@@ -15,7 +15,6 @@
 #include "physicswrapper.h"
 #include "soundmanager.h"
 #include "ui/navigation.h"
-#include "elements.h"
 #include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"

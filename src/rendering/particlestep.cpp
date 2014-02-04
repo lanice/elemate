@@ -1,4 +1,4 @@
-#include "particlewaterstep.h"
+#include "particlestep.h"
 
 #include <cassert>
 
@@ -13,7 +13,7 @@
 #include "world.h"
 #include "terrain/terrain.h"
 
-ParticleWaterStep::ParticleWaterStep()
+ParticleStep::ParticleStep()
 {
     // first step: get depth image
     m_depthTex = new glow::Texture(GL_TEXTURE_2D);
@@ -53,13 +53,13 @@ ParticleWaterStep::ParticleWaterStep()
     glow::Program * blurHorizontalProgram = new glow::Program();
     blurHorizontalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_v.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle_depthblurring_v.frag"));
     addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
 
     glow::Program * blurVerticalProgram = new glow::Program();
     blurVerticalProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_depthblurring_h.frag"));
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle_depthblurring_h.frag"));
     addProcess(*m_postTexA, m_postTexB, *blurVerticalProgram);
 
     m_depthResultTex = m_postTexB;
@@ -96,11 +96,11 @@ ParticleWaterStep::ParticleWaterStep()
     glow::Program * normalProgram = new glow::Program();
     normalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water_normals.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle_normals.frag"));
     addProcess(*m_postTexB, m_normalsTex, *normalProgram);
 }
 
-ParticleWaterStep::PostProcess::PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
+ParticleStep::PostProcess::PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
 : m_source(source)
 , m_target(target)
 , m_fbo(nullptr)
@@ -115,7 +115,7 @@ ParticleWaterStep::PostProcess::PostProcess(glow::Texture & source, glow::Textur
     }
 }
 
-void ParticleWaterStep::PostProcess::draw()
+void ParticleStep::PostProcess::draw()
 {
     if (m_fbo)
         m_fbo->bind();
@@ -130,12 +130,12 @@ void ParticleWaterStep::PostProcess::draw()
         m_fbo->unbind();
 }
 
-void ParticleWaterStep::addProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
+void ParticleStep::addProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
 {
     m_processes.push_back(PostProcess(source, target, program));
 }
 
-void ParticleWaterStep::draw(const CameraEx & camera)
+void ParticleStep::draw(const CameraEx & camera)
 {
     // render depth values to texture
     glEnable(GL_DEPTH_TEST);
@@ -157,7 +157,7 @@ void ParticleWaterStep::draw(const CameraEx & camera)
     }
 }
 
-void ParticleWaterStep::resize(int width, int height)
+void ParticleStep::resize(int width, int height)
 {
     m_elementIdTex->image2D(0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
     m_depthTex->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
@@ -177,19 +177,19 @@ void ParticleWaterStep::resize(int width, int height)
     }
 }
 
-glow::Texture * ParticleWaterStep::depthTex()
+glow::Texture * ParticleStep::depthTex()
 {
     assert(m_depthResultTex);
     return m_depthResultTex;
 }
 
-glow::Texture * ParticleWaterStep::normalsTex()
+glow::Texture * ParticleStep::normalsTex()
 {
     assert(m_normalsTex);
     return m_normalsTex;
 }
 
-glow::Texture * ParticleWaterStep::elementIdTex()
+glow::Texture * ParticleStep::elementIdTex()
 {
     assert(m_elementIdTex);
     return m_elementIdTex;

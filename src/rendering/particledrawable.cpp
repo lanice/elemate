@@ -121,10 +121,10 @@ void ParticleDrawable::initialize()
 
     m_program = new glow::Program();
     m_program->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle_water.vert"),
-        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle_water.geo"),
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle/particle.vert"),
+        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle/particle.geo"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle.frag"));
 
     m_program->setUniform("particleSize", m_particleSize);
     m_program->setUniform("elementIndex", m_elementIndex);

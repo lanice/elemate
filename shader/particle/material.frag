@@ -1,7 +1,7 @@
 #version 330 core
 
-uniform sampler2D waterNormals;
-uniform sampler2D waterDepth;
+uniform sampler2D particleNormals;
+uniform sampler2D particleDepth;
 uniform sampler2D lavaNormals;
 uniform sampler2D sceneColor;
 uniform int timef;
@@ -10,9 +10,9 @@ uniform vec3 camDirection;
 
 vec4 waterColor(vec2 v_uv){
     vec3 light = normalize(vec3(0.0,1.0,-0.5));
-    vec3 normal = (vec4(texture(waterNormals, v_uv).xyz,1.0)*view).xyz;
+    vec3 normal = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
     vec3 resVector = refract(vec3(0.0,0.0,-1.0),normal , 0.8);
-    float depth = texture(waterDepth, v_uv);
+    float depth = texture(particleDepth, v_uv);
     //return vec4(0.5-depth);
     vec3 waterCol = (5*texture(
                             sceneColor, 
@@ -56,7 +56,7 @@ vec4 lavaColor(vec2 v_uv){
 
 
     vec3 light = normalize(vec3(0.0,1.0,-0.5));
-    vec3 normal = (vec4(texture(waterNormals, v_uv).xyz,1.0)*view).xyz;
+    vec3 normal = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
     vec3 lavaCol = vec3(0.5,0.01,0.01);
 
     return vec4(mix(

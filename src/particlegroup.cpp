@@ -11,7 +11,7 @@
 #include <PxScene.h>
 #include <PxSceneLock.h>
 
-#include "particledrawable.h"
+#include "rendering/particledrawable.h"
 
 
 namespace {

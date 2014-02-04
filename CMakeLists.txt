@@ -75,8 +75,6 @@ set(SOURCES
     src/particlegroup.h
     src/particlescriptaccess.cpp
     src/particlescriptaccess.h
-    src/particledrawable.h
-    src/particledrawable.cpp
     src/hpicgs/CyclicTime.cpp
     src/hpicgs/CyclicTime.h
     src/hpicgs/Timer.cpp
@@ -121,8 +119,10 @@ set(SOURCES
     src/rendering/renderer.cpp
     src/rendering/renderingstep.h
     src/rendering/renderingstep.cpp
-    src/rendering/particlewaterstep.h
-    src/rendering/particlewaterstep.cpp
+    src/rendering/particledrawable.h
+    src/rendering/particledrawable.cpp
+    src/rendering/particlestep.h
+    src/rendering/particlestep.cpp
     src/rendering/shadowmappingstep.cpp
     src/rendering/shadowmappingstep.h
     src/rendering/string_rendering/CharacterDrawable.h
@@ -146,19 +146,19 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 set(SHADER
     shader/flush.vert
     shader/flush.frag
-    shader/material.frag
     shader/passthrough.frag
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
     shader/hand.frag
     shader/hand.vert
-    shader/particle_water.vert
-    shader/particle_water.geo
-    shader/particle_water.frag
-    shader/particle_water_normals.frag
-    shader/particle_water_depthblurring_h.frag
-    shader/particle_water_depthblurring_v.frag
+    shader/particle/material.frag
+    shader/particle/particle.vert
+    shader/particle/particle.geo
+    shader/particle/particle.frag
+    shader/particle/particle_normals.frag
+    shader/particle/particle_depthblurring_h.frag
+    shader/particle/particle_depthblurring_v.frag
     shader/phongLighting.frag
     shader/shadows/depthmap_terrain.vert
     shader/shadows/depthmap_terrain.geo
