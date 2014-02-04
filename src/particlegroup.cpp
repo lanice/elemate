@@ -41,6 +41,7 @@ ParticleGroup::ParticleGroup(
 , m_maxParticleCount(maxParticleCount)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
+, m_lastFreeIndex(maxParticleCount-1)
 , m_emitting(false)
 , m_timeSinceLastEmit(0.0)
 , m_gpuParticles(enableGpuParticles)
@@ -96,8 +97,9 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
             indices[i] = m_freeIndices.back();
             m_freeIndices.pop_back();
         } else {
-            if (m_nextFreeIndex == m_maxParticleCount-1) return;
-            indices[i] = m_nextFreeIndex++;
+            indices[i] = m_nextFreeIndex;
+            if (m_nextFreeIndex == m_lastFreeIndex) releaseOldParticles(numParticles);
+            if (++m_nextFreeIndex == m_maxParticleCount) m_nextFreeIndex = 0;
         }
 
         positions[i] = PxVec3(pos.at(i).x, pos.at(i).y, pos.at(i).z);
@@ -120,6 +122,30 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
     delete[] indices;
     delete[] positions;
     delete[] velocities;
+}
+
+void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
+{
+    glow::UIntArray indices;
+    for (uint32_t i = 0; i < numParticles; ++i)
+    {
+        if (++m_lastFreeIndex == m_maxParticleCount) m_lastFreeIndex = 0;
+        indices << m_lastFreeIndex;
+    }
+
+    PxU32 * indexBuffer = new PxU32[numParticles];
+
+    for (PxU32 i = 0; i < numParticles; ++i)
+    {
+        PxU32 index = indices.at(i);
+        indexBuffer[i] = index;
+    }
+
+    PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
+
+    m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+
+    delete[] indexBuffer;
 }
 
 void ParticleGroup::releaseParticles(const uint32_t numParticles, const glow::UIntArray & indices)
@@ -166,15 +192,25 @@ void ParticleGroup::updateEmitting(const double & delta)
 {
     if (!m_emitting) return;
 
-    if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
-    {
-        std::uniform_real_distribution<float> uniform_dist(-0.5f, 0.5f);
-        std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
+    unsigned int particlesToEmit = glm::floor(m_emitRatio * delta);
 
-        createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
+    std::uniform_real_distribution<float> uniform_dist(-0.75f, 0.75f);
+    std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
+
+    if (particlesToEmit > 0)
+    {
+        for (unsigned int i = 0; i < particlesToEmit; ++i)
+            createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
+
         m_timeSinceLastEmit = 0.0;
     } else {
-        m_timeSinceLastEmit += delta;
+        if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
+        {
+            createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
+            m_timeSinceLastEmit = 0.0;
+        } else {
+            m_timeSinceLastEmit += delta;
+        }
     }
 }
 

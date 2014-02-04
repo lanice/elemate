@@ -93,6 +93,8 @@ public:
 
 
 protected:
+    void releaseOldParticles(const uint32_t numParticles);
+
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
@@ -102,6 +104,7 @@ protected:
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
+    uint32_t m_lastFreeIndex;
 
     float m_emitRatio;
     glm::vec3 m_emitPosition;
