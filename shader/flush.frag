@@ -37,10 +37,10 @@ void main()
     vec4 sceneHandColor = mix(texture(handColor, v_uv), texture(sceneColor, v_uv), step(sceneZ, handZ));
     float sceneHandZ = min(sceneZ, handZ);
 
-	fragColor = 
+	fragColor =
     
     mix(
-        (1-lavaC.w * (1-shadowFactor)) * waterC,
+        (1-lavaC.w * (1-shadowFactor)) * lavaC,
 		shadowFactor * sceneHandColor,
 		step(sceneHandZ,waterZ)
 	);
