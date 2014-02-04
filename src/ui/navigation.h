@@ -30,6 +30,7 @@ public:
     const CameraEx & camera() const;
 
     float rotationAngle() const;
+    const glm::vec3 & center() const;
 
 
 protected:

@@ -1,6 +1,5 @@
 #include "renderer.h"
 
-#include <glow/global.h>
 namespace glow {
     class Buffer; // missing forward declaration in FrameBufferObject.h
 }
@@ -111,11 +110,6 @@ void Renderer::initialize()
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
 }
 
-void Renderer::addSceneFboReader(const std::function<void()> & reader)
-{
-    m_sceneFboReader.push_back(reader);
-}
-
 void Renderer::operator()(const CameraEx & camera)
 {
     sceneStep(camera);
@@ -136,10 +130,6 @@ void Renderer::sceneStep(const CameraEx & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->draw(camera, { "bedrock" });
-
-    // call functions that read from the scene fbo for the object they are member of
-    for (auto & function : m_sceneFboReader)
-        function();
 
     m_fboByName.at("scene")->unbind();
 }
