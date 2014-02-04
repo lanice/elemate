@@ -114,9 +114,7 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
 
     bool success = m_particleSystem->createParticles(particleCreationData);
 
-    if (success)
-        m_particleDrawable->addParticles(numParticles, positions);
-    else
+    if (!success)
         glow::warning("ParticleGroup::createParticles creation of %; physx particles failed", numParticles);
 
     delete[] indices;
@@ -192,7 +190,7 @@ void ParticleGroup::updateEmitting(const double & delta)
 {
     if (!m_emitting) return;
 
-    unsigned int particlesToEmit = glm::floor(m_emitRatio * delta);
+    unsigned int particlesToEmit = static_cast<unsigned int>(glm::floor(m_emitRatio * delta));
 
     std::uniform_real_distribution<float> uniform_dist(-0.75f, 0.75f);
     std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
@@ -233,7 +231,7 @@ void ParticleGroup::updateVisuals()
 
     m_particleDrawable->setParticleSize(m_particleSystem->getRestParticleDistance());
 
-    releaseParticles(indices.size(), indices);
+    releaseParticles(static_cast<uint32_t>(indices.size()), indices);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
