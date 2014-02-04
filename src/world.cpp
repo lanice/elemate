@@ -40,11 +40,10 @@ World::World(PhysicsWrapper & physicsWrapper)
 
     // Create two non-3D channels (paino and rain)
     //initialise as paused
-    m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
-    m_soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
+    int backgroundSoundId = m_soundManager->createNewChannel("data/sounds/elemate.mp3", true, false, true);
     //set volume (make quieter)
-    m_soundManager->setVolume(0, 0.25f);
-    m_soundManager->setVolume(1, 0.5f);
+    m_soundManager->setVolume(backgroundSoundId, 0.25f);
+    m_soundManager->setPaused(backgroundSoundId, false);
 
     initShader();
 
