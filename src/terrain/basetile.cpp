@@ -10,6 +10,7 @@
 #include "imagereader.h"
 #include "world.h"
 
+
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : TerrainTile(terrain, tileID, elementNames)
 , m_terrainTypeTex(nullptr)
@@ -50,6 +51,7 @@ void BaseTile::initialize()
 
     loadInitTexture("bedrock", 2);
     loadInitTexture("sand", 3);     // http://opengameart.org/content/50-free-textures
+    loadInitTexture("grassland", 4);
 }
 
 void BaseTile::initializeProgram()
@@ -105,10 +107,11 @@ void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
     m_textures.push_back(TextureTuple(elementName + "Sampler", texture, textureSlot));
 }
 
-void BaseTile::updateGlBuffers()
+void BaseTile::updateBuffers()
 {
     m_terrainTypeBuffer->setData(*m_terrainTypeData, GL_DYNAMIC_DRAW);
-    TerrainTile::updateGlBuffers();
+
+    TerrainTile::updateBuffers();
 }
 
 uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const

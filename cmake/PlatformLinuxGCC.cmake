@@ -34,6 +34,10 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
     ${LINUX_COMPILE_DEFS}
     NDEBUG	                  # Release build
 )
+set(DEFAULT_COMPILE_DEFS_RELWITHDEBINFO
+    ${LINUX_COMPILE_DEFS}
+    NDEBUG	                  # Release build
+)
 
 set(LINUX_COMPILE_FLAGS "-pthread -pipe -fPIC -Wreturn-type -Wall -Wextra -Wtrampolines -Wcast-qual -Wcast-align -fexceptions -MMD -m64 -march=core-avx-i -mfpmath=sse -ffast-math")
 # pthread       -> use pthread library

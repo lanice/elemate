@@ -70,8 +70,8 @@ void Drawable::drawShadowMapping(const CameraEx & camera, const CameraEx & light
     m_shadowMappingProgram->use();
 
     m_shadowMappingProgram->setUniform("invViewportSize", 1.0f / ((camera.viewport().x + camera.viewport().y) * 0.5f));
-    /*m_shadowMappingProgram->setUniform("znear", camera.zNear());
-    m_shadowMappingProgram->setUniform("zfar", camera.zFar());*/
+    m_shadowMappingProgram->setUniform("znear", camera.zNearEx());
+    m_shadowMappingProgram->setUniform("zfar", camera.zFarEx());
 
     m_vao->bind();
 

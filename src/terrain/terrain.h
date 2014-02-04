@@ -8,6 +8,8 @@
 
 #include <glow/ref_ptr.h>
 #include <glow/Array.h>
+#include <glowutils/AxisAlignedBoundingBox.h>
+#include <glowutils/CachedValue.h>
 
 #include "terrainsettings.h"
 
@@ -44,6 +46,10 @@ public:
     /** @return heighest terrain level at position */
     TerrainLevel heighestLevelAt(float x, float z) const;
     void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
+    /** @return the axis aligned bouding box including all tiles */
+    const glowutils::AxisAlignedBoundingBox & boudingBox() const;
+    /** @return the bouding box reduced by the border width */
+    const glowutils::AxisAlignedBoundingBox & validBoundingBox() const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
@@ -52,6 +58,10 @@ public:
     friend class TerrainInteractor;
 
 protected:
+    /** Distance from camera to farthest visible point. The rendered terrain size depends on this parameter.
+      * The terrain will adjust this parameter internally on each draw call, depending on the camera's zfar. */
+    void setViewRange(float zfar);
+
     void setDrawElements(const std::initializer_list<std::string> & elements);
     std::set<TerrainLevel> m_drawLevels;
 
@@ -71,10 +81,16 @@ protected:
     /** lowest tile id in z direction */
     unsigned minTileZID;
 
-    virtual void initialize() override;
-    void generateVertices();
-    void generateIndices();
+    glowutils::AxisAlignedBoundingBox m_boudingBox;
+    /** Distance from camera to farthest visible point. The rendered terrain size depends on this parameter. */
+    float m_viewRange;
+    glowutils::CachedValue<glowutils::AxisAlignedBoundingBox> m_validBoudingBox;
 
+    virtual void initialize() override;
+    void generateDrawGrid();
+
+    void setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const;
+    glowutils::CachedValue<unsigned int> m_renderGridRadius;
     glow::Vec2Array * m_vertices;
     glow::UIntArray * m_indices;
 
