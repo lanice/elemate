@@ -1,38 +1,47 @@
 #version 330 core
 
 uniform sampler2D waterNormals;
+uniform sampler2D waterDepth;
 uniform sampler2D lavaNormals;
 uniform sampler2D sceneColor;
 uniform float timef;
+uniform mat4 view;
+uniform vec3 camDirection;
+
+float noise(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
 vec4 waterColor(vec2 v_uv){
-        vec3 resVector = refract(vec3(0,0,-1), texture(waterNormals, v_uv).xyz, 0.8);
-        vec3 waterCol = (6*texture(
-                                sceneColor, 
-                                v_uv + resVector.xy/10/resVector.z
-                        ).rgb
-            +vec3(0.1,0.8,1))/7;
+    vec3 light = normalize(vec3(0.0,1.0,-0.5));
+    vec3 normal = (vec4(texture(waterNormals, v_uv).xyz,1.0)*view).xyz;
+    vec3 resVector = refract(vec3(0.0,0.0,-1.0),normal , 0.8);
+    vec3 waterCol = (5*texture(
+                            sceneColor, 
+                            v_uv
+                    ).rgb
+        +vec3(0.1,0.8,1.0))/7.0;
 
-		return vec4(mix(
-            mix(
-                vec3(0,0,0.4),
-                waterCol,
-                0.8+
-                0.2*abs(dot(
-                    texture(waterNormals, v_uv).xyz,
-                    normalize(vec3(0,1,0.1))
-                ))
-            ),
-            vec3(0.9,0.9,0.9),
-            smoothstep(
-                0.96,
-                0.98,
-                dot(
-                    texture(waterNormals, v_uv).rgb,
-                    normalize(vec3(0,1,0.1))
-                )
+    return vec4(mix(
+        mix(
+            vec3(0.0,0.0,0.4),
+            waterCol,
+            0.8+
+            0.2*abs(dot(
+                normal,
+                light
+            ))
+        ),
+        vec3(0.9,0.9,0.9),
+        smoothstep(
+            0.9,
+            1.0,
+            dot(
+                reflect(light, normal),
+                camDirection
             )
-        ), 0.5);
+        )
+    ), 0.5);
 }
 
 vec4 lavaColor(vec2 v_uv){

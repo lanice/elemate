@@ -46,7 +46,7 @@ void main()
 	fragColor = 
     
     mix(
-        (1-lavaC.w * (1-shadowFactor)) * lavaC,
+        (1-lavaC.w * (1-shadowFactor)) * waterC,
 		shadowFactor * sceneHandColor,
 		step(sceneHandZ,waterZ)
 	);
