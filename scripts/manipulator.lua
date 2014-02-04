@@ -11,7 +11,7 @@ local isEmitting = false
 local emitParameters = {}
 local emitId = particleGroupId
 
-local MIN_RESTPARTICLEDISTANCE = 0.05
+local MIN_RESTPARTICLEDISTANCE = 0.005
 local MAX_RESTPARTICLEDISTANCE = 10.0
 
 local function createParticleGroup( eleType )

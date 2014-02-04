@@ -25,7 +25,7 @@ UserInterface::UserInterface(GLFWwindow& window) :
   m_activeHUD(true)
 , m_mainMenuOnTop(false)
 , m_window(window)
-, m_activeElement(0)
+, m_activeElement(1000) //Definitely out of range --> no initial highlighting
 {
 }
 

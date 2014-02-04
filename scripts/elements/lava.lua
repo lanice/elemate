@@ -5,8 +5,8 @@ io.write("water.lua\n")
 function setImmutableProperties( index )
     maxMotionDistance = 0.06
     gridSize = 0.64
-    restOffset = 0.07
-    contactOffset = 0.08
+    restOffset = 0.009
+    contactOffset = 0.008
     restParticleDistance = 0.09
 
     psa_setImmutableProperties(index, maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance)
