@@ -37,7 +37,7 @@ local function spawnSource(posX, posY, posZ)
     for x = 0, 360, 10 do
         terrain_dropElement(posX+math.sin(x)*RADIUS,   posZ+math.cos(x)*RADIUS, SOURCE_HEIGHT)   
     end
-    local randomElement = math.random(2)
+    local randomElement = math.random(2)*2 -1
     Id = createParticleGroup(elementTable[randomElement], 1000)
     psa_emit(Id, 200, posX, posY-1.0+SOURCE_HEIGHT, posZ, 0, 1, 0)
 end
