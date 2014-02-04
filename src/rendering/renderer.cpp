@@ -21,6 +21,7 @@ namespace glow {
 #include "hand.h"
 #include "particlewaterstep.h"
 #include "shadowmappingstep.h"
+#include "ui/userinterface.h"
 
 Renderer::Renderer(const World & world)
 : m_world(world)

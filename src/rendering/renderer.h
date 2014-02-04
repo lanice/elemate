@@ -21,6 +21,7 @@ class RenderingStep;
 class ParticleWaterStep;
 class ShadowMappingStep;
 class CameraEx;
+class UserInterface;
 
 class Renderer
 {
@@ -39,6 +40,7 @@ protected:
     // drawing steps
     void sceneStep(const CameraEx & camera);
     void handStep(const CameraEx & camera);
+    void userInterfaceStep(UserInterface * ui);
     std::shared_ptr<ParticleWaterStep> m_particleWaterStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
     void flushStep(const CameraEx & camera);

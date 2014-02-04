@@ -11,7 +11,6 @@
 #include "physicswrapper.h"
 #include "lua/luawrapper.h"
 
-
 EventHandler::EventHandler(GLFWwindow & window, Game & game)
 : m_window(window)
 , m_game(game)
@@ -26,15 +25,29 @@ EventHandler::~EventHandler()
 
 void EventHandler::handleMouseButtonEvent(int button, int action, int mods)
 {
+    if (m_game.userInterface()->isMainMenuOnTop())
+    {
+        m_game.userInterface()->handleMouseButtonEvent(button, action, mods);
+        return;
+    }
+    
     m_game.manipulator()->handleMouseButtonEvent(button, action, mods);
 }
     
 void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 {
+    if (m_game.userInterface()->isMainMenuOnTop())
+    {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+            m_game.toggleMenu();
+        else
+            m_game.userInterface()->handleKeyEvent(key, scancode, action, mods);
+        return;
+    }
     if (action == GLFW_PRESS) {
         switch (key) {
         case GLFW_KEY_ESCAPE:
-            glfwSetWindowShouldClose(&m_window, GL_TRUE);
+            m_game.toggleMenu();
             break;
         case GLFW_KEY_F5:
             glow::info("Updating shader...");
@@ -59,22 +72,21 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
 
 void EventHandler::handleMouseMoveEvent(double xpos, double ypos)
 {
+    if (m_game.userInterface()->isMainMenuOnTop())
+    {
+        m_game.userInterface()->handleMouseMoveEvent(xpos, ypos);
+        return;
+    }
     m_game.manipulator()->handleMouseMoveEvent(xpos, ypos);
 }
 
 void EventHandler::handleScrollEvent(double xoffset, double yoffset)
 {
-    // As soon as we have a HUD interface in which we scroll,
-    // e.g. to choose an element, add a condition here,
-    // as we don't want the navigation to scroll if we are "navigating" in our HUD.
-
-    // if (HUD_active)
-    // {
-    //     m_game->hud()->handleScrollEvent(xoffset, yoffset);
-    //     return;
-    // }
-
-    // or something like this...
+    m_game.userInterface()->handleScrollEvent(xoffset, yoffset);
+    if (m_game.userInterface()->isMainMenuOnTop())
+    {
+        return;
+    }
 
     m_game.navigation()->handleScrollEvent(xoffset, yoffset);
     m_game.manipulator()->handleScrollEvent(xoffset, yoffset);
@@ -83,7 +95,5 @@ void EventHandler::handleScrollEvent(double xoffset, double yoffset)
 void EventHandler::handeResizeEvent(int width, int height)
 {
     glViewport(0, 0, width, height);
-    m_game.camera()->setViewport(width, height);
-
-    m_game.renderer()->resize(width, height);
+    m_game.resize(width, height);
 }
