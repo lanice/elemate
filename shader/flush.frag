@@ -20,24 +20,39 @@ vec4 lavaColor(vec2 v_uv);
 
 void main()
 {    
-    fragColor = vec4(float(texture(elementID, v_uv)) * 0.25);
-    return;
-    
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
     float handZ = linearize(texture(handDepth, v_uv).r);
     float particleZ = texture(particleDepth, v_uv).r;
     vec4 sceneC = texture(sceneColor, v_uv);
     vec4 handC = texture(handColor, v_uv);
-    vec4 waterC = waterColor(v_uv);
-    vec4 lavaC = lavaColor(v_uv);
     float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
 
     vec4 sceneHandColor = mix(texture(handColor, v_uv), texture(sceneColor, v_uv), step(sceneZ, handZ));
     float sceneHandZ = min(sceneZ, handZ);
 
+    uint element = texture(elementID, v_uv).x;
+    
+    vec4 particleC;     // mapping defined in particledrawable.cpp for now
+    switch (element) {
+    case 1u:
+        particleC = waterColor(v_uv);
+        break;
+    case 2u:
+        particleC = lavaColor(v_uv);
+        break;
+    case 3u:
+        particleC = vec4(1, 1, 0, 1);
+        break;
+    case 4u:
+        particleC = vec4(0.3, 0.3, 0.3, 1.0);
+        break;
+    default:
+        particleC = vec4(1,1,1,1);
+    }
+    
 	fragColor =
     mix(
-        (1-lavaC.w * (1-shadowFactor)) * lavaC,
+        (1-particleC.w * (1-shadowFactor)) * particleC,
 		shadowFactor * sceneHandColor,
 		step(sceneHandZ,particleZ)
 	);
