@@ -17,7 +17,7 @@ layout(location = 0)out uint f_elementIndex;
 
 void main()
 {
-    f_elementIndex = elementIndex;
+    f_elementIndex = uint(elementIndex);
 
     vec3 N;
     N.xy = g_relPos.xy;
