@@ -83,7 +83,6 @@ void UserInterface::initialize()
     m_menus.reserve(3);
     m_menus.emplace("MainMenu", new MenuPage("MainMenu"));
     m_menus["MainMenu"]->addEntry("Fortsetzen");
-    m_menus["MainMenu"]->addEntry("Elemente neu laden");
     m_menus["MainMenu"]->addEntry("Hilfe");
     m_menus["MainMenu"]->addEntry("Beenden");
     m_menus.emplace("Settings", new MenuPage("Settings"));
@@ -241,23 +240,14 @@ void UserInterface::invokeMenuEntryFunction()
             case 0:     // Resume
                 toggleMainMenu();
                 break;
-            case 1:     // Reload Scripts
-                glow::info("Updating shader...");
-                glowutils::FileRegistry::instance().reloadAll();
-                glow::info("Updating shader done.");
-                glow::info("Reloading lua scripts...");
-                LuaWrapper::reloadAll();
-                glow::info("Reloading lua scripts done.");
-                toggleMainMenu();
-                break;
-            case 2:     // Help
+            case 1:     // Help
                 m_activeMenu = "Help";
                 break;
-            case 3:     // Settings
+            case 2:     // Settings
                 /* Settings have no effect, therefore disabled
                 m_activeMenu = "Settings";
                 break;
-            case 4:     //Exit 
+            case 3:     //Exit 
                 */
                 glfwSetWindowShouldClose(&m_window, GL_TRUE);
                 break;
