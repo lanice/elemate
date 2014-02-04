@@ -131,6 +131,15 @@ function handleKeyEvent( inputKey, action )
         elseif key == GLFW_KEY_4 then
             hud_setActiveElement(0)
             particleGroupId = selectElement(elementTable[4])
+
+        elseif key == GLFW_KEY_F6 then
+            local id = particleGroupId
+            if id ~= -1 then
+                local elementScript = "scripts/elements/"..psa_elementAtId(id)..".lua"
+                dofile(elementScript)
+                setImmutableProperties(id)
+                setMutableProperties(id)
+            end
         end
 
     elseif action == GLFW_RELEASE then

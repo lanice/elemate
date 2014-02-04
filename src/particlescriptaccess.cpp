@@ -249,6 +249,16 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     lua->Register("psa_particleMass", func27);
     lua->Register("psa_viscosity", func28);
     lua->Register("psa_stiffness", func29);
+
+
+    std::function<int(int, float, float, float, float, float)> func30 = [=](int id, float a, float b, float c, float d, float e)
+    { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
+
+    std::function<int(int, float, float, float, float, float, float, float)> func31 = [=](int id, float a, float b, float c, float d, float e, float f, float g)
+    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
+
+    lua->Register("psa_setImmutableProperties", func30);
+    lua->Register("psa_setMutableProperties", func31);
 }
 
 void ParticleScriptAccess::createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
