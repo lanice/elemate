@@ -39,6 +39,8 @@ m_lua(new LuaWrapper())
     m_lua->loadScript("scripts/manipulator.lua");
 
     m_lua->loadScript("scripts/start.lua");
+    // just for the demo
+    m_world.createFountainSound(glm::vec3(105.446, 7.953, 95.338));
 }
 
 Manipulator::~Manipulator()
