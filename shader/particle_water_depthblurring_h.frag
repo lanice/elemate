@@ -30,7 +30,7 @@ float calcDepth(float originDepth, ivec2 uv){
         1,
         29
     ));
-    coeffSize = 29;
+    //coeffSize = 29;
     float sum = originDepth * binomCoeff[binomOffset[coeffSize]];
     for(int i=1; i<=coeffSize; ++i){
             float rightDepth = texelFetch(source, uv + ivec2(i, 0), 0).r;
@@ -43,7 +43,7 @@ float calcDepth(float originDepth, ivec2 uv){
                         0.02,
                         abs(rightDepth-originDepth)
                         )
-                    ) 
+                    )
                 +mix(
                     leftDepth,
                     originDepth,

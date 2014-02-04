@@ -26,7 +26,6 @@ Renderer::Renderer(const World & world)
 : m_world(world)
 {
     initialize();
-    timef = 0.f;
 }
 
 void Renderer::initialize()
@@ -166,11 +165,9 @@ void Renderer::flushStep(const CameraEx & camera)
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
     m_quad->program()->setUniform("zfar", camera.zFar());
-    m_quad->program()->setUniform("timef", timef);
+    m_quad->program()->setUniform("timef", int(m_world.getTime()));
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
-    timef = timef + 0.01;
-    if (timef>100) timef = 0;
 
     m_quad->draw();
 

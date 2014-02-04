@@ -93,6 +93,10 @@ void World::togglePause()
         m_soundManager->setPaused(sound, !m_time->isRunning());
 }
 
+time_t World::getTime()const{
+    return this->m_time->gett(false);
+}
+
 void World::stopSimulation()
 {
     m_time->stop(true);
