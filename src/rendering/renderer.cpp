@@ -33,29 +33,56 @@ void Renderer::initialize()
 {
     glow::DebugMessageOutput::enable();
 
-    glClearColor(1, 1, 1, 1);
-
     glDepthFunc(GL_LEQUAL);
     glClearDepth(1.0);
 
-    m_sceneColor = new glow::Texture(GL_TEXTURE_2D);
-    m_sceneColor->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_sceneColor->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_sceneColor->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_sceneColor->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    NamedTexture sceneColor = { "sceneColor", new glow::Texture(GL_TEXTURE_2D) };
+    sceneColor.second->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    sceneColor.second->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    sceneColor.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    sceneColor.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_textureByName.insert(sceneColor);
 
-    m_sceneDepth = new glow::Texture(GL_TEXTURE_2D);
-    m_sceneDepth->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_sceneDepth->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_sceneDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_sceneDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_sceneDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    NamedTexture sceneDepth = { "sceneDepth", new glow::Texture(GL_TEXTURE_2D) };
+    sceneDepth.second->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    sceneDepth.second->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    sceneDepth.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    sceneDepth.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    sceneDepth.second->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    m_textureByName.insert(sceneDepth);
 
-    m_sceneFbo = new glow::FrameBufferObject();
-    m_sceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
-    m_sceneFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_sceneDepth);
-    m_sceneFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
-    m_sceneFbo->unbind();
+    NamedFbo sceneFbo = { "scene", new glow::FrameBufferObject() };
+    sceneFbo.second->attachTexture2D(GL_COLOR_ATTACHMENT0, sceneColor.second);
+    sceneFbo.second->attachTexture2D(GL_DEPTH_ATTACHMENT, sceneDepth.second);
+    sceneFbo.second->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
+    sceneFbo.second->unbind();
+    m_fboByName.insert(sceneFbo);
+
+
+
+    NamedTexture handColor = { "handColor", new glow::Texture(GL_TEXTURE_2D) };
+    handColor.second->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    handColor.second->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    handColor.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    handColor.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_textureByName.insert(handColor);
+
+    NamedTexture handDepth = { "handDepth", new glow::Texture(GL_TEXTURE_2D) };
+    handDepth.second->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    handDepth.second->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    handDepth.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    handDepth.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    handDepth.second->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    m_textureByName.insert(handDepth);
+
+    NamedFbo handFbo = { "hand", new glow::FrameBufferObject() };
+    handFbo.second->attachTexture2D(GL_COLOR_ATTACHMENT0, handColor.second);
+    handFbo.second->attachTexture2D(GL_DEPTH_ATTACHMENT, handDepth.second);
+    handFbo.second->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
+    handFbo.second->unbind();
+    m_fboByName.insert(handFbo);
+
+
 
     m_particleWaterStep = std::make_shared<ParticleWaterStep>();
     m_shadowMappingStep = std::make_shared<ShadowMappingStep>(this->m_world);
@@ -63,32 +90,22 @@ void Renderer::initialize()
     m_steps.push_back(m_particleWaterStep.get());
     m_steps.push_back(m_shadowMappingStep.get());
 
-    m_sceneWithHandDepth = new glow::Texture(GL_TEXTURE_2D);
-    m_sceneWithHandDepth->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_sceneWithHandDepth->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_sceneWithHandDepth->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_sceneWithHandDepth->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_sceneWithHandDepth->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
-    // draw the hand into the scene color texture, but do not change the scene depth
-    m_handFbo = new glow::FrameBufferObject();
-    m_handFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_sceneColor);
-    m_handFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_sceneWithHandDepth);
-    m_handFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
-    m_handFbo->unbind();
-
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag"));
 
-    m_quadProgram->setUniform("sceneColor", 0);
-    m_quadProgram->setUniform("sceneDepth", 1);
-    m_quadProgram->setUniform("waterNormals", 2);
-    m_quadProgram->setUniform("waterDepth", 3);
-    m_quadProgram->setUniform("shadowMap", 4);
-    m_quadProgram->setUniform("lightMap", 5);
+
+    m_flushSources =
+    { sceneColor, sceneDepth, handColor, handDepth,
+    NamedTexture("waterNormals", m_particleWaterStep->normalsTex()),
+    NamedTexture("waterDepth", m_particleWaterStep->depthTex()),
+    NamedTexture("shadowMap", m_shadowMappingStep->result()),
+    NamedTexture("lightMap", m_shadowMappingStep->lightMap())};
+
+    for (int i = 0; i < m_flushSources.size(); ++i)
+        m_quadProgram->setUniform(m_flushSources.at(i).first, i);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
 }
@@ -100,8 +117,6 @@ void Renderer::addSceneFboReader(const std::function<void()> & reader)
 
 void Renderer::operator()(const CameraEx & camera)
 {
-    assert(m_sceneFbo);
-
     sceneStep(camera);
     handStep(camera);
     m_particleWaterStep->draw(camera);
@@ -114,8 +129,9 @@ void Renderer::sceneStep(const CameraEx & camera)
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    m_sceneFbo->bind();
+    m_fboByName.at("scene")->bind();
 
+    glClearColor(m_world.skyColor().x, m_world.skyColor().y, m_world.skyColor().z, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.terrain->draw(camera, { "bedrock" });
@@ -124,23 +140,18 @@ void Renderer::sceneStep(const CameraEx & camera)
     for (auto & function : m_sceneFboReader)
         function();
 
-    m_sceneFbo->unbind();
+    m_fboByName.at("scene")->unbind();
 }
 
 void Renderer::handStep(const CameraEx & camera)
 {
-    m_handFbo->bind();
+    m_fboByName.at("hand")->bind();
 
-    // reuse the depth data from scene step
-    // ... there are probably more performant ways for the hand depth test than copying the whole buffer...
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_sceneFbo->id());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_handFbo->id());
-    glBlitFramebuffer(0, 0, camera.viewport().x, camera.viewport().y, 0, 0, camera.viewport().x, camera.viewport().y,
-        GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.hand->draw(camera);
     
-    m_handFbo->unbind();
+    m_fboByName.at("hand")->unbind();
 }
 
 void Renderer::flushStep(const CameraEx & camera)
@@ -148,40 +159,34 @@ void Renderer::flushStep(const CameraEx & camera)
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    m_sceneColor->bind(GL_TEXTURE0);
-    m_sceneWithHandDepth->bind(GL_TEXTURE1);
-    m_particleWaterStep->normalsTex()->bind(GL_TEXTURE2);
-    m_particleWaterStep->depthTex()->bind(GL_TEXTURE3);
-    m_shadowMappingStep->result()->bind(GL_TEXTURE4);
-    m_shadowMappingStep->lightMap()->bind(GL_TEXTURE5);
+    for (int i = 0; i < m_flushSources.size(); ++i)
+        m_flushSources.at(i).second->bind(GL_TEXTURE0 + i);
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
-    m_quad->program()->setUniform("zfar", camera.zFar());
+    m_quad->program()->setUniform("zfar", camera.zFarEx());
 
     m_quad->draw();
 
-    m_sceneColor->unbind(GL_TEXTURE0);
-    m_sceneWithHandDepth->unbind(GL_TEXTURE1);
-    m_particleWaterStep->normalsTex()->unbind(GL_TEXTURE2);
-    m_particleWaterStep->depthTex()->unbind(GL_TEXTURE3);
-    m_shadowMappingStep->result()->unbind(GL_TEXTURE4);
-    m_shadowMappingStep->lightMap()->unbind(GL_TEXTURE5);
+    for (int i = 0; i < m_flushSources.size(); ++i)
+        m_flushSources.at(i).second->unbind(GL_TEXTURE0 + i);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const
 {
-    return m_sceneFbo.get();
+    return m_fboByName.at("scene");
 }
 
 void Renderer::resize(int width, int height)
 {
-    m_sceneColor->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-    m_sceneDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    m_sceneFbo->printStatus(true);
-    assert(m_sceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    m_textureByName.at("sceneColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_fboByName.at("scene")->printStatus(true);
+    assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_sceneWithHandDepth->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    assert(m_handFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    m_textureByName.at("handColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_fboByName.at("hand")->printStatus(true);
+    assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     for (auto step : m_steps) {
         assert(step);

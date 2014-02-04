@@ -19,19 +19,26 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
+    if (!m_renderGridRadius.isValid())
+        generateDrawGrid();
+
     glow::Program * program = nullptr;
 
     // linearize the depth values for perspective projections
     if (camera.projectionType() == ProjectionType::perspective) {
         program = m_depthMapLinearizedProgram;
         program->setUniform("znear", camera.zNearEx());
-        program->setUniform("zfar", camera.zFar());
+        program->setUniform("zfar", camera.zFarEx());
     }
     else { // not needed for the orthographic projection
         program = m_depthMapProgram; 
     }
 
-    program->setUniform("depthMVP", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    setDrawGridOffsetUniform(*program, camera.eye());
+
+    TerrainTile & baseTile = *m_tiles.at(TileID(TerrainLevel::BaseLevel));
+
+    program->setUniform("depthMVP", camera.viewProjectionEx() * baseTile.m_transform);
 
     // TODO: generalize for more tiles...
 
@@ -42,6 +49,10 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
 
     for (TerrainLevel level : m_drawLevels) {
         TerrainTile & tile = *m_tiles.at(TileID(level));
+        if (level == TerrainLevel::WaterLevel) // for water/fluid drawing: discard samples below the solid terrain
+            baseTile.m_heightTex->bind(GL_TEXTURE1);
+
+        program->setUniform("baseTileCompare", level == TerrainLevel::WaterLevel);
 
         tile.prepareDraw();
         tile.m_heightTex->bind(GL_TEXTURE0);
@@ -49,6 +60,9 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
 
         tile.m_heightTex->unbind(GL_TEXTURE0);
+
+        if (level == TerrainLevel::WaterLevel)
+            baseTile.m_heightTex->unbind(GL_TEXTURE1);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);
@@ -60,6 +74,9 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
 {
     // TODO: generalize for more tiles...
 
+    if (!m_renderGridRadius.isValid())
+        generateDrawGrid();
+
     auto baseTile = m_tiles.at(TileID(TerrainLevel::BaseLevel));
 
     glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * baseTile->transform();
@@ -67,6 +84,8 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
+
+    setDrawGridOffsetUniform(*m_shadowMappingProgram, camera.eye());
 
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(s_restartIndex);
@@ -89,19 +108,23 @@ void Terrain::initDepthMapProgram()
 {
     m_depthMapProgram = new glow::Program();
     m_depthMapProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
-    m_depthMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_depthMapProgram->setUniform("baseHeightField", 1);
+    m_depthMapProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 
 
     m_depthMapLinearizedProgram = new glow::Program();
     m_depthMapLinearizedProgram->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
+        World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
     m_depthMapLinearizedProgram->setUniform("heightField", 0);
-    m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);
+    m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 }
 
 void Terrain::initShadowMappingProgram()
@@ -113,7 +136,7 @@ void Terrain::initShadowMappingProgram()
 
     m_shadowMappingProgram->setUniform("heightField", 1);
 
-    m_shadowMappingProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_shadowMappingProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }

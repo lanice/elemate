@@ -2,15 +2,11 @@
 
 layout(location = 0)in vec2 _vertex;
 
-uniform mat4 depthMVP;
+out ivec2 v_vertex;
 
-uniform samplerBuffer heightField;
-
-uniform uvec2 tileRowsColumns;
+uniform ivec2 rowColumnOffset;
 
 void main()
 {
-    int texIndex = int(_vertex.t) + int(_vertex.s) * int(tileRowsColumns.t);
-    
-    gl_Position = depthMVP * vec4(_vertex.x, texelFetch(heightField, texIndex).x, _vertex.y, 1.0);
+    v_vertex = ivec2(_vertex) + rowColumnOffset;
 }

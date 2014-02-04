@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <map>
 
 #include <glow/ref_ptr.h>
 
@@ -51,15 +52,18 @@ protected:
 
     void initialize();
 
+    typedef std::pair<std::string, glow::ref_ptr<glow::Texture>> NamedTexture;
+    typedef std::pair<std::string, glow::ref_ptr<glow::FrameBufferObject>> NamedFbo;
+
+    /** list of textures to be used as flush shader input. The list index determines the sampler id. */
+    std::vector<NamedTexture> m_flushSources;
+
+    /** named textures created by the renderer */
+    std::map<std::string, glow::ref_ptr<glow::Texture>> m_textureByName;
+    std::map<std::string, glow::ref_ptr<glow::FrameBufferObject>> m_fboByName;
+
     glow::ref_ptr<glowutils::ScreenAlignedQuad> m_quad;
     glow::ref_ptr<glow::Program> m_quadProgram;
-
-    glow::ref_ptr<glow::FrameBufferObject> m_sceneFbo;
-    glow::ref_ptr<glow::Texture> m_sceneColor;
-    glow::ref_ptr<glow::Texture> m_sceneDepth;
-
-    glow::ref_ptr<glow::FrameBufferObject> m_handFbo;
-    glow::ref_ptr<glow::Texture> m_sceneWithHandDepth;
 
     std::vector<std::function<void()>> m_sceneFboReader;
 public:

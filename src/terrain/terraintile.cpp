@@ -15,6 +15,7 @@
 #include <PxRigidStatic.h>
 #include <PxShape.h>
 #include <PxMaterial.h>
+#include <PxScene.h>
 #include <geometry/PxHeightField.h>
 #include <geometry/PxHeightFieldSample.h>
 #include <geometry/PxHeightFieldDesc.h>
@@ -38,6 +39,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
 , m_heightField(nullptr)
+, m_pxShape(nullptr)
 {
     terrain.registerTile(tileID, *this);
 
@@ -49,6 +51,8 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
         0, 1, 0, 0,
         0, 0, terrain.settings.sampleInterval(), 0,
         minX, 0, minZ, 1);
+
+    clearBufferUpdateRange();
 }
 
 TerrainTile::~TerrainTile()
@@ -66,7 +70,7 @@ void TerrainTile::prepareDraw()
     if (!m_isInitialized)
         initialize();
     if (!m_bufferUpdateList.empty())
-        updateGlBuffers();
+        updateBuffers();
 }
 
 void TerrainTile::bind(const CameraEx & camera)
@@ -88,6 +92,9 @@ void TerrainTile::bind(const CameraEx & camera)
     m_program->setUniform("modelView", modelView);
     glm::mat4 modelViewProjection = camera.viewProjectionEx() * m_transform;
     m_program->setUniform("modelViewProjection", modelViewProjection);
+    m_program->setUniform("znear", camera.zNearEx());
+    m_program->setUniform("zfar", camera.zFarEx());
+    m_terrain.setDrawGridOffsetUniform(*m_program, camera.eye());
 
     m_terrain.m_world.setUpLighting(*m_program);
 }
@@ -101,7 +108,15 @@ void TerrainTile::unbind()
 
 void TerrainTile::setHeightField(glow::FloatArray & heightField)
 {
+    assert(heightField.size() == m_terrain.settings.columns * m_terrain.settings.rows);
     m_heightField = &heightField;
+    addBufferUpdateRange(0, heightField.size());
+    addToPxUpdateBox(0, m_terrain.settings.rows - 1, 0, m_terrain.settings.columns - 1);
+}
+
+void TerrainTile::initialize()
+{
+    clearBufferUpdateRange();
 
     m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
@@ -110,10 +125,7 @@ void TerrainTile::setHeightField(glow::FloatArray & heightField)
     m_heightTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
     m_heightBuffer->unbind();
-}
 
-void TerrainTile::initialize()
-{
     m_isInitialized = true;
 }
 
@@ -121,7 +133,7 @@ void TerrainTile::initializeProgram()
 {
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
-    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain.settings.rows, m_terrain.settings.columns));
+    m_program->setUniform("tileRowsColumns", glm::ivec2(m_terrain.settings.rows, m_terrain.settings.columns));
 
     Elements::setAllUniforms(*m_program);
 }
@@ -269,19 +281,119 @@ glm::mat4 TerrainTile::transform() const
     return m_transform;
 }
 
-void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
-{
-    m_bufferUpdateList.push_front(std::pair<GLintptr, GLsizeiptr>(offset, length));
-}
-
-void TerrainTile::updateGlBuffers()
+void TerrainTile::updateBuffers()
 {
     m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
     m_bufferUpdateList.clear();
+
+    //m_heightBuffer->mapRange()
 
     // TODO update needed data only
     /*for (; !m_bufferUpdateList.empty(); m_bufferUpdateList.pop_front()) {
         auto updateRange = m_bufferUpdateList.front();
 
     }*/
+
+    updatePxHeight();
+}
+
+void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
+{
+    if (m_updateRangeMinMax.x > offset)
+        m_updateRangeMinMax.x = offset;
+    if (m_updateRangeMinMax.y < offset + length)
+        m_updateRangeMinMax.y = offset + length;
+    m_bufferUpdateList.push_front(std::pair<GLintptr, GLsizeiptr>(offset, length));
+}
+
+void TerrainTile::clearBufferUpdateRange()
+{
+    m_bufferUpdateList.clear();
+    m_updateRangeMinMax = glm::detail::tvec2<GLintptr>(std::numeric_limits<GLintptr>::max(), std::numeric_limits<GLintptr>::min());
+}
+
+TerrainTile::UIntBoundingBox::UIntBoundingBox()
+: minRow(std::numeric_limits<unsigned int>::max())
+, maxRow(std::numeric_limits<unsigned int>::min())
+, minColumn(std::numeric_limits<unsigned int>::max())
+, maxColumn(std::numeric_limits<unsigned int>::min())
+{
+}
+
+void TerrainTile::addToPxUpdateBox(unsigned int minRow, unsigned int maxRow, unsigned int minColumn, unsigned int maxColumn)
+{
+    if (m_pxUpdateBox.minRow > minRow)
+        m_pxUpdateBox.minRow = minRow;
+    if (m_pxUpdateBox.maxRow < maxRow)
+        m_pxUpdateBox.maxRow = maxRow;
+    if (m_pxUpdateBox.minColumn > minColumn)
+        m_pxUpdateBox.minColumn = minColumn;
+    if (m_pxUpdateBox.maxColumn < maxColumn)
+        m_pxUpdateBox.maxColumn = maxColumn;
+}
+
+void TerrainTile::updatePxHeight()
+{
+    PxHeightFieldGeometry geometry;
+    bool result = m_pxShape->getHeightFieldGeometry(geometry);
+    assert(result);
+    if (!result) {
+        glow::warning("TerrainInteractor::setPxHeight could not get heightfield geometry from px shape");
+        return;
+    }
+    PxHeightField * hf = geometry.heightField;
+
+    assert(m_pxUpdateBox.minRow <= m_pxUpdateBox.maxRow && m_pxUpdateBox.minColumn <= m_pxUpdateBox.maxColumn);
+    unsigned int nbRows = m_pxUpdateBox.maxRow - m_pxUpdateBox.minRow + 1;
+    unsigned int nbColumns = m_pxUpdateBox.maxColumn - m_pxUpdateBox.minColumn + 1;
+    unsigned int fieldSize = nbRows * nbColumns;
+
+    PxHeightFieldSample * samplesM = new PxHeightFieldSample[fieldSize];
+    for (unsigned int r = 0; r < nbRows; ++r) {
+        unsigned int rowOffset = r * nbColumns;
+        for (unsigned int c = 0; c < nbColumns; ++c) {
+            const unsigned int index = c + rowOffset;
+            const float terrainHeight = heightAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
+            samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
+            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = elementIndexAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
+        }
+    }
+
+    PxHeightFieldDesc descM;
+    descM.nbColumns = nbColumns;
+    descM.nbRows = nbRows;
+    descM.samples.data = samplesM;
+    descM.format = hf->getFormat();
+    descM.samples.stride = hf->getSampleStride();
+    descM.thickness = hf->getThickness();
+    descM.convexEdgeThreshold = hf->getConvexEdgeThreshold();
+    descM.flags = hf->getFlags();
+
+    PhysicsWrapper::getInstance()->pauseGPUAcceleration();
+
+    bool success = hf->modifySamples(m_pxUpdateBox.minColumn, m_pxUpdateBox.minRow, descM);
+    assert(success);
+    if (!success) {
+        glow::warning("TerrainInteractor::setPxHeight could not modify heightfield.");
+        return;
+    }
+
+    PxHeightFieldGeometry newGeometry(hf, PxMeshGeometryFlags(), geometry.heightScale, geometry.rowScale, geometry.columnScale);
+    assert(PxGetPhysics().getNbScenes() == 1);
+    PxScene * pxScenePtrs[1];
+    PxGetPhysics().getScenes(pxScenePtrs, 1);
+    pxScenePtrs[0]->lockWrite();
+    m_pxShape->setGeometry(newGeometry);
+    pxScenePtrs[0]->unlockWrite();
+
+    PhysicsWrapper::getInstance()->restoreGPUAccelerated();
+
+#ifdef PX_WINDOWS
+    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
+        PxParticleGpu::releaseHeightFieldMirror(*hf);
+        PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
+    }
+#endif
+
+    m_pxUpdateBox = UIntBoundingBox();
 }

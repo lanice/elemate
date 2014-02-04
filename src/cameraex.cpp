@@ -36,6 +36,21 @@ void CameraEx::changed() const
     Camera::changed();
 }
 
+float CameraEx::zFarEx() const
+{
+    return m_zFar;
+}
+
+void CameraEx::setZFarEx(float zFar)
+{
+    assert(zFar > 0 || m_projectionType == ProjectionType::orthographic);
+    if (zFar == m_zFar)
+        return;
+
+    m_zFar = zFar;
+
+    dirty();
+}
 
 float CameraEx::zNearEx() const
 {
@@ -44,6 +59,7 @@ float CameraEx::zNearEx() const
 
 void CameraEx::setZNearEx(float zNear)
 {
+    assert(zNear > 0 || m_projectionType == ProjectionType::orthographic);
     if (zNear == m_zNear)
         return;
 
@@ -117,10 +133,13 @@ const mat4 & CameraEx::projectionEx() const
     if (m_dirty)
         update();
 
+    assert(m_zFar > m_zNear);
+
     switch (m_projectionType) {
     case ProjectionType::perspective:
         return Camera::projection();
     case ProjectionType::orthographic:
+        assert(m_left < m_right && m_bottom < m_top);
         if (!m_projection.isValid())
             m_projection.setValue(ortho<float>(m_left, m_right, m_bottom, m_top, m_zNear, m_zFar));
         break;

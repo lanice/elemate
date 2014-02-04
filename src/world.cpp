@@ -49,12 +49,6 @@ World::World(PhysicsWrapper & physicsWrapper)
     initShader();
 
     TerrainGenerator terrainGen;
-    terrainGen.setExtentsInWorld(50, 50);
-    terrainGen.applySamplesPerWorldCoord(3.f);
-    terrainGen.setTilesPerAxis(1, 1);
-    terrainGen.setMaxHeight(20.0f);
-    terrainGen.setMaxBasicHeightVariance(0.05f);
-
     terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
 
     for (const auto actor : terrain->pxActorMap())
@@ -66,6 +60,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_sunlight[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
     m_sunlight[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
     m_sunlight[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
+
+    m_skyColor = glm::vec3(0.6f, 0.9f, 1.f);
 
     ParticleScriptAccess::instance().setNotifier(this);
     
@@ -188,6 +184,12 @@ void World::setUpLighting(glow::Program & program) const
     program.setUniform("sunlight", sunlight());
     program.setUniform("lightdir2", lightdir2);
     program.setUniform("light2", lightMat2);
+    program.setUniform("skyColor", m_skyColor);
+}
+
+const glm::vec3 & World::skyColor() const
+{
+    return m_skyColor;
 }
 
 glow::Shader * World::sharedShader(GLenum type, const std::string & filename) const

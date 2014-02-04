@@ -18,6 +18,11 @@ set(DEFAULT_COMPILE_DEFS_RELEASE
     NDEBUG                      # Release build
 )
 
+set(DEFAULT_COMPILE_DEFS_RELWITHDEBINFO
+    ${WIN32_COMPILE_DEFS}
+    NDEBUG
+)
+
 
 set(WIN32_COMPILE_FLAGS
     "/nologo /Zc:wchar_t /Zc:forScope /GF /GR /Zi /fp:precise /MP /arch:AVX /W4 /wd4201 /wd4251 /wd4505 /wd4351"
@@ -66,8 +71,8 @@ set(WIN32_COMPILE_FLAGS
 set(DEFAULT_COMPILE_FLAGS ${WIN32_COMPILE_FLAGS})
 
 set(DEFAULT_COMPILE_FLAGS_DEBUG "/MDd /RTC1 /RTCc /Od /GS /sdl" )
-
 set(DEFAULT_COMPILE_FLAGS_RELEASE "/MD /Ot /Ob2 /Ox /GS- /GL" )
+set(DEFAULT_COMPILE_FLAGS_RELWITHDEBINFO "/MD /Ot /Ob2 /Ox /GS- /GL" )
 
 
 
@@ -94,6 +99,10 @@ set(DEFAULT_LINKER_FLAGS_RELEASE
     # OPT:ICF      -> enable comdat folding: remove redundant comdats
     # LTCG         -> link time code generation: use link time code generation
     # DELAY:UNLOAD -> delay loaded dll: support unload
+)
+
+set(DEFAULT_LINKER_FLAGS_RELWITHDEBINFO
+    "${WIN32_LINKER_FLAGS} /DEBUG /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO /NODEFAULTLIB:libcmt.lib /ignore:4099"
 )
 
 

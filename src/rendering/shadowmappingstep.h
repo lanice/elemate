@@ -32,6 +32,8 @@ protected:
 
     virtual void drawLightMap(const CameraEx & camera);
 
+    virtual void calculateLightMatrix(const CameraEx & camera);
+
     glow::ref_ptr<glow::FrameBufferObject> m_lightFbo;
     glow::ref_ptr<glow::Texture> m_lightTex;
 

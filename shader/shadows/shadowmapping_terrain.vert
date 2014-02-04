@@ -8,15 +8,17 @@ uniform mat4 lightBiasMVP;
 
 uniform samplerBuffer heightField;
 
-uniform uvec2 tileRowsColumns;
+uniform ivec2 tileRowsColumns;
+uniform ivec2 rowColumnOffset;
 
 out vec4 v_shadowCoord;
 
 void main()
 {
-    int texIndex = int(_vertex.t) + int(_vertex.s) * int(tileRowsColumns.t);
+    ivec2 rowColumn = ivec2(_vertex) + rowColumnOffset;
+    int texIndex = rowColumn.t + rowColumn.s * tileRowsColumns.t;
 
-    vec4 vertex = vec4(_vertex.x, texelFetch(heightField, texIndex).x, _vertex.y, 1.0);
+    vec4 vertex = vec4(float(rowColumn.x), texelFetch(heightField, texIndex).x, float(rowColumn.y), 1.0);
     
     gl_Position = modelViewProjection * vertex;
     
