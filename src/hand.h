@@ -15,6 +15,7 @@ namespace glow {
 }
 class World;
 class TerrainInteractor;
+class LuaWrapper;
 
 class Hand : public Drawable
 {
@@ -32,6 +33,8 @@ public:
     float heightOffset() const;
 
     void rotate(float angle);
+
+    void registerLuaFunctions(LuaWrapper * lua);
 
 protected:
     void loadModel();

@@ -181,12 +181,12 @@ void Renderer::resize(int width, int height)
     m_textureByName.at("sceneColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("scene")->printStatus(true);
-    assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    // assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_textureByName.at("handColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("hand")->printStatus(true);
-    assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    // assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     for (auto step : m_steps) {
         assert(step);

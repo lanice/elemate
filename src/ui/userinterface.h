@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <list>
 
 namespace glow{
     class VertexArrayObject;
@@ -15,6 +16,7 @@ namespace glow{
 
 class MenuPage;
 struct GLFWwindow;
+class LuaWrapper;
 
 class UserInterface{
 public:
@@ -35,6 +37,9 @@ public:
     void handleMouseButtonEvent(int button, int action, int mods);
 
     void resize(int width, int height);
+
+    void registerLuaFunctions(LuaWrapper * lua);
+    
 protected:
     static const float kDefaultPreviewHeight;
     static const glm::vec3 kDefaultMenuEntryColor;
@@ -44,6 +49,7 @@ protected:
     bool m_activeHUD;
 
     StringDrawer m_stringDrawer;
+    std::list<TextObject> m_hudTexts;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Program>           m_previewProgram;

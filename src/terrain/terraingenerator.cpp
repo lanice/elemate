@@ -92,6 +92,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
 
         baseTile->createPxObjects(*actor);
         waterTile->createPxObjects(*actor);
+
+        waterTile->pxShape()->setFlag(PxShapeFlag::ePARTICLE_DRAIN, true);
     }
 
     return terrain;

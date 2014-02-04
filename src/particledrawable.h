@@ -28,9 +28,6 @@ public:
     virtual ~ParticleDrawable();
 
     void initialize();
-    
-    /** adds numParticles particles from particlePositionBuffer to the internal buffer */
-    void addParticles(unsigned int numParticles, const physx::PxVec3 * particlePositionBuffer);
 
     /** fetches the number of valid particles and the particle positions from readData and updates interal buffers */
     void updateParticles(const physx::PxParticleReadData * readData);

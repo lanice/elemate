@@ -10,7 +10,6 @@
 
 #include "elements.h"
 #include "particlescriptaccess.h"
-#include "lua/luawrapper.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;
@@ -24,7 +23,6 @@ PhysicsWrapper::PhysicsWrapper()
 , m_physxGpuAvailable(checkPhysxGpuAvailable())
 , m_cudaContextManager(nullptr)
 , m_gpuParticles(false)
-, m_lua(new LuaWrapper())
 //m_profile_zone_manager(nullptr)
 {
     initializePhysics();
@@ -50,8 +48,6 @@ PhysicsWrapper::~PhysicsWrapper()
     if (m_cudaContextManager)
         m_cudaContextManager->release();
     m_foundation->release();
-
-    delete m_lua;
 }
 
 bool PhysicsWrapper::checkPhysxGpuAvailable()

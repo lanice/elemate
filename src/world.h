@@ -23,6 +23,7 @@ class CyclicTime;
 class Hand;
 class Terrain;
 class ParticleGroup;
+class LuaWrapper;
 
 class World {
 public:
@@ -57,6 +58,8 @@ public:
     const glm::mat4 & sunlight() const;
     void setUpLighting(glow::Program & program) const;
     const glm::vec3 & skyColor() const;
+
+    void registerLuaFunctions(LuaWrapper * lua);
 
     /** The world maintains a list of shaders that are needed multiple times in the game (phongLighting, depth_util..).
       * Request these shaders here by there filename, just as you would do with glowutils. */

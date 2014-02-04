@@ -4,6 +4,10 @@
 
 #include <glow/logging.h>
 
+#include "pxcompilerfix.h"
+#include <PxScene.h>
+#include <PxSceneLock.h>
+
 #include "particlegroup.h"
 #include "world.h"
 #include "lua/luawrapper.h"
@@ -13,13 +17,31 @@
 ParticleScriptAccess ParticleScriptAccess::s_access;
 
 ParticleScriptAccess::ParticleScriptAccess()
-: m_worldNotifier(nullptr)
+: m_id(0)
+, m_worldNotifier(nullptr)
 , m_gpuParticles(false)
+, m_lua(nullptr)
 {
+}
+
+void ParticleScriptAccess::init()
+{
+    m_lua = new LuaWrapper();
+
+    std::function<int(int, float, float, float, float, float)> func1 = [=](int id, float a, float b, float c, float d, float e)
+    { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
+
+    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=](int id, float a, float b, float c, float d, float e, float f, float g)
+    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
+
+    m_lua->Register("psa_setImmutableProperties", func1);
+    m_lua->Register("psa_setMutableProperties", func2);
 }
 
 ParticleScriptAccess::~ParticleScriptAccess()
 {
+    // Causing double delete and memory corruption ... :/
+    // delete m_lua;
 }
 
 ParticleScriptAccess& ParticleScriptAccess::instance()
@@ -27,54 +49,49 @@ ParticleScriptAccess& ParticleScriptAccess::instance()
     return s_access;
 }
 
-ParticleGroup * ParticleScriptAccess::particleGroup(const int index)
+ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
 {
-    return std::get<0>(m_particleGroups.at(index));
+    return m_particleGroups.at(id).first;
 }
 
 int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
 {
     ParticleGroup * particleGroup = new ParticleGroup(m_gpuParticles);
-    LuaWrapper * wrapper = new LuaWrapper();
 
-    setUpParticleGroup(particleGroup, wrapper, elementType);
+    m_particleGroups.emplace(m_id, std::make_pair(particleGroup, elementType));
 
-    if (m_freeIndices.size() > 0)
+    setUpParticleGroup(m_id, elementType);
+    m_worldNotifier->registerObserver(particleGroup);
+
+    return m_id++;
+}
+
+void ParticleScriptAccess::removeParticleGroup(const int id)
+{
+    m_worldNotifier->unregisterObserver(m_particleGroups.at(id).first);
+
+    delete m_particleGroups.at(id).first;
+    m_particleGroups.erase(id);
+}
+
+void ParticleScriptAccess::clearParticleGroups()
+{
+    for (auto it = m_particleGroups.begin(); it != m_particleGroups.end(); ++it)
     {
-        int i = m_freeIndices.back();
-        assert(std::get<0>(m_particleGroups.at(i)) == nullptr && std::get<1>(m_particleGroups.at(i)) == nullptr);
-        m_freeIndices.pop_back();
-        m_particleGroups.at(i) = std::make_tuple(particleGroup, wrapper);
-        return i;
+        m_worldNotifier->unregisterObserver(it->second.first);
+        delete it->second.first;
     }
 
-    m_particleGroups.push_back(std::make_tuple(particleGroup, wrapper));
-    m_worldNotifier->registerObserver(particleGroup);
-    return static_cast<int>(m_particleGroups.size() - 1);
+    m_particleGroups.erase(m_particleGroups.begin(), m_particleGroups.end());
 }
 
-void ParticleScriptAccess::removeParticleGroup(const int index)
+void ParticleScriptAccess::setUpParticleGroup(const int id, const std::string & elementType)
 {
-    delete std::get<0>(m_particleGroups.at(index));
-    delete std::get<1>(m_particleGroups.at(index));
-
-    std::get<0>(m_particleGroups.at(index)) = nullptr;
-    std::get<1>(m_particleGroups.at(index)) = nullptr;
-
-    m_freeIndices.push_back(index);
-}
-
-void ParticleScriptAccess::setUpParticleGroup(ParticleGroup * particleGroup, LuaWrapper * wrapper, const std::string & elementType)
-{
-    std::function<int(float, float, float, float, float)> func1 = [=](float a, float b, float c, float d, float e) {particleGroup->setImmutableProperties(a, b, c, d, e); return 0; };
-
-    std::function<int(float, float, float, float, float, float, float)> func2 = [=](float a, float b, float c, float d, float e, float f, float g) {particleGroup->setMutableProperties(a, b, c, d, e, f, g); return 0; };
-
-    wrapper->Register("particles_setImmutableProperties", func1);
-    wrapper->Register("particles_setMutableProperties", func2);
-
-    std::string script = "scripts/" + elementType + ".lua";
-    wrapper->loadScript(script);
+    std::string script = "scripts/elements/" + elementType + ".lua";
+    m_lua->loadScript(script);
+    m_lua->call("setImmutableProperties", id);
+    m_lua->call("setMutableProperties", id);
+    m_lua->removeScript(script);
 }
 
 void ParticleScriptAccess::setNotifier(World * notifier)
@@ -88,8 +105,8 @@ void ParticleScriptAccess::setUseGpuParticles(bool enable)
 
     m_gpuParticles = enable;
 
-    for (auto particleGroupTuple : m_particleGroups)
-        std::get<0>(particleGroupTuple)->setUseGpuParticles(enable);
+    for (auto particleGroup : m_particleGroups)
+        particleGroup.second.first->setUseGpuParticles(enable);
 }
 
 void ParticleScriptAccess::pauseGPUAcceleration()
@@ -116,3 +133,252 @@ void ParticleScriptAccess::restoreGPUAccelerated()
 
     m_gpuParticlesPauseFlags = 0x00;
 }
+
+void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
+{
+    std::function<int(std::string)> func0 = [=] (std::string elementType)
+    { return createParticleGroup(elementType); };
+
+    std::function<int(int)> func0a = [=] (int id)
+    { removeParticleGroup(id); return 0; };
+
+    std::function<int()> func0b = [=] ()
+    { clearParticleGroups(); return 0; };
+
+    std::function<int(int, float, float, float, float, float, float)> func1 = [=] (int id, float posx, float posy, float posz, float velx, float vely, float velz)
+    { createParticle(id, posx, posy, posz, velx, vely, velz); return 0; };
+
+    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=] (int id, float ratio, float posx, float posy, float posz, float dirx, float diry, float dirz)
+    { emit(id, ratio, posx, posy, posz, dirx, diry, dirz); return 0; };
+
+    std::function<int(int)> func3 = [=] (int id)
+    { stopEmit(id); return 0; };
+
+    std::function<int()> func4 = [=] ()
+    { return numParticleGroups(); };
+
+    std::function<std::string(int)> func5 = [=] (int id)
+    { return elementAtId(id); };
+
+    std::function<int(int)> func5a = [=] (int id)
+    { return nextParticleGroup(id); };
+
+    lua->Register("psa_createParticleGroup", func0);
+    lua->Register("psa_removeParticleGroup", func0a);
+    lua->Register("psa_clearParticleGroups", func0b);
+    lua->Register("psa_createParticle", func1);
+    lua->Register("psa_emit", func2);
+    lua->Register("psa_stopEmit", func3);
+    lua->Register("psa_numParticleGroups", func4);
+    lua->Register("psa_elementAtId", func5);
+    lua->Register("psa_nextParticleGroup", func5a);
+
+    std::function<int(int, float)> func6 = [=] (int id, float maxMotionDistance)
+    { setMaxMotionDistance(id, maxMotionDistance); return 0; };
+    std::function<int(int, float)> func7 = [=] (int id, float gridSize)
+    { setGridSize(id, gridSize); return 0; };
+    std::function<int(int, float)> func8 = [=] (int id, float restOffset)
+    { setRestOffset(id, restOffset); return 0; };
+    std::function<int(int, float)> func9 = [=] (int id, float contactOffset)
+    { setContactOffset(id, contactOffset); return 0; };
+    std::function<int(int, float)> func10 = [=] (int id, float restParticleDistance)
+    { setRestParticleDistance(id, restParticleDistance); return 0; };
+
+    std::function<int(int, float)> func11 = [=] (int id, float restitution)
+    { setRestitution(id, restitution); return 0; };
+    std::function<int(int, float)> func12 = [=] (int id, float dynamicFriction)
+    { setDynamicFriction(id, dynamicFriction); return 0; };
+    std::function<int(int, float)> func13 = [=] (int id, float staticFriction)
+    { setStaticFriction(id, staticFriction); return 0; };
+    std::function<int(int, float)> func14 = [=] (int id, float damping)
+    { setDamping(id, damping); return 0; };
+    std::function<int(int, float)> func15 = [=] (int id, float particleMass)
+    { setParticleMass(id, particleMass); return 0; };
+    std::function<int(int, float)> func16 = [=] (int id, float viscosity)
+    { setViscosity(id, viscosity); return 0; };
+    std::function<int(int, float)> func17 = [=] (int id, float stiffness)
+    { setStiffness(id, stiffness); return 0; };
+
+    lua->Register("psa_setMaxMotionDistance", func6);
+    lua->Register("psa_setGridSize", func7);
+    lua->Register("psa_setRestOffset", func8);
+    lua->Register("psa_setContactOffset", func9);
+    lua->Register("psa_setRestParticleDistance", func10);
+    lua->Register("psa_setRestitution", func11);
+    lua->Register("psa_setDynamicFriction", func12);
+    lua->Register("psa_setStaticFriction", func13);
+    lua->Register("psa_setDamping", func14);
+    lua->Register("psa_setParticleMass", func15);
+    lua->Register("psa_setViscosity", func16);
+    lua->Register("psa_setStiffness", func17);
+
+    std::function<float(int)> func18 = [=] (int id)
+    { return maxMotionDistance(id); };
+    std::function<float(int)> func19 = [=] (int id)
+    { return gridSize(id); };
+    std::function<float(int)> func20 = [=] (int id)
+    { return restOffset(id); };
+    std::function<float(int)> func21 = [=] (int id)
+    { return contactOffset(id); };
+    std::function<float(int)> func22 = [=] (int id)
+    { return restParticleDistance(id); };
+    std::function<float(int)> func23 = [=] (int id)
+    { return restitution(id); };
+    std::function<float(int)> func24 = [=] (int id)
+    { return dynamicFriction(id); };
+    std::function<float(int)> func25 = [=] (int id)
+    { return staticFriction(id); };
+    std::function<float(int)> func26 = [=] (int id)
+    { return damping(id); };
+    std::function<float(int)> func27 = [=] (int id)
+    { return particleMass(id); };
+    std::function<float(int)> func28 = [=] (int id)
+    { return viscosity(id); };
+    std::function<float(int)> func29 = [=] (int id)
+    { return stiffness(id); };
+
+    lua->Register("psa_maxMotionDistance", func18);
+    lua->Register("psa_gridSize", func19);
+    lua->Register("psa_restOffset", func20);
+    lua->Register("psa_contactOffset", func21);
+    lua->Register("psa_restParticleDistance", func22);
+    lua->Register("psa_restitution", func23);
+    lua->Register("psa_dynamicFriction", func24);
+    lua->Register("psa_staticFriction", func25);
+    lua->Register("psa_damping", func26);
+    lua->Register("psa_particleMass", func27);
+    lua->Register("psa_viscosity", func28);
+    lua->Register("psa_stiffness", func29);
+
+
+    std::function<int(int, float, float, float, float, float)> func30 = [=](int id, float a, float b, float c, float d, float e)
+    { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
+
+    std::function<int(int, float, float, float, float, float, float, float)> func31 = [=](int id, float a, float b, float c, float d, float e, float f, float g)
+    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
+
+    lua->Register("psa_setImmutableProperties", func30);
+    lua->Register("psa_setMutableProperties", func31);
+}
+
+void ParticleScriptAccess::createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
+{
+    m_particleGroups.at(id).first->createParticle(glm::vec3(positionX, positionY, positionZ), glm::vec3(velocityX, velocityY, velocityZ));
+}
+
+void ParticleScriptAccess::emit(const int id, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ)
+{
+    m_particleGroups.at(id).first->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
+}
+
+void ParticleScriptAccess::stopEmit(const int id)
+{
+    m_particleGroups.at(id).first->stopEmit();
+}
+
+void ParticleScriptAccess::setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance)
+{
+    m_particleGroups.at(id).first->setImmutableProperties(maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance);
+}
+
+void ParticleScriptAccess::setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness)
+{
+    m_particleGroups.at(id).first->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness);
+}
+
+int ParticleScriptAccess::numParticleGroups()
+{
+    return static_cast<int>(m_particleGroups.size() - 1);
+}
+
+std::string ParticleScriptAccess::elementAtId(int id)
+{
+    return m_particleGroups.at(id).second;
+}
+
+int ParticleScriptAccess::nextParticleGroup(int id)
+{
+    auto it = m_particleGroups.find(id);
+
+    if (it == m_particleGroups.end())
+    {
+        if (m_particleGroups.begin() == m_particleGroups.end())
+            return -1;
+        else
+            return m_particleGroups.begin()->first;
+    }
+
+    if (++it == m_particleGroups.end())
+        return m_particleGroups.begin()->first;
+
+    return it->first;
+}
+
+void ParticleScriptAccess::setMaxMotionDistance(int id, float maxMotionDistance)
+{
+    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
+    m_particleGroups.at(id).first->particleSystem()->setMaxMotionDistance(maxMotionDistance);
+    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+}
+void ParticleScriptAccess::setGridSize(int id, float gridSize)
+{
+    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
+    m_particleGroups.at(id).first->particleSystem()->setGridSize(gridSize);
+    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+}
+void ParticleScriptAccess::setRestOffset(int id, float restOffset)
+{
+    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
+    m_particleGroups.at(id).first->particleSystem()->setRestOffset(restOffset);
+    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+}
+void ParticleScriptAccess::setContactOffset(int id, float contactOffset)
+{
+    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
+    m_particleGroups.at(id).first->particleSystem()->setContactOffset(contactOffset);
+    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+}
+void ParticleScriptAccess::setRestParticleDistance(int id, float restParticleDistance)
+{
+    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
+    m_particleGroups.at(id).first->particleSystem()->setRestParticleDistance(restParticleDistance);
+    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+}
+void ParticleScriptAccess::setRestitution(int id, float restitution)
+{ m_particleGroups.at(id).first->particleSystem()->setRestitution(restitution); }
+void ParticleScriptAccess::setDynamicFriction(int id, float dynamicFriction)
+{ m_particleGroups.at(id).first->particleSystem()->setDynamicFriction(dynamicFriction); }
+void ParticleScriptAccess::setStaticFriction(int id, float staticFriction)
+{ m_particleGroups.at(id).first->particleSystem()->setStaticFriction(staticFriction); }
+void ParticleScriptAccess::setDamping(int id, float damping)
+{ m_particleGroups.at(id).first->particleSystem()->setDamping(damping); }
+void ParticleScriptAccess::setParticleMass(int id, float particleMass)
+{ m_particleGroups.at(id).first->particleSystem()->setParticleMass(particleMass); }
+void ParticleScriptAccess::setViscosity(int id, float viscosity)
+{ m_particleGroups.at(id).first->particleSystem()->setViscosity(viscosity); }
+void ParticleScriptAccess::setStiffness(int id, float stiffness)
+{ m_particleGroups.at(id).first->particleSystem()->setStiffness(stiffness); }
+float ParticleScriptAccess::maxMotionDistance(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getMaxMotionDistance(); }
+float ParticleScriptAccess::gridSize(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getGridSize(); }
+float ParticleScriptAccess::restOffset(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getRestOffset(); }
+float ParticleScriptAccess::contactOffset(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getContactOffset(); }
+float ParticleScriptAccess::restParticleDistance(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getRestParticleDistance(); }
+float ParticleScriptAccess::restitution(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getRestitution(); }
+float ParticleScriptAccess::dynamicFriction(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getDynamicFriction(); }
+float ParticleScriptAccess::staticFriction(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getStaticFriction(); }
+float ParticleScriptAccess::damping(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getDamping(); }
+float ParticleScriptAccess::particleMass(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getParticleMass(); }
+float ParticleScriptAccess::viscosity(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getViscosity(); }
+float ParticleScriptAccess::stiffness(int id)
+{ return m_particleGroups.at(id).first->particleSystem()->getStiffness(); }
