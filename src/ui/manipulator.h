@@ -3,9 +3,10 @@
 #include <memory>
 
 #include <glow/global.h>
-#include <glowutils/AbstractCoordinateProvider.h>
 
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
 
 
 class World;
@@ -17,7 +18,7 @@ class LuaWrapper;
 class CameraEx;
 
 
-class Manipulator : public glowutils::AbstractCoordinateProvider
+class Manipulator
 {
 public:
     Manipulator(GLFWwindow & window, const Navigation & navigation, World & world);
@@ -30,19 +31,7 @@ public:
 
     void updateHandPosition();
 
-    void setRenderer(Renderer & renderer);
-
     LuaWrapper * lua();
-
-    virtual const float depthAt(const glm::ivec2 & windowCoordinates) override;
-
-    using AbstractCoordinateProvider::objAt;
-
-    virtual const glm::vec3 objAt(const glm::ivec2 & windowCoordinates, const float depth) override;
-
-    virtual const glm::vec3 objAt(const glm::ivec2 & windowCoordinates
-        , const float depth
-        , const glm::mat4 & viewProjectionInverted) override;
 
 protected:
     void registerLuaFunctions(LuaWrapper * lua);

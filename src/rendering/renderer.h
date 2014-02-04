@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <vector>
-#include <functional>
 #include <map>
 
 #include <glow/ref_ptr.h>
@@ -34,8 +33,6 @@ public:
 
     const glow::FrameBufferObject * sceneFbo() const;
 
-    void addSceneFboReader(const std::function<void()> & reader);
-
 protected:
     // drawing steps
     void sceneStep(const CameraEx & camera);
@@ -65,7 +62,6 @@ protected:
     glow::ref_ptr<glowutils::ScreenAlignedQuad> m_quad;
     glow::ref_ptr<glow::Program> m_quadProgram;
 
-    std::vector<std::function<void()>> m_sceneFboReader;
 public:
     Renderer() = delete;
     Renderer(Renderer&) = delete;

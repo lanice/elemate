@@ -177,3 +177,8 @@ float Navigation::rotationAngle() const
 
     return m_lookAtVector.x <= 0.f ? angle : 360.f - angle;
 }
+
+const glm::vec3 & Navigation::center() const
+{
+    return m_center;
+}
