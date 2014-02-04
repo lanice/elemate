@@ -237,7 +237,7 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     uint8_t grassland = tile.elementIndex("grassland");
     uint8_t bedrock = tile.elementIndex("bedrock");
 
-    float sandMaxHeight = 0.5f;     // under water + shore
+    float sandMaxHeight = 2.5f;     // under water + shore
     float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
 
     for (unsigned int row = 0; row < m_settings.rows - 1; ++row) {

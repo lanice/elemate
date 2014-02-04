@@ -22,7 +22,7 @@ Navigation::Navigation(GLFWwindow & window, const std::shared_ptr<CameraEx> & ca
 , m_center()
 , m_distanceEyeCenter(c_distanceEyeCenterDefault)  
 {
-    setTransformation(glm::vec3(-75, 0, 135), glm::vec3(-64, 7, 140), c_distanceEyeCenterDefault);
+    setTransformation(glm::vec3(116.415, 16.149, 111.774), glm::vec3(104.737, 8.405, 97.194), glm::vec3(0, 1, 0));
 }
 
 Navigation::~Navigation()
@@ -87,7 +87,7 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
 void Navigation::handleKeyEvent(const int & key, const int & /*scancode*/, const int & action, const int & /*mods*/)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-        setTransformation(glm::vec3(0, 0, 0), glm::vec3(0, -2, -3), c_distanceEyeCenterDefault);
+        setTransformation(glm::vec3(116.415, 16.149, 111.774), glm::vec3(104.737, 8.405, 97.194), glm::vec3(0, 1, 0));
 }
 
 void Navigation::update(double delta)
