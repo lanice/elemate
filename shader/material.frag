@@ -18,7 +18,7 @@ vec4 waterColor(vec2 v_uv){
     vec3 resVector = refract(vec3(0.0,0.0,-1.0),normal , 0.8);
     vec3 waterCol = (5*texture(
                             sceneColor, 
-                            v_uv
+                            v_uv + resVector.xy/10/resVector.z
                     ).rgb
         +vec3(0.1,0.8,1.0))/7.0;
 
