@@ -11,9 +11,6 @@ local isEmitting = false
 local emitParameters = {}
 local emitId = particleGroupId
 
-local MIN_RESTPARTICLEDISTANCE = 0.06
-local MAX_RESTPARTICLEDISTANCE = 10.0
-
 local function createParticleGroup( eleType )
     local id = psa_createParticleGroup(eleType)
     io.write("Created ParticleGroup '", eleType, "' at id ", id, "\n")
@@ -49,7 +46,7 @@ function updateHandPosition( posX, posY, posZ )
     emitParameters[5] = posZ
 
     if (isEmitting == true) then
-        psa_emit(emitParameters[1], emitParameters[2], emitParameters[3], emitParameters[4], emitParameters[5], emitParameters[6], emitParameters[7], emitParameters[8])
+        emit(emitParameters[1], emitParameters[2], emitParameters[3], emitParameters[4], emitParameters[5], emitParameters[6], emitParameters[7], emitParameters[8])
     end
 end
 
@@ -74,11 +71,9 @@ end
 
 function handleScrollEvent( yoffset )
     if particleGroupId ~= -1 then
-        local dist = psa_restParticleDistance(particleGroupId)+(0.001*yoffset)
-        if dist > MIN_RESTPARTICLEDISTANCE and dist < MAX_RESTPARTICLEDISTANCE then
-            psa_setRestParticleDistance(particleGroupId, dist)
-            psa_setRestOffset(particleGroupId, dist)
-            psa_setContactOffset(particleGroupId, dist)
+        local dist = psa_restParticleDistance(particleGroupId)+(0.01*yoffset)
+        if dist > 0.01 and dist < 5.0 then
+            psa_setGridSize(particleGroupId, dist)
             hud_debugText(dist)
         end
     end
