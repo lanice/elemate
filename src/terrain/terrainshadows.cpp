@@ -19,6 +19,9 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
+    if (!m_renderGridRadius.isValid())
+        generateDrawGrid();
+
     glow::Program * program = nullptr;
 
     // linearize the depth values for perspective projections
@@ -30,6 +33,8 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     else { // not needed for the orthographic projection
         program = m_depthMapProgram; 
     }
+
+    setDrawGridOffsetUniform(*program, camera.eye());
 
     TerrainTile & baseTile = *m_tiles.at(TileID(TerrainLevel::BaseLevel));
 
@@ -69,6 +74,9 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
 {
     // TODO: generalize for more tiles...
 
+    if (!m_renderGridRadius.isValid())
+        generateDrawGrid();
+
     auto baseTile = m_tiles.at(TileID(TerrainLevel::BaseLevel));
 
     glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * baseTile->transform();
@@ -76,6 +84,8 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
     m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
+
+    setDrawGridOffsetUniform(*m_shadowMappingProgram, camera.eye());
 
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(s_restartIndex);
@@ -103,7 +113,7 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
     m_depthMapProgram->setUniform("baseHeightField", 1);
-    m_depthMapProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_depthMapProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 
 
     m_depthMapLinearizedProgram = new glow::Program();
@@ -114,7 +124,7 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
     m_depthMapLinearizedProgram->setUniform("heightField", 0);
     m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);
-    m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 }
 
 void Terrain::initShadowMappingProgram()
@@ -126,7 +136,7 @@ void Terrain::initShadowMappingProgram()
 
     m_shadowMappingProgram->setUniform("heightField", 1);
 
-    m_shadowMappingProgram->setUniform("tileRowsColumns", glm::uvec2(settings.rows, settings.columns));
+    m_shadowMappingProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }

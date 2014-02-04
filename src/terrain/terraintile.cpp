@@ -94,6 +94,7 @@ void TerrainTile::bind(const CameraEx & camera)
     m_program->setUniform("modelViewProjection", modelViewProjection);
     m_program->setUniform("znear", camera.zNearEx());
     m_program->setUniform("zfar", camera.zFarEx());
+    m_terrain.setDrawGridOffsetUniform(*m_program, camera.eye());
 
     m_terrain.m_world.setUpLighting(*m_program);
 }
@@ -132,7 +133,7 @@ void TerrainTile::initializeProgram()
 {
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
-    m_program->setUniform("tileRowsColumns", glm::uvec2(m_terrain.settings.rows, m_terrain.settings.columns));
+    m_program->setUniform("tileRowsColumns", glm::ivec2(m_terrain.settings.rows, m_terrain.settings.columns));
 
     Elements::setAllUniforms(*m_program);
 }

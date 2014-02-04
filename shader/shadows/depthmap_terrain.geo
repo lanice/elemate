@@ -1,13 +1,13 @@
 #version 330 core
 
-in vec2 v_vertex[3];
+in ivec2 v_vertex[3];
 
 uniform mat4 depthMVP;
 
 uniform samplerBuffer heightField;
 uniform samplerBuffer baseHeightField;
 
-uniform uvec2 tileRowsColumns;
+uniform ivec2 tileRowsColumns;
 
 uniform bool baseTileCompare;
 
@@ -20,9 +20,9 @@ void main()
     bool visibleTriangle = false;
     
     for (int i=0; i < 3; ++i) {
-        int texIndex = int(v_vertex[i].t) + int(v_vertex[i].s) * int(tileRowsColumns.t);
+        int texIndex = v_vertex[i].t + v_vertex[i].s * tileRowsColumns.t;
         float height = texelFetch(heightField, texIndex).x;
-        positions[i] = depthMVP * vec4(v_vertex[i].x, height, v_vertex[i].y, 1.0);
+        positions[i] = depthMVP * vec4(float(v_vertex[i].x), height, float(v_vertex[i].y), 1.0);
         
         vec3 normProjPos = positions[i].xyz / positions[i].w;
         bool isOnTop = true;

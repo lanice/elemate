@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <algorithm>
+#include <cmath>
 
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
@@ -21,7 +22,7 @@ Terrain::Terrain(const World & world, const TerrainSettings & settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
 , m_drawLevels(TerrainLevels)
-, m_borderWidth(0.0f)
+, m_viewRange(0.0f)
 {
     m_boudingBox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
     m_boudingBox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
@@ -38,7 +39,7 @@ Terrain::~Terrain()
 
 void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::string> & elements)
 {
-    setBorderWidth(camera.zFarEx());
+    setViewRange(camera.zFarEx());
     setDrawElements(elements);
     Drawable::draw(camera);
     setDrawElements({});
@@ -77,6 +78,9 @@ void Terrain::drawImplementation(const CameraEx & camera)
     // we probably don't want to draw an empty terrain
     assert(m_tiles.size() > 0);
 
+    if (!m_renderGridRadius.isValid())
+        generateDrawGrid();
+
     assert(m_indexBuffer);
 
     glEnable(GL_PRIMITIVE_RESTART);
@@ -98,13 +102,15 @@ const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
     return m_boudingBox;
 }
 
-void Terrain::setBorderWidth(float border)
+void Terrain::setViewRange(float zfar)
 {
-    if (m_borderWidth == border)
+    assert(zfar > 0);
+    if (m_viewRange == zfar)
         return;
     
-    m_borderWidth = border;
+    m_viewRange = zfar;
     m_validBoudingBox.invalidate();
+    m_renderGridRadius.invalidate();
 }
 
 const glowutils::AxisAlignedBoundingBox & Terrain::validBoundingBox() const
@@ -115,13 +121,13 @@ const glowutils::AxisAlignedBoundingBox & Terrain::validBoundingBox() const
     glowutils::AxisAlignedBoundingBox newBox;
 
     newBox.extend(glm::vec3(
-        m_boudingBox.urb().x - m_borderWidth,
+        m_boudingBox.urb().x - m_viewRange,
         m_boudingBox.urb().y,
-        m_boudingBox.urb().z - m_borderWidth));
+        m_boudingBox.urb().z - m_viewRange));
     newBox.extend(glm::vec3(
-        m_boudingBox.llf().x + m_borderWidth,
+        m_boudingBox.llf().x + m_viewRange,
         m_boudingBox.llf().y,
-        m_boudingBox.llf().z + m_borderWidth));
+        m_boudingBox.llf().z + m_viewRange));
 
     m_validBoudingBox.setValue(newBox);
     return m_validBoudingBox.value();
@@ -129,8 +135,7 @@ const glowutils::AxisAlignedBoundingBox & Terrain::validBoundingBox() const
 
 void Terrain::initialize()
 {
-    generateVertices();
-    generateIndices();
+    generateDrawGrid();
 
     m_vao = new glow::VertexArrayObject();
 
@@ -153,40 +158,50 @@ void Terrain::initialize()
     m_vao->unbind();
 }
 
-void Terrain::generateVertices()
+void Terrain::setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const
 {
-    unsigned int numSamples = settings.rows * settings.columns;
+    assert(m_renderGridRadius.isValid());
+
+    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.rows - m_renderGridRadius.value()));
+    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z/settings.sizeZ) * settings.columns - m_renderGridRadius.value()));
+
+    program.setUniform("rowColumnOffset", glm::ivec2(offsetX, offsetZ));
+}
+
+void Terrain::generateDrawGrid()
+{
+    m_renderGridRadius.setValue(static_cast<unsigned int>(std::ceil(m_viewRange * settings.samplesPerWorldCoord())));
+    unsigned int diameter = m_renderGridRadius.value() * 2;
+    unsigned int numSamples = diameter * diameter;
 
     m_vertices = new glow::Vec2Array();
     m_vertices->resize(numSamples);
 
-    for (unsigned row = 0; row < settings.rows; ++row) {
-        const unsigned rowOffset = row * settings.columns;
-        for (unsigned column = 0; column < settings.columns; ++column) {
+    for (unsigned row = 0; row < diameter; ++row) {
+        const unsigned rowOffset = row * diameter;
+        for (unsigned column = 0; column < diameter; ++column) {
             unsigned int index = column + rowOffset;
 
             // simply use the row/column position as vertex position, scaling with the transform matrix
             m_vertices->at(index) = glm::vec2(row, column);
         }
     }
-}
 
-void Terrain::generateIndices()
-{
+
     m_indices = new glow::UIntArray;
 
     // create a quad for all vertices, except for the last row and column (covered by the forelast)
     // see PxHeightFieldDesc::samples documentation: "...(nbRows - 1) * (nbColumns - 1) cells are actually used."
-    unsigned numIndices = (settings.rows - 1) * ((settings.columns) * 2 + 1);
+    unsigned numIndices = (diameter - 1) * ((diameter) * 2 + 1);
     m_indices->reserve(numIndices);
-    for (unsigned int row = 0; row < settings.rows - 1; ++row) {
-        const unsigned rowOffset = row * settings.columns;
-        for (unsigned int column = 0; column < settings.columns; ++column) {
+    for (unsigned int row = 0; row < diameter - 1; ++row) {
+        const unsigned rowOffset = row * diameter;
+        for (unsigned int column = 0; column < diameter; ++column) {
             // "origin" is the left front vertex in a terrain quad
             const unsigned int origin = column + rowOffset;
 
             m_indices->push_back(origin);
-            m_indices->push_back(origin + settings.columns);
+            m_indices->push_back(origin + diameter);
         }
         m_indices->push_back(s_restartIndex);
     }

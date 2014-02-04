@@ -21,7 +21,7 @@ uniform sampler2D bedrockSampler;
 uniform sampler2D sandSampler;
 uniform sampler2D grasslandSampler;
 
-uniform uvec2 tileRowsColumns;
+uniform ivec2 tileRowsColumns;
 
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 lightdir2, mat4 light2, mat4 material);
 
@@ -46,10 +46,10 @@ void main()
         phongLighting(g_normal, g_viewPos, lightdir2, light2, element_grassland).rgb);
     
     int ids[4] = int[4](// upper left, upper right, lower left, lower right
-        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + int(tileRowsColumns.t) * int(g_rowColumn.s  )).s,
-        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + int(tileRowsColumns.t) * int(g_rowColumn.s+1)).s,
-        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + int(tileRowsColumns.t) * int(g_rowColumn.s  )).s,
-        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + int(tileRowsColumns.t) * int(g_rowColumn.s+1)).s);
+        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileRowsColumns.t * int(g_rowColumn.s  )).s,
+        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileRowsColumns.t * int(g_rowColumn.s+1)).s,
+        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileRowsColumns.t * int(g_rowColumn.s  )).s,
+        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileRowsColumns.t * int(g_rowColumn.s+1)).s);
 
     vec3 textureColors[4];        
     vec3 lightColors[4];
