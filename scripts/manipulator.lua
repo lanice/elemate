@@ -9,6 +9,7 @@ local elements = {}
 
 local isEmitting = false
 local emitParameters = {}
+local emitId = particleGroupId
 
 local MIN_RESTPARTICLEDISTANCE = 0.05
 local MAX_RESTPARTICLEDISTANCE = 10.0
@@ -61,10 +62,11 @@ function handleMouseButtonEvent( button, action )
             emit(particleGroupId, 500, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
             isEmitting = true
         end
+        emitId = particleGroupId
     end
     if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_RELEASE then
-        if particleGroupId ~= -1 then
-            psa_stopEmit(particleGroupId)
+        if emitId ~= -1 then
+            psa_stopEmit(emitId)
             isEmitting = false
         end
     end
