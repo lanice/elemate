@@ -31,7 +31,7 @@ void main()
     vec4 sceneC = texture(sceneColor, v_uv);
     vec4 handC = texture(handColor, v_uv);
     vec4 waterC = waterColor(v_uv);
-    vec4 lavaC = lavaColor(10*vec3(v_uv.xy,-v_uv.y));
+    vec4 lavaC = lavaColor(v_uv);
     float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
 
     fragColor = vec4(handZ);

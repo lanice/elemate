@@ -37,8 +37,8 @@ vec4 waterColor(vec2 v_uv){
 
 vec4 lavaColor(vec2 v_uv){
     vec2 resolution = vec2(0.6,2);
-    float x = v_uv.x;
-    float y = v_uv.y;
+    float x = v_uv.x*5;
+    float y = v_uv.y*5;
     float mov0 = x+y+cos(sin(timef)*2.)*100.+sin(x/100.)*1000.;
     float mov1 = y / resolution.y / 0.2 + timef;
     float mov2 = x / resolution.x / 0.2;
