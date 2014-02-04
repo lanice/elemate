@@ -59,7 +59,7 @@ function handleMouseButtonEvent( button, action )
             io.write("No ParticleGroup created.\n")
         else
             io.write("Emit '", psa_elementAtId(particleGroupId), "' particles.\n")
-            emit(particleGroupId, 500, hand_posX(), hand_posY(), hand_posZ(), 0, 1, 0)
+            emit(particleGroupId, 500, hand_posX(), hand_posY(), hand_posZ(), 0, -1, 0)
             isEmitting = true
         end
         emitId = particleGroupId

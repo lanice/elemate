@@ -166,15 +166,25 @@ void ParticleGroup::updateEmitting(const double & delta)
 {
     if (!m_emitting) return;
 
-    if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
-    {
-        std::uniform_real_distribution<float> uniform_dist(-0.5f, 0.5f);
-        std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
+    unsigned int particlesToEmit = glm::floor(m_emitRatio * delta);
 
-        createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
+    std::uniform_real_distribution<float> uniform_dist(-0.75f, 0.75f);
+    std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
+
+    if (particlesToEmit > 0)
+    {
+        for (unsigned int i = 0; i < particlesToEmit; ++i)
+            createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
+
         m_timeSinceLastEmit = 0.0;
     } else {
-        m_timeSinceLastEmit += delta;
+        if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
+        {
+            createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
+            m_timeSinceLastEmit = 0.0;
+        } else {
+            m_timeSinceLastEmit += delta;
+        }
     }
 }
 

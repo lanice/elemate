@@ -101,7 +101,7 @@ void Manipulator::updateHandPosition()
     if (m_grabbedTerrain)
         m_terrainInteractor->heightPull(handPosition.x, handPosition.z);
 
-    m_lua->call("updateHandPosition", handPosition.x, handPosition.y, handPosition.z);
+    m_lua->call("updateHandPosition", handPosition.x, m_hand.position().y, handPosition.z);
 }
 
 void Manipulator::setRenderer(Renderer & renderer)
