@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <list>
 
 namespace glow{
     class VertexArrayObject;
@@ -48,6 +49,7 @@ protected:
     bool m_activeHUD;
 
     StringDrawer m_stringDrawer;
+    std::list<TextObject> m_hudTexts;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Program>           m_previewProgram;

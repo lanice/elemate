@@ -112,6 +112,9 @@ void UserInterface::drawHUD()
         return;
 
     drawPreview();
+    for (const auto& text : m_hudTexts){
+        m_stringDrawer.paint(text);
+    }
 }
 
 void UserInterface::drawMainMenu()
@@ -335,6 +338,32 @@ void UserInterface::registerLuaFunctions(LuaWrapper * lua)
     std::function<unsigned int(unsigned int)> func1 = [=] (unsigned int index)
     { m_activeElement = index; return 0;};
 
+    std::function<unsigned int()> clearTexts = [=]()
+    { m_hudTexts.clear(); return 0; };
+
+    std::function<unsigned int(std::string)> debugText = [=](std::string debug_message)
+    {   
+        m_hudTexts.clear();
+        TextObject t; t.text = debug_message;
+        t.x = -1.0f; t.y = -0.95f; t.z = 0.0f; t.scale = 0.5f;
+        t.red = 0.5f; t.blue = t.green = 0.0f;
+        m_hudTexts.push_back(t);
+        return 0; 
+    };
+
+    std::function<unsigned int(std::string, float, float, float, float, float, float, float)> writeText = [=]
+        (std::string debug_message, float x, float y, float z, float scale, float red, float green, float blue)
+    {   
+        TextObject t; t.text = debug_message; 
+        t.x = x; t.y = y; t.z = z; t.scale = scale;
+        t.red = red; t.blue = blue; t.green = green;
+        m_hudTexts.push_back(t);
+        return 0; 
+    };
+
     lua->Register("hud_activeElement", func0);
     lua->Register("hud_setActiveElement", func1);
+    lua->Register("hud_addText", writeText);
+    lua->Register("hud_clearTexts", clearTexts);
+    lua->Register("hud_debugText", debugText);
 }
