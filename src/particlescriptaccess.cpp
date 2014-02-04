@@ -54,9 +54,9 @@ ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
     return m_particleGroups.at(id).first;
 }
 
-int ParticleScriptAccess::createParticleGroup(const std::string & elementType)
+int ParticleScriptAccess::createParticleGroup(const std::string & elementType, uint32_t maxParticleCount)
 {
-    ParticleGroup * particleGroup = new ParticleGroup(m_gpuParticles);
+    ParticleGroup * particleGroup = new ParticleGroup(m_gpuParticles, maxParticleCount);
 
     m_particleGroups.emplace(m_id, std::make_pair(particleGroup, elementType));
 
@@ -136,8 +136,8 @@ void ParticleScriptAccess::restoreGPUAccelerated()
 
 void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
 {
-    std::function<int(std::string)> func0 = [=] (std::string elementType)
-    { return createParticleGroup(elementType); };
+    std::function<int(std::string, unsigned int)> func0 = [=] (std::string elementType, unsigned int maxParticles)
+    { return createParticleGroup(elementType, maxParticles); };
 
     std::function<int(int)> func0a = [=] (int id)
     { removeParticleGroup(id); return 0; };

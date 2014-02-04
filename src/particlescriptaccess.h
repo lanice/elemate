@@ -29,7 +29,7 @@ public:
     ParticleGroup * particleGroup(const int id);
 
     /** Creates an instance of ParticleGroup and registers it, returning the access id */
-    int createParticleGroup(const std::string & elementType = "default");
+    int createParticleGroup(const std::string & elementType = "default", uint32_t maxParticleCount = 10000U);
     void removeParticleGroup(const int id);
     void clearParticleGroups();
 

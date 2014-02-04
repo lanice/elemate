@@ -11,8 +11,11 @@ local isEmitting = false
 local emitParameters = {}
 local emitId = particleGroupId
 
-local function createParticleGroup( eleType )
-    local id = psa_createParticleGroup(eleType)
+local function createParticleGroup( eleType , maxParticles)
+    if maxParticles == nil then
+        maxParticles = 10000
+    end
+    local id = psa_createParticleGroup(eleType, maxParticles)
     io.write("Created ParticleGroup '", eleType, "' at id ", id, "\n")
     return id
 end
@@ -25,6 +28,18 @@ local function selectElement( eleType )
         elements[eleType] = id
         return id
     end
+end
+
+local function spawnSource(posX, posY, posZ)
+    local RADIUS = 1.5;
+    local SOURCE_HEIGHT = 0.3
+    terrain_heightGrab(posX, posZ)
+    for x = 0, 360, 10 do
+        terrain_dropElement(posX+math.sin(x)*RADIUS,   posZ+math.cos(x)*RADIUS, SOURCE_HEIGHT)   
+    end
+    local randomElement = math.random(2)
+    Id = createParticleGroup(elementTable[randomElement], 1000)
+    psa_emit(Id, 200, posX, posY-1.0+SOURCE_HEIGHT, posZ, 0, 1, 0)
 end
 
 local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
@@ -66,6 +81,9 @@ function handleMouseButtonEvent( button, action )
             psa_stopEmit(emitId)
             isEmitting = false
         end
+    end
+    if button == GLFW_MOUSE_BUTTON_MIDDLE and action == GLFW_RELEASE then
+        spawnSource(hand_posX(), hand_posY(), hand_posZ())
     end
 end
 
