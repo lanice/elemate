@@ -22,8 +22,24 @@ using namespace physx;
 
 std::list<ParticleDrawable*> ParticleDrawable::s_instances;
 
-ParticleDrawable::ParticleDrawable(unsigned int maxParticleCount)
-: m_maxParticleCount(maxParticleCount)
+uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
+{
+    if (elementName == "water")
+        return 1;
+    if (elementName == "lava")
+        return 2;
+    if (elementName == "sand")
+        return 3;
+    if (elementName == "bedrock")
+        return 4;
+    assert(false);
+    return 0;   // mean unset
+}
+
+ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount)
+: m_elementName(elementName)
+, m_elementIndex(elementIndex(elementName))
+, m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
 , m_particleSize(1.0f)
 , m_needBufferUpdate(true)
@@ -111,6 +127,7 @@ void ParticleDrawable::initialize()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle_water.frag"));
 
     m_program->setUniform("particleSize", m_particleSize);
+    m_program->setUniform("elementIndex", m_elementIndex);
 }
 
 void ParticleDrawable::updateBuffers()

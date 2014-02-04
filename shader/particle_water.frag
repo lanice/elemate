@@ -8,11 +8,17 @@ flat in vec4 g_viewPosCenter;
 uniform float particleSize;
 uniform mat4 projection;
 
+uniform int elementIndex;
+
 float linearize(float depth);
 float depthNdcToWindow(float ndcDepth);
 
+layout(location = 0)out uint f_elementIndex;
+
 void main()
-{        
+{
+    f_elementIndex = elementIndex;
+
     vec3 N;
     N.xy = g_relPos.xy;
     float r2 = dot(N.xy, N.xy);

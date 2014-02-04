@@ -10,6 +10,7 @@ uniform sampler2D waterNormals;
 uniform sampler2D waterDepth;
 uniform sampler2D shadowMap;
 uniform sampler2D lightMap;
+uniform usampler2D elementID;
 
 layout(location = 0)out vec4 fragColor;
 
@@ -25,6 +26,10 @@ void main()
     // return;
     // fragColor = texture(sceneColor, v_uv);
     // return;
+    
+    fragColor = vec4(float(texture(elementID, v_uv)) * 0.25);
+    return;
+    
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
     float handZ = linearize(texture(handDepth, v_uv).r);
     float waterZ = texture(waterDepth, v_uv).r;

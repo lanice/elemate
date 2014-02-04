@@ -30,6 +30,7 @@ namespace {
 }
 
 ParticleGroup::ParticleGroup(
+    const std::string & elementName,
     const bool enableGpuParticles,
     const PxU32 maxParticleCount,
     const ImmutableParticleProperties & immutableProperties,
@@ -37,7 +38,7 @@ ParticleGroup::ParticleGroup(
     )
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
-, m_particleDrawable(std::make_shared<ParticleDrawable>(maxParticleCount))
+, m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)

@@ -23,10 +23,17 @@ ParticleWaterStep::ParticleWaterStep()
     m_depthTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_depthTex->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
-    m_depthFbo = new glow::FrameBufferObject();
-    m_depthFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_depthTex);
-    m_depthFbo->setDrawBuffers({ GL_NONE });
-    m_depthFbo->unbind();
+    m_elementIdTex = new glow::Texture(GL_TEXTURE_2D);
+    m_elementIdTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_elementIdTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_elementIdTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_elementIdTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    m_particleSceneFbo = new glow::FrameBufferObject();
+    m_particleSceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_elementIdTex);
+    m_particleSceneFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_depthTex);
+    m_particleSceneFbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
+    m_particleSceneFbo->unbind();
 
 
     m_postTexA = new glow::Texture(GL_TEXTURE_2D);
@@ -134,11 +141,12 @@ void ParticleWaterStep::draw(const CameraEx & camera)
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    m_depthFbo->bind();
-    glClear(GL_DEPTH_BUFFER_BIT);
+    m_particleSceneFbo->bind();
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     ParticleDrawable::drawParticles(camera);
     World::instance()->terrain->drawDepthMap(camera, { "water" });
-    m_depthFbo->unbind();
+    m_particleSceneFbo->unbind();
 
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
@@ -151,9 +159,10 @@ void ParticleWaterStep::draw(const CameraEx & camera)
 
 void ParticleWaterStep::resize(int width, int height)
 {
+    m_elementIdTex->image2D(0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
     m_depthTex->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    m_depthFbo->printStatus(true);
-    assert(m_depthFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
+    m_particleSceneFbo->printStatus(true);
+    assert(m_particleSceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_postTexA->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
     m_postTexB->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
@@ -178,4 +187,10 @@ glow::Texture * ParticleWaterStep::normalsTex()
 {
     assert(m_normalsTex);
     return m_normalsTex;
+}
+
+glow::Texture * ParticleWaterStep::elementIdTex()
+{
+    assert(m_elementIdTex);
+    return m_elementIdTex;
 }

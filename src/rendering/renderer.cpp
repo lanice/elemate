@@ -102,7 +102,8 @@ void Renderer::initialize()
     NamedTexture("waterNormals", m_particleWaterStep->normalsTex()),
     NamedTexture("waterDepth", m_particleWaterStep->depthTex()),
     NamedTexture("shadowMap", m_shadowMappingStep->result()),
-    NamedTexture("lightMap", m_shadowMappingStep->lightMap())};
+    NamedTexture("lightMap", m_shadowMappingStep->lightMap()),
+    NamedTexture("elementID", m_particleWaterStep->elementIdTex())};
 
     for (int i = 0; i < m_flushSources.size(); ++i)
         m_quadProgram->setUniform(m_flushSources.at(i).first, i);
@@ -158,6 +159,7 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("timef", int(m_world.getTime()));
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
+    m_quad->program()->setUniform("viewport", camera.viewport());
 
     m_quad->draw();
 
