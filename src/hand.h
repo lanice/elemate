@@ -16,7 +16,7 @@ class Hand : public ShadowingDrawable
 public:
     Hand();
 
-    const glm::mat4 & transform() const;
+    virtual const glm::mat4 & transform() const override;
 
     const glm::vec3 & position() const;
     /** set the hand position to the specified x, z coodinates and get the height from the m_world's terrain 

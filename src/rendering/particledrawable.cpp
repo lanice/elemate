@@ -37,7 +37,8 @@ uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
 }
 
 ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount)
-: m_elementName(elementName)
+: Drawable()
+, m_elementName(elementName)
 , m_elementIndex(elementIndex(elementName))
 , m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)

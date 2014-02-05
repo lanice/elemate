@@ -127,6 +127,8 @@ set(SOURCES
     src/rendering/particlestep.cpp
     src/rendering/shadowmappingstep.cpp
     src/rendering/shadowmappingstep.h
+    src/rendering/boundingboxstep.h
+    src/rendering/boundingboxstep.cpp
     src/rendering/string_rendering/CharacterDrawable.h
     src/rendering/string_rendering/CharacterDrawable.cpp
     src/rendering/string_rendering/RawFile.h

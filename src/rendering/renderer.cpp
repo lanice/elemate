@@ -15,12 +15,13 @@ namespace glow {
 #include <cassert>
 
 #include "world.h"
-#include "terrain/terrain.h"
-#include "particledrawable.h"
 #include "hand.h"
-#include "rendering/particlestep.h"
-#include "shadowmappingstep.h"
+#include "terrain/terrain.h"
 #include "ui/userinterface.h"
+#include "particledrawable.h"
+#include "particlestep.h"
+#include "shadowmappingstep.h"
+#include "boundingboxstep.h"
 
 Renderer::Renderer(const World & world)
 : m_world(world)
@@ -109,6 +110,8 @@ void Renderer::initialize()
         m_quadProgram->setUniform(m_flushSources.at(i).first, i);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
+
+    m_bboxStep = std::make_shared<BoundingboxStep>();
 }
 
 void Renderer::operator()(const CameraEx & camera)
@@ -142,6 +145,7 @@ void Renderer::handStep(const CameraEx & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.hand->draw(camera);
+    m_bboxStep->draw(camera);
     
     m_fboByName.at("hand")->unbind();
 }

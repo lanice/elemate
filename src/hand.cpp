@@ -76,14 +76,13 @@ void Hand::loadModel()
     indices->clear();
     delete indices;
 
-    glowutils::AxisAlignedBoundingBox bbox;
     glow::Vec3Array * vertices = new glow::Vec3Array;
 
     for (unsigned v = 0; v < mesh->mNumVertices; ++v) {
         const glm::vec3 scaledVertex = 
             glm::vec3(initTransform * glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0));
         vertices->push_back(scaledVertex);
-        bbox.extend(scaledVertex);
+        m_bbox.extend(scaledVertex);
     }
 
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
@@ -93,10 +92,10 @@ void Hand::loadModel()
     delete vertices;
 
     // use four lower coners of the bouding box as compare/checkpoints with terrain height
-    m_heightCheckPoints.push_back(bbox.llf());
-    m_heightCheckPoints.push_back(glm::vec3(bbox.llf().x, bbox.llf().y, bbox.urb().z));
-    m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.llf().z));
-    m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.urb().z));
+    m_heightCheckPoints.push_back(m_bbox.llf());
+    m_heightCheckPoints.push_back(glm::vec3(m_bbox.llf().x, m_bbox.llf().y, m_bbox.urb().z));
+    m_heightCheckPoints.push_back(glm::vec3(m_bbox.urb().x, m_bbox.llf().y, m_bbox.llf().z));
+    m_heightCheckPoints.push_back(glm::vec3(m_bbox.urb().x, m_bbox.llf().y, m_bbox.urb().z));
 
     glow::Vec3Array * normals = new glow::Vec3Array;
     for (unsigned n = 0; n < mesh->mNumVertices; ++n) {

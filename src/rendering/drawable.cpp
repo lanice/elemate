@@ -5,15 +5,25 @@
 #include <glow/VertexArrayObject.h>
 #include <glow/Buffer.h>
 
+#include <glm/glm.hpp>
+
+std::set<Drawable*> Drawable::s_drawableInstances;
 
 Drawable::Drawable()
 : m_vao(nullptr)
 , m_vbo(nullptr)
 {
+    s_drawableInstances.insert(this);
 }
 
 Drawable::~Drawable()
 {
+    s_drawableInstances.erase(this);
+}
+
+const std::set<Drawable*> & Drawable::instances()
+{
+    return s_drawableInstances;
 }
 
 void Drawable::initialize()
@@ -43,4 +53,10 @@ const glowutils::AxisAlignedBoundingBox & Drawable::boundingBox() const
 void Drawable::setBoudingBox(const glowutils::AxisAlignedBoundingBox & bbox)
 {
     m_bbox = bbox;
+}
+
+const glm::mat4 & Drawable::transform() const
+{
+    static const glm::mat4 identity;
+    return identity;
 }
