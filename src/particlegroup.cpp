@@ -213,6 +213,11 @@ void ParticleGroup::updateEmitting(const double & delta)
     }
 }
 
+glm::vec3 vec3(const physx::PxVec3 & vec3)
+{
+    return glm::vec3(vec3.x, vec3.y, vec3.z);
+}
+
 void ParticleGroup::updateVisuals()
 {    
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
@@ -223,14 +228,22 @@ void ParticleGroup::updateVisuals()
     // Get drained Particles
     glow::UIntArray indices;
     PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);
+    PxStrideIterator<const PxVec3> positionIt = readData->positionBuffer;
 
-    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt)
+    glowutils::AxisAlignedBoundingBox bbox;
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
         if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_DRAIN)
             indices << i;
+        if (*flagsIt & PxParticleFlag::eVALID) {
+            bbox.extend(vec3(*positionIt));
+        }
+    }
 
     readData->unlock();
 
     m_particleDrawable->setParticleSize(m_particleSystem->getRestParticleDistance());
+    m_particleDrawable->setBoudingBox(bbox);
 
     releaseParticles(static_cast<uint32_t>(indices.size()), indices);
 }

@@ -37,6 +37,7 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_sunlight()
 {
     assert(s_instance == nullptr);
+    s_instance = this;
 
     // Create two non-3D channels (paino and rain)
     //initialise as paused
@@ -48,12 +49,12 @@ World::World(PhysicsWrapper & physicsWrapper)
     initShader();
 
     TerrainGenerator terrainGen;
-    terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
+    terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
     for (const auto actor : terrain->pxActorMap())
         m_physicsWrapper.addActor(*actor.second);
 
-    hand = std::make_shared<Hand>(*this);
+    hand = std::make_shared<Hand>();
 
     m_sunlight[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
     m_sunlight[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
@@ -63,8 +64,6 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_skyColor = glm::vec3(0.6f, 0.9f, 1.f);
 
     ParticleScriptAccess::instance().setNotifier(this);
-    
-    s_instance = this;
 }
 
 World::~World()

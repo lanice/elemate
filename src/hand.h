@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rendering/drawable.h"
+#include "rendering/shadowingdrawable.h"
 
 #include <string>
 
@@ -9,18 +9,12 @@
 
 #include <glm/glm.hpp>
 
-namespace glow {
-    class VertexArrayObject;
-    class Buffer;
-}
-class World;
-class TerrainInteractor;
 class LuaWrapper;
 
-class Hand : public Drawable
+class Hand : public ShadowingDrawable
 {
 public:
-    Hand(const World & world);
+    Hand();
 
     const glm::mat4 & transform() const;
 

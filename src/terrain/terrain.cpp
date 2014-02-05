@@ -16,8 +16,8 @@
 
 #include "terraintile.h"
 
-Terrain::Terrain(const World & world, const TerrainSettings & settings)
-: Drawable(world)
+Terrain::Terrain(const TerrainSettings & settings)
+: ShadowingDrawable()
 , settings(settings)
 , m_vertices(nullptr)
 , m_indices(nullptr)
@@ -41,21 +41,21 @@ void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::str
 {
     setViewRange(camera.zFarEx());
     setDrawElements(elements);
-    Drawable::draw(camera);
+    ShadowingDrawable::draw(camera);
     setDrawElements({});
 }
 
 void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
-    Drawable::drawDepthMap(camera);
+    ShadowingDrawable::drawDepthMap(camera);
     setDrawElements({});
 }
 
 void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
-    Drawable::drawShadowMapping(camera, lightSource);
+    ShadowingDrawable::drawShadowMapping(camera, lightSource);
     setDrawElements({});
 }
 

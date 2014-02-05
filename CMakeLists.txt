@@ -115,6 +115,8 @@ set(SOURCES
     src/terrain/terraingenerator.cpp
     src/rendering/drawable.h
     src/rendering/drawable.cpp
+    src/rendering/shadowingdrawable.h
+    src/rendering/shadowingdrawable.cpp
     src/rendering/renderer.h
     src/rendering/renderer.cpp
     src/rendering/renderingstep.h

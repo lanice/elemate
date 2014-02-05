@@ -96,7 +96,7 @@ void TerrainTile::bind(const CameraEx & camera)
     m_program->setUniform("zfar", camera.zFarEx());
     m_terrain.setDrawGridOffsetUniform(*m_program, camera.eye());
 
-    m_terrain.m_world.setUpLighting(*m_program);
+    World::instance()->setUpLighting(*m_program);
 }
 
 void TerrainTile::unbind()

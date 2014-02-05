@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rendering/drawable.h"
+#include "rendering/shadowingdrawable.h"
 
 #include <map>
 #include <set>
@@ -19,10 +19,10 @@ namespace physx {
 }
 class TerrainTile;
 
-class Terrain : public Drawable
+class Terrain : public ShadowingDrawable
 {
 public:
-    Terrain(const World & world, const TerrainSettings & settings);
+    Terrain(const TerrainSettings & settings);
     virtual ~Terrain() override;
 
     /** set a list of elements that will be used for the draw call */
