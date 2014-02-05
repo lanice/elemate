@@ -18,7 +18,7 @@ namespace glow {
 #include "terrain/terrain.h"
 #include "particledrawable.h"
 #include "hand.h"
-#include "particlewaterstep.h"
+#include "rendering/particlestep.h"
 #include "shadowmappingstep.h"
 #include "ui/userinterface.h"
 
@@ -83,25 +83,27 @@ void Renderer::initialize()
 
 
 
-    m_particleWaterStep = std::make_shared<ParticleWaterStep>();
+    m_particleStep = std::make_shared<ParticleStep>();
     m_shadowMappingStep = std::make_shared<ShadowMappingStep>(this->m_world);
 
-    m_steps.push_back(m_particleWaterStep.get());
+    m_steps.push_back(m_particleStep.get());
     m_steps.push_back(m_shadowMappingStep.get());
 
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag"));
-
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/particle/material.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag")
+    );
 
     m_flushSources =
     { sceneColor, sceneDepth, handColor, handDepth,
-    NamedTexture("waterNormals", m_particleWaterStep->normalsTex()),
-    NamedTexture("waterDepth", m_particleWaterStep->depthTex()),
+    NamedTexture("particleNormals", m_particleStep->normalsTex()),
+    NamedTexture("particleDepth", m_particleStep->depthTex()),
     NamedTexture("shadowMap", m_shadowMappingStep->result()),
-    NamedTexture("lightMap", m_shadowMappingStep->lightMap())};
+    NamedTexture("lightMap", m_shadowMappingStep->lightMap()),
+    NamedTexture("elementID", m_particleStep->elementIdTex())};
 
     for (int i = 0; i < m_flushSources.size(); ++i)
         m_quadProgram->setUniform(m_flushSources.at(i).first, i);
@@ -113,7 +115,7 @@ void Renderer::operator()(const CameraEx & camera)
 {
     sceneStep(camera);
     handStep(camera);
-    m_particleWaterStep->draw(camera);
+    m_particleStep->draw(camera);
     m_shadowMappingStep->draw(camera);
     flushStep(camera);
 }
@@ -154,6 +156,10 @@ void Renderer::flushStep(const CameraEx & camera)
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
     m_quad->program()->setUniform("zfar", camera.zFarEx());
+    m_quad->program()->setUniform("timef", int(m_world.getTime()));
+    m_quad->program()->setUniform("view", camera.view());
+    m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
+    m_quad->program()->setUniform("viewport", camera.viewport());
 
     m_quad->draw();
 

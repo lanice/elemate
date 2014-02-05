@@ -5,22 +5,24 @@
 
 #include "renderingstep.h"
 
-class ParticleWaterStep : public RenderingStep
+class ParticleStep : public RenderingStep
 {
 public:
-    ParticleWaterStep();
+    ParticleStep();
 
     virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;
 
     glow::Texture * normalsTex();
     glow::Texture * depthTex();
+    glow::Texture * elementIdTex();
 
 protected:
     // for geometry drawing step
 
-    glow::ref_ptr<glow::FrameBufferObject> m_depthFbo;
+    glow::ref_ptr<glow::FrameBufferObject> m_particleSceneFbo;
     glow::ref_ptr<glow::Texture> m_depthTex;
+    glow::ref_ptr<glow::Texture> m_elementIdTex;
 
     // for postprocessing: use two texture buffers and swap them between the steps
 

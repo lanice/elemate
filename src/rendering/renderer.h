@@ -17,7 +17,7 @@ namespace glowutils {
 }
 class World;
 class RenderingStep;
-class ParticleWaterStep;
+class ParticleStep;
 class ShadowMappingStep;
 class CameraEx;
 class UserInterface;
@@ -38,7 +38,7 @@ protected:
     void sceneStep(const CameraEx & camera);
     void handStep(const CameraEx & camera);
     void userInterfaceStep(UserInterface * ui);
-    std::shared_ptr<ParticleWaterStep> m_particleWaterStep;
+    std::shared_ptr<ParticleStep> m_particleStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
     void flushStep(const CameraEx & camera);
 

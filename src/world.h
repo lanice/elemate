@@ -36,6 +36,8 @@ public:
     /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
     void togglePause();
 
+    time_t getTime() const;
+
     void stopSimulation();
 
     /** updates the physics but doesn't copy/update any datastructures */

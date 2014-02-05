@@ -11,9 +11,6 @@
 // Own Classes
 #include "physicswrapper.h"
 #include "world.h"
-#include "particledrawable.h"
-#include "terrain/terrain.h"
-#include "rendering/renderer.h"
 
 
 Game::Game(GLFWwindow & window) :

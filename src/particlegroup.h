@@ -43,6 +43,7 @@ class ParticleGroup
 {
 public:
     ParticleGroup(
+        const std::string & elementName,
         const bool enableGpuParticles,
         const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),

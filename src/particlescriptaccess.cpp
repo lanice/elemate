@@ -56,7 +56,7 @@ ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
 
 int ParticleScriptAccess::createParticleGroup(const std::string & elementType, uint32_t maxParticleCount)
 {
-    ParticleGroup * particleGroup = new ParticleGroup(m_gpuParticles, maxParticleCount);
+    ParticleGroup * particleGroup = new ParticleGroup(elementType, m_gpuParticles, maxParticleCount);
 
     m_particleGroups.emplace(m_id, std::make_pair(particleGroup, elementType));
 

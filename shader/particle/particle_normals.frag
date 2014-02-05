@@ -17,7 +17,7 @@ void main()
     float height_left = texelFetch(source, uv+ivec2(-1, 0), 0).x;
     float height_right = texelFetch(source, uv+ivec2(1, 0), 0).x;
     float height_up = texelFetch(source, uv+ivec2(0, 1), 0).x;
-    float height_down = texelFetch(source, uv+ivec2(0, -1), 0).x;
+    float height_down = texelFetch(source, uv+ivec2(0,-1), 0).x;
 
     vec3 va,vb;
 

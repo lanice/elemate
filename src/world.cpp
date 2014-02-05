@@ -15,7 +15,6 @@
 #include "physicswrapper.h"
 #include "soundmanager.h"
 #include "ui/navigation.h"
-#include "elements.h"
 #include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
@@ -87,6 +86,10 @@ void World::togglePause()
     // Pause/resume all sounds except the background sounds.
     for (const auto sound : m_sounds)
         m_soundManager->setPaused(sound, !m_time->isRunning());
+}
+
+time_t World::getTime()const{
+    return this->m_time->gett(false);
 }
 
 void World::stopSimulation()
