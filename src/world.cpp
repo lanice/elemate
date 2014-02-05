@@ -135,6 +135,8 @@ void World::createFountainSound(const glm::vec3& position)
 {
     int id = m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), { position.x, position.y, position.z });
     m_sounds.push_back(id);
+
+    m_soundManager->setVolume(id, 0.2f);
 }
 
 void World::toggleBackgroundSound(int id){
