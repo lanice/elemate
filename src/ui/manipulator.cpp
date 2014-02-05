@@ -76,18 +76,18 @@ void Manipulator::handleMouseMoveEvent(double xpos, double ypos)
 
 void Manipulator::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
 {
-    if (glfwGetKey(&m_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
-    {
-        if (yoffset > 0)
-        {
-            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
-        }
-        else {
-            m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
-            m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
-        }
-    }
+    // if (glfwGetKey(&m_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+    // {
+    //     if (yoffset > 0)
+    //     {
+    //         m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
+    //         m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+    //     }
+    //     else {
+    //         m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
+    //         m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
+    //     }
+    // }
     
     m_lua->call("handleScrollEvent", yoffset);
 }

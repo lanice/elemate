@@ -88,6 +88,18 @@ function handleMouseButtonEvent( button, action )
 end
 
 function handleScrollEvent( yoffset )
+    if glfw_getKey(GLFW_KEY_LEFT_ALT) == GLFW_PRESS then
+        local posX = hand_posX()
+        local posZ = hand_posZ()
+        if yoffset > 0 then
+            terrain_changeHeight(posX, posZ, 0.1)
+            terrain_heightGrab(posX, posZ)
+        else
+            terrain_changeHeight(posX, posZ, -0.1)
+            terrain_heightGrab(posX, posZ)
+        end
+    end
+
     if particleGroupId ~= -1 and glfw_getKey(GLFW_KEY_X) == GLFW_PRESS then
         local dist = psa_restParticleDistance(particleGroupId)+(0.01*yoffset)
         if dist > 0.01 and dist < 5.0 then
