@@ -262,26 +262,30 @@ void TerrainInteractor::setTerrain(std::shared_ptr<Terrain>& terrain)
 
 void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
 {
-    std::function<float(float, float)> func0 = [=] (float worldX, float worldZ)
+    std::function<float(float, float)> func0 = [=](float worldX, float worldZ)
     { return heightAt(worldX, worldZ); };
 
-    std::function<bool(float, float)> func1 = [=] (float worldX, float worldZ)
+    std::function<bool(float, float)> func1 = [=](float worldX, float worldZ)
     { return isHeighestAt(worldX, worldZ); };
 
-    std::function<float(float, float, float)> func2 = [=] (float worldX, float worldZ, float delta)
+    std::function<float(float, float, float)> func2 = [=](float worldX, float worldZ, float delta)
     { return changeHeight(worldX, worldZ, delta); };
 
-    std::function<float(float, float, float)> func3 = [=] (float worldX, float worldZ, float heightDelta)
+    std::function<float(float, float, float)> func3 = [=](float worldX, float worldZ, float heightDelta)
     { return dropElement(worldX, worldZ, heightDelta); };
 
-    std::function<float(float, float, float)> func4 = [=] (float worldX, float worldZ, float heightDelta)
+    std::function<float(float, float, float)> func4 = [=](float worldX, float worldZ, float heightDelta)
     { return gatherElement(worldX, worldZ, heightDelta); };
 
-    std::function<float(float, float)> func5 = [=] (float worldX, float worldZ)
+    std::function<float(float, float)> func5 = [=](float worldX, float worldZ)
     { return terrainHeightAt(worldX, worldZ); };
 
-    std::function<float(float, float)> func6 = [=] (float worldX, float worldZ)
+    std::function<float(float, float)> func6 = [=](float worldX, float worldZ)
     { return heightGrab(worldX, worldZ); };
+
+
+    std::function<int(std::string)> func7 = [=](std::string elementName)
+    { setInteractElement(elementName); return 0; };
 
     lua->Register("terrain_heightAt", func0);
     lua->Register("terrain_isHeighestAt", func1);
@@ -290,4 +294,5 @@ void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
     lua->Register("terrain_gatherElement", func4);
     lua->Register("terrain_terrainHeightAt", func5);
     lua->Register("terrain_heightGrab", func6);
+    lua->Register("setInteractElement", func7);
 }

@@ -10,7 +10,6 @@
 #include "world.h"
 #include "navigation.h"
 #include "hand.h"
-#include "rendering/renderer.h"
 #include "terrain/terraininteractor.h"
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
@@ -97,7 +96,21 @@ void Manipulator::handleScrollEvent(const double & /*xoffset*/, const double & y
 
 void Manipulator::updateHandPosition()
 {
-    glm::vec3 handPosition = objAt(glm::ivec2(glm::floor(m_lastCursorPos)));
+    int windowWidth, windowHeight;
+    double cursorX, cursorY;
+    glfwGetWindowSize(&m_window, &windowWidth, &windowHeight);
+    glfwGetCursorPos(&m_window, &cursorX, &cursorY);
+
+    float normX = static_cast<float>(cursorX) / windowWidth  * 2.f - 1.0f;
+    float normY = 1.0f - static_cast<float>(cursorY) / windowHeight * 2.f;
+
+    glm::vec4 viewpos = m_camera.viewProjectionInvertedEx() * glm::vec4(normX, normY, -1.0f, 1.0f);
+    viewpos /= viewpos.w;    
+    glm::vec3 viewDir = glm::vec3(viewpos) - m_camera.eye();
+
+    float navigationHeight = m_navigation.center().y;
+
+    glm::vec3 handPosition = m_camera.eye() + ((navigationHeight - m_camera.eye().y) / viewDir.y) * viewDir;
 
     m_hand.setPosition(handPosition.x, handPosition.z);
     m_hand.rotate(m_navigation.rotationAngle());
@@ -108,34 +121,9 @@ void Manipulator::updateHandPosition()
     m_lua->call("updateHandPosition", handPosition.x, m_hand.position().y, handPosition.z);
 }
 
-void Manipulator::setRenderer(Renderer & renderer)
-{
-    m_renderer = &renderer;
-    // call updateHandPosition when the renderer has drawn the scene
-    m_renderer->addSceneFboReader(std::bind(&Manipulator::updateHandPosition, this));
-}
-
 LuaWrapper * Manipulator::lua()
 {
     return m_lua;
-}
-
-const float Manipulator::depthAt(const glm::ivec2 & windowCoordinates)
-{
-    return AbstractCoordinateProvider::depthAt(m_camera, GL_DEPTH_COMPONENT, windowCoordinates);
-}
-
-const glm::vec3 Manipulator::objAt(const glm::ivec2 & windowCoordinates, const float depth)
-{
-    return unproject(m_camera, depth, windowCoordinates);
-}
-
-const glm::vec3 Manipulator::objAt(
-    const glm::ivec2 & windowCoordinates
-    , const float depth
-    , const glm::mat4 & viewProjectionInverted)
-{
-    return unproject(m_camera, viewProjectionInverted, depth, windowCoordinates);
 }
 
 void Manipulator::registerLuaFunctions(LuaWrapper * lua)

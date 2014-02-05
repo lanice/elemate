@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <vector>
-#include <functional>
 #include <map>
 
 #include <glow/ref_ptr.h>
@@ -18,7 +17,7 @@ namespace glowutils {
 }
 class World;
 class RenderingStep;
-class ParticleWaterStep;
+class ParticleStep;
 class ShadowMappingStep;
 class CameraEx;
 class UserInterface;
@@ -34,14 +33,12 @@ public:
 
     const glow::FrameBufferObject * sceneFbo() const;
 
-    void addSceneFboReader(const std::function<void()> & reader);
-
 protected:
     // drawing steps
     void sceneStep(const CameraEx & camera);
     void handStep(const CameraEx & camera);
     void userInterfaceStep(UserInterface * ui);
-    std::shared_ptr<ParticleWaterStep> m_particleWaterStep;
+    std::shared_ptr<ParticleStep> m_particleStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
     void flushStep(const CameraEx & camera);
 
@@ -65,7 +62,6 @@ protected:
     glow::ref_ptr<glowutils::ScreenAlignedQuad> m_quad;
     glow::ref_ptr<glow::Program> m_quadProgram;
 
-    std::vector<std::function<void()>> m_sceneFboReader;
 public:
     Renderer() = delete;
     Renderer(Renderer&) = delete;

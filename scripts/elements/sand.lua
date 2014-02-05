@@ -20,7 +20,7 @@ function setMutableProperties( index )
     staticFriction = 0.8
     damping = 1.0
     particleMass = 0.01
-    viscosity = 1.0
+    viscosity = 0.1
     stiffness = 4.134
 
     psa_setMutableProperties(index, restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness)

@@ -23,7 +23,7 @@ class ParticleDrawable
 {
 public:
     /** creates a new drawable with fixed maximum number of particles */
-    ParticleDrawable(unsigned int maxParticleCount);
+    ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount);
 
     virtual ~ParticleDrawable();
 
@@ -42,6 +42,11 @@ public:
 
 protected:
     static std::list<ParticleDrawable*> s_instances;
+
+    const std::string m_elementName;
+    const uint8_t m_elementIndex;
+
+    static uint8_t elementIndex(const std::string & elementName);
 
     const unsigned int m_maxParticleCount;
     unsigned int m_currentNumParticles;

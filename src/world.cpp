@@ -15,7 +15,6 @@
 #include "physicswrapper.h"
 #include "soundmanager.h"
 #include "ui/navigation.h"
-#include "elements.h"
 #include "hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
@@ -41,11 +40,10 @@ World::World(PhysicsWrapper & physicsWrapper)
 
     // Create two non-3D channels (paino and rain)
     //initialise as paused
-    m_soundManager->createNewChannel("data/sounds/rain.mp3", true, false, true);
-    m_soundManager->createNewChannel("data/sounds/piano.mp3", true, false, true);
+    int backgroundSoundId = m_soundManager->createNewChannel("data/sounds/elemate.mp3", true, false, true);
     //set volume (make quieter)
-    m_soundManager->setVolume(0, 0.25f);
-    m_soundManager->setVolume(1, 0.5f);
+    m_soundManager->setVolume(backgroundSoundId, 0.25f);
+    m_soundManager->setPaused(backgroundSoundId, false);
 
     initShader();
 
@@ -88,6 +86,10 @@ void World::togglePause()
     // Pause/resume all sounds except the background sounds.
     for (const auto sound : m_sounds)
         m_soundManager->setPaused(sound, !m_time->isRunning());
+}
+
+time_t World::getTime()const{
+    return this->m_time->gett(false);
 }
 
 void World::stopSimulation()

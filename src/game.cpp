@@ -11,9 +11,6 @@
 // Own Classes
 #include "physicswrapper.h"
 #include "world.h"
-#include "particledrawable.h"
-#include "terrain/terrain.h"
-#include "rendering/renderer.h"
 
 
 Game::Game(GLFWwindow & window) :
@@ -30,7 +27,6 @@ m_userInterface(window)
     setVSync(m_vsyncEnabled);
 
     m_world->setNavigation(m_navigation);
-    m_manipulator.setRenderer(m_renderer);
 
     m_userInterface.initialize();
 }
@@ -89,6 +85,8 @@ void Game::loop(double delta)
                 
                 m_navigation.update(deltaTime);
                 m_navigation.apply();
+
+                m_manipulator.updateHandPosition();
 
                 m_world->updateVisuals();
                 
