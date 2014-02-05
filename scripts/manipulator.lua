@@ -88,7 +88,7 @@ function handleMouseButtonEvent( button, action )
 end
 
 function handleScrollEvent( yoffset )
-    if particleGroupId ~= -1 then
+    if particleGroupId ~= -1 and glfw_getKey(GLFW_KEY_X) == GLFW_PRESS then
         local dist = psa_restParticleDistance(particleGroupId)+(0.01*yoffset)
         if dist > 0.01 and dist < 5.0 then
             psa_setGridSize(particleGroupId, dist)
