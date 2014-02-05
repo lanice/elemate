@@ -10,6 +10,7 @@ local elements = {}
 local isEmitting = false
 local emitParameters = {}
 local emitId = particleGroupId
+local timedEmitId = particleGroupId
 
 local function createParticleGroup( eleType , maxParticles)
     if maxParticles == nil then
@@ -73,6 +74,8 @@ function handleMouseButtonEvent( button, action )
             io.write("Emit '", psa_elementAtId(particleGroupId), "' particles.\n")
             emit(particleGroupId, 400, hand_posX(), hand_posY(), hand_posZ(), 0, -1, 0)
             isEmitting = true
+            terrain_dropElement(hand_posX(), hand_posZ(), 0.1)
+            manipulator_alarm(0.1)
         end
         emitId = particleGroupId
     end
@@ -87,16 +90,29 @@ function handleMouseButtonEvent( button, action )
     end
 end
 
+function alarmCallback()
+    if timedEmitId ~= nil then
+        psa_stopEmit(timedEmitId)
+    end
+    -- if isEmitting then
+    --     terrain_dropElement(hand_posX(), hand_posY(), 0.1)
+    -- end
+end
+
 function handleScrollEvent( yoffset )
     if glfw_getKey(GLFW_KEY_LEFT_ALT) == GLFW_PRESS then
         local posX = hand_posX()
         local posZ = hand_posZ()
+        local eleType = terrain_elementAt(posX, posZ)
+        if eleType == "grassland" then eleType = "bedrock" end
+        setInteractElement(eleType)
+        timedEmitId = selectElement(eleType)
         if yoffset > 0 then
-            terrain_changeHeight(posX, posZ, 0.1)
-            terrain_heightGrab(posX, posZ)
+            psa_emit(timedEmitId, 100, posX, hand_posY(), posZ, 0, -1, 0)
+            manipulator_alarm(0.2)
+            terrain_dropElement(posX, posZ, 0.1)
         else
-            terrain_changeHeight(posX, posZ, -0.1)
-            terrain_heightGrab(posX, posZ)
+            terrain_gatherElement(posX, posZ, 0.1)
         end
     end
 
@@ -120,9 +136,9 @@ function handleKeyEvent( inputKey, action )
             terrain_gatherElement(posX, posZ, 0.1)
             terrain_heightGrab(posX, posZ)
 
-        elseif key == GLFW_KEY_LEFT_ALT then
-            manipulator_setGrabbedTerrain(true)
-            terrain_heightGrab(posX, posZ)
+        -- elseif key == GLFW_KEY_LEFT_ALT then
+        --     manipulator_setGrabbedTerrain(true)
+        --     terrain_heightGrab(posX, posZ)
 
         elseif key == GLFW_KEY_R then
             terrain_dropElement(posX, posZ, 0.1)

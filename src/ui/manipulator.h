@@ -33,6 +33,8 @@ public:
 
     LuaWrapper * lua();
 
+    void timeCallback(const double & delta);
+
 protected:
     void registerLuaFunctions(LuaWrapper * lua);
 
@@ -49,6 +51,9 @@ protected:
     LuaWrapper * m_lua;
 
     glm::dvec2 m_lastCursorPos;
+
+    bool m_activeAlarm;
+    double m_alarm;
 
 public:
     Manipulator() = delete;

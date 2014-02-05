@@ -87,6 +87,7 @@ void Game::loop(double delta)
                 m_navigation.apply();
 
                 m_manipulator.updateHandPosition();
+                m_manipulator.timeCallback(currTime);
 
                 m_world->updateVisuals();
                 

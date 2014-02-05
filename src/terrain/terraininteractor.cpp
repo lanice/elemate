@@ -283,9 +283,11 @@ void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
     std::function<float(float, float)> func6 = [=](float worldX, float worldZ)
     { return heightGrab(worldX, worldZ); };
 
-
     std::function<int(std::string)> func7 = [=](std::string elementName)
     { setInteractElement(elementName); return 0; };
+
+    std::function<std::string(float, float)> func8 = [=](float worldX, float worldZ)
+    { return topmostElementAt(worldX, worldZ); };
 
     lua->Register("terrain_heightAt", func0);
     lua->Register("terrain_isHeighestAt", func1);
@@ -295,4 +297,5 @@ void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
     lua->Register("terrain_terrainHeightAt", func5);
     lua->Register("terrain_heightGrab", func6);
     lua->Register("setInteractElement", func7);
+    lua->Register("terrain_elementAt", func8);
 }

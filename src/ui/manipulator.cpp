@@ -25,7 +25,8 @@ m_hand(*world.hand),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedrock")),
 m_grabbedTerrain(false),
 m_renderer(nullptr),
-m_lua(new LuaWrapper())
+m_lua(new LuaWrapper()),
+m_activeAlarm(false)
 {
     registerLuaFunctions(m_lua);
 
@@ -76,19 +77,6 @@ void Manipulator::handleMouseMoveEvent(double xpos, double ypos)
 
 void Manipulator::handleScrollEvent(const double & /*xoffset*/, const double & yoffset)
 {
-    // if (glfwGetKey(&m_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
-    // {
-    //     if (yoffset > 0)
-    //     {
-    //         m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, 0.1f);
-    //         m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
-    //     }
-    //     else {
-    //         m_terrainInteractor->changeHeight(m_hand.position().x, m_hand.position().z, -0.1f);
-    //         m_terrainInteractor->heightGrab(m_hand.position().x, m_hand.position().z);
-    //     }
-    // }
-    
     m_lua->call("handleScrollEvent", yoffset);
 }
 
@@ -132,11 +120,24 @@ void Manipulator::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(int)> func1 = [=] (int key)
     { return glfwGetKey(&m_window, key); };
 
+    std::function<int(double)> func2 = [=] (double delta)
+    { m_alarm = glfwGetTime() + delta; m_activeAlarm = true; return 0; };
+
     lua->Register("manipulator_setGrabbedTerrain", func0);
     lua->Register("glfw_getKey", func1);
+    lua->Register("manipulator_alarm", func2);
 }
 
 void Manipulator::setGrabbedTerrain(bool grabbed)
 {
     m_grabbedTerrain = grabbed;
+}
+
+void Manipulator::timeCallback(const double & currTime)
+{
+    if (m_activeAlarm == true && m_alarm <= currTime)
+    {
+        m_lua->call("alarmCallback");
+        m_activeAlarm = false;
+    }
 }
