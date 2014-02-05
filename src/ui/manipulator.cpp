@@ -137,7 +137,7 @@ void Manipulator::timeCallback(const double & currTime)
 {
     if (m_activeAlarm == true && m_alarm <= currTime)
     {
-        m_lua->call("alarmCallback");
         m_activeAlarm = false;
+        m_lua->call("alarmCallback");
     }
 }

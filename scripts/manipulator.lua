@@ -8,6 +8,7 @@ local elementTable = {"water", "sand", "lava", "bedrock"}
 local elements = {}
 
 local isEmitting = false
+local dropGather = false
 local emitParameters = {}
 local emitId = particleGroupId
 local timedEmitId = particleGroupId
@@ -67,15 +68,36 @@ function updateHandPosition( posX, posY, posZ )
 end
 
 function handleMouseButtonEvent( button, action )
+    local posX = hand_posX()
+    local posY = hand_posY()
+    local posZ = hand_posZ()
     if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_PRESS then
         if particleGroupId == -1 then
             io.write("No ParticleGroup created.\n")
         else
+            local eleType = psa_elementAtId(particleGroupId)
             io.write("Emit '", psa_elementAtId(particleGroupId), "' particles.\n")
-            emit(particleGroupId, 400, hand_posX(), hand_posY(), hand_posZ(), 0, -1, 0)
+            emit(particleGroupId, 400, posX, posY, posZ, 0, -1, 0)
             isEmitting = true
-            terrain_dropElement(hand_posX(), hand_posZ(), 0.1)
-            manipulator_alarm(0.1)
+            if eleType == "water" or eleType == "lava" then return end
+            terrain_dropElement(posX, posZ, 0.1)
+            manipulator_alarm(0.2)
+            dropGather = true;
+        end
+        emitId = particleGroupId
+    end
+    if button == GLFW_MOUSE_BUTTON_RIGHT and action == GLFW_PRESS then
+        if particleGroupId == -1 then
+            io.write("No ParticleGroup created.\n")
+        else
+            local eleType = psa_elementAtId(particleGroupId)
+            io.write("Emit '", psa_elementAtId(particleGroupId), "' particles.\n")
+            emit(particleGroupId, 400, posX, posY, posZ, 0, -1, 0)
+            isEmitting = true
+            if eleType == "water" or eleType == "lava" then return end
+            terrain_gatherElement(posX, posZ, 0.1)
+            manipulator_alarm(0.2)
+            dropGather = false;
         end
         emitId = particleGroupId
     end
@@ -85,18 +107,29 @@ function handleMouseButtonEvent( button, action )
             isEmitting = false
         end
     end
+    if button == GLFW_MOUSE_BUTTON_RIGHT and action == GLFW_RELEASE then
+        if emitId ~= -1 then
+            psa_stopEmit(emitId)
+            isEmitting = false
+        end
+    end
     if button == GLFW_MOUSE_BUTTON_MIDDLE and action == GLFW_RELEASE then
-        spawnSource(hand_posX(), hand_posY(), hand_posZ())
+        spawnSource(posX, posY, posZ)
     end
 end
 
 function alarmCallback()
-    if timedEmitId ~= nil then
+    if timedEmitId ~= -1 then
         psa_stopEmit(timedEmitId)
     end
-    -- if isEmitting then
-    --     terrain_dropElement(hand_posX(), hand_posY(), 0.1)
-    -- end
+    if isEmitting then
+        if dropGather then
+            terrain_dropElement(hand_posX(), hand_posZ(), 0.1)
+        else
+            terrain_gatherElement(hand_posX(), hand_posZ(), 0.1)
+        end
+        manipulator_alarm(0.2)
+    end
 end
 
 function handleScrollEvent( yoffset )
