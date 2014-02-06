@@ -127,7 +127,11 @@ void Manipulator::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(bool)> func0 = [=] (bool grabbed)
     { setGrabbedTerrain(grabbed); return 0; };
 
+    std::function<int(int)> func1 = [=] (int key)
+    { return glfwGetKey(&m_window, key); };
+
     lua->Register("manipulator_setGrabbedTerrain", func0);
+    lua->Register("glfw_getKey", func1);
 }
 
 void Manipulator::setGrabbedTerrain(bool grabbed)
