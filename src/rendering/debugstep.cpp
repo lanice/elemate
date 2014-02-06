@@ -1,4 +1,4 @@
-#include "boundingboxstep.h"
+#include "debugstep.h"
 
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
@@ -20,12 +20,12 @@ bool operator==(const glowutils::AxisAlignedBoundingBox & lhs, const glowutils::
     return lhs.urb() == rhs.urb();
 }
 
-void BoundingboxStep::draw(const CameraEx & camera)
+void DebugStep::draw(const CameraEx & camera)
 {
     if (!m_vao)
         initialize();
 
-    m_program->use();
+    m_bboxProgram->use();
 
     for (const Drawable * drawable : Drawable::instances()) {
         const glowutils::AxisAlignedBoundingBox & bbox = drawable->boundingBox();
@@ -33,21 +33,21 @@ void BoundingboxStep::draw(const CameraEx & camera)
         if (bbox == glowutils::AxisAlignedBoundingBox())    // don't draw zero-initialized boxes
             continue;
 
-        m_program->setUniform("MVP", drawable->transform() * camera.viewProjectionEx());
+        m_bboxProgram->setUniform("MVP", camera.viewProjectionEx() * drawable->transform());
 
         m_vbo->setData(glow::Vec3Array({ bbox.llf(), bbox.urb() }), GL_DYNAMIC_DRAW);
 
         m_vao->drawArrays(GL_LINES, 0, 2);
     }
 
-    m_program->release();
+    m_bboxProgram->release();
 }
 
-void BoundingboxStep::resize(int /*width*/, int /*height*/)
+void DebugStep::resize(int /*width*/, int /*height*/)
 {
 }
 
-void BoundingboxStep::initialize()
+void DebugStep::initialize()
 {
     m_vao = new glow::VertexArrayObject;
 
@@ -63,8 +63,8 @@ void BoundingboxStep::initialize()
 
     m_vao->unbind();
 
-    m_program = new glow::Program();
-    m_program->attach(
+    m_bboxProgram = new glow::Program();
+    m_bboxProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/boundingbox.vert"),
         glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/boundingbox.geo"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/boundingbox.frag"));

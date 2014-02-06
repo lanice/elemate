@@ -21,7 +21,7 @@ class ParticleStep;
 class ShadowMappingStep;
 class CameraEx;
 class UserInterface;
-class BoundingboxStep;
+class DebugStep;
 
 class Renderer
 {
@@ -34,11 +34,16 @@ public:
 
     const glow::FrameBufferObject * sceneFbo() const;
 
+    bool drawDebugInfo() const;
+    void toggleDrawDebugInfo();
+    void setDrawDebugInfo(bool doDraw);
+
 protected:
     // drawing steps
     void sceneStep(const CameraEx & camera);
     void handStep(const CameraEx & camera);
-    std::shared_ptr<BoundingboxStep> m_bboxStep;
+    std::shared_ptr<DebugStep> m_debugStep;
+    bool m_drawDebugStep;
     void userInterfaceStep(UserInterface * ui);
     std::shared_ptr<ParticleStep> m_particleStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;

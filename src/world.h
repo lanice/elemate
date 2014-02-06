@@ -33,7 +33,7 @@ public:
 
     static World * instance();
 
-    /** Pauses physics updates, causing the game to be 'freezed' (the navigation etc. will work though). */
+    /** Pauses physics updates, causing the game to be 'frozen' (the navigation etc. will work though). */
     void togglePause();
 
     time_t getTime() const;

@@ -13,7 +13,6 @@ class World;
 class Navigation;
 class Hand;
 class TerrainInteractor;
-class Renderer;
 class LuaWrapper;
 class CameraEx;
 
@@ -45,7 +44,6 @@ protected:
     Hand & m_hand;
     std::shared_ptr<TerrainInteractor> m_terrainInteractor;
     bool m_grabbedTerrain;
-    Renderer * m_renderer;
     LuaWrapper * m_lua;
 
     glm::dvec2 m_lastCursorPos;

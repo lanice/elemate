@@ -24,7 +24,6 @@ m_world(world),
 m_hand(*world.hand),
 m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedrock")),
 m_grabbedTerrain(false),
-m_renderer(nullptr),
 m_lua(new LuaWrapper())
 {
     registerLuaFunctions(m_lua);

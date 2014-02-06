@@ -8,7 +8,7 @@ namespace glow {
     class Program;
 }
 
-class BoundingboxStep : RenderingStep
+class DebugStep : RenderingStep
 {
 public:
     virtual void draw(const CameraEx & camera) override;
@@ -20,7 +20,7 @@ protected:
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Buffer> m_vbo;
 
-    glow::ref_ptr<glow::Program> m_program;
+    glow::ref_ptr<glow::Program> m_bboxProgram;
 
 
 };
