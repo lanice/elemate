@@ -7,10 +7,19 @@
 
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
+#include "lua/luawrapper.h"
 
 ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 : m_psa(psa)
+, m_lua(new LuaWrapper())
 {
+    m_lua->loadScript("scripts/collision.lua");
+    m_psa.registerLuaFunctions(m_lua);
+}
+
+ParticleCollision::~ParticleCollision()
+{
+    delete m_lua;
 }
 
 void ParticleCollision::performCheck()
@@ -29,9 +38,8 @@ void ParticleCollision::performCheck()
         ++rightHand;
         for (; rightHand != lastRightHand; ++rightHand) {
             if (checkBoundingBoxCollision(leftHand->second->boundingBox(), rightHand->second->boundingBox())) {
-                glow::debug("Collision detected: %;:%; - %;:%;",
-                    leftHand->first, leftHand->second->elementName(),
-                    rightHand->first, rightHand->second->elementName());
+
+                m_lua->call("particleBboxCollision", leftHand->first, rightHand->first);
             }
         }
     }

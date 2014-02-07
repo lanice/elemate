@@ -4,11 +4,13 @@ namespace glowutils {
     class AxisAlignedBoundingBox;
 }
 class ParticleScriptAccess;
+class LuaWrapper;
 
 class ParticleCollision
 {
 public:
     ParticleCollision(ParticleScriptAccess & psa);
+    ~ParticleCollision();
 
     /** check collision between the psa's particle group bounding boxes and call the scripts for further steps */
     void performCheck();
@@ -17,6 +19,7 @@ public:
 
 protected:
     ParticleScriptAccess & m_psa;
+    LuaWrapper * m_lua;
 
 public:
     void operator=(ParticleCollision&) = delete;
