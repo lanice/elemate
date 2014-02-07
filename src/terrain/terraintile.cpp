@@ -6,11 +6,11 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/glm.hpp>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include <PxPhysics.h>
 #include <PxRigidStatic.h>
 #include <PxShape.h>

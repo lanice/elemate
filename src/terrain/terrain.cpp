@@ -9,7 +9,7 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/matrix_transform.hpp>

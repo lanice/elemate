@@ -7,7 +7,7 @@
 #include <glowutils/File.h>
 
 #include "drawable.h"
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 bool operator==(const glowutils::AxisAlignedBoundingBox & lhs, const glowutils::AxisAlignedBoundingBox & rhs)
 {

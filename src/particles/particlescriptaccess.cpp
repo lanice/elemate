@@ -4,7 +4,8 @@
 
 #include <glow/logging.h>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
+#include <PxPhysics.h>
 #include <PxScene.h>
 #include <PxSceneLock.h>
 
@@ -14,24 +15,40 @@
 
 
 
-ParticleScriptAccess ParticleScriptAccess::s_access;
+ParticleScriptAccess * ParticleScriptAccess::s_instance = nullptr;
+
+void ParticleScriptAccess::initialize(World & notifier)
+{
+    assert(s_instance == nullptr);
+    s_instance = new ParticleScriptAccess();
+    s_instance->m_worldNotifier = &notifier;
+}
+
+void ParticleScriptAccess::release()
+{
+    assert(s_instance);
+    delete s_instance;
+    s_instance = nullptr;
+}
 
 ParticleScriptAccess::ParticleScriptAccess()
 : m_id(0)
 , m_worldNotifier(nullptr)
 , m_gpuParticles(false)
 , m_lua(nullptr)
+, m_pxScene(nullptr)
 {
-}
+    assert(PxGetPhysics().getNbScenes() == 1);
+    physx::PxScene * pxScenePtrs[1];
+    PxGetPhysics().getScenes(pxScenePtrs, 1);
+    m_pxScene = pxScenePtrs[0];
 
-void ParticleScriptAccess::init()
-{
     m_lua = new LuaWrapper();
 
-    std::function<int(int, float, float, float, float, float)> func1 = [=](int id, float a, float b, float c, float d, float e)
+    std::function<int(int, float, float, float, float, float)> func1 = [=] (int id, float a, float b, float c, float d, float e)
     { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
 
-    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=](int id, float a, float b, float c, float d, float e, float f, float g)
+    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=] (int id, float a, float b, float c, float d, float e, float f, float g)
     { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
 
     m_lua->Register("psa_setImmutableProperties", func1);
@@ -46,19 +63,19 @@ ParticleScriptAccess::~ParticleScriptAccess()
 
 ParticleScriptAccess& ParticleScriptAccess::instance()
 {
-    return s_access;
+    return *s_instance;
 }
 
 ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
 {
-    return m_particleGroups.at(id).first;
+    return m_particleGroups.at(id);
 }
 
 int ParticleScriptAccess::createParticleGroup(const std::string & elementType, uint32_t maxParticleCount)
 {
     ParticleGroup * particleGroup = new ParticleGroup(elementType, m_gpuParticles, maxParticleCount);
 
-    m_particleGroups.emplace(m_id, std::make_pair(particleGroup, elementType));
+    m_particleGroups.emplace(m_id, particleGroup);
 
     setUpParticleGroup(m_id, elementType);
     m_worldNotifier->registerObserver(particleGroup);
@@ -68,9 +85,9 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType, u
 
 void ParticleScriptAccess::removeParticleGroup(const int id)
 {
-    m_worldNotifier->unregisterObserver(m_particleGroups.at(id).first);
+    m_worldNotifier->unregisterObserver(m_particleGroups.at(id));
 
-    delete m_particleGroups.at(id).first;
+    delete m_particleGroups.at(id);
     m_particleGroups.erase(id);
 }
 
@@ -78,8 +95,8 @@ void ParticleScriptAccess::clearParticleGroups()
 {
     for (auto it = m_particleGroups.begin(); it != m_particleGroups.end(); ++it)
     {
-        m_worldNotifier->unregisterObserver(it->second.first);
-        delete it->second.first;
+        m_worldNotifier->unregisterObserver(it->second);
+        delete it->second;
     }
 
     m_particleGroups.erase(m_particleGroups.begin(), m_particleGroups.end());
@@ -94,11 +111,6 @@ void ParticleScriptAccess::setUpParticleGroup(const int id, const std::string & 
     m_lua->removeScript(script);
 }
 
-void ParticleScriptAccess::setNotifier(World * notifier)
-{
-    m_worldNotifier = notifier;
-}
-
 void ParticleScriptAccess::setUseGpuParticles(bool enable)
 {
     if (m_gpuParticles == enable) return;
@@ -106,7 +118,7 @@ void ParticleScriptAccess::setUseGpuParticles(bool enable)
     m_gpuParticles = enable;
 
     for (auto particleGroup : m_particleGroups)
-        particleGroup.second.first->setUseGpuParticles(enable);
+        particleGroup.second->setUseGpuParticles(enable);
 }
 
 void ParticleScriptAccess::pauseGPUAcceleration()
@@ -263,27 +275,27 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
 
 void ParticleScriptAccess::createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
 {
-    m_particleGroups.at(id).first->createParticle(glm::vec3(positionX, positionY, positionZ), glm::vec3(velocityX, velocityY, velocityZ));
+    m_particleGroups.at(id)->createParticle(glm::vec3(positionX, positionY, positionZ), glm::vec3(velocityX, velocityY, velocityZ));
 }
 
 void ParticleScriptAccess::emit(const int id, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ)
 {
-    m_particleGroups.at(id).first->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
+    m_particleGroups.at(id)->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
 }
 
 void ParticleScriptAccess::stopEmit(const int id)
 {
-    m_particleGroups.at(id).first->stopEmit();
+    m_particleGroups.at(id)->stopEmit();
 }
 
 void ParticleScriptAccess::setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance)
 {
-    m_particleGroups.at(id).first->setImmutableProperties(maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance);
+    m_particleGroups.at(id)->setImmutableProperties(maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance);
 }
 
 void ParticleScriptAccess::setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness)
 {
-    m_particleGroups.at(id).first->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness);
+    m_particleGroups.at(id)->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness);
 }
 
 int ParticleScriptAccess::numParticleGroups()
@@ -291,9 +303,9 @@ int ParticleScriptAccess::numParticleGroups()
     return static_cast<int>(m_particleGroups.size() - 1);
 }
 
-std::string ParticleScriptAccess::elementAtId(int id)
+const std::string & ParticleScriptAccess::elementAtId(int id)
 {
-    return m_particleGroups.at(id).second;
+    return m_particleGroups.at(id)->elementName();
 }
 
 int ParticleScriptAccess::nextParticleGroup(int id)
@@ -316,69 +328,69 @@ int ParticleScriptAccess::nextParticleGroup(int id)
 
 void ParticleScriptAccess::setMaxMotionDistance(int id, float maxMotionDistance)
 {
-    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
-    m_particleGroups.at(id).first->particleSystem()->setMaxMotionDistance(maxMotionDistance);
-    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+    m_pxScene->removeActor(*m_particleGroups.at(id)->particleSystem());
+    m_particleGroups.at(id)->particleSystem()->setMaxMotionDistance(maxMotionDistance);
+    m_pxScene->addActor(*m_particleGroups.at(id)->particleSystem());
 }
 void ParticleScriptAccess::setGridSize(int id, float gridSize)
 {
-    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
-    m_particleGroups.at(id).first->particleSystem()->setGridSize(gridSize);
-    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+    m_pxScene->removeActor(*m_particleGroups.at(id)->particleSystem());
+    m_particleGroups.at(id)->particleSystem()->setGridSize(gridSize);
+    m_pxScene->addActor(*m_particleGroups.at(id)->particleSystem());
 }
 void ParticleScriptAccess::setRestOffset(int id, float restOffset)
 {
-    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
-    m_particleGroups.at(id).first->particleSystem()->setRestOffset(restOffset);
-    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+    m_pxScene->removeActor(*m_particleGroups.at(id)->particleSystem());
+    m_particleGroups.at(id)->particleSystem()->setRestOffset(restOffset);
+    m_pxScene->addActor(*m_particleGroups.at(id)->particleSystem());
 }
 void ParticleScriptAccess::setContactOffset(int id, float contactOffset)
 {
-    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
-    m_particleGroups.at(id).first->particleSystem()->setContactOffset(contactOffset);
-    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+    m_pxScene->removeActor(*m_particleGroups.at(id)->particleSystem());
+    m_particleGroups.at(id)->particleSystem()->setContactOffset(contactOffset);
+    m_pxScene->addActor(*m_particleGroups.at(id)->particleSystem());
 }
 void ParticleScriptAccess::setRestParticleDistance(int id, float restParticleDistance)
 {
-    m_particleGroups.at(id).first->physxScene()->removeActor(*m_particleGroups.at(id).first->particleSystem());
-    m_particleGroups.at(id).first->particleSystem()->setRestParticleDistance(restParticleDistance);
-    m_particleGroups.at(id).first->physxScene()->addActor(*m_particleGroups.at(id).first->particleSystem());
+    m_pxScene->removeActor(*m_particleGroups.at(id)->particleSystem());
+    m_particleGroups.at(id)->particleSystem()->setRestParticleDistance(restParticleDistance);
+    m_pxScene->addActor(*m_particleGroups.at(id)->particleSystem());
 }
 void ParticleScriptAccess::setRestitution(int id, float restitution)
-{ m_particleGroups.at(id).first->particleSystem()->setRestitution(restitution); }
+{ m_particleGroups.at(id)->particleSystem()->setRestitution(restitution); }
 void ParticleScriptAccess::setDynamicFriction(int id, float dynamicFriction)
-{ m_particleGroups.at(id).first->particleSystem()->setDynamicFriction(dynamicFriction); }
+{ m_particleGroups.at(id)->particleSystem()->setDynamicFriction(dynamicFriction); }
 void ParticleScriptAccess::setStaticFriction(int id, float staticFriction)
-{ m_particleGroups.at(id).first->particleSystem()->setStaticFriction(staticFriction); }
+{ m_particleGroups.at(id)->particleSystem()->setStaticFriction(staticFriction); }
 void ParticleScriptAccess::setDamping(int id, float damping)
-{ m_particleGroups.at(id).first->particleSystem()->setDamping(damping); }
+{ m_particleGroups.at(id)->particleSystem()->setDamping(damping); }
 void ParticleScriptAccess::setParticleMass(int id, float particleMass)
-{ m_particleGroups.at(id).first->particleSystem()->setParticleMass(particleMass); }
+{ m_particleGroups.at(id)->particleSystem()->setParticleMass(particleMass); }
 void ParticleScriptAccess::setViscosity(int id, float viscosity)
-{ m_particleGroups.at(id).first->particleSystem()->setViscosity(viscosity); }
+{ m_particleGroups.at(id)->particleSystem()->setViscosity(viscosity); }
 void ParticleScriptAccess::setStiffness(int id, float stiffness)
-{ m_particleGroups.at(id).first->particleSystem()->setStiffness(stiffness); }
+{ m_particleGroups.at(id)->particleSystem()->setStiffness(stiffness); }
 float ParticleScriptAccess::maxMotionDistance(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getMaxMotionDistance(); }
+{ return m_particleGroups.at(id)->particleSystem()->getMaxMotionDistance(); }
 float ParticleScriptAccess::gridSize(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getGridSize(); }
+{ return m_particleGroups.at(id)->particleSystem()->getGridSize(); }
 float ParticleScriptAccess::restOffset(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getRestOffset(); }
+{ return m_particleGroups.at(id)->particleSystem()->getRestOffset(); }
 float ParticleScriptAccess::contactOffset(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getContactOffset(); }
+{ return m_particleGroups.at(id)->particleSystem()->getContactOffset(); }
 float ParticleScriptAccess::restParticleDistance(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getRestParticleDistance(); }
+{ return m_particleGroups.at(id)->particleSystem()->getRestParticleDistance(); }
 float ParticleScriptAccess::restitution(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getRestitution(); }
+{ return m_particleGroups.at(id)->particleSystem()->getRestitution(); }
 float ParticleScriptAccess::dynamicFriction(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getDynamicFriction(); }
+{ return m_particleGroups.at(id)->particleSystem()->getDynamicFriction(); }
 float ParticleScriptAccess::staticFriction(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getStaticFriction(); }
+{ return m_particleGroups.at(id)->particleSystem()->getStaticFriction(); }
 float ParticleScriptAccess::damping(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getDamping(); }
+{ return m_particleGroups.at(id)->particleSystem()->getDamping(); }
 float ParticleScriptAccess::particleMass(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getParticleMass(); }
+{ return m_particleGroups.at(id)->particleSystem()->getParticleMass(); }
 float ParticleScriptAccess::viscosity(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getViscosity(); }
+{ return m_particleGroups.at(id)->particleSystem()->getViscosity(); }
 float ParticleScriptAccess::stiffness(int id)
-{ return m_particleGroups.at(id).first->particleSystem()->getStiffness(); }
+{ return m_particleGroups.at(id)->particleSystem()->getStiffness(); }

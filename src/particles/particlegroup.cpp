@@ -38,6 +38,7 @@ ParticleGroup::ParticleGroup(
     )
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
+, m_elementName(elementName)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
 , m_indices(new PxU32[maxParticleCount]())
@@ -75,14 +76,14 @@ ParticleGroup::~ParticleGroup()
     m_particleSystem = nullptr;
 }
 
+const std::string & ParticleGroup::elementName() const
+{
+    return m_elementName;
+}
+
 physx::PxParticleFluid * ParticleGroup::particleSystem()
 {
     return m_particleSystem;
-}
-
-physx::PxScene * ParticleGroup::physxScene()
-{
-    return m_scene;
 }
 
 void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec3Array & pos, const glow::Vec3Array & vel)

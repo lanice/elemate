@@ -1,7 +1,7 @@
 #include "navigation.h"
 
 #include <glow/logging.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <GLFW/glfw3.h>
 

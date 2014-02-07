@@ -8,14 +8,14 @@ namespace glow {
 #include <glow/RenderBufferObject.h>
 #include <glow/Program.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/random.hpp>
 
 #include "world.h"
 #include "terrain/terrain.h"
-#include "hand.h"
+#include "ui/hand.h"
 
 #undef far  // that's for windows (minwindef.h)
 

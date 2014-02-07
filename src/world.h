@@ -87,7 +87,6 @@ protected:
     std::vector<int> m_sounds;
 
     void updateListener();
-    void initShader();
 
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
