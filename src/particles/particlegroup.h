@@ -5,7 +5,7 @@
 
 #include <glow/Array.h>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
 

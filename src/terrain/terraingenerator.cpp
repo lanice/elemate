@@ -11,7 +11,7 @@
 #include <glow/Array.h>
 #include <glow/logging.h>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include <PxRigidStatic.h>
 #include <PxPhysics.h>
 

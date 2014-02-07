@@ -5,11 +5,11 @@
 
 #include <glow/logging.h>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include <PxPhysicsAPI.h>
 
 #include "elements.h"
-#include "particlescriptaccess.h"
+#include "particles/particlescriptaccess.h"
 
 
 const int   PhysicsWrapper::kNumberOfThreads = 2;

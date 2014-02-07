@@ -14,7 +14,7 @@
 #include "GLFW/glfw3.h"
 
 #include "lua/luawrapper.h"
-#include "imagereader.h"
+#include "io/imagereader.h"
 #include "menupage.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;

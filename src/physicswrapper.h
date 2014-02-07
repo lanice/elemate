@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include "foundation/PxErrorCallback.h"
 
 namespace physx {

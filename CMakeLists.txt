@@ -60,59 +60,24 @@ set(SOURCES
     src/main.cpp
     src/elements.h
     src/elements.cpp
-    src/pxcompilerfix.h
     src/physicswrapper.cpp
     src/physicswrapper.h
     src/game.cpp
     src/game.h
     src/world.cpp
     src/world.h
-    src/hand.cpp
-    src/hand.h
-    src/imagereader.h
-    src/imagereader.cpp
-    src/particlegroup.cpp
-    src/particlegroup.h
-    src/particlescriptaccess.cpp
-    src/particlescriptaccess.h
-    src/hpicgs/CyclicTime.cpp
-    src/hpicgs/CyclicTime.h
-    src/hpicgs/Timer.cpp
-    src/hpicgs/Timer.h
-    src/hpicgs/MathMacros.h
-    src/hpicgs/ChronoTimer.cpp
-    src/hpicgs/ChronoTimer.h
-    src/simpleconfigreader.cpp
-    src/simpleconfigreader.h
-    src/soundmanager.cpp
-    src/soundmanager.h
+    src/io/imagereader.h
+    src/io/imagereader.cpp
+    src/io/soundmanager.cpp
+    src/io/soundmanager.h
     src/lua/luawrapper.cpp
     src/lua/luawrapper.h
     src/lua/luawrapperfunction.cpp
     src/lua/luawrapperfunction.h
-    src/ui/eventhandler.cpp
-    src/ui/eventhandler.h
-    src/ui/navigation.cpp
-    src/ui/navigation.h
-    src/ui/manipulator.cpp
-    src/ui/manipulator.h
-    src/cameraex.h
-    src/cameraex.cpp
-    src/terrain/terrain.h
-    src/terrain/terrain.cpp
-    src/terrain/terrainshadows.cpp
-    src/terrain/terrainsettings.h
-    src/terrain/terrainsettings.cpp
-    src/terrain/terraininteractor.h
-    src/terrain/terraininteractor.cpp
-    src/terrain/terraintile.h
-    src/terrain/terraintile.cpp
-    src/terrain/basetile.h
-    src/terrain/basetile.cpp
-    src/terrain/watertile.h
-    src/terrain/watertile.cpp
-    src/terrain/terraingenerator.h
-    src/terrain/terraingenerator.cpp
+    src/particles/particlegroup.cpp
+    src/particles/particlegroup.h
+    src/particles/particlescriptaccess.cpp
+    src/particles/particlescriptaccess.h
     src/rendering/drawable.h
     src/rendering/drawable.cpp
     src/rendering/renderer.h
@@ -133,10 +98,43 @@ set(SOURCES
     src/rendering/string_rendering/StringComposer.cpp
     src/rendering/string_rendering/StringDrawer.h
     src/rendering/string_rendering/StringDrawer.cpp
+    src/terrain/terrain.h
+    src/terrain/terrain.cpp
+    src/terrain/terrainshadows.cpp
+    src/terrain/terrainsettings.h
+    src/terrain/terrainsettings.cpp
+    src/terrain/terraininteractor.h
+    src/terrain/terraininteractor.cpp
+    src/terrain/terraintile.h
+    src/terrain/terraintile.cpp
+    src/terrain/basetile.h
+    src/terrain/basetile.cpp
+    src/terrain/watertile.h
+    src/terrain/watertile.cpp
+    src/terrain/terraingenerator.h
+    src/terrain/terraingenerator.cpp
+    src/ui/eventhandler.cpp
+    src/ui/eventhandler.h
+    src/ui/navigation.cpp
+    src/ui/navigation.h
+    src/ui/manipulator.cpp
+    src/ui/manipulator.h
+    src/ui/hand.cpp
+    src/ui/hand.h
     src/ui/userinterface.cpp
     src/ui/userinterface.h
     src/ui/menupage.cpp
     src/ui/menupage.h
+    src/utils/cameraex.h
+    src/utils/cameraex.cpp
+    src/utils/pxcompilerfix.h
+    src/utils/CyclicTime.cpp
+    src/utils/CyclicTime.h
+    src/utils/Timer.cpp
+    src/utils/Timer.h
+    src/utils/MathMacros.h
+    src/utils/ChronoTimer.cpp
+    src/utils/ChronoTimer.h
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
@@ -146,20 +144,16 @@ source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|
 set(SHADER
     shader/flush.vert
     shader/flush.frag
-    shader/passthrough.frag
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
-    shader/hand.frag
-    shader/hand.vert
-    shader/particle/material.frag
-    shader/particle/particle.vert
-    shader/particle/particle.geo
-    shader/particle/particle.frag
-    shader/particle/particle_normals.frag
-    shader/particle/particle_depthblurring_h.frag
-    shader/particle/particle_depthblurring_v.frag
-    shader/phongLighting.frag
+    shader/particles/material.frag
+    shader/particles/particle.vert
+    shader/particles/particle.geo
+    shader/particles/particle.frag
+    shader/particles/particle_normals.frag
+    shader/particles/particle_depthblurring_h.frag
+    shader/particles/particle_depthblurring_v.frag
     shader/shadows/depthmap_terrain.vert
     shader/shadows/depthmap_terrain.geo
     shader/shadows/depthmap_hand.vert
@@ -167,13 +161,17 @@ set(SHADER
     shader/shadows/shadowmapping_terrain.vert
     shader/shadows/shadowmapping_hand.vert
     shader/shadows/shadowmapping.frag
-    shader/depth_util.frag
-    shader/string_drawer.vert
-    shader/string_drawer.frag
+    shader/ui/hand.frag
+    shader/ui/hand.vert
     shader/ui/preview.vert
     shader/ui/preview.frag
     shader/ui/screen.vert
     shader/ui/screen.frag
+    shader/utils/depth_util.frag
+    shader/utils/passthrough.frag
+    shader/utils/phongLighting.frag
+    shader/utils/string_drawer.vert
+    shader/utils/string_drawer.frag
 )
 
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"

@@ -10,14 +10,14 @@ namespace glow {
 #include <glow/Program.h>
 #include <glowutils/File.h>
 #include <glowutils/ScreenAlignedQuad.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <cassert>
 
 #include "world.h"
 #include "terrain/terrain.h"
 #include "particledrawable.h"
-#include "hand.h"
+#include "ui/hand.h"
 #include "rendering/particlestep.h"
 #include "shadowmappingstep.h"
 #include "ui/userinterface.h"
@@ -92,8 +92,8 @@ void Renderer::initialize()
     m_quadProgram = new glow::Program();
     m_quadProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/particle/material.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/particles/material.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag")
     );
 

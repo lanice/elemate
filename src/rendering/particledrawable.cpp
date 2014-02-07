@@ -8,9 +8,9 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include <foundation/PxVec3.h>
 #include <particles/PxParticleReadData.h>
 
@@ -121,10 +121,10 @@ void ParticleDrawable::initialize()
 
     m_program = new glow::Program();
     m_program->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particle/particle.vert"),
-        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particle/particle.geo"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle.frag"));
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/particles/particle.vert"),
+        glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/particles/particle.geo"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/depth_util.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle.frag"));
 
     m_program->setUniform("particleSize", m_particleSize);
     m_program->setUniform("elementIndex", m_elementIndex);

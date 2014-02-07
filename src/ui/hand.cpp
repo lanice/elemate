@@ -9,7 +9,7 @@
 #include <glowutils/File.h>
 #include <glowutils/FileRegistry.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -35,9 +35,9 @@ Hand::Hand(const World & world)
 
     m_program = new glow::Program();
     m_program->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/hand.vert"),
-        world.sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/hand.frag"));
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/ui/hand.vert"),
+        world.sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/ui/hand.frag"));
 }
 
 void Hand::loadModel()
@@ -274,8 +274,8 @@ void Hand::initDepthMapProgram()
     m_depthMapProgram = new glow::Program();
     m_depthMapProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/depthmap_hand.vert"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/passthrough.frag"));
 }
 
 void Hand::initShadowMappingProgram()
