@@ -98,6 +98,8 @@ void World::updatePhysics()
     if (delta == 0.0f)
         return;
 
+    ParticleScriptAccess::instance().checkCollisions(delta);
+
     for (auto observer : m_particleGroupObservers)
         observer->updateEmitting(delta);
 
@@ -111,8 +113,6 @@ void World::updateVisuals()
 
     for (auto observer : m_particleGroupObservers)
         observer->updateVisuals();
-
-    ParticleScriptAccess::instance().checkCollisions();
 }
 
 void World::registerObserver(ParticleGroup * observer)

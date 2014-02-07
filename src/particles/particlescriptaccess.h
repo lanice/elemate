@@ -42,7 +42,7 @@ public:
 
     void registerLuaFunctions(LuaWrapper * lua);
 
-    void checkCollisions();
+    void checkCollisions(double deltaTime);
 
 
 protected:
@@ -93,6 +93,7 @@ protected:
     int m_id;
 
     std::shared_ptr<ParticleCollision> m_collisions;
+    double m_collisionCheckDelta;
 
     World * m_worldNotifier;
 

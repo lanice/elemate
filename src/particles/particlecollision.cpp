@@ -23,6 +23,7 @@ void ParticleCollision::performCheck()
     auto lastLeftHand = --particleGroups.cend();
     auto lastRightHand = particleGroups.cend();
 
+    // this .. tends to be ...slooooow
     for (auto leftHand = particleGroups.cbegin(); leftHand != lastLeftHand; ++leftHand) {
         auto rightHand = leftHand;
         ++rightHand;
