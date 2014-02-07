@@ -56,124 +56,13 @@ endif()
 set(ELEMATE_SOURCE_GROUP "Source Files")
 set(ELEMATE_SHADER_GROUP "Shader Files")
 
-set(SOURCES
-    src/main.cpp
-    src/elements.h
-    src/elements.cpp
-    src/physicswrapper.cpp
-    src/physicswrapper.h
-    src/game.cpp
-    src/game.h
-    src/world.cpp
-    src/world.h
-    src/io/imagereader.h
-    src/io/imagereader.cpp
-    src/io/soundmanager.cpp
-    src/io/soundmanager.h
-    src/lua/luawrapper.cpp
-    src/lua/luawrapper.h
-    src/lua/luawrapperfunction.cpp
-    src/lua/luawrapperfunction.h
-    src/particles/particlegroup.cpp
-    src/particles/particlegroup.h
-    src/particles/particlescriptaccess.cpp
-    src/particles/particlescriptaccess.h
-    src/rendering/drawable.h
-    src/rendering/drawable.cpp
-    src/rendering/renderer.h
-    src/rendering/renderer.cpp
-    src/rendering/renderingstep.h
-    src/rendering/renderingstep.cpp
-    src/rendering/particledrawable.h
-    src/rendering/particledrawable.cpp
-    src/rendering/particlestep.h
-    src/rendering/particlestep.cpp
-    src/rendering/shadowmappingstep.cpp
-    src/rendering/shadowmappingstep.h
-    src/rendering/string_rendering/CharacterDrawable.h
-    src/rendering/string_rendering/CharacterDrawable.cpp
-    src/rendering/string_rendering/RawFile.h
-    src/rendering/string_rendering/RawFile.cpp
-    src/rendering/string_rendering/StringComposer.h
-    src/rendering/string_rendering/StringComposer.cpp
-    src/rendering/string_rendering/StringDrawer.h
-    src/rendering/string_rendering/StringDrawer.cpp
-    src/terrain/terrain.h
-    src/terrain/terrain.cpp
-    src/terrain/terrainshadows.cpp
-    src/terrain/terrainsettings.h
-    src/terrain/terrainsettings.cpp
-    src/terrain/terraininteractor.h
-    src/terrain/terraininteractor.cpp
-    src/terrain/terraintile.h
-    src/terrain/terraintile.cpp
-    src/terrain/basetile.h
-    src/terrain/basetile.cpp
-    src/terrain/watertile.h
-    src/terrain/watertile.cpp
-    src/terrain/terraingenerator.h
-    src/terrain/terraingenerator.cpp
-    src/ui/eventhandler.cpp
-    src/ui/eventhandler.h
-    src/ui/navigation.cpp
-    src/ui/navigation.h
-    src/ui/manipulator.cpp
-    src/ui/manipulator.h
-    src/ui/hand.cpp
-    src/ui/hand.h
-    src/ui/userinterface.cpp
-    src/ui/userinterface.h
-    src/ui/menupage.cpp
-    src/ui/menupage.h
-    src/utils/cameraex.h
-    src/utils/cameraex.cpp
-    src/utils/pxcompilerfix.h
-    src/utils/CyclicTime.cpp
-    src/utils/CyclicTime.h
-    src/utils/Timer.cpp
-    src/utils/Timer.h
-    src/utils/MathMacros.h
-    src/utils/ChronoTimer.cpp
-    src/utils/ChronoTimer.h
-)
-
+set(SOURCES)
+add_subdirectory(src)
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
     ${ELEMATE_SOURCE_GROUP} ${SOURCES})
 
-
-set(SHADER
-    shader/flush.vert
-    shader/flush.frag
-    shader/terrain_base.vert
-    shader/terrain_base.geo
-    shader/terrain_base.frag
-    shader/particles/material.frag
-    shader/particles/particle.vert
-    shader/particles/particle.geo
-    shader/particles/particle.frag
-    shader/particles/particle_normals.frag
-    shader/particles/particle_depthblurring_h.frag
-    shader/particles/particle_depthblurring_v.frag
-    shader/shadows/depthmap_terrain.vert
-    shader/shadows/depthmap_terrain.geo
-    shader/shadows/depthmap_hand.vert
-    shader/shadows/depthmapLinearized.frag
-    shader/shadows/shadowmapping_terrain.vert
-    shader/shadows/shadowmapping_hand.vert
-    shader/shadows/shadowmapping.frag
-    shader/ui/hand.frag
-    shader/ui/hand.vert
-    shader/ui/preview.vert
-    shader/ui/preview.frag
-    shader/ui/screen.vert
-    shader/ui/screen.frag
-    shader/utils/depth_util.frag
-    shader/utils/passthrough.frag
-    shader/utils/phongLighting.frag
-    shader/utils/string_drawer.vert
-    shader/utils/string_drawer.frag
-)
-
+set(SHADER)
+add_subdirectory(shader)
 source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
     ${ELEMATE_SHADER_GROUP} ${SHADER})
 
@@ -227,15 +116,15 @@ set_target_properties(${PROJECT_NAME}
     LINK_FLAGS_RELWITHDEBINFO   "${DEFAULT_LINKER_FLAGS_RELWITHDEBINFO}"
 )
 
-config_project( ${PROJECT_NAME} OPENGL 0 )
-config_project( ${PROJECT_NAME} GLEW 0 )
-config_project( ${PROJECT_NAME} GLFW 0 )
-config_project( ${PROJECT_NAME} GLOW 0 )
-config_project( ${PROJECT_NAME} GLOW_UTILS 0 )
-config_project( ${PROJECT_NAME} PHYSX 0 )
-config_project( ${PROJECT_NAME} FMOD 0 )
-config_project( ${PROJECT_NAME} ASSIMP 0 )
-config_project( ${PROJECT_NAME} LUA 0 )
+config_project( ${PROJECT_NAME} OPENGL )
+config_project( ${PROJECT_NAME} GLEW )
+config_project( ${PROJECT_NAME} GLFW )
+config_project( ${PROJECT_NAME} GLOW )
+config_project( ${PROJECT_NAME} GLOW_UTILS )
+config_project( ${PROJECT_NAME} PHYSX )
+config_project( ${PROJECT_NAME} FMOD )
+config_project( ${PROJECT_NAME} ASSIMP )
+config_project( ${PROJECT_NAME} LUA )
 
 if(LINUX)
     target_link_libraries( ${PROJECT_NAME} dl)

@@ -45,12 +45,8 @@ macro(list_extract OUTPUT REGEX)
 
 endmacro()
 
-macro( config_project PROJNAME LIBNAME ADDLIBPATHINCLUDE )
+macro( config_project PROJNAME LIBNAME )
     include_directories( ${${LIBNAME}_INCLUDE_DIR} )
-    if ( ${ADDLIBPATHINCLUDE} )
-        get_filename_component( LIBPATH ${${LIBNAME}_LIBRARY} DIRECTORY )
-        include_directories( ${LIBPATH}/../include )
-    endif()
     
     if( ${LIBNAME}_LIBRARY_DEBUG )
         message(STATUS "adding library: " ${LIBNAME} " (optimized/debug)")
