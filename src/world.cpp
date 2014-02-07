@@ -1,6 +1,5 @@
 #include "world.h"
 
-#include <stdexcept>
 #include <algorithm>
 
 #include <glow/logging.h>
@@ -17,7 +16,6 @@
 #include "ui/navigation.h"
 #include "ui/hand.h"
 #include "terrain/terraingenerator.h"
-#include "terrain/terrain.h"
 #include "particles/particlescriptaccess.h"
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
@@ -45,13 +43,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_soundManager->setVolume(backgroundSoundId, 0.25f);
     m_soundManager->setPaused(backgroundSoundId, false);
 
-    initShader();
-
     TerrainGenerator terrainGen;
     terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
-
-    for (const auto actor : terrain->pxActorMap())
-        m_physicsWrapper.addActor(*actor.second);
 
     hand = std::make_shared<Hand>(*this);
 
@@ -155,10 +148,6 @@ void World::updateListener(){
 void World::setNavigation(Navigation & navigation)
 {
     m_navigation = &navigation;
-}
-
-void World::initShader()
-{
 }
 
 const glm::vec3 & World::sunPosition() const
