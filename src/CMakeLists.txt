@@ -21,6 +21,8 @@ set(SOURCES
     src/particles/particlegroup.h
     src/particles/particlescriptaccess.cpp
     src/particles/particlescriptaccess.h
+    src/particles/particlecollision.h
+    src/particles/particlecollision.cpp
     src/rendering/debugstep.h
     src/rendering/debugstep.cpp
     src/rendering/drawable.h

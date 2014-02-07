@@ -10,9 +10,9 @@
 #include <PxSceneLock.h>
 
 #include "particlegroup.h"
+#include "particlecollision.h"
 #include "world.h"
 #include "lua/luawrapper.h"
-
 
 
 ParticleScriptAccess * ParticleScriptAccess::s_instance = nullptr;
@@ -33,6 +33,7 @@ void ParticleScriptAccess::release()
 
 ParticleScriptAccess::ParticleScriptAccess()
 : m_id(0)
+, m_collisions(std::make_shared<ParticleCollision>(*this))
 , m_worldNotifier(nullptr)
 , m_gpuParticles(false)
 , m_lua(nullptr)
@@ -64,6 +65,11 @@ ParticleScriptAccess::~ParticleScriptAccess()
 ParticleScriptAccess& ParticleScriptAccess::instance()
 {
     return *s_instance;
+}
+
+void ParticleScriptAccess::checkCollisions()
+{
+    m_collisions->performCheck();
 }
 
 ParticleGroup * ParticleScriptAccess::particleGroup(const int id)

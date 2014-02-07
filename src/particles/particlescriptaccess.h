@@ -1,12 +1,14 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <utility>
 #include <inttypes.h>
+#include <memory>
 
 namespace physx { class PxScene; }
 class ParticleGroup;
+class ParticleCollision;
 class World;
 class LuaWrapper;
 
@@ -39,6 +41,8 @@ public:
     void restoreGPUAccelerated();
 
     void registerLuaFunctions(LuaWrapper * lua);
+
+    void checkCollisions();
 
 
 protected:
@@ -85,8 +89,10 @@ protected:
 
     void setUpParticleGroup(const int id, const std::string & elementType);
 
-    std::unordered_map<int, ParticleGroup *> m_particleGroups;
+    std::map<int, ParticleGroup *> m_particleGroups;
     int m_id;
+
+    std::shared_ptr<ParticleCollision> m_collisions;
 
     World * m_worldNotifier;
 
@@ -96,4 +102,6 @@ protected:
     LuaWrapper * m_lua;
 
     physx::PxScene * m_pxScene;
+
+    friend class ParticleCollision;
 };

@@ -81,6 +81,11 @@ const std::string & ParticleGroup::elementName() const
     return m_elementName;
 }
 
+const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
+{
+    return m_particleDrawable->boundingBox();
+}
+
 physx::PxParticleFluid * ParticleGroup::particleSystem()
 {
     return m_particleSystem;

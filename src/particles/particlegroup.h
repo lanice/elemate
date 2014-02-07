@@ -14,6 +14,7 @@ namespace physx {
     class PxParticleFluid;
     class PxScene;
 }
+namespace glowutils { class AxisAlignedBoundingBox; }
 class ParticleDrawable;
 
 struct ImmutableParticleProperties
@@ -52,6 +53,7 @@ public:
     ~ParticleGroup();
 
     const std::string & elementName() const;
+    const glowutils::AxisAlignedBoundingBox & boundingBox() const;
 
     physx::PxParticleFluid * particleSystem();
 

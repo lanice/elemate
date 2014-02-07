@@ -111,6 +111,8 @@ void World::updateVisuals()
 
     for (auto observer : m_particleGroupObservers)
         observer->updateVisuals();
+
+    ParticleScriptAccess::instance().checkCollisions();
 }
 
 void World::registerObserver(ParticleGroup * observer)
