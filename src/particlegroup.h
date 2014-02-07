@@ -51,8 +51,9 @@ public:
         );
     ~ParticleGroup();
 
+    const std::string & elementName() const;
+
     physx::PxParticleFluid * particleSystem();
-    physx::PxScene * physxScene();
 
     /** Make sure numParticles matches size of position matches size of velocities! */
     void createParticles(const uint32_t numParticles, const glow::Vec3Array & positions, const glow::Vec3Array & velocities);
@@ -98,6 +99,8 @@ protected:
 
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
+
+    const std::string m_elementName;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
