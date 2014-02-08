@@ -7,7 +7,7 @@
 #include <glow/FrameBufferObject.h>
 #include <glowutils/File.h>
 #include <glowutils/ScreenAlignedQuad.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include "particledrawable.h"
 #include "world.h"
@@ -53,13 +53,13 @@ ParticleStep::ParticleStep()
     glow::Program * blurHorizontalProgram = new glow::Program();
     blurHorizontalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle_depthblurring_v.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle_depthblurring_v.frag"));
     addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
 
     glow::Program * blurVerticalProgram = new glow::Program();
     blurVerticalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle_depthblurring_h.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle_depthblurring_h.frag"));
     addProcess(*m_postTexA, m_postTexB, *blurVerticalProgram);
 
     m_depthResultTex = m_postTexB;
@@ -96,7 +96,7 @@ ParticleStep::ParticleStep()
     glow::Program * normalProgram = new glow::Program();
     normalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particle/particle_normals.frag"));
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle_normals.frag"));
     addProcess(*m_postTexB, m_normalsTex, *normalProgram);
 }
 

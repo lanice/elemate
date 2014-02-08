@@ -5,7 +5,7 @@
 #include <glow/Buffer.h>
 #include <glow/Program.h>
 #include <glowutils/File.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -110,7 +110,7 @@ void Terrain::initDepthMapProgram()
     m_depthMapProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
         World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/passthrough.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
     m_depthMapProgram->setUniform("baseHeightField", 1);
     m_depthMapProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
@@ -120,7 +120,7 @@ void Terrain::initDepthMapProgram()
     m_depthMapLinearizedProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
         World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/depth_util.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/depth_util.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
     m_depthMapLinearizedProgram->setUniform("heightField", 0);
     m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);

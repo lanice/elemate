@@ -48,8 +48,8 @@ bool StringDrawer::initializeProgram()
 {
     m_program = new glow::Program();
 
-    auto vertShader = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/string_drawer.vert");
-    auto fragShader = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/string_drawer.frag");
+    auto vertShader = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/utils/string_drawer.vert");
+    auto fragShader = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/utils/string_drawer.frag");
 
     m_program->attach(vertShader, fragShader);
     m_program->link();

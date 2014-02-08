@@ -7,7 +7,7 @@
 #include <glowutils/File.h>
 
 #include "terrain.h"
-#include "imagereader.h"
+#include "io/imagereader.h"
 #include "world.h"
 
 
@@ -61,7 +61,7 @@ void BaseTile::initializeProgram()
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_base.vert"),
         glowutils::createShaderFromFile(GL_GEOMETRY_SHADER, "shader/terrain_base.geo"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_base.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"));
 
     m_program->setUniform("terrainTypeID", 1);
     for (TextureTuple & tex : m_textures)

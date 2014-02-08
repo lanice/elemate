@@ -38,7 +38,7 @@ void WaterTile::initializeProgram()
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_water.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_water.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/phongLighting.frag"));
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"));
 
     m_program->setUniform("baseHeightField", 1);
 

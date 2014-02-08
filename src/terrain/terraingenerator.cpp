@@ -11,9 +11,10 @@
 #include <glow/Array.h>
 #include <glow/logging.h>
 
-#include "pxcompilerfix.h"
+#include "utils/pxcompilerfix.h"
 #include <PxRigidStatic.h>
 #include <PxPhysics.h>
+#include <PxScene.h>
 
 #include "terrain.h"
 #include "basetile.h"
@@ -38,6 +39,10 @@ namespace {// 1, 3, 8 for 513, 5(look around!) for 1025
 std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
 {
     std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(world, m_settings);
+
+    assert(PxGetPhysics().getNbScenes() == 1);
+    PxScene * pxScene;
+    PxGetPhysics().getScenes(&pxScene, 1);
 
     // The tileID determines the position of the current tile in the grid of tiles.
     // Tiles get shifted by -(numTilesPerAxis + 1)/2 so that we have the Tile(0,0,0) in the origin.
@@ -92,6 +97,8 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
 
         baseTile->createPxObjects(*actor);
         waterTile->createPxObjects(*actor);
+
+        pxScene->addActor(*actor);
 
         waterTile->pxShape()->setFlag(PxShapeFlag::ePARTICLE_DRAIN, true);
     }

@@ -2,7 +2,7 @@
 
 #include <glow/logging.h>
 #include <glow/FrameBufferObject.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/swizzle.hpp>
@@ -11,8 +11,8 @@
 #include "navigation.h"
 #include "hand.h"
 #include "terrain/terraininteractor.h"
-#include "particlescriptaccess.h"
-#include "particlegroup.h"
+#include "particles/particlescriptaccess.h"
+#include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
 
 
@@ -29,7 +29,6 @@ m_lua(new LuaWrapper())
 {
     registerLuaFunctions(m_lua);
 
-    ParticleScriptAccess::instance().init();
     ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
     m_hand.registerLuaFunctions(m_lua);
     m_world.registerLuaFunctions(m_lua);
@@ -41,6 +40,7 @@ m_lua(new LuaWrapper())
 Manipulator::~Manipulator()
 {
     delete m_lua;
+    ParticleScriptAccess::release();
 }
 void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {

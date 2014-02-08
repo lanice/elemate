@@ -1,25 +1,23 @@
 #include "world.h"
 
-#include <stdexcept>
 #include <algorithm>
 
 #include <glow/logging.h>
 #include <glow/Program.h>
 #include <glow/Shader.h>
 #include <glowutils/File.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 #include <glm/glm.hpp>
 
-#include "hpicgs/CyclicTime.h"
+#include "utils/CyclicTime.h"
 #include "physicswrapper.h"
-#include "soundmanager.h"
+#include "io/soundmanager.h"
 #include "ui/navigation.h"
-#include "hand.h"
+#include "ui/hand.h"
 #include "terrain/terraingenerator.h"
-#include "terrain/terrain.h"
-#include "particlescriptaccess.h"
-#include "particlegroup.h"
+#include "particles/particlescriptaccess.h"
+#include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
 
 World * World::s_instance = nullptr;
@@ -45,13 +43,8 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_soundManager->setVolume(backgroundSoundId, 0.25f);
     m_soundManager->setPaused(backgroundSoundId, false);
 
-    initShader();
-
     TerrainGenerator terrainGen;
     terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
-
-    for (const auto actor : terrain->pxActorMap())
-        m_physicsWrapper.addActor(*actor.second);
 
     hand = std::make_shared<Hand>(*this);
 
@@ -62,7 +55,7 @@ World::World(PhysicsWrapper & physicsWrapper)
 
     m_skyColor = glm::vec3(0.6f, 0.9f, 1.f);
 
-    ParticleScriptAccess::instance().setNotifier(this);
+    ParticleScriptAccess::initialize(*this);
     
     s_instance = this;
 }
@@ -155,10 +148,6 @@ void World::updateListener(){
 void World::setNavigation(Navigation & navigation)
 {
     m_navigation = &navigation;
-}
-
-void World::initShader()
-{
 }
 
 const glm::vec3 & World::sunPosition() const

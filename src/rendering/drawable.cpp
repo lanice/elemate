@@ -3,7 +3,7 @@
 #include <glow/Program.h>
 #include <glow/VertexArrayObject.h>
 #include <glow/Buffer.h>
-#include "cameraex.h"
+#include "utils/cameraex.h"
 
 Drawable::Drawable(const World & world)
 : m_world(world)

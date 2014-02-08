@@ -5,9 +5,7 @@
 #include <utility>
 #include <inttypes.h>
 
-
-
-
+namespace physx { class PxScene; }
 class ParticleGroup;
 class World;
 class LuaWrapper;
@@ -19,12 +17,10 @@ class LuaWrapper;
 class ParticleScriptAccess
 {
 public:
+    /** Must be called from outside to initialize the global instance and its LuaWrapper. */
+    static void initialize(World & notifier);
+    static void release();
     static ParticleScriptAccess& instance();
-
-    /** Must be called from outside to initialize the LuaWrapper instance. */
-    void init();
-
-    ~ParticleScriptAccess();
 
     ParticleGroup * particleGroup(const int id);
 
@@ -47,6 +43,8 @@ public:
 
 protected:
     ParticleScriptAccess();
+    ~ParticleScriptAccess();
+    static ParticleScriptAccess * s_instance;
 
     /** Functions callable from within lua scripts. */
     void createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ);
@@ -55,7 +53,7 @@ protected:
     void setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance);
     void setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
     int numParticleGroups();
-    std::string elementAtId(int id);
+    const std::string & elementAtId(int id);
     int nextParticleGroup(int id);
 
     void setMaxMotionDistance(int id, float maxMotionDistance);
@@ -87,7 +85,7 @@ protected:
 
     void setUpParticleGroup(const int id, const std::string & elementType);
 
-    std::unordered_map<int, std::pair<ParticleGroup *, std::string> > m_particleGroups;
+    std::unordered_map<int, ParticleGroup *> m_particleGroups;
     int m_id;
 
     World * m_worldNotifier;
@@ -97,5 +95,5 @@ protected:
 
     LuaWrapper * m_lua;
 
-    static ParticleScriptAccess s_access;
+    physx::PxScene * m_pxScene;
 };
