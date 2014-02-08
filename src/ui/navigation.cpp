@@ -64,16 +64,6 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
     
     if (glfwGetKey(&m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
-        if (yoffset > 0)
-        {
-            if (m_distanceEyeCenter <= 2.f) return;
-                m_distanceEyeCenter -= 0.5f;
-            } else {
-                m_distanceEyeCenter += 0.5f;
-            }
-    }
-    else if (glfwGetKey(&m_window, GLFW_KEY_X) != GLFW_PRESS)
-    {
         glm::vec3 eye = m_camera->eye();
         if (yoffset < 0)
         {
@@ -83,6 +73,16 @@ void Navigation::handleScrollEvent(const double & /*xoffset*/, const double & yo
             if ((eye - m_center).y >= m_distanceEyeCenter - (m_distanceEyeCenter/c_distanceEyeCenterDefault)) return;
                 pitch(-2.f);
         }
+    }
+    else
+    {
+        if (yoffset > 0)
+        {
+            if (m_distanceEyeCenter <= 2.f) return;
+                m_distanceEyeCenter -= 0.5f;
+            } else {
+                m_distanceEyeCenter += 0.5f;
+            }
     }
 }
 
