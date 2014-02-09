@@ -99,7 +99,42 @@ void LuaWrapper::push(const char * value) const
     lua_pushstring(m_state, value);
 }
 
-void LuaWrapper::push(const int value) const
+void LuaWrapper::push(const int8_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const uint8_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const int16_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const uint16_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const int32_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const uint32_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const int64_t value) const
+{
+    lua_pushinteger(m_state, value);
+}
+
+void LuaWrapper::push(const uint64_t value) const
 {
     lua_pushinteger(m_state, value);
 }
@@ -112,11 +147,6 @@ void LuaWrapper::push(const float value) const
 void LuaWrapper::push(const double value) const
 {
     lua_pushnumber(m_state, value);
-}
-
-void LuaWrapper::push(const unsigned long value) const
-{
-    lua_pushunsigned(m_state, value);
 }
 
 void LuaWrapper::push(const bool value) const
