@@ -1,6 +1,9 @@
 #pragma once
 
 #include <list>
+#include <vector>
+#include <unordered_map>
+#include <string>
 
 #include <glm/glm.hpp>
 
@@ -8,6 +11,7 @@ namespace glowutils {
     class AxisAlignedBoundingBox;
 }
 class ParticleScriptAccess;
+class ParticleGroup;
 class LuaWrapper;
 
 class ParticleCollision
@@ -26,6 +30,12 @@ public:
 protected:
     ParticleScriptAccess & m_psa;
     LuaWrapper * m_lua;
+
+    /** for now: maintain one particle group (id) for each element that results of an element reaction */
+    std::unordered_map<std::string, int> m_particleGroupIds;
+    /** get the group id for the element and create the group if needed */
+    int particleGroupId(const std::string & elementName);
+    ParticleGroup * particleGroup(const std::string & elementName);
 
     struct IntersectionBox {
         IntersectionBox() = default;

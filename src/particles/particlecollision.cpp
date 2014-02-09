@@ -41,9 +41,7 @@ void ParticleCollision::performCheck()
     std::vector<glm::vec3> leftParticleSubset;
     std::vector<glm::vec3> rightParticleSubset;
 
-    IntersectionBox commonSubbox;
-    glm::vec3 & i_llf = commonSubbox.llf;
-    glm::vec3 & i_urb = commonSubbox.urb;
+    glowutils::AxisAlignedBoundingBox commonSubbox;
 
     debug_intersectionBoxes.clear();
 
@@ -52,22 +50,39 @@ void ParticleCollision::performCheck()
         auto rightHand = leftHand;
         ++rightHand;
         for (; rightHand != lastRightHand; ++rightHand) {
+            ParticleGroup & leftGroup = *leftHand->second;
+            ParticleGroup & rightGroup = *rightHand->second;
 
-            if (!checkBoundingBoxCollision(leftHand->second->boundingBox(), rightHand->second->boundingBox(), &intersectVolume))
+            // first: check if the boundingboxes intersect (it's fast, as we already have the boxes)
+            if (!checkBoundingBoxCollision(leftGroup.boundingBox(), rightGroup.boundingBox(), &intersectVolume))
                 continue; // not interested if the groups don't intersect
 
-            leftHand->second->particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
-            rightHand->second->particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
+            // now ask the scripts if this intersection may be interesting
+            if (!m_lua->call<bool>("collisionCheckRelevance", leftHand->first, rightHand->first))
+                continue;
+
+            // get some more information out of the bounding boxes: this requires iteration over the particles groups
+            leftGroup.particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
+            rightGroup.particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
 
             if (leftParticleSubset.empty() || rightParticleSubset.empty())
                 continue;   // particles of one box flow into the other, where the other doesn't have particles
 
-            commonSubbox.llf = glm::max(leftSubbox.llf(), rightSubbox.llf());
-            commonSubbox.urb = glm::min(leftSubbox.urb(), rightSubbox.urb());
-                
-            debug_intersectionBoxes.push_back(commonSubbox);
+            commonSubbox = glowutils::AxisAlignedBoundingBox(); // reset the box
+            commonSubbox.extend(glm::max(leftSubbox.llf(), rightSubbox.llf()));
+            commonSubbox.extend(glm::min(leftSubbox.urb(), rightSubbox.urb()));
 
-            m_lua->call("particleBboxCollision", leftHand->first, rightHand->first, i_llf.x, i_llf.y, i_llf.z, i_urb.x, i_urb.y, i_urb.z);
+            debug_intersectionBoxes.push_back(IntersectionBox(commonSubbox.llf(), commonSubbox.urb()));
+
+            leftParticleSubset.clear();
+            rightParticleSubset.clear();
+            leftGroup.releaseParticlesGetPositions(commonSubbox, leftParticleSubset);
+            rightGroup.releaseParticlesGetPositions(commonSubbox, rightParticleSubset);
+
+            std::string reaction = m_lua->call<std::string>("elementReaction", leftGroup.elementName(), rightGroup.elementName(), leftParticleSubset.size(), rightParticleSubset.size());
+
+            particleGroup(reaction)->createParticles(leftParticleSubset);
+            particleGroup(reaction)->createParticles(rightParticleSubset);
         }
     }
 }
@@ -101,6 +116,22 @@ bool ParticleCollision::checkBoundingBoxCollision(const glowutils::AxisAlignedBo
     }
 
     return true;
+}
+
+int ParticleCollision::particleGroupId(const std::string & elementName)
+{
+    const auto it = m_particleGroupIds.find(elementName);
+    if (it != m_particleGroupIds.end())
+        return it->second;
+
+    int newId = m_psa.createParticleGroup(elementName);
+    m_particleGroupIds.emplace(elementName, newId);
+    return newId;
+}
+
+ParticleGroup * ParticleCollision::particleGroup(const std::string & elementName)
+{
+    return m_psa.particleGroup(particleGroupId(elementName));
 }
 
 ParticleCollision::IntersectionBox::IntersectionBox(const glm::vec3 & llf, const glm::vec3 & urb)
