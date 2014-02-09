@@ -5,9 +5,10 @@ set(SHADER
     shader/terrain_base.vert
     shader/terrain_base.geo
     shader/terrain_base.frag
-    shader/boundingbox.vert
-    shader/boundingbox.geo
-    shader/boundingbox.frag
+    shader/debug/box.vert
+    shader/debug/wireframeBox.geo
+    shader/debug/solidBox.geo
+    shader/debug/box.frag
     shader/particles/material.frag
     shader/particles/particle.vert
     shader/particles/particle.geo

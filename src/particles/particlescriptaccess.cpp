@@ -71,7 +71,7 @@ ParticleScriptAccess& ParticleScriptAccess::instance()
 void ParticleScriptAccess::checkCollisions(double deltaTime)
 {
     m_collisionCheckDelta += deltaTime;
-    if (m_collisionCheckDelta > 0.5) {
+    /*if (m_collisionCheckDelta > 0.5)*/ {
         m_collisions->performCheck();
         m_collisionCheckDelta = 0.0;
     }

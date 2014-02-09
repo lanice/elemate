@@ -3,7 +3,7 @@
 in vec3 v_vertex[2]; // llf, urb
 
 layout (lines) in;
-layout (line_strip, max_vertices = 16) out;
+layout (triangle_strip, max_vertices = 18) out;
 
 uniform mat4 MVP;
 
@@ -17,24 +17,32 @@ void main()
     vec3 llf = v_vertex[0];
     vec3 urb = v_vertex[1];
     
+    // draw a cuboid:
+    // front
     emitVertex(llf);
+    emitVertex(vec3(llf.x, urb.y, llf.z));
     emitVertex(vec3(urb.x, llf.yz));
     emitVertex(vec3(urb.xy, llf.z));
-    emitVertex(vec3(llf.x, urb.y, llf.z));
-    emitVertex(llf);
-    emitVertex(vec3(llf.xy, urb.z));
+    // right
     emitVertex(vec3(urb.x, llf.y, urb.z));
+    emitVertex(vec3(urb.x, urb.yz));
+    // back
+    emitVertex(vec3(llf.xy, urb.z));
+    emitVertex(vec3(llf.x, urb.y, urb.z));
+    // left
+    emitVertex(llf);
+    emitVertex(vec3(llf.x, urb.y, llf.z));
+    EndPrimitive();
+    // top
+    emitVertex(vec3(llf.x, urb.y, llf.z));
+    emitVertex(vec3(llf.x, urb.yz));
+    emitVertex(vec3(urb.xy, llf.z));
     emitVertex(urb);
-    emitVertex(vec3(llf.x, urb.yz));
-    emitVertex(vec3(llf.xy, urb.z));
     EndPrimitive();
-    emitVertex(vec3(llf.x, urb.y, llf.z));
-    emitVertex(vec3(llf.x, urb.yz));
-    EndPrimitive();
-    emitVertex(vec3(urb.xy, llf.z));
-    emitVertex(vec3(urb.xyz));
-    EndPrimitive();
+    // bottom
+    emitVertex(llf);
     emitVertex(vec3(urb.x, llf.yz));
-    emitVertex(vec3(urb.x, llf.y, urb.z));
+    emitVertex(vec3(llf.xy, urb.z));
+    emitVertex(urb);
     EndPrimitive();
 }
