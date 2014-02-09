@@ -27,6 +27,10 @@ void DebugStep::draw(const CameraEx & camera)
     if (!m_vao)
         initialize();
 
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+
     m_wireframeBoxProgram->use();
     m_wireframeBoxProgram->setUniform("color", glm::vec4(0, 1, 0, 1));
     for (const Drawable * drawable : Drawable::instances()) {
@@ -46,7 +50,7 @@ void DebugStep::draw(const CameraEx & camera)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     m_solidBoxProgram->setUniform("MVP", camera.viewProjectionEx());
-    m_solidBoxProgram->setUniform("color", glm::vec4(1, 0, 0, 0.4));
+    m_solidBoxProgram->setUniform("color", glm::vec4(1, 0, 0, 0.28));
     for (const ParticleCollision::IntersectionBox & ibox : ParticleCollision::debug_intersectionBoxes) {
         m_vbo->setData(glow::Vec3Array({ibox.llf, ibox.urb}), GL_DYNAMIC_DRAW);
 
@@ -57,6 +61,8 @@ void DebugStep::draw(const CameraEx & camera)
 
     m_vao->unbind();
     m_vbo->unbind();
+
+    glDisable(GL_CULL_FACE);
 }
 
 void DebugStep::initialize()
