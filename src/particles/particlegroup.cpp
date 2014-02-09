@@ -225,7 +225,7 @@ glm::vec3 vec3(const physx::PxVec3 & vec3)
 }
 
 void ParticleGroup::updateVisuals()
-{    
+{
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
     assert(readData);
 
@@ -308,4 +308,30 @@ void ParticleGroup::setUseGpuParticles(const bool enable)
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
 
     m_scene->addActor(*m_particleSystem);
+}
+
+void ParticleGroup::particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox)
+{
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    assert(readData);
+
+
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+
+    subbox = glowutils::AxisAlignedBoundingBox();
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt) {
+        assert(pxPositionIt.ptr());
+        if (!(*pxFlagIt & PxParticleFlag::eVALID))
+            continue;
+        const physx::PxVec3 & pxPosition = *pxPositionIt;
+        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        if (!boundingBox.inside(pos))
+            continue;
+        particles.push_back(pos);
+        subbox.extend(pos);
+    }
+
+    readData->unlock();
 }

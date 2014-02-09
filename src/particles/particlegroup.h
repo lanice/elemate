@@ -67,6 +67,11 @@ public:
     void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
     void stopEmit();
 
+    /** fill particles with all my particles which have there center in the specified boundingbox.
+      * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
+      * This should only be called while the physics scene simulation is not running! */
+    void particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox);
+
     /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
     void updateEmitting(const double & delta);
     /** Subscribed to World to update particle visuals. (Observer pattern) */

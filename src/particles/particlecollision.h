@@ -28,6 +28,7 @@ protected:
     LuaWrapper * m_lua;
 
     struct IntersectionBox {
+        IntersectionBox() = default;
         IntersectionBox(const glm::vec3 & llf, const glm::vec3 & urb);
         glm::vec3 llf;
         glm::vec3 urb;

@@ -34,9 +34,16 @@ void ParticleCollision::performCheck()
     auto lastLeftHand = --particleGroups.cend();
     auto lastRightHand = particleGroups.cend();
 
-    glowutils::AxisAlignedBoundingBox intersectVolume;
-    const glm::vec3 & i_llf = intersectVolume.llf();    // to shorten the lua function call
-    const glm::vec3 & i_urb = intersectVolume.urb();
+    glowutils::AxisAlignedBoundingBox intersectVolume; // the intersection volume of the particle group bounding boxes
+
+    glowutils::AxisAlignedBoundingBox leftSubbox;   // the subvolume of the left hand group that actually contains particles
+    glowutils::AxisAlignedBoundingBox rightSubbox;
+    std::vector<glm::vec3> leftParticleSubset;
+    std::vector<glm::vec3> rightParticleSubset;
+
+    IntersectionBox commonSubbox;
+    glm::vec3 & i_llf = commonSubbox.llf;
+    glm::vec3 & i_urb = commonSubbox.urb;
 
     debug_intersectionBoxes.clear();
 
@@ -45,12 +52,22 @@ void ParticleCollision::performCheck()
         auto rightHand = leftHand;
         ++rightHand;
         for (; rightHand != lastRightHand; ++rightHand) {
-            if (checkBoundingBoxCollision(leftHand->second->boundingBox(), rightHand->second->boundingBox(), &intersectVolume)) {
 
-                m_lua->call("particleBboxCollision", leftHand->first, rightHand->first, i_llf.x, i_llf.y, i_llf.z, i_urb.x, i_urb.y, i_urb.z);
+            if (!checkBoundingBoxCollision(leftHand->second->boundingBox(), rightHand->second->boundingBox(), &intersectVolume))
+                continue; // not interested if the groups don't intersect
+
+            leftHand->second->particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
+            rightHand->second->particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
+
+            if (leftParticleSubset.empty() || rightParticleSubset.empty())
+                continue;   // particles of one box flow into the other, where the other doesn't have particles
+
+            commonSubbox.llf = glm::max(leftSubbox.llf(), rightSubbox.llf());
+            commonSubbox.urb = glm::min(leftSubbox.urb(), rightSubbox.urb());
                 
-                debug_intersectionBoxes.push_back(IntersectionBox(i_llf, i_urb));
-            }
+            debug_intersectionBoxes.push_back(commonSubbox);
+
+            m_lua->call("particleBboxCollision", leftHand->first, rightHand->first, i_llf.x, i_llf.y, i_llf.z, i_urb.x, i_urb.y, i_urb.z);
         }
     }
 }
