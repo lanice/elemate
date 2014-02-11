@@ -11,6 +11,22 @@
 
 std::list<ParticleCollision::IntersectionBox> ParticleCollision::debug_intersectionBoxes;
 
+namespace {
+
+void extractPointsInside(const std::vector<glm::vec3> & points, const glowutils::AxisAlignedBoundingBox & box,
+    std::vector<glm::vec3> & extractedPoints, glowutils::AxisAlignedBoundingBox & extractedBox)
+{
+    for (const glm::vec3 & point : points) {
+        if (!box.inside(point))
+            continue;
+
+        extractedBox.extend(point);
+        extractedPoints.push_back(point);
+    }
+}
+
+}
+
 ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 : m_psa(psa)
 , m_lua(new LuaWrapper())
@@ -36,10 +52,14 @@ void ParticleCollision::performCheck()
 
     glowutils::AxisAlignedBoundingBox intersectVolume; // the intersection volume of the particle group bounding boxes
 
-    glowutils::AxisAlignedBoundingBox leftSubbox;   // the subvolume of the left hand group that actually contains particles
-    glowutils::AxisAlignedBoundingBox rightSubbox;
-    std::vector<glm::vec3> leftParticleSubset;
+    std::vector<glm::vec3> leftParticleSubset;      // the subset of particles that is inside of the intersection box
     std::vector<glm::vec3> rightParticleSubset;
+    glowutils::AxisAlignedBoundingBox leftSubbox;   // the bounding box of these particles
+    glowutils::AxisAlignedBoundingBox rightSubbox;
+    std::vector<glm::vec3> leftMinimalParticleSubset;   // particles in the intersection box that are also inside the bounding box of the interacting group
+    std::vector<glm::vec3> rightMinimalParticleSubset;  // this are the particles we will touch while reacting/interacting
+    glowutils::AxisAlignedBoundingBox leftMinimalSubbox;   // the bounding box of these particles
+    glowutils::AxisAlignedBoundingBox rightMinimalSubbox;
 
     glowutils::AxisAlignedBoundingBox commonSubbox;
 
@@ -50,11 +70,11 @@ void ParticleCollision::performCheck()
         auto rightHand = leftHand;
         ++rightHand;
         for (; rightHand != lastRightHand; ++rightHand) {
-            ParticleGroup & leftGroup = *leftHand->second;
-            ParticleGroup & rightGroup = *rightHand->second;
+            m_currentLeftHand = leftHand->second;
+            m_currentRightHand = rightHand->second;
 
             // first: check if the boundingboxes intersect (it's fast, as we already have the boxes)
-            if (!checkBoundingBoxCollision(leftGroup.boundingBox(), rightGroup.boundingBox(), &intersectVolume))
+            if (!checkBoundingBoxCollision(m_currentLeftHand->boundingBox(), m_currentRightHand->boundingBox(), &intersectVolume))
                 continue; // not interested if the groups don't intersect
 
             // now ask the scripts if this intersection may be interesting
@@ -62,27 +82,47 @@ void ParticleCollision::performCheck()
                 continue;
 
             // get some more information out of the bounding boxes: this requires iteration over the particles groups
-            leftGroup.particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
-            rightGroup.particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
-
-            if (leftParticleSubset.empty() || rightParticleSubset.empty())
+            m_currentLeftHand->particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
+            if (leftParticleSubset.empty())
                 continue;   // particles of one box flow into the other, where the other doesn't have particles
+            m_currentRightHand->particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
+            if (rightParticleSubset.empty())
+                continue;
 
-            commonSubbox = glowutils::AxisAlignedBoundingBox(); // reset the box
-            commonSubbox.extend(glm::max(leftSubbox.llf(), rightSubbox.llf()));
-            commonSubbox.extend(glm::min(leftSubbox.urb(), rightSubbox.urb()));
+            // get the particles of one group that are inside the subbox of the other group
+            // this way we discard particles, that are inside the intersection box, but are actually not near particles of the interacting group
+            extractPointsInside(leftParticleSubset, rightSubbox, leftMinimalParticleSubset, leftMinimalSubbox);
+            if (leftMinimalParticleSubset.empty())
+                continue;
+            extractPointsInside(rightParticleSubset, leftSubbox, rightMinimalParticleSubset, rightMinimalSubbox);
+            if (rightMinimalParticleSubset.empty())
+                continue;
+
+            // use the bounding box containing these 'minimal' point subsets for further intersection tests
+            commonSubbox.extend(glm::min(leftMinimalSubbox.llf(), rightMinimalSubbox.llf()));
+            commonSubbox.extend(glm::max(leftMinimalSubbox.urb(), rightMinimalSubbox.urb()));
 
             debug_intersectionBoxes.push_back(IntersectionBox(commonSubbox.llf(), commonSubbox.urb()));
 
+            m_currentLeftHand->releaseParticles(leftMinimalSubbox);
+            m_currentRightHand->releaseParticles(rightMinimalSubbox);
+
+            std::string reaction = m_lua->call<std::string>("elementReaction", m_currentLeftHand->elementName(), m_currentRightHand->elementName(), leftParticleSubset.size(), rightParticleSubset.size());
+
+            particleGroup(reaction)->createParticles(leftMinimalParticleSubset);
+            particleGroup(reaction)->createParticles(rightMinimalParticleSubset);
+
+            // (this sets the size to 0, but dosn't free the reserved memory)
             leftParticleSubset.clear();
             rightParticleSubset.clear();
-            leftGroup.releaseParticlesGetPositions(commonSubbox, leftParticleSubset);
-            rightGroup.releaseParticlesGetPositions(commonSubbox, rightParticleSubset);
+            leftMinimalParticleSubset.clear();
+            rightMinimalParticleSubset.clear();
 
-            std::string reaction = m_lua->call<std::string>("elementReaction", leftGroup.elementName(), rightGroup.elementName(), leftParticleSubset.size(), rightParticleSubset.size());
-
-            particleGroup(reaction)->createParticles(leftParticleSubset);
-            particleGroup(reaction)->createParticles(rightParticleSubset);
+            commonSubbox = glowutils::AxisAlignedBoundingBox(); // reset the box
+            leftSubbox = glowutils::AxisAlignedBoundingBox();
+            rightSubbox = glowutils::AxisAlignedBoundingBox();
+            leftMinimalSubbox = glowutils::AxisAlignedBoundingBox();
+            rightMinimalSubbox = glowutils::AxisAlignedBoundingBox();
         }
     }
 }
@@ -108,7 +148,8 @@ bool ParticleCollision::checkBoundingBoxCollision(const glowutils::AxisAlignedBo
     if (maxBottomY > minTopY)
         return false;
 
-    // the aabb's collide of the share same values along all axis
+    // the aabb's collide if they share same values along all axis
+
     if (intersectVolume) {
         *intersectVolume = glowutils::AxisAlignedBoundingBox(); // reset the bbox by overwriting the old object..
         intersectVolume->extend(glm::vec3(maxLeftX, maxBottomY, maxFrontZ));

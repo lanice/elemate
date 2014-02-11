@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <cstdint>
 
 #include <glm/glm.hpp>
 
@@ -31,12 +32,6 @@ protected:
     ParticleScriptAccess & m_psa;
     LuaWrapper * m_lua;
 
-    /** for now: maintain one particle group (id) for each element that results of an element reaction */
-    std::unordered_map<std::string, int> m_particleGroupIds;
-    /** get the group id for the element and create the group if needed */
-    int particleGroupId(const std::string & elementName);
-    ParticleGroup * particleGroup(const std::string & elementName);
-
     struct IntersectionBox {
         IntersectionBox() = default;
         IntersectionBox(const glm::vec3 & llf, const glm::vec3 & urb);
@@ -44,6 +39,15 @@ protected:
         glm::vec3 urb;
         void operator=(const IntersectionBox&);
     };
+
+    /** the two particle groups that are currently processed */
+    ParticleGroup * m_currentLeftHand;
+    ParticleGroup * m_currentRightHand;
+    /** for now: maintain one particle group (id) for each element that results of an element reaction */
+    std::unordered_map<std::string, int> m_particleGroupIds;
+    /** get the group id for the element and create the group if needed */
+    int particleGroupId(const std::string & elementName);
+    ParticleGroup * particleGroup(const std::string & elementName);
     // for graphical debugging: the current list of intersection volumes
     static std::list<IntersectionBox> debug_intersectionBoxes;
     friend class DebugStep;
