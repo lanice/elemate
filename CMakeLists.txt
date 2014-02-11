@@ -21,6 +21,7 @@ if(OPTION_LIMIT_CONFIGS)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "Limited Configs" FORCE)
 endif()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(cmake/Custom.cmake)
 
@@ -70,8 +71,10 @@ find_package( FMOD REQUIRED )
 find_package( ASSIMP REQUIRED )
 find_package( LUA REQUIRED )
 
+set(ELEMATE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libelemate)
+
 include_directories(
-    ${CMAKE_SOURCE_DIR}/libelemate
+    ${ELEMATE_INCLUDE_DIR}
     SYSTEM ${GLOW_INCLUDE_DIR}
     SYSTEM ${GLEW_INCLUDE_DIR}
     SYSTEM ${GLM_INCLUDE_DIR}
@@ -92,3 +95,8 @@ add_subdirectory(shader)
 add_subdirectory(scripts)
 add_subdirectory(libelemate)
 add_subdirectory(elemate)
+
+option(ELEMATE_BUILD_TESTS "Set to ON to build elemate tests." ON)
+if(ELEMATE_BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
