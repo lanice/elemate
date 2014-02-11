@@ -14,6 +14,9 @@ set_target_properties(gtest
 set_target_properties(gtest_main
     PROPERTIES
     FOLDER ${ELEMATE_TEST_GROUP})
+
+set_cxx_target_properties(gtest)
+set_cxx_target_properties(gtest_main)
     
 # VS2012 sets the maximum number of arguments in its simulation of variadic templates to 5, but google test needs more
 if(MSVC)
@@ -28,14 +31,17 @@ include_directories(
 
 set( TEST_SOURCES
     test.cpp
+    units/game_test.cpp
 )
 
 add_executable(${TARGET_NAME} ${TEST_SOURCES} )
 
+set_cxx_target_properties(${TARGET_NAME})
+
 target_link_libraries(${TARGET_NAME}
-    libelemate
 	gtest
 	gtest_main
+    libelemate
 )
 
 add_test(
