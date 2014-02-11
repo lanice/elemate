@@ -59,8 +59,7 @@ ParticleScriptAccess::ParticleScriptAccess()
 
 ParticleScriptAccess::~ParticleScriptAccess()
 {
-    // Causing double delete and memory corruption ... :/
-    // delete m_lua;
+    delete m_lua;
 }
 
 ParticleScriptAccess& ParticleScriptAccess::instance()
