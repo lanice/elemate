@@ -4,7 +4,7 @@
 #include <glow/Texture.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 #include "utils/cameraex.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -50,19 +50,19 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     for (TerrainLevel level : m_drawLevels) {
         TerrainTile & tile = *m_tiles.at(TileID(level));
         if (level == TerrainLevel::WaterLevel) // for water/fluid drawing: discard samples below the solid terrain
-            baseTile.m_heightTex->bind(GL_TEXTURE1);
+            baseTile.m_heightTex->bindActive(GL_TEXTURE1);
 
         program->setUniform("baseTileCompare", level == TerrainLevel::WaterLevel);
 
         tile.prepareDraw();
-        tile.m_heightTex->bind(GL_TEXTURE0);
+        tile.m_heightTex->bindActive(GL_TEXTURE0);
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
 
-        tile.m_heightTex->unbind(GL_TEXTURE0);
+        tile.m_heightTex->unbindActive(GL_TEXTURE0);
 
         if (level == TerrainLevel::WaterLevel)
-            baseTile.m_heightTex->unbind(GL_TEXTURE1);
+            baseTile.m_heightTex->unbindActive(GL_TEXTURE1);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);
@@ -94,11 +94,11 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
         TerrainTile & tile = *m_tiles.at(TileID(level));
 
         tile.prepareDraw();
-        tile.m_heightTex->bind(GL_TEXTURE1);
+        tile.m_heightTex->bindActive(GL_TEXTURE1);
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
 
-        tile.m_heightTex->unbind(GL_TEXTURE1);
+        tile.m_heightTex->unbindActive(GL_TEXTURE1);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);

@@ -4,7 +4,8 @@
 
 #include <glow/Program.h>
 #include <glow/Buffer.h>
-#include <glowutils/File.h>
+#include <glow/Texture.h>
+#include <glowutils/global.h>
 
 #include "terrain.h"
 #include "io/imagereader.h"
@@ -29,16 +30,16 @@ void BaseTile::bind(const CameraEx & camera)
     TerrainTile::bind(camera);
 
     assert(m_terrainTypeTex);
-    m_terrainTypeTex->bind(GL_TEXTURE1);
+    m_terrainTypeTex->bindActive(GL_TEXTURE1);
 
     for (TextureTuple & tex : m_textures)
-        std::get<1>(tex)->bind(GL_TEXTURE0 + std::get<2>(tex));
+        std::get<1>(tex)->bindActive(GL_TEXTURE0 + std::get<2>(tex));
 }
 
 void BaseTile::unbind()
 {
     for (TextureTuple & tex : m_textures)
-        std::get<1>(tex)->unbind(GL_TEXTURE0 + std::get<2>(tex));
+        std::get<1>(tex)->unbindActive(GL_TEXTURE0 + std::get<2>(tex));
 
     TerrainTile::unbind();
 }

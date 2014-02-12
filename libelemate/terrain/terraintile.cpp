@@ -5,7 +5,7 @@
 #include <glow/Texture.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 #include "utils/cameraex.h"
 
 #include <glm/glm.hpp>
@@ -84,7 +84,7 @@ void TerrainTile::bind(const CameraEx & camera)
     assert(m_heightField);
     assert(m_heightTex);
 
-    m_heightTex->bind(GL_TEXTURE0);
+    m_heightTex->bindActive(GL_TEXTURE0);
 
     m_program->use();
     m_program->setUniform("cameraposition", camera.eye());
@@ -103,7 +103,7 @@ void TerrainTile::unbind()
 {
     m_program->release();
 
-    m_heightTex->unbind(GL_TEXTURE0);
+    m_heightTex->unbindActive(GL_TEXTURE0);
 }
 
 void TerrainTile::setHeightField(glow::FloatArray & heightField)

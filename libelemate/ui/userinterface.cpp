@@ -1,17 +1,16 @@
 #include "userinterface.h"
 
-#include "glow/Array.h"
-#include "glow/Buffer.h"
-#include "glow/VertexArrayObject.h"
-#include "glow/VertexAttributeBinding.h"
-#include "glow/Program.h"
-#include "glow/Texture.h"
+#include <glow/Array.h>
+#include <glow/Buffer.h>
+#include <glow/VertexArrayObject.h>
+#include <glow/VertexAttributeBinding.h>
+#include <glow/Program.h>
+#include <glow/Texture.h>
 #include <glow/logging.h>
 
-#include "glowutils/File.h"
-#include <glowutils/FileRegistry.h>
+#include <glowutils/global.h>
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #include "lua/luawrapper.h"
 #include "io/imagereader.h"
@@ -135,7 +134,7 @@ void UserInterface::drawPreview()
 
 void UserInterface::drawPreviewCircle(float x, float y, const std::string& element, float height, bool highlighted)
 {
-    m_textures.at(element)->bind(GL_TEXTURE0);
+    m_textures.at(element)->bindActive(GL_TEXTURE0);
 
     m_previewProgram->setUniform("x", x);
     m_previewProgram->setUniform("y", y);
@@ -151,7 +150,7 @@ void UserInterface::drawPreviewCircle(float x, float y, const std::string& eleme
     m_vao->unbind();
     m_previewProgram->release();
 
-    m_textures.at(element)->unbind(GL_TEXTURE0);
+    m_textures.at(element)->unbindActive(GL_TEXTURE0);
 }
 
 void UserInterface::drawGreyScreen()

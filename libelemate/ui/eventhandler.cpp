@@ -1,7 +1,7 @@
 #include "eventhandler.h"
 
 #include <glow/logging.h>
-#include <glowutils/FileRegistry.h>
+#include <glowutils/File.h>
 #include "utils/cameraex.h"
 
 #include <GLFW/glfw3.h>
@@ -52,7 +52,7 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             break;
         case GLFW_KEY_F5:
             glow::info("Updating shader...");
-            glowutils::FileRegistry::instance().reloadAll();
+            glowutils::File::reloadAll();
             glow::info("Updating shader done.");
             glow::info("Reloading lua scripts...");
             LuaWrapper::reloadAll();

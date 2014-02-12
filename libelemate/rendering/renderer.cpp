@@ -8,7 +8,7 @@ namespace glow {
 #include <glow/Texture.h>
 #include <glow/RenderBufferObject.h>
 #include <glow/Program.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 #include <glowutils/ScreenAlignedQuad.h>
 #include "utils/cameraex.h"
 
@@ -30,8 +30,6 @@ Renderer::Renderer(const World & world)
 
 void Renderer::initialize()
 {
-    glow::DebugMessageOutput::enable();
-
     glDepthFunc(GL_LEQUAL);
     glClearDepth(1.0);
 
@@ -152,7 +150,7 @@ void Renderer::flushStep(const CameraEx & camera)
     glDepthMask(GL_FALSE);
 
     for (int i = 0; i < m_flushSources.size(); ++i)
-        m_flushSources.at(i).second->bind(GL_TEXTURE0 + i);
+        m_flushSources.at(i).second->bindActive(GL_TEXTURE0 + i);
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
     m_quad->program()->setUniform("zfar", camera.zFarEx());
@@ -164,7 +162,7 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->draw();
 
     for (int i = 0; i < m_flushSources.size(); ++i)
-        m_flushSources.at(i).second->unbind(GL_TEXTURE0 + i);
+        m_flushSources.at(i).second->unbindActive(GL_TEXTURE0 + i);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const

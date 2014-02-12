@@ -5,7 +5,7 @@
 #include <glow/Texture.h>
 #include <glow/Program.h>
 #include <glow/FrameBufferObject.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 #include <glowutils/ScreenAlignedQuad.h>
 #include "utils/cameraex.h"
 
@@ -120,11 +120,11 @@ void ParticleStep::PostProcess::draw()
     if (m_fbo)
         m_fbo->bind();
 
-    m_source.bind(GL_TEXTURE0);
+    m_source.bindActive(GL_TEXTURE0);
 
     m_quad->draw();
 
-    m_source.unbind(GL_TEXTURE0);
+    m_source.unbindActive(GL_TEXTURE0);
 
     if (m_fbo)
         m_fbo->unbind();

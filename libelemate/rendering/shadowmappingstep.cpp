@@ -120,7 +120,7 @@ void ShadowMappingStep::draw(const CameraEx & camera)
 {
     drawLightMap(camera);
 
-    m_lightTex->bind(GL_TEXTURE0 + s_lightmapSlot);
+    m_lightTex->bindActive(GL_TEXTURE0 + s_lightmapSlot);
     m_shadowFbo->bind();
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -129,7 +129,7 @@ void ShadowMappingStep::draw(const CameraEx & camera)
     m_world.hand->drawShadowMapping(camera, *m_lightCam);
 
     m_shadowFbo->unbind();
-    m_lightTex->unbind(GL_TEXTURE0 + s_lightmapSlot);
+    m_lightTex->unbindActive(GL_TEXTURE0 + s_lightmapSlot);
 }
 
 void ShadowMappingStep::resize(int width, int height)

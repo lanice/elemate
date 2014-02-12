@@ -1,7 +1,7 @@
 // These includes cause the '[..] needs to have dll-interface [..]' warnings.
 // Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
-#include <glow/global.h>
-#include <glow/Error.h>
+#include <glow/Version.h>
+#include <glow/debugmessageoutput.h>
 #include <glow/logging.h>
 
 #include <GLFW/glfw3.h>
@@ -17,12 +17,12 @@ static EventHandler * eventHandler;
 static void checkVersion() {
     glow::info("OpenGL Version Needed %;.%; (%;.%; Found)",
         MajorVersionRequire, MinorVersionRequire,
-        glow::query::majorVersion(), glow::query::minorVersion());
-    glow::info("version: %;", glow::query::version().toString());
-    glow::info("vendor: %;", glow::query::vendor());
-    glow::info("renderer: %;", glow::query::renderer());
-    glow::info("core profile: %;", glow::query::isCoreProfile() ? "true" : "false");
-    glow::info("GLSL version: %;\n", glow::query::getString(GL_SHADING_LANGUAGE_VERSION));
+        glow::majorVersion(), glow::minorVersion());
+    glow::info("version: %;", glow::version().toString());
+    glow::info("vendor: %;", glow::vendor());
+    glow::info("renderer: %;", glow::renderer());
+    glow::info("core profile: %;", glow::isCoreProfile() ? "true" : "false");
+    glow::info("GLSL version: %;\n", glow::getString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 static void errorCallback(int /*error*/, const char* description)
@@ -106,7 +106,7 @@ int main()
 
     checkVersion();
 
-    glow::DebugMessageOutput::enable();
+    glow::debugmessageoutput::enable();
 
     // GLOW takes care of initializing GLEW correctly.
     if (!glow::init())

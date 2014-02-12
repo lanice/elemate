@@ -7,7 +7,7 @@
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 #include "utils/cameraex.h"
 
 #include "utils/pxcompilerfix.h"

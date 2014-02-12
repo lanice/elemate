@@ -6,8 +6,7 @@
 #include <glow/VertexAttributeBinding.h>
 #include <glow/Buffer.h>
 #include <glow/Program.h>
-#include <glowutils/File.h>
-#include <glowutils/FileRegistry.h>
+#include <glowutils/global.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
 #include "utils/cameraex.h"
 

@@ -11,7 +11,7 @@
 #include <glow/Program.h>
 #include <glow/Shader.h>
 #include <glow/Texture.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 
 #include "RawFile.h"
 
@@ -92,7 +92,7 @@ void StringDrawer::paint(
     m_program->setUniform("characterAtlas", 0);
     m_program->setUniform("color", color);
     
-    m_characterAtlas->bind(GL_TEXTURE0);
+    m_characterAtlas->bindActive(GL_TEXTURE0);
     
     std::list<CharacterSpecifics *> list = m_stringComposer.characterSequence(text);
     
@@ -125,6 +125,8 @@ void StringDrawer::paint(
     }
     
     glDisable(GL_BLEND);
+
+    m_characterAtlas->unbindActive(GL_TEXTURE0);
 }
 
 void StringDrawer::paint(const TextObject& textObject)

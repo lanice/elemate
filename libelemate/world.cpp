@@ -5,7 +5,7 @@
 #include <glow/logging.h>
 #include <glow/Program.h>
 #include <glow/Shader.h>
-#include <glowutils/File.h>
+#include <glowutils/global.h>
 #include "utils/cameraex.h"
 
 #include <glm/glm.hpp>
@@ -36,8 +36,8 @@ World::World(PhysicsWrapper & physicsWrapper)
 {
     assert(s_instance == nullptr);
 
-    // Create two non-3D channels (paino and rain)
-    //initialise as paused
+    // Create two non-3D channels (piano and rain)
+    //initialize as paused
     int backgroundSoundId = m_soundManager->createNewChannel("data/sounds/elemate.mp3", true, false, true);
     //set volume (make quieter)
     m_soundManager->setVolume(backgroundSoundId, 0.25f);

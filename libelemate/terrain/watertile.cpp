@@ -2,7 +2,8 @@
 
 #include <glow/Shader.h>
 #include <glow/Program.h>
-#include <glowutils/File.h>
+#include <glow/Texture.h>
+#include <glowutils/global.h>
 
 #include "terrain.h"
 #include "world.h"
@@ -17,7 +18,7 @@ void WaterTile::bind(const CameraEx & camera)
     TerrainTile::bind(camera);
 
     assert(m_baseHeightTex);
-    m_baseHeightTex->bind(GL_TEXTURE1);
+    m_baseHeightTex->bindActive(GL_TEXTURE1);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
@@ -27,7 +28,7 @@ void WaterTile::unbind()
 {
     glDisable(GL_BLEND);
 
-    m_baseHeightTex->unbind(GL_TEXTURE1);
+    m_baseHeightTex->unbindActive(GL_TEXTURE1);
 
     TerrainTile::unbind();
 }
