@@ -28,6 +28,8 @@ public:
       * @param intersectVolume will be set to the intersection volume, if the boxes intersect and the parameter is not set to nullptr */
     static bool checkBoundingBoxCollision(const glowutils::AxisAlignedBoundingBox & box1, const glowutils::AxisAlignedBoundingBox & box2, glowutils::AxisAlignedBoundingBox * intersectVolume = nullptr);
 
+    void particleGroupDeleted(const std::string & elementName, int id);
+
 protected:
     ParticleScriptAccess & m_psa;
     LuaWrapper * m_lua;
@@ -40,6 +42,8 @@ protected:
         void operator=(const IntersectionBox&);
     };
 
+    void treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth);
+
     /** the two particle groups that are currently processed */
     ParticleGroup * m_currentLeftHand;
     ParticleGroup * m_currentRightHand;
@@ -48,7 +52,7 @@ protected:
     /** get the group id for the element and create the group if needed */
     int particleGroupId(const std::string & elementName);
     ParticleGroup * particleGroup(const std::string & elementName);
-    // for graphical debugging: the current list of intersection volumes
+    /** for graphical debugging: the current list of intersection volumes **/
     static std::list<IntersectionBox> debug_intersectionBoxes;
     friend class DebugStep;
 

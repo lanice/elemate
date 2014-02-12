@@ -40,6 +40,11 @@ ParticleCollision::~ParticleCollision()
     delete m_lua;
 }
 
+void ParticleCollision::particleGroupDeleted(const std::string & elementName, int /*id*/)
+{
+    m_particleGroupIds.erase(elementName);
+}
+
 void ParticleCollision::performCheck()
 {
     const auto & particleGroups = m_psa.m_particleGroups;
@@ -73,7 +78,7 @@ void ParticleCollision::performCheck()
             m_currentLeftHand = leftHand->second;
             m_currentRightHand = rightHand->second;
 
-            // first: check if the boundingboxes intersect (it's fast, as we already have the boxes)
+            // first: check if the bounding boxes intersect (it's fast, as we already have the boxes)
             if (!checkBoundingBoxCollision(m_currentLeftHand->boundingBox(), m_currentRightHand->boundingBox(), &intersectVolume))
                 continue; // not interested if the groups don't intersect
 
@@ -89,7 +94,7 @@ void ParticleCollision::performCheck()
             if (rightParticleSubset.empty())
                 continue;
 
-            // get the particles of one group that are inside the subbox of the other group
+            // get the particles of one group that are inside the sub-box of the other group
             // this way we discard particles, that are inside the intersection box, but are actually not near particles of the interacting group
             extractPointsInside(leftParticleSubset, rightSubbox, leftMinimalParticleSubset, leftMinimalSubbox);
             if (leftMinimalParticleSubset.empty())
@@ -102,17 +107,11 @@ void ParticleCollision::performCheck()
             commonSubbox.extend(glm::min(leftMinimalSubbox.llf(), rightMinimalSubbox.llf()));
             commonSubbox.extend(glm::max(leftMinimalSubbox.urb(), rightMinimalSubbox.urb()));
 
-            debug_intersectionBoxes.push_back(IntersectionBox(commonSubbox.llf(), commonSubbox.urb()));
+            // now do the more complex work: tree based collision check, to detect collisions at multiple independent places
+            treeCheck(commonSubbox, leftMinimalParticleSubset, rightMinimalParticleSubset, 20);
 
-            m_currentLeftHand->releaseParticles(leftMinimalSubbox);
-            m_currentRightHand->releaseParticles(rightMinimalSubbox);
 
-            std::string reaction = m_lua->call<std::string>("elementReaction", m_currentLeftHand->elementName(), m_currentRightHand->elementName(), leftParticleSubset.size(), rightParticleSubset.size());
-
-            particleGroup(reaction)->createParticles(leftMinimalParticleSubset);
-            particleGroup(reaction)->createParticles(rightMinimalParticleSubset);
-
-            // (this sets the size to 0, but dosn't free the reserved memory)
+            // (this sets the size to 0, but doesn't free the reserved memory)
             leftParticleSubset.clear();
             rightParticleSubset.clear();
             leftMinimalParticleSubset.clear();
@@ -157,6 +156,110 @@ bool ParticleCollision::checkBoundingBoxCollision(const glowutils::AxisAlignedBo
     }
 
     return true;
+}
+
+void ParticleCollision::treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth)
+{
+
+    // recursion end
+
+    if (leftHandPositions.empty() || rightHandPositions.empty()) {
+        // nothing to do here, having only particles of one kind (or none)
+        return;
+    }
+
+    //!!! AxisAlignedBoundingBox center and radius don't do what we want here.. they seem.. wrong
+
+
+    glm::vec3 dimensions = volume.urb() - volume.llf();
+
+    float maxLength = std::max(dimensions.x, std::max(dimensions.y, dimensions.z));
+
+    if (maxLength < 0.3f || depth <= 0) {   // magic number: minimal size of the box for tree based check
+
+        if (depth == 0) {
+            glow::debug("treeCheckEnd, boxSize: %; (maxRecursionDepth)", maxLength);
+        }
+        else
+            glow::debug("treeCheckEnd, boxSize: %; (low box size)", maxLength);
+        std::vector<glm::vec3> leftReleasedPositions;
+        std::vector<glm::vec3> rightReleasedPositions;
+
+        m_currentLeftHand->releaseParticlesGetPositions(volume, leftReleasedPositions);
+        m_currentRightHand->releaseParticlesGetPositions(volume, rightReleasedPositions);
+
+        glow::debug("deleting %; particles", leftReleasedPositions.size() + rightReleasedPositions.size());
+
+        std::string reaction = m_lua->call<std::string>("elementReaction", m_currentLeftHand->elementName(), m_currentRightHand->elementName(), leftReleasedPositions.size(), rightReleasedPositions.size());
+        ParticleGroup * newGroup = particleGroup(reaction);
+
+        newGroup->createParticles(leftReleasedPositions);
+        newGroup->createParticles(rightReleasedPositions);
+
+        debug_intersectionBoxes.push_back(IntersectionBox(volume.llf(), volume.urb()));
+
+        return;
+    }
+
+    // still particles in the current box, and box is too large -> recursive split
+
+    float splitValue = std::numeric_limits<float>::max();
+    int splitAxis = -1;
+
+    // split along the longest axis
+    if (dimensions.x > dimensions.y) {
+        if (dimensions.x > dimensions.z) { // x-split
+            splitValue = (volume.urb().x - volume.llf().x) * 0.5f + volume.llf().x;
+            splitAxis = 0;
+        }
+    }
+    else {
+        if (dimensions.y > dimensions.z) { // y-split
+            splitValue = (volume.urb().y - volume.llf().y) * 0.5f + volume.llf().y;
+            splitAxis = 1;
+        }
+    }
+    if (splitAxis == -1) {  // z-split
+        splitValue = (volume.urb().z - volume.llf().x) * 0.5f + volume.llf().z;
+        splitAxis = 2;
+    }
+    assert(splitValue < std::numeric_limits<float>::max());
+
+    // split the left hand and right hand particle lists into two special groups
+    // group 1 for the smaller coordinates, group 2 for the greater ones
+    std::vector<glm::vec3> group1LeftHand;
+    std::vector<glm::vec3> group1RightHand;
+    std::vector<glm::vec3> group2LeftHand;
+    std::vector<glm::vec3> group2RightHand;
+
+    glowutils::AxisAlignedBoundingBox bboxGroup1;
+    glowutils::AxisAlignedBoundingBox bboxGroup2;
+
+    for (int i = 0; i < leftHandPositions.size(); ++i) {
+        const glm::vec3 & position = leftHandPositions.at(i);
+        if (position[splitAxis] < splitValue) {
+            group1LeftHand.push_back(position);
+            bboxGroup1.extend(position);
+        }
+        else {
+            group2LeftHand.push_back(position);
+            bboxGroup2.extend(position);
+        }
+    }
+    for (int i = 0; i < rightHandPositions.size(); ++i) {
+        const glm::vec3 & position = rightHandPositions.at(i);
+        if (position[splitAxis] < splitValue) {
+            group1RightHand.push_back(position);
+            bboxGroup1.extend(position);
+        }
+        else {
+            group2RightHand.push_back(position);
+            bboxGroup2.extend(position);
+        }
+    }
+
+    treeCheck(bboxGroup1, group1LeftHand, group1RightHand, depth - 1);
+    treeCheck(bboxGroup2, group2LeftHand, group2RightHand, depth - 1);
 }
 
 int ParticleCollision::particleGroupId(const std::string & elementName)

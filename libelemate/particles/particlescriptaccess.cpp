@@ -97,6 +97,8 @@ void ParticleScriptAccess::removeParticleGroup(const int id)
 {
     m_worldNotifier->unregisterObserver(m_particleGroups.at(id));
 
+    m_collisions->particleGroupDeleted(m_particleGroups.at(id)->elementName(), id);
+
     delete m_particleGroups.at(id);
     m_particleGroups.erase(id);
 }
