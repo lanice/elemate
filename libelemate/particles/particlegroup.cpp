@@ -86,6 +86,11 @@ const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
     return m_particleDrawable->boundingBox();
 }
 
+float ParticleGroup::particleSize() const
+{
+    return m_particleSystem->getRestParticleDistance();
+}
+
 physx::PxParticleFluid * ParticleGroup::particleSystem()
 {
     return m_particleSystem;

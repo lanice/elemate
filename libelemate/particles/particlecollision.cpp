@@ -188,8 +188,13 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
         std::vector<vec3> leftReleasedPositions;
         std::vector<vec3> rightReleasedPositions;
 
-        m_currentLeftHand->releaseParticlesGetPositions(volume, leftReleasedPositions);
-        m_currentRightHand->releaseParticlesGetPositions(volume, rightReleasedPositions);
+        float reactionBias = std::max(m_currentLeftHand->particleSize(), m_currentRightHand->particleSize());
+        AxisAlignedBoundingBox reactionVolume;
+        reactionVolume.extend(volume.llf() - vec3(reactionBias));
+        reactionVolume.extend(volume.urb() + vec3(reactionBias));
+
+        m_currentLeftHand->releaseParticlesGetPositions(reactionVolume, leftReleasedPositions);
+        m_currentRightHand->releaseParticlesGetPositions(reactionVolume, rightReleasedPositions);
 
         glow::debug("deleting %; particles", leftReleasedPositions.size() + rightReleasedPositions.size());
 
@@ -200,6 +205,7 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
         newGroup->createParticles(rightReleasedPositions);
 
         debug_intersectionBoxes.push_back(IntersectionBox(volume.llf(), volume.urb()));
+        debug_intersectionBoxes.push_back(IntersectionBox(reactionVolume.llf(), reactionVolume.urb()));
 
         return;
     }

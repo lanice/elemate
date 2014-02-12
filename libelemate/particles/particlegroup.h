@@ -54,10 +54,11 @@ public:
 
     const std::string & elementName() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
+    float particleSize() const;
 
     physx::PxParticleFluid * particleSystem();
 
-    /** If specifing velocities, make sure that its size matches the positions size */
+    /** If specifying velocities, make sure that its size matches the positions size */
     void createParticles(const std::vector<glm::vec3> & positions, const std::vector<glm::vec3> * velocities = nullptr);
     /** Create a single particle at given position with given velocity. */
     void createParticle(const glm::vec3 & position, const glm::vec3 & velocity);
@@ -71,7 +72,7 @@ public:
     void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
     void stopEmit();
 
-    /** fill particles with all my particles which have there center in the specified boundingbox.
+    /** fill particles with all my particles which have there center in the specified bounding box.
       * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
       * This should only be called while the physics scene simulation is not running! */
     void particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const;
