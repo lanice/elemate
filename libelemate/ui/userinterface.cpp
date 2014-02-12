@@ -1,6 +1,5 @@
 #include "userinterface.h"
 
-#include <glow/Array.h>
 #include <glow/Buffer.h>
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
@@ -35,7 +34,7 @@ UserInterface::~UserInterface()
 void UserInterface::initialize()
 {
     m_stringDrawer.initialize();
-    glow::Vec2Array points({
+    std::vector<glm::vec2> points({
         glm::vec2(+1.f, -1.f)
         , glm::vec2(+1.f, +1.f)
         , glm::vec2(-1.f, -1.f)

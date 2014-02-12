@@ -106,14 +106,14 @@ int main()
 
     checkVersion();
 
-    glow::debugmessageoutput::enable();
-
     // GLOW takes care of initializing GLEW correctly.
     if (!glow::init())
     {
         glow::fatal("GLOW initialization failed.");
         return -1;
     }
+
+    glow::debugmessageoutput::enable();
     
 
     Game * game = new Game(*window);

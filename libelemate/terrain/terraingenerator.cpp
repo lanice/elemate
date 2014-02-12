@@ -8,7 +8,6 @@
 #include <functional>
 #include <algorithm>
 
-#include <glow/Array.h>
 #include <glow/logging.h>
 
 #include "utils/pxcompilerfix.h"
@@ -60,21 +59,10 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
     {
         TileID tileIDBase(TerrainLevel::BaseLevel, xID, zID);
 
-        // create base terrain heightfield with random structure
-        glow::FloatArray * baseHeightField = createBasicHeightField(0);
-        assert(baseHeightField);
-
         std::initializer_list<std::string> baseElements = { "bedrock", "sand", "grassland" };
-
-        // create empty heightfield
-        unsigned int numSamples = m_settings.rows * m_settings.columns;
-        glow::UByteArray * baseTerrainTypeIDs = new glow::UByteArray;
-        baseTerrainTypeIDs->resize(numSamples);
 
         /** create terrain object and pass terrain data */
         BaseTile * baseTile = new BaseTile(*terrain, tileIDBase, baseElements);
-        baseTile->setHeightField(*baseHeightField);
-        baseTile->m_terrainTypeData = baseTerrainTypeIDs;
 
         // create the terain using diamond square algorithm
         diamondSquare(*baseTile);
@@ -83,10 +71,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
 
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
         TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
-        glow::FloatArray * waterHeightField = createBasicHeightField(0);
-        assert(waterHeightField);
         WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
-        waterTile->setHeightField(*waterHeightField);
         waterTile->m_baseHeightTex = baseTile->m_heightTex;
 
         /** Create physx objects: an actor with its transformed shapes
@@ -104,35 +89,6 @@ std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
     }
 
     return terrain;
-}
-
-glow::FloatArray * TerrainGenerator::createBasicHeightField(float maxHeightVariance) const
-{
-    assert(m_settings.rows >= 2);
-    assert(m_settings.columns >= 2);
-    assert(m_settings.maxHeight > 0);
-    assert(maxHeightVariance >= 0);
-    assert(m_settings.maxHeight >= maxHeightVariance);
-
-    float partHeight = maxHeightVariance;
-    std::uniform_real_distribution<float> uniform_dist(-partHeight, partHeight);
-
-    std::function<float()> getHeight;
-    if (maxHeightVariance == 0)
-        getHeight = [] () {return 0.0f; };
-    else
-        getHeight = std::bind(uniform_dist, rng);
-
-    unsigned int numSamples = m_settings.rows * m_settings.columns;
-
-    // physx stores values in row major order (means starting with all values (per column) for the first row)
-    glow::FloatArray * heightField = new glow::FloatArray;
-    heightField->resize(numSamples);
-    for (unsigned i = 0; i < numSamples; ++i) {
-        heightField->at(i) = getHeight();
-    }
-
-    return heightField;
 }
 
 void TerrainGenerator::diamondSquare(TerrainTile & tile) const
@@ -186,7 +142,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
     
     unsigned nbSquareRows = 1; // number of squares in a row, doubles each time the current edge length increases [same for the columns]
 
-    for (unsigned int len = fieldEdgeLength; len > 2; len = (len / 2) + 1) // legnth: 9, 5, 3, finished
+    for (unsigned int len = fieldEdgeLength; len > 2; len = (len / 2) + 1) // length: 9, 5, 3, finished
     {
         const unsigned int currentEdgeLength = len;
         std::uniform_real_distribution<float> dist(-randomMax, randomMax);
@@ -269,52 +225,6 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     }
 }
 
-glow::UByteArray * TerrainGenerator::gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const
-{
-    std::function<float(float, float)> riverCourse = [](float normRow, float normColumn)
-    {
-        return std::abs(5.0f * std::pow(normRow, 3) - normColumn);
-    };
-
-    const uint8_t bedrockIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "bedrock") - baseElements.begin());
-    const uint8_t sandIndex = static_cast<uint8_t>(std::find(baseElements.begin(), baseElements.end(), "sand") - baseElements.begin());
-
-    const float riverScale = 0.15f;
-    const float normXScale = 1.0f;//m_settings.tileSizeX() / 30.0f;
-    const float normZScale = 1.0f;//m_settings.tileSizeZ() / 30.0f;
-
-    unsigned int numSamples = m_settings.rows * m_settings.columns;
-
-    glow::UByteArray * terrainTypeIDs = new glow::UByteArray;
-    terrainTypeIDs->resize(numSamples);
-
-    for (unsigned row = 0; row < m_settings.rows; ++row)
-    {
-        unsigned rowOffset = row * m_settings.columns;
-        float normalizedRow = float(row) / m_settings.rows * normZScale;
-        for (unsigned column = 0; column < m_settings.columns; ++column)
-        {
-            float normalizedColumn = float(column) / m_settings.columns * normXScale;
-            unsigned index = column + rowOffset;
-            float value = riverCourse(normalizedRow, normalizedColumn);
-            if (value > riverScale)
-                value = riverScale;
-            value -= riverScale * 0.5f;
-            value -= 0.5f*maxBasicHeightVariance();
-            value *= m_settings.maxHeight;
-            heightField.at(index) += value;
-            if (heightField.at(index) <= 0) {
-                terrainTypeIDs->at(index) = sandIndex;
-            }
-            else {
-                terrainTypeIDs->at(index) = bedrockIndex;
-            }
-        }
-    }
-
-    return terrainTypeIDs;
-}
-
 void TerrainGenerator::setExtentsInWorld(float x, float z)
 {
     assert(x > 0 && z > 0);
@@ -371,15 +281,4 @@ void TerrainGenerator::setMaxHeight(float height)
 float TerrainGenerator::maxHeight() const
 {
     return m_settings.maxHeight;
-}
-
-void TerrainGenerator::setMaxBasicHeightVariance(float variance)
-{
-    assert(variance >= 0.0f);
-    m_settings.maxBasicHeightVariance = variance;
-}
-
-float TerrainGenerator::maxBasicHeightVariance() const
-{
-    return m_settings.maxBasicHeightVariance;
 }

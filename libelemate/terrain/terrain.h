@@ -5,9 +5,10 @@
 #include <map>
 #include <set>
 #include <memory>
+#include <vector>
 
+#include <glow/global.h>
 #include <glow/ref_ptr.h>
-#include <glow/Array.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
 #include <glowutils/CachedValue.h>
 
@@ -23,7 +24,6 @@ class Terrain : public Drawable
 {
 public:
     Terrain(const World & world, const TerrainSettings & settings);
-    virtual ~Terrain() override;
 
     /** set a list of elements that will be used for the draw call */
     virtual void draw(const CameraEx & camera, const std::initializer_list<std::string> & elements);
@@ -91,8 +91,8 @@ protected:
 
     void setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const;
     glowutils::CachedValue<unsigned int> m_renderGridRadius;
-    glow::Vec2Array * m_vertices;
-    glow::UIntArray * m_indices;
+    std::vector<glm::vec2> m_vertices;
+    std::vector<uint32_t> m_indices;
 
     /** light map and shadow mapping */
     virtual void initDepthMapProgram() override;

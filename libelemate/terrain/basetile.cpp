@@ -16,13 +16,8 @@ BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initiali
 : TerrainTile(terrain, tileID, elementNames)
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
-, m_terrainTypeData(nullptr)
 {
-}
-
-BaseTile::~BaseTile()
-{
-    delete m_terrainTypeData;
+    m_terrainTypeData.resize(terrain.settings.rows * terrain.settings.columns);
 }
 
 void BaseTile::bind(const CameraEx & camera)
@@ -75,10 +70,8 @@ void BaseTile::initializeProgram()
 
 void BaseTile::createTerrainTypeTexture()
 {
-    assert(m_terrainTypeData);
-
     m_terrainTypeBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
-    m_terrainTypeBuffer->setData(*m_terrainTypeData, GL_DYNAMIC_DRAW);
+    m_terrainTypeBuffer->setData(m_terrainTypeData, GL_DYNAMIC_DRAW);
 
     m_terrainTypeTex = new glow::Texture(GL_TEXTURE_BUFFER);
     m_terrainTypeTex->bind();
@@ -110,14 +103,14 @@ void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
 
 void BaseTile::updateBuffers()
 {
-    m_terrainTypeBuffer->setData(*m_terrainTypeData, GL_DYNAMIC_DRAW);
+    m_terrainTypeBuffer->setData(m_terrainTypeData, GL_DYNAMIC_DRAW);
 
     TerrainTile::updateBuffers();
 }
 
 uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const
 {
-    return m_terrainTypeData->at(column + row * m_terrain.settings.columns);
+    return m_terrainTypeData.at(column + row * m_terrain.settings.columns);
 }
 
 uint8_t BaseTile::elementIndex(const std::string & elementName) const
@@ -130,5 +123,5 @@ uint8_t BaseTile::elementIndex(const std::string & elementName) const
 void BaseTile::setElement(unsigned int row, unsigned int column, uint8_t elementIndex)
 {
     assert(elementIndex < m_elementNames.size());
-    m_terrainTypeData->at(column + row * m_terrain.settings.columns) = elementIndex;
+    m_terrainTypeData.at(column + row * m_terrain.settings.columns) = elementIndex;
 }

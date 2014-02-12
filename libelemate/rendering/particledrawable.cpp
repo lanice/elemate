@@ -45,11 +45,10 @@ ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int
 , m_needBufferUpdate(true)
 , m_vao(nullptr)
 , m_vbo(nullptr)
-, m_vertices(std::make_shared<glow::Vec3Array>())
 , m_program(nullptr)
 {
     s_instances.push_back(this);
-    m_vertices->resize(m_maxParticleCount);
+    m_vertices.resize(m_maxParticleCount);
 }
 
 ParticleDrawable::~ParticleDrawable()
@@ -102,14 +101,12 @@ void ParticleDrawable::draw(const CameraEx & camera)
 
 void ParticleDrawable::initialize()
 {
-    assert(m_vertices);
-
     m_vao = new glow::VertexArrayObject;
 
     m_vao->bind();
     
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_vbo->setData(*m_vertices, GL_DYNAMIC_DRAW);
+    m_vbo->setData(m_vertices, GL_DYNAMIC_DRAW);
 
     glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
     vertexBinding->setAttribute(0);
@@ -132,7 +129,7 @@ void ParticleDrawable::initialize()
 
 void ParticleDrawable::updateBuffers()
 {
-    m_vbo->setData(*m_vertices, GL_DYNAMIC_DRAW);
+    m_vbo->setData(m_vertices, GL_DYNAMIC_DRAW);
 
     m_needBufferUpdate = false;
 }
@@ -158,7 +155,7 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
         assert(pxPositionIt.ptr());
         if (*pxFlagIt & PxParticleFlag::eVALID) {
             const physx::PxVec3 & vertex = *pxPositionIt;
-            m_vertices->at(nextPointIndex++) = glm::vec3(vertex.x, vertex.y, vertex.z);
+            m_vertices.at(nextPointIndex++) = glm::vec3(vertex.x, vertex.y, vertex.z);
         }
     }
 

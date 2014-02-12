@@ -3,11 +3,14 @@
 #include <forward_list>
 #include <cstdint>
 #include <tuple>
+#include <vector>
 
+#include <glow/global.h>
 #include <glow/ref_ptr.h>
-#include <glow/Array.h>
 
 #include <foundation/PxSimpleTypes.h>
+
+#include <glm/glm.hpp>
 
 #include "terrainsettings.h"
 
@@ -59,12 +62,12 @@ protected:
 
     const Terrain & m_terrain;
 
-    /** list of elements this tile consits of. The index of an element in this list equals its index in the terrain type texture. */
+    /** list of elements this tile consist of. The index of an element in this list equals its index in the terrain type texture. */
     const std::vector<std::string> m_elementNames;
     /** convenience function to get the tile specific index for an element name */
     virtual uint8_t elementIndex(const std::string & elementName) const = 0;
 
-    /** @return the index this tile internaly uses for the element at the row/column position. Parameters must be in range. */
+    /** @return the index this tile internally uses for the element at the row/column position. Parameters must be in range. */
     virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const = 0;
 
     virtual void initialize();
@@ -84,10 +87,7 @@ protected:
 
     /** Contains the height field values in row major order.
       * Initially created by the TerrainGenerator. */
-    glow::FloatArray * m_heightField;
-    /** Used by terrain generator to set the height field.
-      * Allocates gpu memory and initializes the associated texture. */
-    void setHeightField(glow::FloatArray & heightField);
+    std::vector<float> m_heightField;
 
     physx::PxShape * m_pxShape;
 

@@ -2,11 +2,12 @@
 
 #include "terraintile.h"
 
+#include <vector>
+
 class BaseTile : public TerrainTile
 {
 public:
     BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames);
-    virtual ~BaseTile() override;
 
     virtual void bind(const CameraEx & camera) override;
     virtual void unbind() override;
@@ -25,7 +26,7 @@ protected:
 
     glow::ref_ptr<glow::Texture> m_terrainTypeTex;
     glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;
-    glow::UByteArray * m_terrainTypeData;
+    std::vector<uint8_t> m_terrainTypeData;
     virtual void updateBuffers() override;
 
     void loadInitTexture(const std::string & elementName, int textureSlot);

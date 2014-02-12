@@ -22,20 +22,20 @@ public:
     const std::string & topmostElementAt(float worldX, float worldZ) const;
     /** @return name of topmost solid element at world position, in the base level */
     const std::string & solidElementAt(float worldX, float worldZ) const;
-    /** Fetch the heighest element at world position and use its level for interaction functions.
+    /** Fetch the highest element at world position and use its level for interaction functions.
       * @return the name of this element */
     const std::string & useTopmostElementAt(float worldX, float worldZ);
-    /** Fetch the heighest solid element at world position and use its level for interaction functions.
+    /** Fetch the highest solid element at world position and use its level for interaction functions.
       * This fetches the element from the base level.
       * @return the name of this element */
     const std::string & useSolidElementAt(float worldX, float worldZ);
 
     /** @return the height of the element this interactor is configured to work with */
     float heightAt(float worldX, float worldZ) const;
-    /** @return whether the current interact element's level is the heighest at the world position, meaning the one the player can interact with. */
+    /** @return whether the current interact element's level is the highest at the world position, meaning the one the player can interact with. */
     bool isHeighestAt(float worldX, float worldZ) const;
     /** Add delta to the current interact element height at a specified world position.
-    * The actual height value will be clampted to terrain's [-maxHeight, maxHeight] if necessary.
+    * The actual height value will be clamped to terrain's [-maxHeight, maxHeight] if necessary.
     * @return the new applied height value or zero if the position is out of range. */
     float changeHeight(float worldX, float worldZ, float delta);
     /** Drop some amount of the current interaction element to the world position, so that the level height increases by heightDelta.
@@ -55,7 +55,7 @@ public:
       * @return the new applied height value or zero if the position is out of range. */
     float setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value, bool setToInteractionElement);
     /** Add delta to the terrain level height at a specified world position.
-      * The actual height value will be clampted to terrain's [-maxHeight, maxHeight] if necessary.
+      * The actual height value will be clamped to terrain's [-maxHeight, maxHeight] if necessary.
       * @return the new applied height value or zero if the position is out of range. */
     float changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, bool setToInteractionElement);
 

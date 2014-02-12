@@ -64,8 +64,8 @@ ParticleStep::ParticleStep()
 
     m_depthResultTex = m_postTexB;
 
-    glow::FloatArray binomCoeff;
-    glow::IntArray binomOffset;
+    std::vector<float> binomCoeff;
+    std::vector<int32_t> binomOffset;
 
     for (int nHalf = 0; nHalf < 30; ++nHalf){
         binomOffset.push_back(static_cast<int>(binomCoeff.size()));

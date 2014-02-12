@@ -2,9 +2,9 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 
 #include <glow/ref_ptr.h>
-#include <glow/Array.h>
 
 #include <glm/glm.hpp>
 
@@ -58,7 +58,7 @@ protected:
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Buffer> m_vbo;
-    std::shared_ptr<glow::Vec3Array> m_vertices;
+    std::vector<glm::vec3> m_vertices;
     glow::ref_ptr<glow::Program> m_program;
 
 public:

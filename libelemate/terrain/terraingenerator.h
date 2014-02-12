@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#include <glow/Array.h>
-
 #include "terrainsettings.h"
 
 namespace physx {
@@ -47,19 +45,9 @@ public:
     /** maximum latitude (y value) in world coordinates
       * -maxHeight <= y <= maxHeight */
     float maxHeight() const;
-    /** Maximal height variance from terrain profil. This value is used to give the terrain a slightly random structure.
-      * Must be lower or equal than maxHeight, but should only be a fraction of it.*/
-    void setMaxBasicHeightVariance(float variance);
-    /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure. */
-    float maxBasicHeightVariance() const;
 private:
     TerrainSettings m_settings;
 
-    /** creates heightfield data with random height shift */
-    glow::FloatArray * createBasicHeightField(float maxHeightVariance) const;
-    /** adds a river bed to the heightField, getting the rock and sand indices from the initializer list
-      * @return terrain type id storage in row major order */
-    glow::UByteArray * gougeRiverBed(glow::FloatArray & heightField, const std::initializer_list<std::string> & baseElements) const;
     /** http://www.gameprogrammer.com/fractal.html#diamond algorithm for terrain creation */
     void diamondSquare(TerrainTile & tile) const;
     /** apply sand, grassland and bedrock terrain elements depending on the height values */

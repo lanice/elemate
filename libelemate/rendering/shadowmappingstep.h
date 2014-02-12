@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <glow/Array.h>
+#include <glow/global.h>
 
 #include <glm/glm.hpp>
 
@@ -41,8 +41,8 @@ protected:
     glow::ref_ptr<glow::RenderBufferObject> m_shadowDepthBuffer;
     glow::ref_ptr<glow::Texture> m_shadowTex;
 
-    static const glow::Vec2Array s_depthSamples;
-    static const glow::Vec2Array s_earlyBailSamples;
+    static const std::vector<glm::vec2> s_depthSamples;
+    static const std::vector<glm::vec2> s_earlyBailSamples;
     static const GLint s_lightmapSlot;
 
 public:

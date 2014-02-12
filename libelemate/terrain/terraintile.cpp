@@ -38,7 +38,6 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
-, m_heightField(nullptr)
 , m_pxShape(nullptr)
 {
     terrain.registerTile(tileID, *this);
@@ -53,11 +52,12 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
         minX, 0, minZ, 1);
 
     clearBufferUpdateRange();
+
+    m_heightField.resize(terrain.settings.rows * terrain.settings.columns);
 }
 
 TerrainTile::~TerrainTile()
 {
-    delete m_heightField;
 }
 
 const std::string & TerrainTile::elementAt(unsigned int row, unsigned int column) const
@@ -81,7 +81,6 @@ void TerrainTile::bind(const CameraEx & camera)
         initializeProgram();
 
     assert(m_program);
-    assert(m_heightField);
     assert(m_heightTex);
 
     m_heightTex->bindActive(GL_TEXTURE0);
@@ -106,20 +105,12 @@ void TerrainTile::unbind()
     m_heightTex->unbindActive(GL_TEXTURE0);
 }
 
-void TerrainTile::setHeightField(glow::FloatArray & heightField)
-{
-    assert(heightField.size() == m_terrain.settings.columns * m_terrain.settings.rows);
-    m_heightField = &heightField;
-    addBufferUpdateRange(0, heightField.size());
-    addToPxUpdateBox(0, m_terrain.settings.rows - 1, 0, m_terrain.settings.columns - 1);
-}
-
 void TerrainTile::initialize()
 {
     clearBufferUpdateRange();
 
     m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
-    m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
+    m_heightBuffer->setData(m_heightField, GL_DYNAMIC_DRAW);
 
     m_heightTex = new glow::Texture(GL_TEXTURE_BUFFER);
     m_heightTex->bind();
@@ -167,7 +158,7 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
         for (unsigned int column = 0; column < m_terrain.settings.columns; ++column) {
             const unsigned int index = column + rowOffset;
             hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(row, column);
-            hfSamples[index].height = static_cast<PxI16>(m_heightField->at(index) * heightScaleToPx);
+            hfSamples[index].height = static_cast<PxI16>(m_heightField.at(index) * heightScaleToPx);
         }
     }
 
@@ -199,8 +190,7 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
 float TerrainTile::heightAt(unsigned int row, unsigned int column) const
 {
-    assert(m_heightField);
-    return m_heightField->at(column + row * m_terrain.settings.columns);
+    return m_heightField.at(column + row * m_terrain.settings.columns);
 }
 
 bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height) const
@@ -214,10 +204,8 @@ bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height
 
 void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
 {
-    assert(m_heightField);
-    m_heightField->at(column + row * m_terrain.settings.columns) = value;
+    m_heightField.at(column + row * m_terrain.settings.columns) = value;
 }
-
 
 void TerrainTile::setElement(unsigned int row, unsigned int column, const std::string & elementName)
 {
@@ -283,7 +271,7 @@ glm::mat4 TerrainTile::transform() const
 
 void TerrainTile::updateBuffers()
 {
-    m_heightBuffer->setData(*m_heightField, GL_DYNAMIC_DRAW);
+    m_heightBuffer->setData(m_heightField, GL_DYNAMIC_DRAW);
     m_bufferUpdateList.clear();
 
     //m_heightBuffer->mapRange()

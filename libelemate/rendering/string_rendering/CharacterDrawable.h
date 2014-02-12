@@ -1,9 +1,10 @@
 /* This document is based on a file by Max Jendruk (Project Mammut) serving the same purpose but using Qt. */
 #pragma once
 
+#include <vector>
+
 #include <glm/glm.hpp>
 
-#include <glow/Array.h>
 #include <glow/ref_ptr.h>
 
 namespace glow
@@ -22,7 +23,7 @@ public:
     void draw();
 
 protected:
-    static const glow::Vec2Array triangleStrip();
+    static const std::vector<glm::vec2> triangleStrip();
     
 protected:
     glow::ref_ptr<glow::VertexArrayObject> m_vao;

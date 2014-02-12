@@ -57,7 +57,7 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
         tile.prepareDraw();
         tile.m_heightTex->bindActive(GL_TEXTURE0);
 
-        m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
+        m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
         tile.m_heightTex->unbindActive(GL_TEXTURE0);
 
@@ -96,7 +96,7 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
         tile.prepareDraw();
         tile.m_heightTex->bindActive(GL_TEXTURE1);
 
-        m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices->size()), GL_UNSIGNED_INT, nullptr);
+        m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
         tile.m_heightTex->unbindActive(GL_TEXTURE1);
     }

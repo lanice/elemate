@@ -191,7 +191,7 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
         return normalDist(x, 0, stddev)     // - normalize normDist to
                    / norm0                  //    normDist value at interaction center
                * (2 * maxHeight + 10)       // - scale to height range + 10 to omit norm values near 0
-               * invert                     // - mirror the curve along the y axis if moving downwoard
+               * invert                     // - mirror the curve along the y axis if moving downward
                + value                      // - move along y so that value==0 => y==0
                - (2*maxHeight + 10) * invert;
     };
@@ -222,7 +222,7 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
             float newLocalHeight = interactHeight(localRadius);
 
             bool localMoveUp = newLocalHeight > tile.heightAt(r, c);
-            // don't do anything if we pull up the terrain but the local heightpoint is already heigher than its calculated height. (vice versa)
+            // don't do anything if we pull up the terrain but the local heightpoint is already higher than its calculated height. (vice versa)
             if (localMoveUp != moveUp)
                 continue;
 

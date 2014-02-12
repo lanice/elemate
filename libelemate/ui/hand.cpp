@@ -1,6 +1,5 @@
 #include "hand.h"
 
-#include <glow/Array.h>
 #include <glow/logging.h>
 #include <glow/VertexArrayObject.h>
 #include <glow/VertexAttributeBinding.h>
@@ -61,52 +60,46 @@ void Hand::loadModel()
     assert(scene->mNumMeshes == 1);
     aiMesh * mesh = scene->mMeshes[0];
 
-    glow::UIntArray * indices = new glow::UIntArray;
+    std::vector<uint32_t> indices;
     for (unsigned face = 0; face < mesh->mNumFaces; ++face) {
         assert(mesh->mFaces[face].mNumIndices == 3);     // using triangles
         for (unsigned int i = 0; i < 3; ++i) {
-            indices->push_back(mesh->mFaces[face].mIndices[i]);
+            indices.push_back(mesh->mFaces[face].mIndices[i]);
         }
     }
-    m_numIndices = static_cast<int>(indices->size());
+    m_numIndices = static_cast<int>(indices.size());
     m_indexBuffer = new glow::Buffer(GL_ELEMENT_ARRAY_BUFFER);
-    m_indexBuffer->setData(*indices, GL_STATIC_DRAW);
+    m_indexBuffer->setData(indices, GL_STATIC_DRAW);
     m_indexBuffer->unbind();
-    indices->clear();
-    delete indices;
 
     glowutils::AxisAlignedBoundingBox bbox;
-    glow::Vec3Array * vertices = new glow::Vec3Array;
+    std::vector<glm::vec3> vertices;
 
     for (unsigned v = 0; v < mesh->mNumVertices; ++v) {
         const glm::vec3 scaledVertex = 
             glm::vec3(initTransform * glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0));
-        vertices->push_back(scaledVertex);
+        vertices.push_back(scaledVertex);
         bbox.extend(scaledVertex);
     }
 
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_vbo->setData(*vertices, GL_STATIC_DRAW);
+    m_vbo->setData(vertices, GL_STATIC_DRAW);
     m_vbo->unbind();
-    vertices->clear();
-    delete vertices;
 
-    // use four lower coners of the bouding box as compare/checkpoints with terrain height
+    // use four lower corners of the bounding box as compare/checkpoints with terrain height
     m_heightCheckPoints.push_back(bbox.llf());
     m_heightCheckPoints.push_back(glm::vec3(bbox.llf().x, bbox.llf().y, bbox.urb().z));
     m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.llf().z));
     m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.urb().z));
 
-    glow::Vec3Array * normals = new glow::Vec3Array;
+    std::vector<glm::vec3> normals;
     for (unsigned n = 0; n < mesh->mNumVertices; ++n) {
         glm::vec3 rotatedNormal = glm::vec3(rotate * glm::vec4(mesh->mNormals[n].x, mesh->mNormals[n].y, mesh->mNormals[n].z, 1.0));
-        normals->push_back(rotatedNormal);
+        normals.push_back(rotatedNormal);
     }
     m_normalBuffer = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_normalBuffer->setData(*normals, GL_STATIC_DRAW);
+    m_normalBuffer->setData(normals, GL_STATIC_DRAW);
     m_normalBuffer->unbind();
-    normals->clear();
-    delete normals;
 
 
     m_vao = new glow::VertexArrayObject;

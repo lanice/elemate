@@ -86,7 +86,7 @@ physx::PxParticleFluid * ParticleGroup::particleSystem()
     return m_particleSystem;
 }
 
-void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec3Array & pos, const glow::Vec3Array & vel)
+void ParticleGroup::createParticles(const uint32_t numParticles, const std::vector<glm::vec3> & pos, const std::vector<glm::vec3> & vel)
 {
     PxU32 * indices = new PxU32[numParticles];
     PxVec3 * positions = new PxVec3[numParticles];
@@ -126,11 +126,11 @@ void ParticleGroup::createParticles(const uint32_t numParticles, const glow::Vec
 
 void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
 {
-    glow::UIntArray indices;
+    std::vector<uint32_t> indices;
     for (uint32_t i = 0; i < numParticles; ++i)
     {
         if (++m_lastFreeIndex == m_maxParticleCount) m_lastFreeIndex = 0;
-        indices << m_lastFreeIndex;
+        indices.push_back(m_lastFreeIndex);
     }
 
     PxU32 * indexBuffer = new PxU32[numParticles];
@@ -148,7 +148,7 @@ void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
     delete[] indexBuffer;
 }
 
-void ParticleGroup::releaseParticles(const uint32_t numParticles, const glow::UIntArray & indices)
+void ParticleGroup::releaseParticles(const uint32_t numParticles, const std::vector<uint32_t> & indices)
 {
     PxU32 * indexBuffer = new PxU32[numParticles];
 
@@ -168,10 +168,7 @@ void ParticleGroup::releaseParticles(const uint32_t numParticles, const glow::UI
 
 void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 & velocity)
 {
-    glow::Vec3Array positions, velocities;
-    positions << position;
-    velocities << velocity;
-    createParticles(1, positions, velocities);
+    createParticles(1, { position }, { velocity });
 }
 
 void ParticleGroup::emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction)
@@ -222,12 +219,12 @@ void ParticleGroup::updateVisuals()
     m_particleDrawable->updateParticles(readData);
 
     // Get drained Particles
-    glow::UIntArray indices;
+    std::vector<uint32_t> indices;
     PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt)
         if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_DRAIN)
-            indices << i;
+            indices.push_back(i);
 
     readData->unlock();
 

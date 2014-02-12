@@ -14,7 +14,7 @@ enum class TerrainLevel {
 };
 extern std::initializer_list<TerrainLevel> TerrainLevels;
 
-/** initilize the list that defines which terrain level should hold which element */
+/** initialize the list that defines which terrain level should hold which element */
 void initElementTerrainLevels();
 
 /** @return the terrain level that holds the element with name elementName */
@@ -40,8 +40,6 @@ struct TerrainSettings {
     float sizeZ;
     /** Maximal absolute height value in terrain. */
     float maxHeight;
-    /** Maximal height variance from terrain profil. This value is used to give the terrain slightly random structure. */
-    float maxBasicHeightVariance;
     /** number of sample points along the x axis in one tile */
     unsigned rows;
     /** number of sample points along the z axis in one tile */

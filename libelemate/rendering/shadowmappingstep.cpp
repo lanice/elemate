@@ -25,16 +25,16 @@ const glm::mat4 ShadowMappingStep::s_biasMatrix(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0);
 
-glow::Vec2Array initDepthSamples() {
-    glow::Vec2Array samples;
+std::vector<glm::vec2> initDepthSamples() {
+    std::vector<glm::vec2> samples;
     for (int i = 0; i < 32; ++i)
         samples.push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
     return samples;
 }
-const glow::Vec2Array ShadowMappingStep::s_depthSamples = initDepthSamples();
+const std::vector<glm::vec2> ShadowMappingStep::s_depthSamples = initDepthSamples();
 const GLint ShadowMappingStep::s_lightmapSlot = 0;
 static const float earlyBailDistance = 3.0f;
-const glow::Vec2Array ShadowMappingStep::s_earlyBailSamples({
+const std::vector<glm::vec2> ShadowMappingStep::s_earlyBailSamples({
     glm::vec2(0, 0),
     glm::vec2(earlyBailDistance, earlyBailDistance),
     glm::vec2(earlyBailDistance, -earlyBailDistance),

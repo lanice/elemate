@@ -3,11 +3,11 @@
 #include <memory>
 #include <vector>
 
-#include <glow/Array.h>
-
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
+
+#include <glm/glm.hpp>
 
 
 namespace physx {
@@ -56,8 +56,8 @@ public:
     physx::PxParticleFluid * particleSystem();
 
     /** Make sure numParticles matches size of position matches size of velocities! */
-    void createParticles(const uint32_t numParticles, const glow::Vec3Array & positions, const glow::Vec3Array & velocities);
-    void releaseParticles(const uint32_t numParticles, const glow::UIntArray & indices);
+    void createParticles(const uint32_t numParticles, const std::vector<glm::vec3> & positions, const std::vector<glm::vec3> & velocities);
+    void releaseParticles(const uint32_t numParticles, const std::vector<uint32_t> & indices);
     /** Create a single particle at given position with given velocity. */
     void createParticle(const glm::vec3 & position, const glm::vec3 & velocity);
 
