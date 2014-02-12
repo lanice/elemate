@@ -30,9 +30,7 @@ Terrain::Terrain(const World & world, const TerrainSettings & settings)
 
 Terrain::~Terrain()
 {
-    m_vertices->clear();
     delete m_vertices;
-    m_indices->clear();
     delete m_indices;
 }
 
