@@ -11,12 +11,15 @@
 
 std::list<ParticleCollision::IntersectionBox> ParticleCollision::debug_intersectionBoxes;
 
+using namespace glowutils;
+using namespace glm;
+
 namespace {
 
-void extractPointsInside(const std::vector<glm::vec3> & points, const glowutils::AxisAlignedBoundingBox & box,
-    std::vector<glm::vec3> & extractedPoints, glowutils::AxisAlignedBoundingBox & extractedBox)
+void extractPointsInside(const std::vector<vec3> & points, const AxisAlignedBoundingBox & box,
+    std::vector<vec3> & extractedPoints, AxisAlignedBoundingBox & extractedBox)
 {
-    for (const glm::vec3 & point : points) {
+    for (const vec3 & point : points) {
         if (!box.inside(point))
             continue;
 
@@ -55,18 +58,18 @@ void ParticleCollision::performCheck()
     auto lastLeftHand = --particleGroups.cend();
     auto lastRightHand = particleGroups.cend();
 
-    glowutils::AxisAlignedBoundingBox intersectVolume; // the intersection volume of the particle group bounding boxes
+    AxisAlignedBoundingBox intersectVolume; // the intersection volume of the particle group bounding boxes
 
-    std::vector<glm::vec3> leftParticleSubset;      // the subset of particles that is inside of the intersection box
-    std::vector<glm::vec3> rightParticleSubset;
-    glowutils::AxisAlignedBoundingBox leftSubbox;   // the bounding box of these particles
-    glowutils::AxisAlignedBoundingBox rightSubbox;
-    std::vector<glm::vec3> leftMinimalParticleSubset;   // particles in the intersection box that are also inside the bounding box of the interacting group
-    std::vector<glm::vec3> rightMinimalParticleSubset;  // this are the particles we will touch while reacting/interacting
-    glowutils::AxisAlignedBoundingBox leftMinimalSubbox;   // the bounding box of these particles
-    glowutils::AxisAlignedBoundingBox rightMinimalSubbox;
+    std::vector<vec3> leftParticleSubset;      // the subset of particles that is inside of the intersection box
+    std::vector<vec3> rightParticleSubset;
+    AxisAlignedBoundingBox leftSubbox;   // the bounding box of these particles
+    AxisAlignedBoundingBox rightSubbox;
+    std::vector<vec3> leftMinimalParticleSubset;   // particles in the intersection box that are also inside the bounding box of the interacting group
+    std::vector<vec3> rightMinimalParticleSubset;  // this are the particles we will touch while reacting/interacting
+    AxisAlignedBoundingBox leftMinimalSubbox;   // the bounding box of these particles
+    AxisAlignedBoundingBox rightMinimalSubbox;
 
-    glowutils::AxisAlignedBoundingBox commonSubbox;
+    AxisAlignedBoundingBox commonSubbox;
 
     debug_intersectionBoxes.clear();
 
@@ -117,16 +120,16 @@ void ParticleCollision::performCheck()
             leftMinimalParticleSubset.clear();
             rightMinimalParticleSubset.clear();
 
-            commonSubbox = glowutils::AxisAlignedBoundingBox(); // reset the box
-            leftSubbox = glowutils::AxisAlignedBoundingBox();
-            rightSubbox = glowutils::AxisAlignedBoundingBox();
-            leftMinimalSubbox = glowutils::AxisAlignedBoundingBox();
-            rightMinimalSubbox = glowutils::AxisAlignedBoundingBox();
+            commonSubbox = AxisAlignedBoundingBox(); // reset the box
+            leftSubbox = AxisAlignedBoundingBox();
+            rightSubbox = AxisAlignedBoundingBox();
+            leftMinimalSubbox = AxisAlignedBoundingBox();
+            rightMinimalSubbox = AxisAlignedBoundingBox();
         }
     }
 }
 
-bool ParticleCollision::checkBoundingBoxCollision(const glowutils::AxisAlignedBoundingBox & box1, const glowutils::AxisAlignedBoundingBox & box2, glowutils::AxisAlignedBoundingBox * intersectVolume)
+bool ParticleCollision::checkBoundingBoxCollision(const AxisAlignedBoundingBox & box1, const AxisAlignedBoundingBox & box2, AxisAlignedBoundingBox * intersectVolume)
 {
     float maxLeftX = std::max(box1.llf().x, box2.llf().x);
     float minRightX = std::min(box1.urb().x, box2.urb().x);
@@ -150,15 +153,15 @@ bool ParticleCollision::checkBoundingBoxCollision(const glowutils::AxisAlignedBo
     // the aabb's collide if they share same values along all axis
 
     if (intersectVolume) {
-        *intersectVolume = glowutils::AxisAlignedBoundingBox(); // reset the bbox by overwriting the old object..
-        intersectVolume->extend(glm::vec3(maxLeftX, maxBottomY, maxFrontZ));
-        intersectVolume->extend(glm::vec3(minRightX, minTopY, minBackZ));
+        *intersectVolume = AxisAlignedBoundingBox(); // reset the bbox by overwriting the old object..
+        intersectVolume->extend(vec3(maxLeftX, maxBottomY, maxFrontZ));
+        intersectVolume->extend(vec3(minRightX, minTopY, minBackZ));
     }
 
     return true;
 }
 
-void ParticleCollision::treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth)
+void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const std::vector<vec3> & leftHandPositions, const std::vector<vec3> & rightHandPositions, int depth)
 {
 
     // recursion end
@@ -171,7 +174,7 @@ void ParticleCollision::treeCheck(const glowutils::AxisAlignedBoundingBox & volu
     //!!! AxisAlignedBoundingBox center and radius don't do what we want here.. they seem.. wrong
 
 
-    glm::vec3 dimensions = volume.urb() - volume.llf();
+    vec3 dimensions = volume.urb() - volume.llf();
 
     float maxLength = std::max(dimensions.x, std::max(dimensions.y, dimensions.z));
 
@@ -182,8 +185,8 @@ void ParticleCollision::treeCheck(const glowutils::AxisAlignedBoundingBox & volu
         }
         else
             glow::debug("treeCheckEnd, boxSize: %; (low box size)", maxLength);
-        std::vector<glm::vec3> leftReleasedPositions;
-        std::vector<glm::vec3> rightReleasedPositions;
+        std::vector<vec3> leftReleasedPositions;
+        std::vector<vec3> rightReleasedPositions;
 
         m_currentLeftHand->releaseParticlesGetPositions(volume, leftReleasedPositions);
         m_currentRightHand->releaseParticlesGetPositions(volume, rightReleasedPositions);
@@ -227,16 +230,16 @@ void ParticleCollision::treeCheck(const glowutils::AxisAlignedBoundingBox & volu
 
     // split the left hand and right hand particle lists into two special groups
     // group 1 for the smaller coordinates, group 2 for the greater ones
-    std::vector<glm::vec3> group1LeftHand;
-    std::vector<glm::vec3> group1RightHand;
-    std::vector<glm::vec3> group2LeftHand;
-    std::vector<glm::vec3> group2RightHand;
+    std::vector<vec3> group1LeftHand;
+    std::vector<vec3> group1RightHand;
+    std::vector<vec3> group2LeftHand;
+    std::vector<vec3> group2RightHand;
 
-    glowutils::AxisAlignedBoundingBox bboxGroup1;
-    glowutils::AxisAlignedBoundingBox bboxGroup2;
+    AxisAlignedBoundingBox bboxGroup1;
+    AxisAlignedBoundingBox bboxGroup2;
 
     for (int i = 0; i < leftHandPositions.size(); ++i) {
-        const glm::vec3 & position = leftHandPositions.at(i);
+        const vec3 & position = leftHandPositions.at(i);
         if (position[splitAxis] < splitValue) {
             group1LeftHand.push_back(position);
             bboxGroup1.extend(position);
@@ -247,7 +250,7 @@ void ParticleCollision::treeCheck(const glowutils::AxisAlignedBoundingBox & volu
         }
     }
     for (int i = 0; i < rightHandPositions.size(); ++i) {
-        const glm::vec3 & position = rightHandPositions.at(i);
+        const vec3 & position = rightHandPositions.at(i);
         if (position[splitAxis] < splitValue) {
             group1RightHand.push_back(position);
             bboxGroup1.extend(position);
@@ -278,7 +281,7 @@ ParticleGroup * ParticleCollision::particleGroup(const std::string & elementName
     return m_psa.particleGroup(particleGroupId(elementName));
 }
 
-ParticleCollision::IntersectionBox::IntersectionBox(const glm::vec3 & llf, const glm::vec3 & urb)
+ParticleCollision::IntersectionBox::IntersectionBox(const vec3 & llf, const vec3 & urb)
 : llf(llf)
 , urb(urb)
 {
