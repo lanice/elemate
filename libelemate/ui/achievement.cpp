@@ -91,24 +91,8 @@ void Achievement::draw(float time_left)
 		0, 0, 0.5, 0,
 		0.7, 0.9, 0, 1));
 
-	std::list<std::string> split;
-	std::string text(m_text);
-	while (!text.empty())
-	{
-		if (text.length() > 24)
-		{
-			split.push_back(text.substr(0, 24));
-			text = text.substr(24);
-		}		
-		else
-		{
-			split.push_back(text);
-			text = "";
-		}
-	}
-
-	float pos = 0.85f;
-	for (auto& line : split)
+	float pos = 0.84f;
+	for (auto& line : splitText(m_text,25))
 	{
 		m_stringDrawer.paint(line,
 			glm::mat4(0.25, 0, 0, 0,
@@ -117,6 +101,37 @@ void Achievement::draw(float time_left)
 			0.7, pos, 0, 1));
 		pos -= 0.05f;
 	}
+}
+
+std::list<std::string> Achievement::splitText(std::string text, size_t maxLength)
+{
+	std::list<std::string> split;
+	size_t pos = 0;
+	size_t last_split_pos = 0;
+	while (!text.empty()){
+		while (pos < maxLength && pos <= text.length()){
+			if (text[pos] == ' ' || text[pos] == '\n' || text[pos] == '-' || text[pos] == '\0')
+				last_split_pos = pos;
+			if (text[pos] == '\n')
+				break;
+			pos++;
+		}
+		if (!last_split_pos)
+			last_split_pos = maxLength;
+		if (text.length() > last_split_pos)	{
+			std::string nextLine(text.substr(0, last_split_pos));
+			if (' ' == nextLine[0] || '\n' == nextLine[0])
+				nextLine = nextLine.substr(1);
+			split.push_back(nextLine);
+			text = text.substr(last_split_pos);
+			pos = 0;
+		}
+		else {
+			split.push_back(text);
+			text = "";
+		}
+	}
+	return split;
 }
 
 void Achievement::lock()

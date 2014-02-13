@@ -99,7 +99,7 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
 	m_achievements.clear();
-	m_achievements.emplace_back(std::string("Insane"), std::string("Diagnosis as you really started the game. On     purpose?"));
+	m_achievements.emplace_back(std::string("Insane"), std::string("You must be as you really started the game.\nOn purpose?"));
 }
 
 void UserInterface::draw()

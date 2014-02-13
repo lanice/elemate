@@ -29,6 +29,7 @@ public:
 	std::string title() const;
 	std::string text() const;
 
+	static std::list<std::string> splitText(std::string text, size_t maxLength);
 protected:
 	std::string m_title;
 	std::string m_text;
