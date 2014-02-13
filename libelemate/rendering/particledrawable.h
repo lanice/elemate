@@ -14,7 +14,6 @@ namespace glow {
     class Program;
 }
 namespace physx {
-    class PxVec3;
     class PxParticleReadData;
 }
 class CameraEx;
@@ -29,7 +28,7 @@ public:
 
     void initialize();
 
-    /** fetches the number of valid particles and the particle positions from readData and updates interal buffers */
+    /** fetches the number of valid particles and the particle positions from readData and updates the vertex buffers data */
     void updateParticles(const physx::PxParticleReadData * readData);
 
     void setParticleSize(float particleSize);
@@ -55,6 +54,8 @@ protected:
 
     bool m_needBufferUpdate;
     void updateBuffers();
+    /** mapped gpu memory to update the particle positions */
+    glm::vec3 * m_particleGpuDest;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Buffer> m_vbo;
