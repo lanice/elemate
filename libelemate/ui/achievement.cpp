@@ -11,6 +11,9 @@
 
 #include "io/imagereader.h"
 
+
+const float Achievement::ACHIEVEMENT_DISPLAY_TIME = 1;
+
 Achievement::Achievement(const std::string& title, const std::string& text, bool unlocked, const std::string& picture) :
 m_title(title)
 , m_text(text)
@@ -68,11 +71,12 @@ void Achievement::initialize()
 	m_texture->unbind();
 }
 
-void Achievement::draw(float time_left)
+void Achievement::draw()
 {
+	update();
 	m_texture->bindActive(GL_TEXTURE0);
 
-	m_program->setUniform("time_left", time_left);
+	m_program->setUniform("time_mod", m_timeMod);
 	m_program->setUniform("ratio", m_viewport.x / m_viewport.y);
 
 	m_program->use();
@@ -84,14 +88,14 @@ void Achievement::draw(float time_left)
 	m_program->release();
 
 	m_texture->unbindActive(GL_TEXTURE0);
-
+	float pos = 0.9f + m_timeMod;
 	m_stringDrawer.paint(m_title,
 		glm::mat4(0.5, 0, 0, 0,
 		0, 0.5, 0, 0,
 		0, 0, 0.5, 0,
-		0.7, 0.9, 0, 1));
+		0.7, pos, 0, 1));
+	pos -= 0.06f;
 
-	float pos = 0.84f;
 	for (auto& line : splitText(m_text,25))
 	{
 		m_stringDrawer.paint(line,
@@ -134,6 +138,18 @@ std::list<std::string> Achievement::splitText(std::string text, size_t maxLength
 	return split;
 }
 
+void Achievement::update(){
+	std::chrono::duration<double> diff = std::chrono::system_clock::now() - m_unlockTime;
+	m_timeMod = static_cast<float>(1.0 - diff.count()/ACHIEVEMENT_DISPLAY_TIME);
+	m_timeMod *= m_timeMod;
+	for (int i = 0; i < ACHIEVEMENT_DISPLAY_TIME;i++)
+		m_timeMod *= m_timeMod*m_timeMod;
+	if (diff.count() > 2*ACHIEVEMENT_DISPLAY_TIME)
+	{
+		unlock();//To reset the time. But later ti hide the achievement
+	}
+}
+
 void Achievement::lock()
 {
 	m_unlocked = false;
@@ -142,6 +158,7 @@ void Achievement::lock()
 void Achievement::unlock()
 {
 	m_unlocked = true;
+	m_unlockTime = std::chrono::system_clock::now();
 }
 
 bool Achievement::isUnlocked() const

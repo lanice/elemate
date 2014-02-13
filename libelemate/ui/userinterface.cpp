@@ -100,6 +100,7 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
 	m_achievements.clear();
 	m_achievements.emplace_back(std::string("Insane"), std::string("You must be as you really started the game.\nOn purpose?"));
+	m_achievements.front().unlock();
 }
 
 void UserInterface::draw()
@@ -132,7 +133,7 @@ void UserInterface::drawMainMenu()
 void UserInterface::drawAchievements()
 {
 	for (auto& achievement : m_achievements)
-		achievement.draw(0.5);
+		achievement.draw();
 }
 
 void UserInterface::drawPreview()

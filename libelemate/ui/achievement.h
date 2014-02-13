@@ -6,6 +6,8 @@
 
 #include <list>
 
+#include <chrono>
+
 namespace glow{
 	class VertexArrayObject;
 	class Program;
@@ -23,7 +25,8 @@ public:
 	bool isUnlocked() const;
 
 	void initialize();
-	void draw(float time_left);
+	void update();
+	void draw();
 	void resize(int width, int height);
 
 	std::string title() const;
@@ -31,6 +34,11 @@ public:
 
 	static std::list<std::string> splitText(std::string text, size_t maxLength);
 protected:
+	static const float ACHIEVEMENT_DISPLAY_TIME;
+
+	float		m_timeMod;
+	std::chrono::time_point<std::chrono::system_clock>	m_unlockTime;
+
 	std::string m_title;
 	std::string m_text;
 	bool		m_unlocked;
