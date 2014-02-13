@@ -15,6 +15,8 @@
 #include "io/imagereader.h"
 #include "menupage.h"
 
+#include "achievement.h"
+
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
 const glm::vec3 UserInterface::kDefaultMenuEntryColor = glm::vec3(1.0f,1.0f,1.0f);
 const glm::vec3 UserInterface::kDefaultHighlightedMenuEntryColor = glm::vec3(0.8f, 0.8f, 0.3f);
@@ -96,12 +98,15 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Strg halten und scrollen zum Kippen der Kamera");
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
+	m_achievements.clear();
+	m_achievements.emplace_back(std::string("Insane"), std::string("Diagnosis as you really started the game. On     purpose?"));
 }
 
 void UserInterface::draw()
 {
     drawHUD();
     drawMainMenu();
+	drawAchievements();
 }
 
 void UserInterface::drawHUD()
@@ -117,11 +122,17 @@ void UserInterface::drawHUD()
 
 void UserInterface::drawMainMenu()
 {
-    if (!m_mainMenuOnTop)
-        return;
+	if (!m_mainMenuOnTop)
+		return;
 
-    drawGreyScreen();
-    drawMenuEntries();
+	drawGreyScreen();
+	drawMenuEntries();
+}
+
+void UserInterface::drawAchievements()
+{
+	for (auto& achievement : m_achievements)
+		achievement.draw(0.5);
 }
 
 void UserInterface::drawPreview()
@@ -188,6 +199,8 @@ void UserInterface::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
     m_stringDrawer.resize(width, height);
+	for (auto& achievement : m_achievements)
+		achievement.resize(width, height);
 }
 
 void UserInterface::loadInitTexture(const std::string & elementName)
