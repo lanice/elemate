@@ -16,6 +16,7 @@ namespace physx {
 }
 namespace glowutils { class AxisAlignedBoundingBox; }
 class ParticleDrawable;
+class SoundManager;
 
 struct ImmutableParticleProperties
 {
@@ -87,8 +88,8 @@ public:
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
-
-    void setImmutableProperties(
+	
+	void setImmutableProperties(
         const physx::PxReal maxMotionDistance,
         const physx::PxReal gridSize,
         const physx::PxReal restOffset,
@@ -108,7 +109,10 @@ public:
 
     void setUseGpuParticles(const bool enable);
 
-
+	void passSoundManager(std::shared_ptr<SoundManager> sound_manager);
+	void updateSounds(bool isWorldPaused);
+	void startSound();
+	void stopSound();
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
@@ -117,7 +121,8 @@ protected:
 
     const std::string m_elementName;
 
-    std::shared_ptr<ParticleDrawable> m_particleDrawable;
+	std::shared_ptr<SoundManager>		m_soundManager;
+    std::shared_ptr<ParticleDrawable>	m_particleDrawable;
 
     uint32_t m_maxParticleCount;
     physx::PxU32 * m_indices;
@@ -133,6 +138,8 @@ protected:
 
     bool m_gpuParticles;
 
+	bool m_wasSoundPlaying;
+	unsigned int m_soundChannel;
 
 public:
     ParticleGroup(ParticleGroup&) = delete;
