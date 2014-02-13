@@ -76,6 +76,8 @@ set(SOURCES
     ui/userinterface.h
     ui/menupage.cpp
     ui/menupage.h
+    ui/achievement.cpp
+    ui/achievement.h
     utils/cameraex.h
     utils/cameraex.cpp
     utils/pxcompilerfix.h
