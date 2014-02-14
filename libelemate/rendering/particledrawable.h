@@ -54,8 +54,6 @@ protected:
 
     bool m_needBufferUpdate;
     void updateBuffers();
-    /** mapped gpu memory to update the particle positions */
-    glm::vec3 * m_particleGpuDest;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
     glow::ref_ptr<glow::Buffer> m_vbo;

@@ -43,7 +43,6 @@ ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int
 , m_currentNumParticles(0)
 , m_particleSize(1.0f)
 , m_needBufferUpdate(true)
-, m_particleGpuDest(nullptr)
 , m_vao(nullptr)
 , m_vbo(nullptr)
 , m_program(nullptr)
@@ -54,7 +53,6 @@ ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int
 
 ParticleDrawable::~ParticleDrawable()
 {
-    m_vbo->unmap();
     s_instances.remove(this);
 }
 
@@ -109,10 +107,6 @@ void ParticleDrawable::initialize()
     
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
     m_vbo->setData(m_maxParticleCount * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
-    // keep a persistent pointer to copy data to the gpu, see http://www.ozone3d.net/dl/201401/NVIDIA_OpenGL_beyond_porting.pdf
-    m_particleGpuDest = reinterpret_cast<glm::vec3*>(
-        m_vbo->mapRange(0, m_maxParticleCount * sizeof(glm::vec3), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
-    assert(m_particleGpuDest);
 
     m_needBufferUpdate = true;
 
@@ -137,9 +131,13 @@ void ParticleDrawable::initialize()
 
 void ParticleDrawable::updateBuffers()
 {
-    assert(m_particleGpuDest);
     assert(m_vertices.size() <= m_maxParticleCount * sizeof(glm::vec3));
-    memcpy(m_particleGpuDest, static_cast<void*>(m_vertices.data()), m_vertices.size() * sizeof(glm::vec3));
+    
+    glm::vec3 * particleGpuDest = reinterpret_cast<glm::vec3*>(
+        m_vbo->mapRange(0, m_vertices.size() * sizeof(glm::vec3), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
+    assert(particleGpuDest);
+    memcpy(particleGpuDest, static_cast<void*>(m_vertices.data()), m_vertices.size() * sizeof(glm::vec3));
+    m_vbo->unmap();
 
     m_needBufferUpdate = false;
 }
