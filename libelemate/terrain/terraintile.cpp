@@ -282,8 +282,7 @@ void TerrainTile::updateBuffers()
 
     unsigned int indexOffset = m_updateRangeMinMaxIndex.x;
 
-    for (; !m_bufferUpdateList.empty(); m_bufferUpdateList.pop_front()) {
-        UpdateRange range = m_bufferUpdateList.front();
+    for (const UpdateRange & range : m_bufferUpdateList) {
         assert(indexOffset <= range.startIndex);
         assert(range.startIndex - indexOffset >= 0);
         assert(range.startIndex - indexOffset + range.nbElements < m_heightField.size());

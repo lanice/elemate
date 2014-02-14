@@ -71,7 +71,7 @@ void BaseTile::initializeProgram()
 void BaseTile::createTerrainTypeTexture()
 {
     m_terrainTypeBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
-    m_terrainTypeBuffer->setData(m_terrainTypeData, GL_DYNAMIC_DRAW);
+    m_terrainTypeBuffer->setStorage(m_terrainTypeData, GL_MAP_WRITE_BIT);
 
     m_terrainTypeTex = new glow::Texture(GL_TEXTURE_BUFFER);
     m_terrainTypeTex->bind();
@@ -103,7 +103,26 @@ void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
 
 void BaseTile::updateBuffers()
 {
-    m_terrainTypeBuffer->setData(m_terrainTypeData, GL_DYNAMIC_DRAW);
+    assert(m_updateRangeMinMaxIndex.x < m_updateRangeMinMaxIndex.y);
+
+    uint8_t * bufferDest = reinterpret_cast<uint8_t*>(m_terrainTypeBuffer->mapRange(
+        m_updateRangeMinMaxIndex.x,
+        m_updateRangeMinMaxIndex.y - m_updateRangeMinMaxIndex.x,
+        GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
+    assert(bufferDest);
+
+    unsigned int indexOffset = m_updateRangeMinMaxIndex.x;
+
+    for (const UpdateRange & range : m_bufferUpdateList) {
+        assert(indexOffset <= range.startIndex);
+        assert(range.startIndex - indexOffset >= 0);
+        assert(range.startIndex - indexOffset + range.nbElements < m_terrainTypeData.size());
+        memcpy(bufferDest + (range.startIndex - indexOffset),
+            reinterpret_cast<uint8_t*>(m_terrainTypeData.data()) + range.startIndex,
+            range.nbElements);
+    }
+
+    m_terrainTypeBuffer->unmap();
 
     TerrainTile::updateBuffers();
 }
