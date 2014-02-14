@@ -42,7 +42,13 @@ protected:
         void operator=(const IntersectionBox&);
     };
 
-    void treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth);
+    /** reduce the point sets to positions that are inside the bounding box of the comparing set
+      * @return true, if there are particles in a common sub box, false otherwise */
+    static bool extractCommonPositionBox(const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions,
+        const glowutils::AxisAlignedBoundingBox & leftBBox, const glowutils::AxisAlignedBoundingBox & rightBBox,
+        std::vector<glm::vec3> & leftHandExtracted, std::vector<glm::vec3> & rightHandExtracted,
+        glowutils::AxisAlignedBoundingBox & commonBBox);
+    std::pair<int, int> treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth);
 
     /** the two particle groups that are currently processed */
     ParticleGroup * m_currentLeftHand;

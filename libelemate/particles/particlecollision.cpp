@@ -81,6 +81,18 @@ void ParticleCollision::performCheck()
             m_currentLeftHand = leftHand->second;
             m_currentRightHand = rightHand->second;
 
+            // (this sets the size to 0, but doesn't free the reserved memory)
+            leftParticleSubset.clear();
+            rightParticleSubset.clear();
+            leftMinimalParticleSubset.clear();
+            rightMinimalParticleSubset.clear();
+
+            commonSubbox = AxisAlignedBoundingBox(); // reset the box
+            leftSubbox = AxisAlignedBoundingBox();
+            rightSubbox = AxisAlignedBoundingBox();
+            leftMinimalSubbox = AxisAlignedBoundingBox();
+            rightMinimalSubbox = AxisAlignedBoundingBox();
+
             // first: check if the bounding boxes intersect (it's fast, as we already have the boxes)
             if (!checkBoundingBoxCollision(m_currentLeftHand->boundingBox(), m_currentRightHand->boundingBox(), &intersectVolume))
                 continue; // not interested if the groups don't intersect
@@ -97,34 +109,13 @@ void ParticleCollision::performCheck()
             if (rightParticleSubset.empty())
                 continue;
 
-            // get the particles of one group that are inside the sub-box of the other group
-            // this way we discard particles, that are inside the intersection box, but are actually not near particles of the interacting group
-            extractPointsInside(leftParticleSubset, rightSubbox, leftMinimalParticleSubset, leftMinimalSubbox);
-            if (leftMinimalParticleSubset.empty())
+            if (!extractCommonPositionBox(leftParticleSubset, rightParticleSubset, leftSubbox, rightSubbox, leftMinimalParticleSubset, rightMinimalParticleSubset, commonSubbox))
                 continue;
-            extractPointsInside(rightParticleSubset, leftSubbox, rightMinimalParticleSubset, rightMinimalSubbox);
-            if (rightMinimalParticleSubset.empty())
-                continue;
-
-            // use the bounding box containing these 'minimal' point subsets for further intersection tests
-            commonSubbox.extend(glm::min(leftMinimalSubbox.llf(), rightMinimalSubbox.llf()));
-            commonSubbox.extend(glm::max(leftMinimalSubbox.urb(), rightMinimalSubbox.urb()));
 
             // now do the more complex work: tree based collision check, to detect collisions at multiple independent places
-            treeCheck(commonSubbox, leftMinimalParticleSubset, rightMinimalParticleSubset, 20);
-
-
-            // (this sets the size to 0, but doesn't free the reserved memory)
-            leftParticleSubset.clear();
-            rightParticleSubset.clear();
-            leftMinimalParticleSubset.clear();
-            rightMinimalParticleSubset.clear();
-
-            commonSubbox = AxisAlignedBoundingBox(); // reset the box
-            leftSubbox = AxisAlignedBoundingBox();
-            rightSubbox = AxisAlignedBoundingBox();
-            leftMinimalSubbox = AxisAlignedBoundingBox();
-            rightMinimalSubbox = AxisAlignedBoundingBox();
+            auto a = treeCheck(commonSubbox, leftMinimalParticleSubset, rightMinimalParticleSubset, 20);
+            if (a.second > 0)
+                glow::debug("treeCheckResult: calls: %;, hits: %;", a.first, a.second);
         }
     }
 }
@@ -161,14 +152,43 @@ bool ParticleCollision::checkBoundingBoxCollision(const AxisAlignedBoundingBox &
     return true;
 }
 
-void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const std::vector<vec3> & leftHandPositions, const std::vector<vec3> & rightHandPositions, int depth)
+bool ParticleCollision::extractCommonPositionBox(const std::vector<vec3> & leftHandPositions, const std::vector<vec3> & rightHandPositions,
+    const AxisAlignedBoundingBox & leftBBox, const AxisAlignedBoundingBox & rightBBox,
+    std::vector<vec3> & leftHandExtracted, std::vector<vec3> & rightHandExtracted,
+    glowutils::AxisAlignedBoundingBox & commonBBox)
+{
+    // not interested at all if the boxes don't collide
+    if (!checkBoundingBoxCollision(leftBBox, rightBBox))
+        return false;
+
+    AxisAlignedBoundingBox leftSubbox;
+    AxisAlignedBoundingBox rightSubbox;
+
+    // get the points of one group that are inside the bounding box of the other group
+
+    extractPointsInside(leftHandPositions, rightBBox, leftHandExtracted, leftSubbox);
+    if (leftHandExtracted.empty())
+        return false;
+
+    extractPointsInside(rightHandPositions, leftBBox, rightHandExtracted, rightSubbox);
+    if (rightHandExtracted.empty())
+        return false;
+
+    // get the bounding box containing these minimal position subsets
+    commonBBox.extend(glm::min(leftSubbox.llf(), rightSubbox.llf()));
+    commonBBox.extend(glm::max(leftSubbox.urb(), rightSubbox.urb()));
+
+    return true;
+}
+
+std::pair<int, int> ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const std::vector<vec3> & leftHandPositions, const std::vector<vec3> & rightHandPositions, int depth)
 {
 
     // recursion end
 
     if (leftHandPositions.empty() || rightHandPositions.empty()) {
         // nothing to do here, having only particles of one kind (or none)
-        return;
+        return std::make_pair(1, 0);
     }
 
     //!!! AxisAlignedBoundingBox center and radius don't do what we want here.. they seem.. wrong
@@ -184,7 +204,7 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
             glow::debug("treeCheckEnd, boxSize: %; (maxRecursionDepth)", maxLength);
         }
         else
-            glow::debug("treeCheckEnd, boxSize: %; (low box size)", maxLength);
+            glow::debug("treeCheckEnd, boxSize: %; (low box size, rec: %;)", maxLength, depth);
         std::vector<vec3> leftReleasedPositions;
         std::vector<vec3> rightReleasedPositions;
 
@@ -207,7 +227,7 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
         debug_intersectionBoxes.push_back(IntersectionBox(volume.llf(), volume.urb()));
         debug_intersectionBoxes.push_back(IntersectionBox(reactionVolume.llf(), reactionVolume.urb()));
 
-        return;
+        return std::make_pair(1, 1);
     }
 
     // still particles in the current box, and box is too large -> recursive split
@@ -241,34 +261,51 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
     std::vector<vec3> group2LeftHand;
     std::vector<vec3> group2RightHand;
 
-    AxisAlignedBoundingBox bboxGroup1;
-    AxisAlignedBoundingBox bboxGroup2;
+    AxisAlignedBoundingBox bboxGroup1Left;
+    AxisAlignedBoundingBox bboxGroup1Right;
+    AxisAlignedBoundingBox bboxGroup2Left;
+    AxisAlignedBoundingBox bboxGroup2Right;
 
+    // spacial splitting of the particles along the splitting plane
     for (int i = 0; i < leftHandPositions.size(); ++i) {
         const vec3 & position = leftHandPositions.at(i);
         if (position[splitAxis] < splitValue) {
             group1LeftHand.push_back(position);
-            bboxGroup1.extend(position);
+            bboxGroup1Left.extend(position);
         }
         else {
             group2LeftHand.push_back(position);
-            bboxGroup2.extend(position);
+            bboxGroup2Left.extend(position);
         }
     }
     for (int i = 0; i < rightHandPositions.size(); ++i) {
         const vec3 & position = rightHandPositions.at(i);
         if (position[splitAxis] < splitValue) {
             group1RightHand.push_back(position);
-            bboxGroup1.extend(position);
+            bboxGroup1Right.extend(position);
         }
         else {
             group2RightHand.push_back(position);
-            bboxGroup2.extend(position);
+            bboxGroup2Right.extend(position);
         }
     }
 
-    treeCheck(bboxGroup1, group1LeftHand, group1RightHand, depth - 1);
-    treeCheck(bboxGroup2, group2LeftHand, group2RightHand, depth - 1);
+    std::vector<vec3> leftExtracted, rightExtracted;
+    AxisAlignedBoundingBox commonBoundingBox;
+    std::pair<int, int> a(1, 0), b(1, 0);
+    // for each created splitting subset: extract the particles that may interact with the other group
+    if (extractCommonPositionBox(group1LeftHand, group1RightHand, bboxGroup1Left, bboxGroup1Right, leftExtracted, rightExtracted, commonBoundingBox)) {
+        // and if so, try continuing with another spacial splitting
+        a = treeCheck(commonBoundingBox, leftExtracted, rightExtracted, depth - 1);
+    }
+    // same for the second splitting subset, reuse the container and bounding box objects
+    leftExtracted.clear();
+    rightExtracted.clear();
+    commonBoundingBox = AxisAlignedBoundingBox();
+    if (extractCommonPositionBox(group2LeftHand, group2RightHand, bboxGroup2Left, bboxGroup2Right, leftExtracted, rightExtracted, commonBoundingBox)) {
+        b = treeCheck(commonBoundingBox, leftExtracted, rightExtracted, depth - 1);
+    }
+    return std::make_pair(a.first + b.first, a.second + b.second);
 }
 
 int ParticleCollision::particleGroupId(const std::string & elementName)
