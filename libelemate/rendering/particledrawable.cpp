@@ -108,7 +108,7 @@ void ParticleDrawable::initialize()
     m_vao->bind();
     
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_vbo->setStorage(m_maxParticleCount * sizeof(glm::vec3), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    m_vbo->setData(m_maxParticleCount * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
     // keep a persistent pointer to copy data to the gpu, see http://www.ozone3d.net/dl/201401/NVIDIA_OpenGL_beyond_porting.pdf
     m_particleGpuDest = reinterpret_cast<glm::vec3*>(
         m_vbo->mapRange(0, m_maxParticleCount * sizeof(glm::vec3), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));

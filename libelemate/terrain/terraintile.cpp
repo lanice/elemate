@@ -110,7 +110,7 @@ void TerrainTile::initialize()
     clearBufferUpdateRange();
 
     m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
-    m_heightBuffer->setStorage(m_heightField, GL_MAP_WRITE_BIT);
+    m_heightBuffer->setData(m_heightField, GL_DYNAMIC_DRAW);
 
     m_heightTex = new glow::Texture(GL_TEXTURE_BUFFER);
     m_heightTex->bind();

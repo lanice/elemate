@@ -71,7 +71,7 @@ void BaseTile::initializeProgram()
 void BaseTile::createTerrainTypeTexture()
 {
     m_terrainTypeBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
-    m_terrainTypeBuffer->setStorage(m_terrainTypeData, GL_MAP_WRITE_BIT);
+    m_terrainTypeBuffer->setData(m_terrainTypeData, GL_DYNAMIC_DRAW);
 
     m_terrainTypeTex = new glow::Texture(GL_TEXTURE_BUFFER);
     m_terrainTypeTex->bind();
