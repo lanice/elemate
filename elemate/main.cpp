@@ -1,5 +1,5 @@
-// These includes cause the '[..] needs to have dll-interface [..]' warnings.
-// Seems it is still a problem? See https://github.com/hpicgs/glow/issues/14
+#include <fstream>
+
 #include <glow/Version.h>
 #include <glow/debugmessageoutput.h>
 #include <glow/logging.h>
@@ -72,6 +72,14 @@ void setCallbacks(GLFWwindow * window)
 
 int main()
 {
+    const std::string checkFile = "shader/flush.frag";
+    if (!std::ifstream(checkFile).good()) {
+        glow::fatal("Seems that Elemate is running in a wrong working directory.");
+        glow::fatal("(Cannot find %;)", checkFile);
+        fgetc(stdin);
+        return -1;
+    }
+
     if (!glfwInit()) {
         glow::fatal("Could not initialize glfw.");
         return -1;
