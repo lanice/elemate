@@ -9,7 +9,7 @@ set(META_VERSION_MINOR "0")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(PROJECT_NAME ${META_PROJECT_NAME})  
+set(PROJECT_NAME ${META_PROJECT_NAME})
 project(${PROJECT_NAME} C CXX)
 
 
@@ -21,6 +21,7 @@ if(OPTION_LIMIT_CONFIGS)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "Limited Configs" FORCE)
 endif()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(cmake/Custom.cmake)
 
@@ -51,21 +52,6 @@ else()
 endif()
 
 
-# SOURCES AND TARGET CONFIGURATION
-
-set(ELEMATE_SOURCE_GROUP "Source Files")
-set(ELEMATE_SHADER_GROUP "Shader Files")
-
-set(SOURCES)
-add_subdirectory(src)
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/src "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|\\\\.ui$|\\\\.inl$" 
-    ${ELEMATE_SOURCE_GROUP} ${SOURCES})
-
-set(SHADER)
-add_subdirectory(shader)
-source_group_by_path(${CMAKE_CURRENT_SOURCE_DIR}/shader "\\\\.frag$|\\\\.vert$|\\\\.geo$"
-    ${ELEMATE_SHADER_GROUP} ${SHADER})
-
 set( GLOW_DIR $ENV{GLOW_DIR} )
 if (GLOW_DIR)
     STRING(REGEX REPLACE "\\\\" "/" GLOW_DIR ${GLOW_DIR})
@@ -85,47 +71,32 @@ find_package( FMOD REQUIRED )
 find_package( ASSIMP REQUIRED )
 find_package( LUA REQUIRED )
 
+set(ELEMATE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libelemate)
+
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
+    ${ELEMATE_INCLUDE_DIR}
     SYSTEM ${GLOW_INCLUDE_DIR}
+    SYSTEM ${GLEW_INCLUDE_DIR}
     SYSTEM ${GLM_INCLUDE_DIR}
     SYSTEM ${GLFW_INCLUDE_DIR}
     SYSTEM ${PHYSX_INCLUDE_DIR}
     SYSTEM ${LUA_INCLUDE_DIR}
 )
 
-list(APPEND SOURCES ${SHADER})
-
-add_executable( ${PROJECT_NAME} ${SOURCES})
-
-
 # set c++ compiler options globally
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_RELEASE}" )
 set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_DEBUG}" )
 set ( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${DEFAULT_COMPILE_FLAGS} ${DEFAULT_COMPILE_FLAGS_RELWITHDEBINFO}" )
 
-set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    LINKER_LANGUAGE CXX
-    COMPILE_DEFINITIONS_DEBUG   "${DEFAULT_COMPILE_DEFS_DEBUG}"
-    COMPILE_DEFINITIONS_RELEASE "${DEFAULT_COMPILE_DEFS_RELEASE}"
-    COMPILE_DEFINITIONS_RELWITHDEBINFO "${DEFAULT_COMPILE_DEFS_RELWITHDEBINFO}"
-    #COMPILE_FLAGS               "${DEFAULT_COMPILE_FLAGS}"
-    LINK_FLAGS_DEBUG            "${DEFAULT_LINKER_FLAGS_DEBUG}"
-    LINK_FLAGS_RELEASE          "${DEFAULT_LINKER_FLAGS_RELEASE}"
-    LINK_FLAGS_RELWITHDEBINFO   "${DEFAULT_LINKER_FLAGS_RELWITHDEBINFO}"
-)
 
-config_project( ${PROJECT_NAME} OPENGL )
-config_project( ${PROJECT_NAME} GLEW )
-config_project( ${PROJECT_NAME} GLFW )
-config_project( ${PROJECT_NAME} GLOW )
-config_project( ${PROJECT_NAME} GLOW_UTILS )
-config_project( ${PROJECT_NAME} PHYSX )
-config_project( ${PROJECT_NAME} FMOD )
-config_project( ${PROJECT_NAME} ASSIMP )
-config_project( ${PROJECT_NAME} LUA )
+# SOURCES AND TARGET CONFIGURATION
 
-if(LINUX)
-    target_link_libraries( ${PROJECT_NAME} dl)
+add_subdirectory(shader)
+add_subdirectory(scripts)
+add_subdirectory(libelemate)
+add_subdirectory(elemate)
+
+option(ELEMATE_BUILD_TESTS "Set to ON to build elemate tests." ON)
+if(ELEMATE_BUILD_TESTS)
+	add_subdirectory(tests)
 endif()
