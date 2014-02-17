@@ -35,7 +35,7 @@ ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 , m_lua(new LuaWrapper())
 {
     m_lua->loadScript("scripts/collision.lua");
-    m_psa.registerLuaFunctions(m_lua);
+    m_psa.registerLuaFunctions(*m_lua);
 
     registerLuaFunctions();
 }

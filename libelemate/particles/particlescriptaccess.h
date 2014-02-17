@@ -40,7 +40,7 @@ public:
     /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
     void restoreGPUAccelerated();
 
-    void registerLuaFunctions(LuaWrapper * lua);
+    void registerLuaFunctions(LuaWrapper & lua);
 
     void checkCollisions(double deltaTime);
 

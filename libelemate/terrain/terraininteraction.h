@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include "terrainsettings.h"
@@ -74,7 +73,7 @@ public:
 
     static float normalDist(float x, float mean, float stddev);
 
-    void registerLuaFunctions(LuaWrapper * lua);
+    void registerLuaFunctions(LuaWrapper & lua);
 
     /** element name if the interaction element is not set and for out for range access */
     static const std::string s_defaultElementName;

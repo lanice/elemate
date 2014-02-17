@@ -266,7 +266,7 @@ const Terrain & TerrainInteraction::terrain() const
     return m_terrain;
 }
 
-void TerrainInteraction::registerLuaFunctions(LuaWrapper * lua)
+void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
 {
     std::function<float(float, float)> func0 = [=](float worldX, float worldZ)
     { return heightAt(worldX, worldZ); };
@@ -293,12 +293,12 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(std::string)> func7 = [=](std::string elementName)
     { setInteractElement(elementName); return 0; };
 
-    lua->Register("terrain_heightAt", func0);
-    lua->Register("terrain_isHeighestAt", func1);
-    lua->Register("terrain_changeHeight", func2);
-    lua->Register("terrain_dropElement", func3);
-    lua->Register("terrain_gatherElement", func4);
-    lua->Register("terrain_terrainHeightAt", func5);
-    lua->Register("terrain_heightGrab", func6);
-    lua->Register("setInteractElement", func7);
+    lua.Register("terrain_heightAt", func0);
+    lua.Register("terrain_isHeighestAt", func1);
+    lua.Register("terrain_changeHeight", func2);
+    lua.Register("terrain_dropElement", func3);
+    lua.Register("terrain_gatherElement", func4);
+    lua.Register("terrain_terrainHeightAt", func5);
+    lua.Register("terrain_heightGrab", func6);
+    lua.Register("setInteractElement", func7);
 }

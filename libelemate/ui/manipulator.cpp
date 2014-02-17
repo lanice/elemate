@@ -28,10 +28,10 @@ m_lua(new LuaWrapper())
 {
     registerLuaFunctions(m_lua);
 
-    ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
+    ParticleScriptAccess::instance().registerLuaFunctions(*m_lua);
     m_hand.registerLuaFunctions(m_lua);
     m_world.registerLuaFunctions(m_lua);
-    m_terrainInteractor->registerLuaFunctions(m_lua);
+    m_terrainInteractor->registerLuaFunctions(*m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
 }
