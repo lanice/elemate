@@ -22,7 +22,7 @@ m_navigation(navigation),
 m_camera(navigation.camera()),
 m_world(world),
 m_hand(*world.hand),
-m_terrainInteractor(std::make_shared<TerrainInteraction>(m_world.terrain, "bedrock")),
+m_terrainInteractor(std::make_shared<TerrainInteraction>("bedrock")),
 m_grabbedTerrain(false),
 m_lua(new LuaWrapper())
 {

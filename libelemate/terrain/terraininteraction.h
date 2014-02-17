@@ -13,7 +13,13 @@ class TerrainInteraction {
 public:
     /** Creates an interaction interface for the specified terrain.
       * @param interactElement select the element this instance works with */
-    TerrainInteraction(std::shared_ptr<Terrain>& terrain, const std::string & interactElement);
+    TerrainInteraction(Terrain & terrain, const std::string & interactElement);
+
+    /** Creates an interaction interface for the default terrain.
+      * @param interactElement select the element this instance works with */
+    TerrainInteraction(const std::string & interactElement);
+
+    static void setDefaultTerrain(Terrain & terrain);
 
     const std::string & interactElement() const;
     void setInteractElement(const std::string & elementName);
@@ -64,8 +70,7 @@ public:
     /** pulls the terrain at worldXZ, setting the height to the grabbed value */
     void heightPull(float worldX, float worldZ);
 
-    std::shared_ptr<const Terrain> terrain() const;
-    void setTerrain(std::shared_ptr<Terrain>& terrain);
+    const Terrain & terrain() const;
 
     static float normalDist(float x, float mean, float stddev);
 
@@ -75,7 +80,9 @@ public:
     static const std::string s_defaultElementName;
 
 private:
-    std::shared_ptr<Terrain> m_terrain;
+    static Terrain * s_defaultTerrain;
+
+    Terrain & m_terrain;
     /** the name of the element this instance currently works on */
     std::string m_interactElement;
     /** for internal usage: the terrain level that hold the configured interact element */
