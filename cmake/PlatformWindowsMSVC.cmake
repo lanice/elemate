@@ -96,7 +96,7 @@ set(DEFAULT_LINKER_FLAGS_DEBUG
 )
 
 set(DEFAULT_LINKER_FLAGS_RELEASE
-    "${WIN32_LINKER_FLAGS} /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO /NODEFAULTLIB:libcmt.lib"
+    "${WIN32_LINKER_FLAGS} /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:msvcrtd.lib"
     # OPT:REF      -> references: eliminate unreferenced data
     # OPT:ICF      -> enable comdat folding: remove redundant comdats
     # LTCG         -> link time code generation: use link time code generation
@@ -104,7 +104,7 @@ set(DEFAULT_LINKER_FLAGS_RELEASE
 )
 
 set(DEFAULT_LINKER_FLAGS_RELWITHDEBINFO
-    "${WIN32_LINKER_FLAGS} /DEBUG /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO /NODEFAULTLIB:libcmt.lib /ignore:4099"
+    "${WIN32_LINKER_FLAGS} /DEBUG /OPT:REF /LTCG /OPT:ICF /DELAY:UNLOAD /INCREMENTAL:NO /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:msvcrtd.lib /ignore:4099"
 )
 
 

@@ -15,7 +15,6 @@ set(LINUX_COMPILE_DEFS
 	LINUX	                  # Linux system
 	PIC		                  # Position-independent code
 	_REENTRANT                # Reentrant code
-	PX_CHECKED
 	PX_SUPPORT_VISUAL_DEBUGGER
 )
 
@@ -28,6 +27,7 @@ endif()
 
 set(DEFAULT_COMPILE_DEFS_DEBUG
     ${LINUX_COMPILE_DEFS}
+	PX_CHECKED
     _DEBUG	                  # Debug build
 )
 set(DEFAULT_COMPILE_DEFS_RELEASE

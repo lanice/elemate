@@ -34,19 +34,26 @@ set(PHYSX_LIB_SEARCH_DIR
 )
 
 set(PHYSX_LIBRARY "")
+set(PHYSX_LIBRARY_DEBUG "")
 
-
-set (PHYSX_LIBRARY_TYPE "CHECKED" CACHE STRING
-    ".. [emptystring], DEBUG, CHECKED, PROFILE")
 
 MACRO(ADD_PHYSX_LIBRARY LIBNAME)
+    # release libraries
     find_library( ${LIBNAME}_LIBRARY
         NAMES
-            ${LIBNAME}${PHYSX_LIBRARY_TYPE}
-            ${LIBNAME}${PHYSX_LIBRARY_TYPE}_x64
+            ${LIBNAME}
+            ${LIBNAME}_x64
         PATHS ${PHYSX_LIB_SEARCH_DIR}
     )
     set(PHYSX_LIBRARY ${PHYSX_LIBRARY} ${${LIBNAME}_LIBRARY})
+    # debug libraries
+    find_library( ${LIBNAME}_LIBRARY_DEBUG
+        NAMES
+            ${LIBNAME}CHECKED
+            ${LIBNAME}CHECKED_x64
+        PATHS ${PHYSX_LIB_SEARCH_DIR}
+    )
+    set(PHYSX_LIBRARY_DEBUG ${PHYSX_LIBRARY_DEBUG} ${${LIBNAME}_LIBRARY_DEBUG})
 ENDMACRO()
 
 if (WIN32)

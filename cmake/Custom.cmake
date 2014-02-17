@@ -73,9 +73,12 @@ macro( config_project PROJNAME LIBNAME )
     
     if( ${LIBNAME}_LIBRARY_DEBUG )
         message(STATUS "adding library: " ${LIBNAME} " (optimized/debug)")
-        target_link_libraries( ${PROJNAME}
-            optimized ${${LIBNAME}_LIBRARY}
-            debug   ${${LIBNAME}_LIBRARY_DEBUG})
+        foreach(LIB ${${LIBNAME}_LIBRARY})
+            target_link_libraries( ${PROJNAME} optimized ${LIB} )
+        endforeach()
+        foreach(LIB ${${LIBNAME}_LIBRARY_DEBUG})
+            target_link_libraries( ${PROJNAME} debug ${LIB} )
+        endforeach()
     else()
         message(STATUS "adding library: " ${LIBNAME} " (optimized only)")
         target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY})
