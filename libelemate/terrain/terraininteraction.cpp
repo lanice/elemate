@@ -300,5 +300,5 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
     lua.Register("terrain_gatherElement", func4);
     lua.Register("terrain_terrainHeightAt", func5);
     lua.Register("terrain_heightGrab", func6);
-    lua.Register("setInteractElement", func7);
+    lua.Register("terrain_setInteractElement", func7);
 }

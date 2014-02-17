@@ -8,6 +8,7 @@
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
 #include "lua/luawrapper.h"
+#include "terrain/terraininteraction.h"
 
 std::list<ParticleCollision::IntersectionBox> ParticleCollision::debug_intersectionBoxes;
 
@@ -33,9 +34,11 @@ void extractPointsInside(const std::vector<vec3> & points, const AxisAlignedBoun
 ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 : m_psa(psa)
 , m_lua(new LuaWrapper())
+, m_terrainInteraction(new TerrainInteraction("bedrock"))
 {
     m_lua->loadScript("scripts/collision.lua");
     m_psa.registerLuaFunctions(*m_lua);
+    m_terrainInteraction->registerLuaFunctions(*m_lua);
 
     registerLuaFunctions();
 }
@@ -43,6 +46,7 @@ ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 ParticleCollision::~ParticleCollision()
 {
     delete m_lua;
+    delete m_terrainInteraction;
 }
 
 void ParticleCollision::registerLuaFunctions()

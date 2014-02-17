@@ -14,6 +14,7 @@ namespace glowutils {
 class ParticleScriptAccess;
 class ParticleGroup;
 class LuaWrapper;
+class TerrainInteraction;
 
 class ParticleCollision
 {
@@ -34,6 +35,7 @@ public:
 protected:
     ParticleScriptAccess & m_psa;
     LuaWrapper * m_lua;
+    TerrainInteraction * m_terrainInteraction;
 
     /** Register my functions that can be called from lua.
       * If a relevant collision occurs, this class will call elementReaction() in lua. Lua functions called on this class

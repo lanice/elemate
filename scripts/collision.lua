@@ -49,6 +49,8 @@ function collisionWaterLava(waterGroup, lavaGroup)
     -- and later.. check that ratio between the two particles types, the release functions return a number of particles
     -- now create bedrock where lava was removed
     pc_createFromRemembered("bedrock")
+    terrain_setInteractElement("bedrock");
+    terrain_dropElement(collisionLlf[1], collisionLlf[3], 0.2);
 end
 
 function enlargeBox(llf, urb, delta)
