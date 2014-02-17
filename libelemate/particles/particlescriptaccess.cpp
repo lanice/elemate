@@ -95,11 +95,12 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType, u
 
 void ParticleScriptAccess::removeParticleGroup(const int id)
 {
-    m_worldNotifier->unregisterObserver(m_particleGroups.at(id));
+    ParticleGroup * group = m_particleGroups.at(id);
+    m_worldNotifier->unregisterObserver(group);
 
-    m_collisions->particleGroupDeleted(m_particleGroups.at(id)->elementName(), id);
+    m_collisions->particleGroupDeleted(group->elementName(), id);
 
-    delete m_particleGroups.at(id);
+    delete group;
     m_particleGroups.erase(id);
 }
 
@@ -110,8 +111,8 @@ void ParticleScriptAccess::clearParticleGroups()
         m_worldNotifier->unregisterObserver(it->second);
         delete it->second;
     }
-
-    m_particleGroups.erase(m_particleGroups.begin(), m_particleGroups.end());
+    m_collisions->clearParticleGroups();
+    m_particleGroups.clear();
 }
 
 void ParticleScriptAccess::setUpParticleGroup(const int id, const std::string & elementType)

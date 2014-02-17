@@ -63,9 +63,16 @@ void ParticleCollision::registerLuaFunctions()
     m_lua->Register("pc_createFromRemembered", func4);
 }
 
-void ParticleCollision::particleGroupDeleted(const std::string & elementName, int /*id*/)
+void ParticleCollision::particleGroupDeleted(const std::string & elementName, int id)
 {
-    m_particleGroupIds.erase(elementName);
+    auto it = m_particleGroupIds.find(elementName);
+    if (it != m_particleGroupIds.end() && it->second == id)
+        m_particleGroupIds.erase(elementName);
+}
+
+void ParticleCollision::clearParticleGroups()
+{
+    m_particleGroupIds.clear();
 }
 
 void ParticleCollision::performCheck()

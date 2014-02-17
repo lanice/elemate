@@ -29,6 +29,7 @@ public:
     static bool checkBoundingBoxCollision(const glowutils::AxisAlignedBoundingBox & box1, const glowutils::AxisAlignedBoundingBox & box2, glowutils::AxisAlignedBoundingBox * intersectVolume = nullptr);
 
     void particleGroupDeleted(const std::string & elementName, int id);
+    void clearParticleGroups();
 
 protected:
     ParticleScriptAccess & m_psa;
