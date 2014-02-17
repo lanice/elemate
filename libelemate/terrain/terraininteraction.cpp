@@ -1,4 +1,4 @@
-#include "terraininteractor.h"
+#include "terraininteraction.h"
 
 #include <algorithm>
 #include <cmath>
@@ -25,34 +25,34 @@
 
 using namespace physx;
 
-const std::string TerrainInteractor::s_defaultElementName = "default";
+const std::string TerrainInteraction::s_defaultElementName = "default";
 
-float TerrainInteractor::normalDist(float x, float mean, float stddev)
+float TerrainInteraction::normalDist(float x, float mean, float stddev)
 {
     return  // n(x) = n(x) = 1 / (stddev*sqrt(2*pi)) * exp( - (x-mean)^2 / (2*stddev^2))
         1.0f / (stddev * std::sqrt(2.0f * glm::pi<float>()))
         * std::exp(-(x - mean) * (x - mean) / (2.0f * stddev * stddev));
 }
 
-TerrainInteractor::TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactElement)
+TerrainInteraction::TerrainInteraction(std::shared_ptr<Terrain>& terrain, const std::string & interactElement)
 : m_terrain(terrain)
 , m_interactElement(interactElement)
 , m_interactLevel(levelForElement(interactElement))
 {
 }
 
-const std::string & TerrainInteractor::interactElement() const
+const std::string & TerrainInteraction::interactElement() const
 {
     return m_interactElement;
 }
 
-void TerrainInteractor::setInteractElement(const std::string & elementName)
+void TerrainInteraction::setInteractElement(const std::string & elementName)
 {
     m_interactElement = elementName;
     m_interactLevel = levelForElement(elementName);
 }
 
-const std::string & TerrainInteractor::topmostElementAt(float worldX, float worldZ) const
+const std::string & TerrainInteraction::topmostElementAt(float worldX, float worldZ) const
 {
     TerrainLevel topmostLevel = m_terrain->heighestLevelAt(worldX, worldZ);
 
@@ -67,13 +67,13 @@ const std::string & TerrainInteractor::topmostElementAt(float worldX, float worl
     return tile->elementAt(row, column);
 }
 
-const std::string & TerrainInteractor::useTopmostElementAt(float worldX, float worldZ)
+const std::string & TerrainInteraction::useTopmostElementAt(float worldX, float worldZ)
 {
     setInteractElement(topmostElementAt(worldX, worldZ));
     return m_interactElement;
 }
 
-const std::string & TerrainInteractor::solidElementAt(float worldX, float worldZ) const
+const std::string & TerrainInteraction::solidElementAt(float worldX, float worldZ) const
 {
     std::shared_ptr<TerrainTile> tile = nullptr;
     unsigned int row, column;
@@ -86,18 +86,18 @@ const std::string & TerrainInteractor::solidElementAt(float worldX, float worldZ
     return tile->elementAt(row, column);
 }
 
-const std::string & TerrainInteractor::useSolidElementAt(float worldX, float worldZ)
+const std::string & TerrainInteraction::useSolidElementAt(float worldX, float worldZ)
 {
     setInteractElement(solidElementAt(worldX, worldZ));
     return m_interactElement;
 }
 
-float TerrainInteractor::heightAt(float worldX, float worldZ) const
+float TerrainInteraction::heightAt(float worldX, float worldZ) const
 {
     return m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }
 
-bool TerrainInteractor::isHeighestAt(float worldX, float worldZ) const
+bool TerrainInteraction::isHeighestAt(float worldX, float worldZ) const
 {
     if (TerrainLevels.size() == 1)
         return true;
@@ -112,34 +112,34 @@ bool TerrainInteractor::isHeighestAt(float worldX, float worldZ) const
     return othersMaxHeight < myHeight;
 }
 
-float TerrainInteractor::dropElement(float worldX, float worldZ, float heightDelta)
+float TerrainInteraction::dropElement(float worldX, float worldZ, float heightDelta)
 {
     assert(heightDelta > 0);
     return changeLevelHeight(worldX, worldZ, m_interactLevel, heightDelta, true);
 }
 
-float TerrainInteractor::gatherElement(float worldX, float worldZ, float heightDelta)
+float TerrainInteraction::gatherElement(float worldX, float worldZ, float heightDelta)
 {
     assert(heightDelta > 0);
     return changeLevelHeight(worldX, worldZ, m_interactLevel, -heightDelta, false);
 }
 
-float TerrainInteractor::changeHeight(float worldX, float worldZ, float delta)
+float TerrainInteraction::changeHeight(float worldX, float worldZ, float delta)
 {
     return changeLevelHeight(worldX, worldZ, m_interactLevel, delta, false);
 }
 
-float TerrainInteractor::terrainHeightAt(float worldX, float worldZ) const
+float TerrainInteraction::terrainHeightAt(float worldX, float worldZ) const
 {
     return m_terrain->heightTotalAt(worldX, worldZ);
 }
 
-float TerrainInteractor::levelHeightAt(float worldX, float worldZ, TerrainLevel level) const
+float TerrainInteraction::levelHeightAt(float worldX, float worldZ, TerrainLevel level) const
 {
     return m_terrain->heightAt(worldX, worldZ, level);
 }
 
-float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value, bool setToInteractionElement)
+float TerrainInteraction::setLevelHeight(float worldX, float worldZ, TerrainLevel level, float value, bool setToInteractionElement)
 {
     std::shared_ptr<TerrainTile> tile = nullptr;
     unsigned int row, column;
@@ -152,7 +152,7 @@ float TerrainInteractor::setLevelHeight(float worldX, float worldZ, TerrainLevel
     return setHeight(*tile.get(), row, column, value, setToInteractionElement);
 }
 
-float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, bool setToInteractionElement)
+float TerrainInteraction::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, bool setToInteractionElement)
 {
     std::shared_ptr<TerrainTile> tile;
     unsigned int row, column;
@@ -167,7 +167,7 @@ float TerrainInteractor::changeLevelHeight(float worldX, float worldZ, TerrainLe
     return setHeight(*tile.get(), row, column, height + delta, setToInteractionElement);
 }
 
-float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
+float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
 {
     float stddev = 7.0f; // TODO: script this, element specific value
     assert(stddev > 0);
@@ -238,29 +238,29 @@ float TerrainInteractor::setHeight(TerrainTile & tile, unsigned row, unsigned co
     return value;
 }
 
-float TerrainInteractor::heightGrab(float worldX, float worldZ)
+float TerrainInteraction::heightGrab(float worldX, float worldZ)
 {
     setInteractElement(solidElementAt(worldX, worldZ));
     m_grabbedLevel = m_interactLevel;
     return m_grabbedHeight = m_terrain->heightAt(worldX, worldZ, m_interactLevel);
 }
 
-void TerrainInteractor::heightPull(float worldX, float worldZ)
+void TerrainInteraction::heightPull(float worldX, float worldZ)
 {
     setLevelHeight(worldX, worldZ, m_grabbedLevel, m_grabbedHeight, true);
 }
 
-std::shared_ptr<const Terrain> TerrainInteractor::terrain() const
+std::shared_ptr<const Terrain> TerrainInteraction::terrain() const
 {
     return m_terrain;
 }
 
-void TerrainInteractor::setTerrain(std::shared_ptr<Terrain>& terrain)
+void TerrainInteraction::setTerrain(std::shared_ptr<Terrain>& terrain)
 {
     m_terrain = terrain;
 }
 
-void TerrainInteractor::registerLuaFunctions(LuaWrapper * lua)
+void TerrainInteraction::registerLuaFunctions(LuaWrapper * lua)
 {
     std::function<float(float, float)> func0 = [=](float worldX, float worldZ)
     { return heightAt(worldX, worldZ); };

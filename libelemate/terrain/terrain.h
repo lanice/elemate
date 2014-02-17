@@ -55,7 +55,7 @@ public:
 
     friend class TerrainGenerator;
     friend class TerrainTile;
-    friend class TerrainInteractor;
+    friend class TerrainInteraction;
 
 protected:
     /** Distance from camera to farthest visible point. The rendered terrain size depends on this parameter.

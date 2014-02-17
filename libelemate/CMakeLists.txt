@@ -54,8 +54,8 @@ set(SOURCES
     terrain/terrainshadows.cpp
     terrain/terrainsettings.h
     terrain/terrainsettings.cpp
-    terrain/terraininteractor.h
-    terrain/terraininteractor.cpp
+    terrain/terraininteraction.h
+    terrain/terraininteraction.cpp
     terrain/terraintile.h
     terrain/terraintile.cpp
     terrain/basetile.h

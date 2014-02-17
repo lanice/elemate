@@ -9,11 +9,11 @@ class Terrain;
 class TerrainTile;
 class LuaWrapper;
 
-class TerrainInteractor {
+class TerrainInteraction {
 public:
-    /** Creates an Interactor for the specified terrain.
-      * @param interactElement select the element this interactor works with */
-    TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactElement);
+    /** Creates an interaction interface for the specified terrain.
+      * @param interactElement select the element this instance works with */
+    TerrainInteraction(std::shared_ptr<Terrain>& terrain, const std::string & interactElement);
 
     const std::string & interactElement() const;
     void setInteractElement(const std::string & elementName);
@@ -30,7 +30,7 @@ public:
       * @return the name of this element */
     const std::string & useSolidElementAt(float worldX, float worldZ);
 
-    /** @return the height of the element this interactor is configured to work with */
+    /** @return the height of the element this instance is configured to work with */
     float heightAt(float worldX, float worldZ) const;
     /** @return whether the current interact element's level is the highest at the world position, meaning the one the player can interact with. */
     bool isHeighestAt(float worldX, float worldZ) const;
@@ -76,7 +76,7 @@ public:
 
 private:
     std::shared_ptr<Terrain> m_terrain;
-    /** the name of the element this interactor currently works on */
+    /** the name of the element this instance currently works on */
     std::string m_interactElement;
     /** for internal usage: the terrain level that hold the configured interact element */
     TerrainLevel m_interactLevel;
@@ -87,7 +87,7 @@ private:
     float m_grabbedHeight;
 
 public:
-    TerrainInteractor(TerrainInteractor&) = delete;
-    void operator=(TerrainInteractor&) = delete;
-    TerrainInteractor() = delete;
+    TerrainInteraction(TerrainInteraction&) = delete;
+    void operator=(TerrainInteraction&) = delete;
+    TerrainInteraction() = delete;
 };
