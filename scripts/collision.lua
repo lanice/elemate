@@ -41,7 +41,7 @@ function collisionWaterLava(waterGroup, lavaGroup)
     -- let the worker forget what happened before
     pc_forgetOldParticles()
     
-    -- implement: pc_enlargeBox(llf, urb, delta)    
+    enlargeBox(collisionLlf, collisionUrb, 0.2)    
     -- let it remember our deleted lava particles
     pc_releaseRememberParticles(lavaGroup, collisionLlf, collisionUrb)
     -- forget about water - it should become steam later
@@ -49,4 +49,13 @@ function collisionWaterLava(waterGroup, lavaGroup)
     -- and later.. check that ratio between the two particles types, the release functions return a number of particles
     -- now create bedrock where lava was removed
     pc_createFromRemembered("bedrock")
+end
+
+function enlargeBox(llf, urb, delta)
+    llf[1] = llf[1] - delta
+    llf[2] = llf[2] - delta
+    llf[3] = llf[3] - delta
+    urb[1] = urb[1] + delta
+    urb[2] = urb[2] + delta
+    urb[3] = urb[3] + delta
 end
