@@ -160,14 +160,14 @@ void ParticleStep::draw(const CameraEx & camera)
 void ParticleStep::resize(int width, int height)
 {
     m_elementIdTex->image2D(0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
-    m_depthTex->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_depthTex->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
     m_particleSceneFbo->printStatus(true);
     assert(m_particleSceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_postTexA->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
-    m_postTexB->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
+    m_postTexA->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+    m_postTexB->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
 
-    m_normalsTex->image2D(0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+    m_normalsTex->image2D(0, GL_RGB16, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT, nullptr);
 
     for (PostProcess & process : m_processes) {
         process.m_fbo->printStatus(true);
