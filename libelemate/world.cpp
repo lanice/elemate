@@ -79,8 +79,8 @@ void World::togglePause()
     for (const auto sound : m_sounds)
         m_soundManager->setPaused(sound, !m_time->isRunning());
 
-	for (auto observer : m_particleGroupObservers)
-		observer->updateSounds(!m_time->isRunning());
+    for (auto observer : m_particleGroupObservers)
+        observer->updateSounds(!m_time->isRunning());
 }
 
 time_t World::getTime()const{
@@ -121,7 +121,7 @@ void World::updateVisuals()
 void World::registerObserver(ParticleGroup * observer)
 {
     m_particleGroupObservers.insert(observer);
-	observer->passSoundManager(m_soundManager);
+    observer->passSoundManager(m_soundManager);
 }
 
 void World::unregisterObserver(ParticleGroup * observer)

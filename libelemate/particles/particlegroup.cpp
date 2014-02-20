@@ -220,7 +220,7 @@ void ParticleGroup::emit(const float ratio, const glm::vec3 & position, const gl
     m_emitDirection = glm::normalize(direction);
     m_emitting = true;
 
-	startSound();
+    startSound();
 }
 
 void ParticleGroup::stopEmit()
@@ -228,7 +228,7 @@ void ParticleGroup::stopEmit()
     m_emitting = false;
     m_timeSinceLastEmit = 0.0;
 
-	stopSound();
+    stopSound();
 }
 
 void ParticleGroup::updateEmitting(const double & delta)
@@ -256,11 +256,11 @@ void ParticleGroup::updateEmitting(const double & delta)
         }
     }
 
-	FMOD_VECTOR soundPos;
-	soundPos.x = m_emitPosition.x;
-	soundPos.y = m_emitPosition.y;
-	soundPos.z = m_emitPosition.z;
-	m_soundManager->setSoundPos(m_soundChannel, soundPos);
+    FMOD_VECTOR soundPos;
+    soundPos.x = m_emitPosition.x;
+    soundPos.y = m_emitPosition.y;
+    soundPos.z = m_emitPosition.z;
+    m_soundManager->setSoundPos(m_soundChannel, soundPos);
 }
 
 glm::vec3 vec3(const physx::PxVec3 & vec3)
@@ -426,32 +426,32 @@ void ParticleGroup::particlePositionsIndicesInVolume(const glowutils::AxisAligne
 
 void ParticleGroup::passSoundManager(std::shared_ptr<SoundManager> sound_manager)
 {
-	m_soundManager = sound_manager;
-	m_soundChannel = m_soundManager->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
-	m_soundManager->setVolume(m_soundChannel, 0.15f);
+    m_soundManager = sound_manager;
+    m_soundChannel = m_soundManager->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
+    m_soundManager->setVolume(m_soundChannel, 0.15f);
 }
 
 void ParticleGroup::updateSounds(bool isWorldPaused)
 {
-	if (isWorldPaused)
-	{
-		stopSound();
-		m_wasSoundPlaying = true;
-	}
-	else if (m_wasSoundPlaying)
-	{
-		startSound();
-	}
+    if (isWorldPaused)
+    {
+        stopSound();
+        m_wasSoundPlaying = true;
+    }
+    else if (m_wasSoundPlaying)
+    {
+        startSound();
+    }
 }
 
 void ParticleGroup::startSound()
 {
-	m_soundManager->setPaused(m_soundChannel, false);
-	m_wasSoundPlaying = true;
+    m_soundManager->setPaused(m_soundChannel, false);
+    m_wasSoundPlaying = true;
 }
 
 void ParticleGroup::stopSound()
 {
-	m_soundManager->setPaused(m_soundChannel, true);
-	m_wasSoundPlaying = false;
+    m_soundManager->setPaused(m_soundChannel, true);
+    m_wasSoundPlaying = false;
 }
