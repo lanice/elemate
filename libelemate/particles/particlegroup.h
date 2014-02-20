@@ -66,6 +66,7 @@ public:
     /** release all particles that are inside the bounding box
       * @return the number of particles that was deleted. */
     uint32_t releaseParticles(const glowutils::AxisAlignedBoundingBox & boundingBox);
+    /** Release particles that are inside the bounding box and append their positions to the releasedPositions vector. */
     void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions);
 
     /** Emit particles with ratio as particles per second. */
@@ -76,8 +77,11 @@ public:
       * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
       * This should only be called while the physics scene simulation is not running! */
     void particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const;
-    /** get the indices of the particles that are inside the bounding box */
+    /** Get the indexes of the particles that are inside the bounding box.
+      * This doesn't clear the particleIndicies container, if it contained any elements before. */
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
+    /** Get the positions and indexes of the particles that are inside the bounding box.
+      * This doesn't clear the referenced containers, if they contained any elements before. */
     void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
 
     /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */

@@ -95,11 +95,12 @@ int ParticleScriptAccess::createParticleGroup(const std::string & elementType, u
 
 void ParticleScriptAccess::removeParticleGroup(const int id)
 {
-    m_worldNotifier->unregisterObserver(m_particleGroups.at(id));
+    ParticleGroup * group = m_particleGroups.at(id);
+    m_worldNotifier->unregisterObserver(group);
 
-    m_collisions->particleGroupDeleted(m_particleGroups.at(id)->elementName(), id);
+    m_collisions->particleGroupDeleted(group->elementName(), id);
 
-    delete m_particleGroups.at(id);
+    delete group;
     m_particleGroups.erase(id);
 }
 
@@ -110,8 +111,8 @@ void ParticleScriptAccess::clearParticleGroups()
         m_worldNotifier->unregisterObserver(it->second);
         delete it->second;
     }
-
-    m_particleGroups.erase(m_particleGroups.begin(), m_particleGroups.end());
+    m_collisions->clearParticleGroups();
+    m_particleGroups.clear();
 }
 
 void ParticleScriptAccess::setUpParticleGroup(const int id, const std::string & elementType)
@@ -158,7 +159,7 @@ void ParticleScriptAccess::restoreGPUAccelerated()
     m_gpuParticlesPauseFlags = 0x00;
 }
 
-void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
+void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
 {
     std::function<int(std::string, unsigned int)> func0 = [=] (std::string elementType, unsigned int maxParticles)
     { return createParticleGroup(elementType, maxParticles); };
@@ -187,15 +188,15 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(int)> func5a = [=] (int id)
     { return nextParticleGroup(id); };
 
-    lua->Register("psa_createParticleGroup", func0);
-    lua->Register("psa_removeParticleGroup", func0a);
-    lua->Register("psa_clearParticleGroups", func0b);
-    lua->Register("psa_createParticle", func1);
-    lua->Register("psa_emit", func2);
-    lua->Register("psa_stopEmit", func3);
-    lua->Register("psa_numParticleGroups", func4);
-    lua->Register("psa_elementAtId", func5);
-    lua->Register("psa_nextParticleGroup", func5a);
+    lua.Register("psa_createParticleGroup", func0);
+    lua.Register("psa_removeParticleGroup", func0a);
+    lua.Register("psa_clearParticleGroups", func0b);
+    lua.Register("psa_createParticle", func1);
+    lua.Register("psa_emit", func2);
+    lua.Register("psa_stopEmit", func3);
+    lua.Register("psa_numParticleGroups", func4);
+    lua.Register("psa_elementAtId", func5);
+    lua.Register("psa_nextParticleGroup", func5a);
 
     std::function<int(int, float)> func6 = [=] (int id, float maxMotionDistance)
     { setMaxMotionDistance(id, maxMotionDistance); return 0; };
@@ -223,18 +224,18 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(int, float)> func17 = [=] (int id, float stiffness)
     { setStiffness(id, stiffness); return 0; };
 
-    lua->Register("psa_setMaxMotionDistance", func6);
-    lua->Register("psa_setGridSize", func7);
-    lua->Register("psa_setRestOffset", func8);
-    lua->Register("psa_setContactOffset", func9);
-    lua->Register("psa_setRestParticleDistance", func10);
-    lua->Register("psa_setRestitution", func11);
-    lua->Register("psa_setDynamicFriction", func12);
-    lua->Register("psa_setStaticFriction", func13);
-    lua->Register("psa_setDamping", func14);
-    lua->Register("psa_setParticleMass", func15);
-    lua->Register("psa_setViscosity", func16);
-    lua->Register("psa_setStiffness", func17);
+    lua.Register("psa_setMaxMotionDistance", func6);
+    lua.Register("psa_setGridSize", func7);
+    lua.Register("psa_setRestOffset", func8);
+    lua.Register("psa_setContactOffset", func9);
+    lua.Register("psa_setRestParticleDistance", func10);
+    lua.Register("psa_setRestitution", func11);
+    lua.Register("psa_setDynamicFriction", func12);
+    lua.Register("psa_setStaticFriction", func13);
+    lua.Register("psa_setDamping", func14);
+    lua.Register("psa_setParticleMass", func15);
+    lua.Register("psa_setViscosity", func16);
+    lua.Register("psa_setStiffness", func17);
 
     std::function<float(int)> func18 = [=] (int id)
     { return maxMotionDistance(id); };
@@ -261,18 +262,18 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<float(int)> func29 = [=] (int id)
     { return stiffness(id); };
 
-    lua->Register("psa_maxMotionDistance", func18);
-    lua->Register("psa_gridSize", func19);
-    lua->Register("psa_restOffset", func20);
-    lua->Register("psa_contactOffset", func21);
-    lua->Register("psa_restParticleDistance", func22);
-    lua->Register("psa_restitution", func23);
-    lua->Register("psa_dynamicFriction", func24);
-    lua->Register("psa_staticFriction", func25);
-    lua->Register("psa_damping", func26);
-    lua->Register("psa_particleMass", func27);
-    lua->Register("psa_viscosity", func28);
-    lua->Register("psa_stiffness", func29);
+    lua.Register("psa_maxMotionDistance", func18);
+    lua.Register("psa_gridSize", func19);
+    lua.Register("psa_restOffset", func20);
+    lua.Register("psa_contactOffset", func21);
+    lua.Register("psa_restParticleDistance", func22);
+    lua.Register("psa_restitution", func23);
+    lua.Register("psa_dynamicFriction", func24);
+    lua.Register("psa_staticFriction", func25);
+    lua.Register("psa_damping", func26);
+    lua.Register("psa_particleMass", func27);
+    lua.Register("psa_viscosity", func28);
+    lua.Register("psa_stiffness", func29);
 
 
     std::function<int(int, float, float, float, float, float)> func30 = [=](int id, float a, float b, float c, float d, float e)
@@ -281,8 +282,8 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper * lua)
     std::function<int(int, float, float, float, float, float, float, float)> func31 = [=](int id, float a, float b, float c, float d, float e, float f, float g)
     { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
 
-    lua->Register("psa_setImmutableProperties", func30);
-    lua->Register("psa_setMutableProperties", func31);
+    lua.Register("psa_setImmutableProperties", func30);
+    lua.Register("psa_setMutableProperties", func31);
 }
 
 void ParticleScriptAccess::createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)

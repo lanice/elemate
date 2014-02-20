@@ -15,6 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "terraintile.h"
+#include "terraininteraction.h"
 
 Terrain::Terrain(const TerrainSettings & settings)
 : ShadowingDrawable()
@@ -22,6 +23,7 @@ Terrain::Terrain(const TerrainSettings & settings)
 , m_drawLevels(TerrainLevels)
 , m_viewRange(0.0f)
 {
+    TerrainInteraction::setDefaultTerrain(*this);
     m_boudingBox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
     m_boudingBox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
 }
