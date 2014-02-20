@@ -181,7 +181,7 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
 #ifdef PX_WINDOWS
     if (PhysicsWrapper::physxGpuAvailable())
-        PxParticleGpu::createHeightFieldMirror(*pxHeightField, *PhysicsWrapper::getInstance()->cudaContextManager());
+        PxParticleGpu::createHeightFieldMirror(*pxHeightField, *PhysicsWrapper::instance()->cudaContextManager());
 #endif
 
     delete[] hfSamples;
@@ -357,7 +357,7 @@ void TerrainTile::updatePxHeight()
     descM.convexEdgeThreshold = hf->getConvexEdgeThreshold();
     descM.flags = hf->getFlags();
 
-    PhysicsWrapper::getInstance()->pauseGPUAcceleration();
+    PhysicsWrapper::instance()->pauseGPUAcceleration();
 
     bool success = hf->modifySamples(m_pxUpdateBox.minColumn, m_pxUpdateBox.minRow, descM);
     assert(success);
@@ -374,12 +374,12 @@ void TerrainTile::updatePxHeight()
     m_pxShape->setGeometry(newGeometry);
     pxScenePtrs[0]->unlockWrite();
 
-    PhysicsWrapper::getInstance()->restoreGPUAccelerated();
+    PhysicsWrapper::instance()->restoreGPUAccelerated();
 
 #ifdef PX_WINDOWS
-    if (PhysicsWrapper::getInstance()->physxGpuAvailable()) {
+    if (PhysicsWrapper::instance()->physxGpuAvailable()) {
         PxParticleGpu::releaseHeightFieldMirror(*hf);
-        PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
+        PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::instance()->cudaContextManager());
     }
 #endif
 

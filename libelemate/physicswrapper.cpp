@@ -22,6 +22,7 @@ PhysicsWrapper::PhysicsWrapper()
 , m_scene(nullptr)
 , m_physxGpuAvailable(checkPhysxGpuAvailable())
 , m_cudaContextManager(nullptr)
+, m_debuggerConnection(nullptr)
 , m_gpuParticles(false)
 //m_profile_zone_manager(nullptr)
 {
@@ -35,6 +36,9 @@ PhysicsWrapper::PhysicsWrapper()
 PhysicsWrapper::~PhysicsWrapper()
 {
     s_instance = nullptr;
+
+    if (m_debuggerConnection)
+        m_debuggerConnection->release();
 
     Elements::clear();
 
@@ -66,10 +70,10 @@ bool PhysicsWrapper::checkPhysxGpuAvailable()
 
 bool PhysicsWrapper::physxGpuAvailable()
 {
-    return getInstance()->m_physxGpuAvailable;
+    return instance()->m_physxGpuAvailable;
 }
 
-PhysicsWrapper * PhysicsWrapper::getInstance()
+PhysicsWrapper * PhysicsWrapper::instance()
 {
     assert(s_instance);
     return s_instance;
@@ -156,6 +160,34 @@ void PhysicsWrapper::initializeScene(){
 void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
     scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
+
+void PhysicsWrapper::connectVisualDebugger()
+{
+    if (m_debuggerConnection)
+        m_debuggerConnection->release();
+
+    if (m_physics->getPvdConnectionManager() == NULL) {
+        glow::warning("Physx visual debugger not available.");
+        return;
+    }
+
+    glow::info("trying to connect to physx visual debugger...");
+    const char*     pvd_host_ip = "127.0.0.1";  // IP of the PC which is running PVD
+    int             port = 5425;   // TCP port to connect to, where PVD is listening
+    unsigned int    timeout = 100; // timeout in milliseconds to wait for PVD to respond,
+                                   // consoles and remote PCs need a higher timeout.
+    physx::PxVisualDebuggerConnectionFlags connectionFlags = physx::PxVisualDebuggerExt::getAllConnectionFlags();
+
+    // and now try to connect
+    m_debuggerConnection = physx::PxVisualDebuggerExt::createConnection(m_physics->getPvdConnectionManager(),
+        pvd_host_ip, port, timeout, connectionFlags);
+
+    if (m_debuggerConnection)
+        glow::info("   ... success!");
+    else
+        glow::warning("Could not connected to the PVD. Is the application running and listening on 127.0.0.1:5425?");
+}
+
 
 void PhysicsWrapper::fatalError(std::string error_message){
     glow::fatal("PhysX Error occured:\n%;\nPress Enter to close the Application.", error_message);

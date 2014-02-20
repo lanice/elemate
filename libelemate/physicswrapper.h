@@ -20,6 +20,7 @@ namespace physx {
     class PxActor;
     class PxRigidStatic;
     class PxCudaContextManager;
+    namespace debugger { namespace comm { class PvdConnection; } }
 }
 
 
@@ -42,7 +43,7 @@ public:
     ~PhysicsWrapper();
 
     /** return the current PhysicsWrapper object */
-    static PhysicsWrapper * getInstance();
+    static PhysicsWrapper * instance();
 
     /** Proceeds with simulation for amount of given time delta. */
     void step(double delta);
@@ -65,6 +66,9 @@ public:
     void restoreGPUAccelerated();
 
     static bool physxGpuAvailable();
+
+    /** try to connect to the physx visual debugger, if available. */
+    void connectVisualDebugger();
 
 protected:
     /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
@@ -94,6 +98,7 @@ protected:
     //physx::PxCooking*                               m_cooking;
     const bool                                      m_physxGpuAvailable;
     physx::PxCudaContextManager*                    m_cudaContextManager;
+    physx::debugger::comm::PvdConnection *          m_debuggerConnection;
 
     bool                                            m_gpuParticles;
     
