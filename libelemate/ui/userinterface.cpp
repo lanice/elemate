@@ -98,8 +98,6 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Strg halten und scrollen zum Kippen der Kamera");
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
-
-   
 }
 
 void UserInterface::draw()
