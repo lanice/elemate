@@ -56,6 +56,9 @@ local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
 end
 
 function updateHandPosition( posX, posY, posZ )
+    if posY > 15 then
+        achievement_unlock("Raise your hand")
+    end
     emitParameters[3] = posX
     emitParameters[4] = posY
     emitParameters[5] = posZ

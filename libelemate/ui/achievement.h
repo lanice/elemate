@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rendering/string_rendering/StringDrawer.h"
 #include "glow/ref_ptr.h"
 #include "glm/glm.hpp"
 
@@ -11,7 +10,9 @@
 namespace glow{
     class VertexArrayObject;
     class Program;
+    class Texture;
 }
+class StringDrawer;
 
 #include <string>
 
@@ -26,7 +27,7 @@ public:
 
     void initialize();
     void update();
-    void draw();
+    void draw(StringDrawer& stringDrawer);
     bool wasDrawn()const;
     void resize(int width, int height);
 
@@ -45,8 +46,6 @@ protected:
     bool        m_unlocked;
     bool        m_drawn;
     std::string m_picture;
-
-    StringDrawer m_stringDrawer;
 
     glow::ref_ptr<glow::VertexArrayObject>  m_vao;
     glow::ref_ptr<glow::Program>            m_program;

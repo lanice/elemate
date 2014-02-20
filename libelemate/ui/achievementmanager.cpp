@@ -9,6 +9,7 @@ std::unique_ptr<AchievementManager> AchievementManager::m_instance;
 
 AchievementManager::AchievementManager()
 {
+    m_stringDrawer.initialize();
 }
 
 AchievementManager::~AchievementManager()
@@ -54,10 +55,12 @@ void AchievementManager::unlockAchievement(const std::string& title)
 
 void AchievementManager::drawAchievements()
 {
-    while (!m_unlocked.empty() && m_unlocked.begin()->second->wasDrawn())
+    while (!m_unlocked.empty() && m_unlocked.begin()->second->wasDrawn()){
+        delete m_unlocked.begin()->second;
         m_unlocked.erase(m_unlocked.begin());
+    }
     if (!m_unlocked.empty())
-        m_unlocked.begin()->second->draw();
+        m_unlocked.begin()->second->draw(m_stringDrawer);
 }
 
 void AchievementManager::resizeAchievements(int width, int height)
@@ -66,6 +69,7 @@ void AchievementManager::resizeAchievements(int width, int height)
         achievement.second->resize(width, height);
     for (auto& achievement : m_locked)
         achievement.second->resize(width, height);
+    m_stringDrawer.resize(width, height);
 }
 
 void AchievementManager::registerLuaFunctions(LuaWrapper * lua)

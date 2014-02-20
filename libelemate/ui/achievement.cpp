@@ -10,6 +10,7 @@
 #include <glowutils/global.h>
 
 #include "io/imagereader.h"
+#include "rendering/string_rendering/StringDrawer.h"
 
 
 const float Achievement::ACHIEVEMENT_DISPLAY_TIME = 1;
@@ -29,7 +30,6 @@ void Achievement::initialize()
 {
     const int TEXTURE_SIZE = 256;
     
-    m_stringDrawer.initialize();
     std::vector<glm::vec2> points({
         glm::vec2(+1.f, -1.f)
         , glm::vec2(+1.f, +1.f)
@@ -73,7 +73,7 @@ void Achievement::initialize()
     m_texture->unbind();
 }
 
-void Achievement::draw()
+void Achievement::draw(StringDrawer& stringDrawer)
 {
     if (!m_unlocked)
         return;
@@ -94,7 +94,7 @@ void Achievement::draw()
 
     m_texture->unbindActive(GL_TEXTURE0);
     float pos = 0.9f + m_timeMod;
-    m_stringDrawer.paint(m_title,
+    stringDrawer.paint(m_title,
         glm::mat4(0.5, 0, 0, 0,
         0, 0.5, 0, 0,
         0, 0, 0.5, 0,
@@ -103,7 +103,7 @@ void Achievement::draw()
 
     for (auto& line : splitText(m_text,25))
     {
-        m_stringDrawer.paint(line,
+        stringDrawer.paint(line,
             glm::mat4(0.25, 0, 0, 0,
             0, 0.25, 0, 0,
             0, 0, 0.25, 0,
@@ -185,7 +185,6 @@ std::string Achievement::text() const
 void Achievement::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
-    m_stringDrawer.resize(width, height);
 }
 
 bool Achievement::wasDrawn() const

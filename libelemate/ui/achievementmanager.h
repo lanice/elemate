@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <string>
 
+#include <rendering/string_rendering/StringDrawer.h>
+
 class Achievement;
 class LuaWrapper;
 
@@ -27,6 +29,8 @@ protected:
     
     std::unordered_map<std::string, Achievement*> m_locked;
     std::unordered_map<std::string, Achievement*> m_unlocked;
+
+    StringDrawer m_stringDrawer;
 
     AchievementManager();
 
