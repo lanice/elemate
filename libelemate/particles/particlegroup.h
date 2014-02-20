@@ -16,7 +16,6 @@ namespace physx {
 }
 namespace glowutils { class AxisAlignedBoundingBox; }
 class ParticleDrawable;
-class SoundManager;
 
 struct ImmutableParticleProperties
 {
@@ -109,7 +108,6 @@ public:
 
     void setUseGpuParticles(const bool enable);
 
-    void passSoundManager(std::shared_ptr<SoundManager> sound_manager);
     void updateSounds(bool isWorldPaused);
     void startSound();
     void stopSound();
@@ -121,7 +119,6 @@ protected:
 
     const std::string m_elementName;
 
-    std::shared_ptr<SoundManager>       m_soundManager;
     std::shared_ptr<ParticleDrawable>   m_particleDrawable;
 
     uint32_t m_maxParticleCount;

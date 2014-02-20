@@ -65,6 +65,9 @@ ParticleGroup::ParticleGroup(
     
     setImmutableProperties(immutableProperties);
     setMutableProperties(mutableProperties);
+
+    m_soundChannel = SoundManager::instance()->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
+    SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
 }
 
 ParticleGroup::~ParticleGroup()
@@ -256,11 +259,7 @@ void ParticleGroup::updateEmitting(const double & delta)
         }
     }
 
-    FMOD_VECTOR soundPos;
-    soundPos.x = m_emitPosition.x;
-    soundPos.y = m_emitPosition.y;
-    soundPos.z = m_emitPosition.z;
-    m_soundManager->setSoundPos(m_soundChannel, soundPos);
+    SoundManager::instance()->setSoundPos(m_soundChannel, { m_emitPosition.x, m_emitPosition.y, m_emitPosition.z});
 }
 
 glm::vec3 vec3(const physx::PxVec3 & vec3)
@@ -424,12 +423,6 @@ void ParticleGroup::particlePositionsIndicesInVolume(const glowutils::AxisAligne
     readData->unlock();
 }
 
-void ParticleGroup::passSoundManager(std::shared_ptr<SoundManager> sound_manager)
-{
-    m_soundManager = sound_manager;
-    m_soundChannel = m_soundManager->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
-    m_soundManager->setVolume(m_soundChannel, 0.15f);
-}
 
 void ParticleGroup::updateSounds(bool isWorldPaused)
 {
@@ -446,12 +439,12 @@ void ParticleGroup::updateSounds(bool isWorldPaused)
 
 void ParticleGroup::startSound()
 {
-    m_soundManager->setPaused(m_soundChannel, false);
+    SoundManager::instance()->setPaused(m_soundChannel, false);
     m_wasSoundPlaying = true;
 }
 
 void ParticleGroup::stopSound()
 {
-    m_soundManager->setPaused(m_soundChannel, true);
+    SoundManager::instance()->setPaused(m_soundChannel, true);
     m_wasSoundPlaying = false;
 }

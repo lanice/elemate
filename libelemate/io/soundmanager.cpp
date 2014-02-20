@@ -4,6 +4,15 @@
 
 #include "fmod_errors.h"
 
+std::unique_ptr<SoundManager> SoundManager::m_instance;
+
+SoundManager* SoundManager::instance()
+{
+    if (!m_instance.get())
+        m_instance.reset(new SoundManager());
+    return m_instance.get();
+}
+
 SoundManager::SoundManager(FMOD_VECTOR startPosition){
     init(startPosition);
 }

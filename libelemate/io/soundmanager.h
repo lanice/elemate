@@ -1,13 +1,16 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
 #include "fmod.hpp"
 
 class SoundManager{
 public:
-    SoundManager(FMOD_VECTOR startPosition = { 0.f, 0.f, 0.f });
     ~SoundManager();
+
+    static SoundManager* instance();
+
     /** creates a new channel and returns the channelId */
     unsigned int createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
     /** deletes a channel */
@@ -54,6 +57,8 @@ private:
     }SoundObject;
     typedef std::map<unsigned int, SoundObject> SoundMap;
 
+    static std::unique_ptr<SoundManager> m_instance;
+
     unsigned int        _version;
     unsigned int        _numdrivers;
     FMOD_SPEAKERMODE    _speakermode;
@@ -63,6 +68,11 @@ private:
     SoundMap            _channels;
     FMOD_RESULT         _result;
     FMOD::System        *_system;
+    
+    SoundManager(FMOD_VECTOR startPosition = { 0.f, 0.f, 0.f });
+    SoundManager(const SoundManager&) = delete;
+    const SoundManager& operator=(const SoundManager&) = delete;
+
     /** checks errors */
     void ERRCHECK(FMOD_RESULT);
     /** returns the next free channelId */
