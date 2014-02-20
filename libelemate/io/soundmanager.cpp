@@ -13,7 +13,7 @@ SoundManager* SoundManager::instance()
     return m_instance.get();
 }
 
-SoundManager::SoundManager(FMOD_VECTOR startPosition){
+SoundManager::SoundManager(const glm::vec3& startPosition){
     init(startPosition);
 }
 
@@ -47,7 +47,7 @@ unsigned int SoundManager::getNextFreeId(){
     return i;
 }
 
-void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity){
+void SoundManager::init(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up, const glm::vec3& velocity){
     _result = FMOD::System_Create(&_system);
     ERRCHECK(_result);
 
@@ -106,11 +106,16 @@ void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR u
     _result = _system->set3DSettings(1.0, _distanceFactor, 1.0f);
     ERRCHECK(_result);
 
-    _result = _system->set3DListenerAttributes(0, &position, &velocity, &forward, &up);
+    FMOD_VECTOR f_position = { position.x, position.y, position.z };
+    FMOD_VECTOR f_velocity = { velocity.x, velocity.y, velocity.z };
+    FMOD_VECTOR f_forward = { forward.x, forward.y, forward.z };
+    FMOD_VECTOR f_up = { up.x, up.y, up.z };
+
+    _result = _system->set3DListenerAttributes(0, &f_position, &f_velocity, &f_forward, &f_up);
     ERRCHECK(_result);
 }
 
-unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, FMOD_VECTOR pos, FMOD_VECTOR vel){
+unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, const glm::vec3& pos, const glm::vec3& vel){
     FMOD::Sound *_sound;
     FMOD::Channel *_channel = 0;
     unsigned int _id = getNextFreeId();
@@ -143,8 +148,11 @@ unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, b
     ERRCHECK(_result);
 
     // set channel properties
+    FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };
+    FMOD_VECTOR f_vel = { vel.x, vel.y, vel.z };
+
     if (is3D){
-        _result = _channel->set3DAttributes(&pos, &vel);
+        _result = _channel->set3DAttributes(&f_pos, &f_vel);
         ERRCHECK(_result);
     }
 
@@ -153,7 +161,7 @@ unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, b
         ERRCHECK(_result);
     }
 
-    _channels[_id] = { isLoop, is3D, pos, vel, _channel, _sound };
+    _channels[_id] = { isLoop, is3D, f_pos, f_vel, _channel, _sound };
     _system->update();
     return _id;
 }
@@ -205,43 +213,54 @@ void SoundManager::togglePause(unsigned int channelId){
     _channels[channelId].channel->setPaused(!p);
 }
 
-void SoundManager::setListenerAttributes(FMOD_VECTOR pos, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity){
-    _result = _system->set3DListenerAttributes(0, &pos, &velocity, &forward, &up);
+void SoundManager::setListenerAttributes(const glm::vec3& pos, const glm::vec3& forward, const glm::vec3& up, const glm::vec3& velocity)
+{
+    FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };
+    FMOD_VECTOR f_velocity = { velocity.x, velocity.y, velocity.z };
+    FMOD_VECTOR f_forward = { forward.x, forward.y, forward.z };
+    FMOD_VECTOR f_up = { up.x, up.y, up.z };
+
+    _result = _system->set3DListenerAttributes(0, &f_pos, &f_velocity, &f_forward, &f_up);
     ERRCHECK(_result);
 }
 
-void SoundManager::setSoundPos(unsigned int channelId, FMOD_VECTOR pos){
+void SoundManager::setSoundPos(unsigned int channelId, const glm::vec3& pos){
     FMOD_VECTOR _vel = _channels[channelId].velocity;
+    FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };    
 
     bool p;
     _channels[channelId].channel->isPlaying(&p);
     if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&pos, &_vel);
+        _result = _channels[channelId].channel->set3DAttributes(&f_pos, &_vel);
     }
     ERRCHECK(_result);
-    _channels[channelId].position = pos;
+    _channels[channelId].position = f_pos;
 }
 
-void SoundManager::setSoundVel(unsigned int channelId, FMOD_VECTOR vel){
+void SoundManager::setSoundVel(unsigned int channelId, const glm::vec3& vel){
     FMOD_VECTOR _pos = _channels[channelId].position;
+    FMOD_VECTOR f_vel = { vel.x, vel.y, vel.z };
 
     bool p;
     _channels[channelId].channel->isPlaying(&p);
     if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&_pos, &vel);
+        _result = _channels[channelId].channel->set3DAttributes(&_pos, &f_vel);
     }
     ERRCHECK(_result);
-    _channels[channelId].velocity = vel;
+    _channels[channelId].velocity = f_vel;
 }
 
-void SoundManager::setSoundPosAndVel(unsigned int channelId, FMOD_VECTOR pos, FMOD_VECTOR vel){
+void SoundManager::setSoundPosAndVel(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel){
     bool p;
+    FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };
+    FMOD_VECTOR f_vel = { vel.x, vel.y, vel.z };
+
     _channels[channelId].channel->isPlaying(&p);
     if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&pos, &vel);
+        _result = _channels[channelId].channel->set3DAttributes(&f_pos, &f_vel);
     }
-    _channels[channelId].position = pos;
-    _channels[channelId].velocity = vel;
+    _channels[channelId].position = f_pos;
+    _channels[channelId].velocity = f_vel;
 }
 
 void SoundManager::setMute(unsigned int channelId, bool mute){

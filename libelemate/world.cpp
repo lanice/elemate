@@ -129,7 +129,7 @@ void World::unregisterObserver(ParticleGroup * observer)
 
 void World::createFountainSound(const glm::vec3& position)
 {
-    int id = SoundManager::instance()->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), { position.x, position.y, position.z });
+    int id = SoundManager::instance()->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), position);
     m_sounds.push_back(id);
 }
 
@@ -140,11 +140,7 @@ void World::toggleBackgroundSound(int id){
 void World::updateListener(){
     const CameraEx & cam = m_navigation->camera();
     glm::vec3 forward = glm::normalize(cam.eye() - cam.center());
-    SoundManager::instance()->setListenerAttributes(
-    { cam.eye().x, cam.eye().y, cam.eye().z },
-    { forward.x, forward.y, forward.z },
-    { cam.up().x, cam.up().y, cam.up().z }
-    );
+    SoundManager::instance()->setListenerAttributes(cam.eye(), forward, cam.up());
     SoundManager::instance()->update();
 }
 

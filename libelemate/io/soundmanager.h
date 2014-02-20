@@ -2,7 +2,7 @@
 
 #include <map>
 #include <memory>
-
+#include <glm/glm.hpp>
 #include "fmod.hpp"
 
 class SoundManager{
@@ -12,7 +12,7 @@ public:
     static SoundManager* instance();
 
     /** creates a new channel and returns the channelId */
-    unsigned int createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused = false, FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f }, FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f });
+    unsigned int createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused = false, const glm::vec3& pos = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& vel = glm::vec3(0.0f, 0.0f, 0.0f));
     /** deletes a channel */
     void deleteChannel(unsigned int channelId);
     /** unpauses a loop-channel; unpauses a paused non-loop-channel, otherwise plays it from the beginning */
@@ -24,13 +24,13 @@ public:
     /** toggles the pause status of channel */
     void togglePause(unsigned int channelId);
     /** sets general Listener attributes */
-    void setListenerAttributes(FMOD_VECTOR pos, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity = { 0.f, 0.f, 0.f });
+    void setListenerAttributes(const glm::vec3& pos, const glm::vec3& forward, const glm::vec3& up, const glm::vec3& velocity = glm::vec3( 0.f, 0.f, 0.f));
     /** sets position of a channel in the world */
-    void setSoundPos(unsigned int channelId, FMOD_VECTOR pos);
+    void setSoundPos(unsigned int channelId, const glm::vec3& pos);
     /** sets the velocity of a channel */
-    void setSoundVel(unsigned int channelId, FMOD_VECTOR vel);
+    void setSoundVel(unsigned int channelId, const glm::vec3& vel);
     /** sets positions and velocity of a channel in the world */
-    void setSoundPosAndVel(unsigned int channelId, FMOD_VECTOR pos, FMOD_VECTOR vel);
+    void setSoundPosAndVel(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel);
     /** mutes or unmutes the channel */
     void setMute(unsigned int channelId, bool mute);
     /** returns true if the channel is mute */
@@ -69,7 +69,7 @@ private:
     FMOD_RESULT         _result;
     FMOD::System        *_system;
     
-    SoundManager(FMOD_VECTOR startPosition = { 0.f, 0.f, 0.f });
+    SoundManager(const glm::vec3& startPosition = glm::vec3(0.f, 0.f, 0.f));
     SoundManager(const SoundManager&) = delete;
     const SoundManager& operator=(const SoundManager&) = delete;
 
@@ -78,5 +78,5 @@ private:
     /** returns the next free channelId */
     unsigned int getNextFreeId();
     /** inits the SoundManager with optional start position */
-    void init(FMOD_VECTOR position = { 0.f, 0.f, 0.f }, FMOD_VECTOR forward = { 0.f, 0.f, 1.f }, FMOD_VECTOR up = { 0.f, 1.f, 0.f }, FMOD_VECTOR velocity = { 0.f, 0.f, 0.f });
+    void init(const glm::vec3& position = glm::vec3(0.f, 0.f, 0.f), const glm::vec3& forward = glm::vec3(0.f, 0.f, 1.f), const glm::vec3& up = glm::vec3(0.f, 1.f, 0.f), const glm::vec3& velocity = glm::vec3(0.f, 0.f, 0.f));
 };

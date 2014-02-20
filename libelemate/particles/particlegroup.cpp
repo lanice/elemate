@@ -259,7 +259,7 @@ void ParticleGroup::updateEmitting(const double & delta)
         }
     }
 
-    SoundManager::instance()->setSoundPos(m_soundChannel, { m_emitPosition.x, m_emitPosition.y, m_emitPosition.z});
+    SoundManager::instance()->setSoundPos(m_soundChannel, m_emitPosition);
 }
 
 glm::vec3 vec3(const physx::PxVec3 & vec3)
