@@ -98,9 +98,12 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Strg halten und scrollen zum Kippen der Kamera");
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
-	m_achievements.clear();
-	m_achievements.emplace_back(std::string("Insane"), std::string("You must be as you really started the game.\nOn purpose?"));
-	m_achievements.front().unlock();
+
+    m_achievements.clear();
+    m_achievements.emplace_front(std::string("Raise your hand"), std::string("Lift the hand in the air like you don't care..."));
+    m_achievements.front().unlock();
+    m_achievements.emplace_front(std::string("Baby steps"), std::string("OK, you opened the game. What now?"));
+    m_achievements.front().unlock();
 }
 
 void UserInterface::draw()
@@ -132,8 +135,10 @@ void UserInterface::drawMainMenu()
 
 void UserInterface::drawAchievements()
 {
-	for (auto& achievement : m_achievements)
-		achievement.draw();
+    while (!m_achievements.empty() && m_achievements.front().wasDrawn())
+        m_achievements.pop_front();
+    if (!m_achievements.empty())
+        m_achievements.front().draw();
 }
 
 void UserInterface::drawPreview()

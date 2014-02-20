@@ -27,6 +27,7 @@ public:
     void initialize();
     void update();
     void draw();
+    bool wasDrawn()const;
     void resize(int width, int height);
 
     std::string title() const;
@@ -42,6 +43,7 @@ protected:
     std::string m_title;
     std::string m_text;
     bool        m_unlocked;
+    bool        m_drawn;
     std::string m_picture;
 
     StringDrawer m_stringDrawer;

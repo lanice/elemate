@@ -19,6 +19,8 @@ m_title(title)
 , m_text(text)
 , m_unlocked(unlocked)
 , m_picture(picture)
+, m_drawn(false)
+, m_timeMod(0)
 {
     initialize();
 }
@@ -73,6 +75,9 @@ void Achievement::initialize()
 
 void Achievement::draw()
 {
+    if (!m_unlocked)
+        return;
+
     update();
     m_texture->bindActive(GL_TEXTURE0);
 
@@ -139,6 +144,8 @@ std::list<std::string> Achievement::splitText(std::string text, size_t maxLength
 }
 
 void Achievement::update(){
+    if (!m_timeMod)
+        m_unlockTime = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = std::chrono::system_clock::now() - m_unlockTime;
     m_timeMod = static_cast<float>(1.0 - diff.count()/ACHIEVEMENT_DISPLAY_TIME);
     m_timeMod *= m_timeMod;
@@ -146,7 +153,7 @@ void Achievement::update(){
         m_timeMod *= m_timeMod*m_timeMod;
     if (diff.count() > 2*ACHIEVEMENT_DISPLAY_TIME)
     {
-        unlock();//To reset the time. But later ti hide the achievement
+        m_drawn = true;
     }
 }
 
@@ -158,7 +165,6 @@ void Achievement::lock()
 void Achievement::unlock()
 {
     m_unlocked = true;
-    m_unlockTime = std::chrono::system_clock::now();
 }
 
 bool Achievement::isUnlocked() const
@@ -180,4 +186,9 @@ void Achievement::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
     m_stringDrawer.resize(width, height);
+}
+
+bool Achievement::wasDrawn() const
+{
+    return m_drawn;
 }
