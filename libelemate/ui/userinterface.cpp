@@ -15,7 +15,7 @@
 #include "io/imagereader.h"
 #include "menupage.h"
 
-#include "achievement.h"
+#include "achievementmanager.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
 const glm::vec3 UserInterface::kDefaultMenuEntryColor = glm::vec3(1.0f,1.0f,1.0f);
@@ -99,18 +99,14 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
 
-    m_achievements.clear();
-    m_achievements.emplace_front(std::string("Raise your hand"), std::string("Lift the hand in the air like you don't care..."));
-    m_achievements.front().unlock();
-    m_achievements.emplace_front(std::string("Baby steps"), std::string("OK, you opened the game. What now?"));
-    m_achievements.front().unlock();
+   
 }
 
 void UserInterface::draw()
 {
     drawHUD();
     drawMainMenu();
-	drawAchievements();
+	AchievementManager::instance()->drawAchievements();
 }
 
 void UserInterface::drawHUD()
@@ -131,14 +127,6 @@ void UserInterface::drawMainMenu()
 
 	drawGreyScreen();
 	drawMenuEntries();
-}
-
-void UserInterface::drawAchievements()
-{
-    while (!m_achievements.empty() && m_achievements.front().wasDrawn())
-        m_achievements.pop_front();
-    if (!m_achievements.empty())
-        m_achievements.front().draw();
 }
 
 void UserInterface::drawPreview()
@@ -205,8 +193,7 @@ void UserInterface::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
     m_stringDrawer.resize(width, height);
-	for (auto& achievement : m_achievements)
-		achievement.resize(width, height);
+    AchievementManager::instance()->resizeAchievements(width, height);
 }
 
 void UserInterface::loadInitTexture(const std::string & elementName)
