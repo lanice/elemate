@@ -25,7 +25,7 @@ void BaseTile::bind(const CameraEx & camera)
     TerrainTile::bind(camera);
 
     assert(m_terrainTypeTex);
-    m_terrainTypeTex->bindActive(GL_TEXTURE1);
+    m_terrainTypeTex->bindActive(GL_TEXTURE2);
 
     for (TextureTuple & tex : m_textures)
         std::get<1>(tex)->bindActive(GL_TEXTURE0 + std::get<2>(tex));
@@ -33,6 +33,9 @@ void BaseTile::bind(const CameraEx & camera)
 
 void BaseTile::unbind()
 {
+
+    m_terrainTypeTex->unbindActive(GL_TEXTURE2);
+
     for (TextureTuple & tex : m_textures)
         std::get<1>(tex)->unbindActive(GL_TEXTURE0 + std::get<2>(tex));
 
@@ -45,9 +48,9 @@ void BaseTile::initialize()
 
     createTerrainTypeTexture();
 
-    loadInitTexture("bedrock", 2);
-    loadInitTexture("sand", 3);     // http://opengameart.org/content/50-free-textures
-    loadInitTexture("grassland", 4);
+    loadInitTexture("bedrock", 3);
+    loadInitTexture("sand", 4);     // http://opengameart.org/content/50-free-textures
+    loadInitTexture("grassland", 5);
 }
 
 void BaseTile::initializeProgram()
@@ -59,7 +62,7 @@ void BaseTile::initializeProgram()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_base.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"));
 
-    m_program->setUniform("terrainTypeID", 1);
+    m_program->setUniform("terrainTypeID", 2);
     for (TextureTuple & tex : m_textures)
         m_program->setUniform(std::get<0>(tex), std::get<2>(tex));
 

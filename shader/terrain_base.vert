@@ -7,6 +7,7 @@ out vec3 v_worldPos;
 out vec3 v_viewPos;
 out vec4 v_projPos;
 out vec3 v_normal;
+out float v_temperatureCelsius;
 
 out uint v_isVisible;   // 0==false
 
@@ -14,9 +15,13 @@ uniform mat4 modelTransform;
 uniform mat4 modelView;
 uniform mat4 modelViewProjection;
 uniform samplerBuffer heightField;
+uniform samplerBuffer temperatures;
 
 uniform ivec2 tileRowsColumns;
 uniform ivec2 rowColumnOffset;
+
+uniform float temperatureGridResolution;
+uniform uint temperatureSamplesPerAxis;
 
 void main()
 {
@@ -24,6 +29,11 @@ void main()
 
     int texIndex = v_vertex.t + v_vertex.s * tileRowsColumns.t; // texelFetch expects an integer position
     float height = texelFetch(heightField, texIndex).x;
+    
+    vec2 temperatureVertex = vec2(v_vertex) * temperatureGridResolution;
+    
+    int temperatureIndex = int(temperatureVertex.t + temperatureVertex.s * float(temperatureSamplesPerAxis));
+    v_temperatureCelsius = texelFetch(temperatures, temperatureIndex).x;
     
     vec4 vertex = vec4(v_vertex.s, height, v_vertex.t, 1.0);
     v_projPos = modelViewProjection * vertex;

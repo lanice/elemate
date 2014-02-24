@@ -5,6 +5,7 @@ in vec3 g_normal;
 in vec3 g_viewPos;
 in vec2 g_rowColumn;
 in vec2 g_quadRelativePos;
+in float g_temperatureCelsius;
 
 uniform float zfar;
 
@@ -32,7 +33,6 @@ vec3 interpolate(vec2 coeff, vec3 values[4]);
 
 void main()
 {
-    
     vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);
     
     vec3 elementTexs[3] = vec3[3](
@@ -67,6 +67,7 @@ void main()
                         // max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0)),
                         max(gl_FragCoord.z / (gl_FragCoord.w * 0.1*zfar) - 9, 0.0)),
                     1.0);
+    fragColor = vec4(g_temperatureCelsius);
 }
 
 vec3 interpolate(vec2 coeff, vec3 values[4])

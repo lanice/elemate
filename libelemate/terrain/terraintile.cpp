@@ -38,6 +38,8 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 , m_heightTex(nullptr)
 , m_heightBuffer(nullptr)
 , m_program(nullptr)
+, m_temperatureGridResolution(0.5f)
+, m_temperatureSamplesPerAxis(0)
 , m_pxShape(nullptr)
 {
     terrain.registerTile(tileID, *this);
@@ -54,6 +56,17 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
     clearBufferUpdateRange();
 
     m_heightField.resize(terrain.settings.rows * terrain.settings.columns);
+
+    assert(terrain.settings.rows == terrain.settings.columns);
+    m_temperatureSamplesPerAxis = static_cast<uint32_t>(terrain.settings.rows * m_temperatureGridResolution);
+    m_temperatureGridCelsius.resize(m_temperatureSamplesPerAxis * m_temperatureSamplesPerAxis);
+    size_t col = 0;
+    for (size_t i = 0; i < m_temperatureGridCelsius.size(); ++i) {
+        //m_temperatureGridCelsius.at(i) = 20.0f;    // not too cold for now
+        if (i % m_temperatureSamplesPerAxis == 0)
+            ++col;
+        m_temperatureGridCelsius.at(i) = col / float(m_temperatureSamplesPerAxis);
+    }
 }
 
 TerrainTile::~TerrainTile()
@@ -84,6 +97,7 @@ void TerrainTile::bind(const CameraEx & camera)
     assert(m_heightTex);
 
     m_heightTex->bindActive(GL_TEXTURE0);
+    m_temperatureTex->bindActive(GL_TEXTURE1);
 
     m_program->use();
     m_program->setUniform("cameraposition", camera.eye());
@@ -103,6 +117,7 @@ void TerrainTile::unbind()
     m_program->release();
 
     m_heightTex->unbindActive(GL_TEXTURE0);
+    m_temperatureTex->unbindActive(GL_TEXTURE1);
 }
 
 void TerrainTile::initialize()
@@ -116,17 +131,36 @@ void TerrainTile::initialize()
     m_heightTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
     m_heightBuffer->unbind();
+    m_heightTex->unbind();
+
+
+    m_temperatureBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
+    m_temperatureBuffer->setData(m_temperatureGridCelsius, GL_DYNAMIC_DRAW);
+
+    m_temperatureTex = new glow::Texture(GL_TEXTURE_BUFFER);
+    m_temperatureTex->bind();
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_temperatureBuffer->id());
+    m_temperatureBuffer->unbind();
+    m_temperatureTex->unbind();
 
     m_isInitialized = true;
 }
 
-void TerrainTile::initializeProgram()
+void TerrainTile::setInitUniforms()
 {
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
+    m_program->setUniform("temperatures", 1);
     m_program->setUniform("tileRowsColumns", glm::ivec2(m_terrain.settings.rows, m_terrain.settings.columns));
+    m_program->setUniform("temperatureSamplesPerAxis", m_temperatureSamplesPerAxis);
+    m_program->setUniform("temperatureGridResolution", m_temperatureGridResolution);
 
     Elements::setAllUniforms(*m_program);
+}
+
+void TerrainTile::initializeProgram()
+{
+    setInitUniforms();
 }
 
 using namespace physx;

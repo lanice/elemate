@@ -74,6 +74,7 @@ protected:
     bool m_isInitialized;
     /** subclass has to override this method to create the program.
       * Afterward, call this function to set some uniforms. */
+    virtual void setInitUniforms();
     virtual void initializeProgram() = 0;
     virtual void createPxObjects(physx::PxRigidStatic & pxActor);
     void pxSamplesAndMaterials(
@@ -83,11 +84,18 @@ protected:
 
     glow::ref_ptr<glow::Texture> m_heightTex;
     glow::ref_ptr<glow::Buffer>  m_heightBuffer;
+    glow::ref_ptr<glow::Texture> m_temperatureTex;
+    glow::ref_ptr<glow::Buffer>  m_temperatureBuffer;
     glow::ref_ptr<glow::Program> m_program;
 
-    /** Contains the height field values in row major order.
-      * Initially created by the TerrainGenerator. */
+    /** Contains the height field values in row major order. */
     std::vector<float> m_heightField;
+
+    /** resolution of the temperature grid, relative to the height field sample resolution */
+    float m_temperatureGridResolution;
+    uint32_t m_temperatureSamplesPerAxis;
+    /** temperatures of the tile at each grid point, stored in row major order, just as the height field */
+    std::vector<float> m_temperatureGridCelsius;
 
     physx::PxShape * m_pxShape;
 
