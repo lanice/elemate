@@ -52,7 +52,6 @@ function collisionWaterLava(waterGroup, lavaGroup)
     -- assuming the collision bbox is not "too large"
     -- calculate a height delta that looks fine =)
     heightDelta = psa_restOffset(waterGroup) * numLavaParticles * terrain_sampleInterval() * 0.2
-    print("height delta: "..heightDelta)
     terrain_dropElement(collisionCenterXZ[1], collisionCenterXZ[2], heightDelta)
     
     -- discard all remembered particles
