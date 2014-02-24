@@ -38,19 +38,25 @@ function particleCollision(_collisionLlf, _collisionUrb)
 end    
 
 function collisionWaterLava(waterGroup, lavaGroup)
-    -- let the worker forget what happened before
-    pc_forgetOldParticles()
-    
-    enlargeBox(collisionLlf, collisionUrb, 0.2)    
-    -- let it remember our deleted lava particles
-    pc_releaseRememberParticles(lavaGroup, collisionLlf, collisionUrb)
-    -- forget about water - it should become steam later
-    pc_releaseForgetParticles(waterGroup, collisionLlf, collisionUrb)
+    collisionCenterXZ = {0.5 * (collisionUrb[1] + collisionLlf[1]), 0.5*(collisionUrb[3] + collisionLlf[3])}
+    enlargeBox(collisionLlf, collisionUrb, 0.2)
+    -- forget the lava particles, but remember how many we have deleted
+    numLavaParticles = pc_releaseForgetParticles(lavaGroup, collisionLlf, collisionUrb)
+    -- remember water to transform it into steam
+    pc_releaseRememberParticles(waterGroup, collisionLlf, collisionUrb)
     -- and later.. check that ratio between the two particles types, the release functions return a number of particles
-    -- now create bedrock where lava was removed
-    pc_createFromRemembered("bedrock")
-    terrain_setInteractElement("bedrock");
-    terrain_dropElement(collisionLlf[1], collisionLlf[3], 0.2);
+    -- this would create steam particles for water (once we have steam..):
+    -- pc_createFromRemembered("steam")
+    
+    terrain_setInteractElement("bedrock")
+    -- assuming the collision bbox is not "too large"
+    -- calculate a height delta that looks fine =)
+    heightDelta = psa_restOffset(waterGroup) * numLavaParticles * terrain_sampleInterval() * 0.2
+    print("height delta: "..heightDelta)
+    terrain_dropElement(collisionCenterXZ[1], collisionCenterXZ[2], heightDelta)
+    
+    -- discard all remembered particles
+    pc_forgetOldParticles()
 end
 
 function enlargeBox(llf, urb, delta)

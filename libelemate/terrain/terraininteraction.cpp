@@ -289,9 +289,10 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
     std::function<float(float, float)> func6 = [=](float worldX, float worldZ)
     { return heightGrab(worldX, worldZ); };
 
-
     std::function<int(std::string)> func7 = [=](std::string elementName)
     { setInteractElement(elementName); return 0; };
+
+    std::function<float()> func8 = std::bind(&TerrainSettings::sampleInterval, m_terrain.settings);
 
     lua.Register("terrain_heightAt", func0);
     lua.Register("terrain_isHeighestAt", func1);
@@ -301,4 +302,5 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
     lua.Register("terrain_terrainHeightAt", func5);
     lua.Register("terrain_heightGrab", func6);
     lua.Register("terrain_setInteractElement", func7);
+    lua.Register("terrain_sampleInterval", func8);
 }
