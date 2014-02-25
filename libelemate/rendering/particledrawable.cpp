@@ -106,7 +106,9 @@ void ParticleDrawable::initialize()
     m_vao->bind();
     
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_vbo->setData(m_vertices, GL_DYNAMIC_DRAW);
+    m_vbo->setData(m_maxParticleCount * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
+
+    m_needBufferUpdate = true;
 
     glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
     vertexBinding->setAttribute(0);
@@ -129,7 +131,13 @@ void ParticleDrawable::initialize()
 
 void ParticleDrawable::updateBuffers()
 {
-    m_vbo->setData(m_vertices, GL_DYNAMIC_DRAW);
+    assert(m_vertices.size() <= m_maxParticleCount * sizeof(glm::vec3));
+    
+    glm::vec3 * particleGpuDest = reinterpret_cast<glm::vec3*>(
+        m_vbo->mapRange(0, m_vertices.size() * sizeof(glm::vec3), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
+    assert(particleGpuDest);
+    memcpy(particleGpuDest, static_cast<void*>(m_vertices.data()), m_vertices.size() * sizeof(glm::vec3));
+    m_vbo->unmap();
 
     m_needBufferUpdate = false;
 }
@@ -143,7 +151,7 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 
     assert(numParticles <= m_maxParticleCount);
     if (numParticles > m_maxParticleCount) {
-        glow::warning("ParticleDrawable::updateParticles: recieving more valid new particles than expected (%;)", numParticles);
+        glow::warning("ParticleDrawable::updateParticles: receiving more valid new particles than expected (%;)", numParticles);
         numParticles = m_maxParticleCount;
     }
 

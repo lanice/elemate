@@ -271,33 +271,46 @@ glm::mat4 TerrainTile::transform() const
 
 void TerrainTile::updateBuffers()
 {
-    m_heightBuffer->setData(m_heightField, GL_DYNAMIC_DRAW);
-    m_bufferUpdateList.clear();
+    assert(m_updateRangeMinMaxIndex.x < m_updateRangeMinMaxIndex.y);
 
-    //m_heightBuffer->mapRange()
+    float * bufferDest = reinterpret_cast<float*>(m_heightBuffer->mapRange(
+        sizeof(float) * m_updateRangeMinMaxIndex.x,
+        sizeof(float) * (m_updateRangeMinMaxIndex.y - m_updateRangeMinMaxIndex.x),
+        GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
 
-    // TODO update needed data only
-    /*for (; !m_bufferUpdateList.empty(); m_bufferUpdateList.pop_front()) {
-        auto updateRange = m_bufferUpdateList.front();
+    assert(bufferDest);
 
-    }*/
+    unsigned int indexOffset = m_updateRangeMinMaxIndex.x;
+
+    for (const UpdateRange & range : m_bufferUpdateList) {
+        assert(indexOffset <= range.startIndex);
+        assert(range.startIndex - indexOffset >= 0);
+        assert(range.startIndex - indexOffset + range.nbElements < m_heightField.size());
+        memcpy(bufferDest + (range.startIndex - indexOffset),
+            reinterpret_cast<float*>(m_heightField.data()) + range.startIndex,
+            range.nbElements * sizeof(float));
+    }
+
+    m_heightBuffer->unmap();
 
     updatePxHeight();
+    clearBufferUpdateRange();
 }
 
-void TerrainTile::addBufferUpdateRange(GLintptr offset, GLsizeiptr length)
+void TerrainTile::addBufferUpdateRange(unsigned int startIndex, unsigned int nbElements)
 {
-    if (m_updateRangeMinMax.x > offset)
-        m_updateRangeMinMax.x = offset;
-    if (m_updateRangeMinMax.y < offset + length)
-        m_updateRangeMinMax.y = offset + length;
-    m_bufferUpdateList.push_front(std::pair<GLintptr, GLsizeiptr>(offset, length));
+    if (m_updateRangeMinMaxIndex.x > startIndex)
+        m_updateRangeMinMaxIndex.x = startIndex;
+    if (m_updateRangeMinMaxIndex.y < startIndex + nbElements)
+        m_updateRangeMinMaxIndex.y = startIndex + nbElements;
+    m_bufferUpdateList.push_front({ startIndex, nbElements });
 }
 
 void TerrainTile::clearBufferUpdateRange()
 {
     m_bufferUpdateList.clear();
-    m_updateRangeMinMax = glm::detail::tvec2<GLintptr>(std::numeric_limits<GLintptr>::max(), std::numeric_limits<GLintptr>::min());
+    m_updateRangeMinMaxIndex = glm::detail::tvec2<unsigned int>(std::numeric_limits<unsigned int>::max(), 0);
+    m_pxUpdateBox = UIntBoundingBox();
 }
 
 TerrainTile::UIntBoundingBox::UIntBoundingBox()
@@ -382,6 +395,4 @@ void TerrainTile::updatePxHeight()
         PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
     }
 #endif
-
-    m_pxUpdateBox = UIntBoundingBox();
 }

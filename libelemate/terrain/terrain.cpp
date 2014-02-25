@@ -75,6 +75,10 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(s_restartIndex);
 
+    glFrontFace(GL_CW);
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+
     for (auto & pair : m_tiles) {
         if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
             continue;   // only draw elements that are listed for drawing
@@ -82,6 +86,8 @@ void Terrain::drawImplementation(const CameraEx & camera)
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
         pair.second->unbind();
     }
+
+    glDisable(GL_CULL_FACE);
 
     glDisable(GL_PRIMITIVE_RESTART);
 }

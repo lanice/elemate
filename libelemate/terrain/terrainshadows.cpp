@@ -47,6 +47,10 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(s_restartIndex);
 
+    glFrontFace(GL_CW);
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+
     for (TerrainLevel level : m_drawLevels) {
         TerrainTile & tile = *m_tiles.at(TileID(level));
         if (level == TerrainLevel::WaterLevel) // for water/fluid drawing: discard samples below the solid terrain
@@ -64,6 +68,8 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
         if (level == TerrainLevel::WaterLevel)
             baseTile.m_heightTex->unbindActive(GL_TEXTURE1);
     }
+
+    glDisable(GL_CULL_FACE);
 
     glDisable(GL_PRIMITIVE_RESTART);
 
