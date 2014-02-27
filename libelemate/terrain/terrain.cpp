@@ -273,6 +273,7 @@ bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::sh
     float row_int = 0.0f, column_int = 0.0f;
     row_fract = std::modf(normX * settings.tileSamplesPerAxis, &row_int);
     column_fract = std::modf(normZ * settings.tileSamplesPerAxis, &column_int);
+    assert(row_int < settings.tileSamplesPerAxis && column_int < settings.tileSamplesPerAxis);
 
     row = static_cast<unsigned int>(row_int) % settings.tileSamplesPerAxis;
     column = static_cast<unsigned int>(column_int) % settings.tileSamplesPerAxis;

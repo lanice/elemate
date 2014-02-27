@@ -131,13 +131,15 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
             + tile.heightAt(diamondCenterRow, rightColumn))
             * 0.25f
             + heightRnd(diamondCenterRow, diamondCenterColumn);
-        tile.setHeight(diamondCenterRow, diamondCenterColumn, clampHeight(value));
+
+        float clampedHeight = clampHeight(value);
+        tile.setHeight(diamondCenterRow, diamondCenterColumn, clampedHeight);
 
         // in case we are at the borders of the tile: also set the value at the opposite border, to allow seamless tile wrapping
         if (upperRow > signed(diamondCenterRow))
-            tile.setHeight(fieldEdgeLength - 1, diamondCenterColumn, value);
+            tile.setHeight(fieldEdgeLength - 1, diamondCenterColumn, clampedHeight);
         if (leftColumn > signed(diamondCenterColumn))
-            tile.setHeight(diamondCenterRow, fieldEdgeLength - 1, value);
+            tile.setHeight(diamondCenterRow, fieldEdgeLength - 1, clampedHeight);
     };
     
     unsigned nbSquareRows = 1; // number of squares in a row, doubles each time the current edge length increases [same for the columns]
