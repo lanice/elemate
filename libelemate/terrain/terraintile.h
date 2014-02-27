@@ -54,7 +54,7 @@ public:
     glm::mat4 transform() const;
 
     friend class TerrainGenerator;
-    friend class TerrainInteractor;
+    friend class TerrainInteraction;
     friend class Terrain;
 
 protected:
@@ -94,7 +94,7 @@ protected:
     glm::mat4 m_transform;
 
 
-protected: // interaction specific functions (see class TerrainInteractor)
+protected: // interaction specific functions (see class TerrainInteraction)
     /** @return height at specified row/column position. Parameters must be in range. */
     float heightAt(unsigned int row, unsigned int column) const;
     /** @param height value at specified row/column position, if values are in range

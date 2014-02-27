@@ -35,9 +35,9 @@ namespace {// 1, 3, 8 for 513, 5(look around!) for 1025
     bool didRngInit = initRng();
 }
 
-std::shared_ptr<Terrain> TerrainGenerator::generate(const World & world) const
+std::shared_ptr<Terrain> TerrainGenerator::generate() const
 {
-    std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(world, m_settings);
+    std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(m_settings);
 
     assert(PxGetPhysics().getNbScenes() == 1);
     PxScene * pxScene;

@@ -37,14 +37,13 @@ uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
 }
 
 ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount)
-: m_elementName(elementName)
+: Drawable()
+, m_elementName(elementName)
 , m_elementIndex(elementIndex(elementName))
 , m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
 , m_particleSize(1.0f)
 , m_needBufferUpdate(true)
-, m_vao(nullptr)
-, m_vbo(nullptr)
 , m_program(nullptr)
 {
     s_instances.push_back(this);
@@ -70,10 +69,8 @@ void ParticleDrawable::drawParticles(const CameraEx & camera)
         instance->draw(camera);
 }
 
-void ParticleDrawable::draw(const CameraEx & camera)
+void ParticleDrawable::drawImplementation(const CameraEx & camera)
 {
-    if (!m_vao)
-        initialize();
     if (m_needBufferUpdate)
         updateBuffers();
 
@@ -90,11 +87,7 @@ void ParticleDrawable::draw(const CameraEx & camera)
     m_program->setUniform("znear", camera.zNearEx());
     m_program->setUniform("zfar", camera.zFarEx());
 
-    m_vao->bind();
-
     m_vao->drawArrays(GL_POINTS, 0, m_currentNumParticles);
-
-    m_vao->unbind();
 
     m_program->release();
 }

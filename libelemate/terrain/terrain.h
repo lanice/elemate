@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rendering/drawable.h"
+#include "rendering/shadowingdrawable.h"
 
 #include <map>
 #include <set>
@@ -20,10 +20,10 @@ namespace physx {
 }
 class TerrainTile;
 
-class Terrain : public Drawable
+class Terrain : public ShadowingDrawable
 {
 public:
-    Terrain(const World & world, const TerrainSettings & settings);
+    Terrain(const TerrainSettings & settings);
 
     /** set a list of elements that will be used for the draw call */
     virtual void draw(const CameraEx & camera, const std::initializer_list<std::string> & elements);
@@ -55,7 +55,7 @@ public:
 
     friend class TerrainGenerator;
     friend class TerrainTile;
-    friend class TerrainInteractor;
+    friend class TerrainInteraction;
 
 protected:
     /** Distance from camera to farthest visible point. The rendered terrain size depends on this parameter.

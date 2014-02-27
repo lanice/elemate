@@ -35,6 +35,7 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_sunlight()
 {
     assert(s_instance == nullptr);
+    s_instance = this;
 
     // Create two non-3D channels (piano and rain)
     //initialize as paused
@@ -44,9 +45,9 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_soundManager->setPaused(backgroundSoundId, false);
 
     TerrainGenerator terrainGen;
-    terrain = std::shared_ptr<Terrain>(terrainGen.generate(*this));
+    terrain = std::shared_ptr<Terrain>(terrainGen.generate());
 
-    hand = std::make_shared<Hand>(*this);
+    hand = std::make_shared<Hand>();
 
     m_sunlight[0] = glm::vec4(0.0, 0.0, 0.0, 1.0);        //ambient
     m_sunlight[1] = glm::vec4(0.2, 0.2, 0.2, 1.0);        //diffuse
@@ -56,8 +57,6 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_skyColor = glm::vec3(0.6f, 0.9f, 1.f);
 
     ParticleScriptAccess::initialize(*this);
-    
-    s_instance = this;
 }
 
 World::~World()
@@ -98,6 +97,8 @@ void World::updatePhysics()
 
     if (delta == 0.0f)
         return;
+
+    ParticleScriptAccess::instance().checkCollisions(delta);
 
     for (auto observer : m_particleGroupObservers)
         observer->updateEmitting(delta);

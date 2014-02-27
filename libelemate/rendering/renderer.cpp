@@ -16,14 +16,16 @@ namespace glow {
 
 #include "world.h"
 #include "terrain/terrain.h"
-#include "particledrawable.h"
 #include "ui/hand.h"
-#include "rendering/particlestep.h"
-#include "shadowmappingstep.h"
 #include "ui/userinterface.h"
+#include "particledrawable.h"
+#include "particlestep.h"
+#include "shadowmappingstep.h"
+#include "debugstep.h"
 
 Renderer::Renderer(const World & world)
-: m_world(world)
+: m_drawDebugStep(false)
+, m_world(world)
 {
     initialize();
 }
@@ -107,6 +109,8 @@ void Renderer::initialize()
         m_quadProgram->setUniform(m_flushSources.at(i).first, i);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
+    
+    m_debugStep = std::make_shared<DebugStep>();
 }
 
 void Renderer::operator()(const CameraEx & camera)
@@ -140,6 +144,9 @@ void Renderer::handStep(const CameraEx & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.hand->draw(camera);
+
+    if (m_drawDebugStep)
+        m_debugStep->draw(camera);  // rendered with the hand, to have it as a part of the scene
     
     m_fboByName.at("hand")->unbind();
 }
@@ -168,6 +175,21 @@ void Renderer::flushStep(const CameraEx & camera)
 const glow::FrameBufferObject *  Renderer::sceneFbo() const
 {
     return m_fboByName.at("scene");
+}
+
+bool Renderer::drawDebugInfo() const
+{
+    return m_drawDebugStep;
+}
+
+void Renderer::toggleDrawDebugInfo()
+{
+    m_drawDebugStep = !m_drawDebugStep;
+}
+
+void Renderer::setDrawDebugInfo(bool doDraw)
+{
+    m_drawDebugStep = doDraw;
 }
 
 void Renderer::resize(int width, int height)

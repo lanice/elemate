@@ -15,13 +15,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "terraintile.h"
+#include "terraininteraction.h"
 
-Terrain::Terrain(const World & world, const TerrainSettings & settings)
-: Drawable(world)
+Terrain::Terrain(const TerrainSettings & settings)
+: ShadowingDrawable()
 , settings(settings)
 , m_drawLevels(TerrainLevels)
 , m_viewRange(0.0f)
 {
+    TerrainInteraction::setDefaultTerrain(*this);
     m_boudingBox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
     m_boudingBox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
 }
@@ -30,21 +32,21 @@ void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::str
 {
     setViewRange(camera.zFarEx());
     setDrawElements(elements);
-    Drawable::draw(camera);
+    ShadowingDrawable::draw(camera);
     setDrawElements({});
 }
 
 void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
-    Drawable::drawDepthMap(camera);
+    ShadowingDrawable::drawDepthMap(camera);
     setDrawElements({});
 }
 
 void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
-    Drawable::drawShadowMapping(camera, lightSource);
+    ShadowingDrawable::drawShadowMapping(camera, lightSource);
     setDrawElements({});
 }
 
