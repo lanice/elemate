@@ -59,7 +59,7 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     float lightBorderColor[4] = { 1, 1, 1, 1 };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, lightBorderColor);
     CheckGLError();
-    m_lightTex->image2D(0, GL_DEPTH_COMPONENT32F, m_lightCam->viewport().x, m_lightCam->viewport().y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_lightTex->image2D(0, GL_DEPTH_COMPONENT24, m_lightCam->viewport().x, m_lightCam->viewport().y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
     m_lightFbo = new glow::FrameBufferObject();
     m_lightFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_lightTex);
@@ -134,8 +134,8 @@ void ShadowMappingStep::draw(const CameraEx & camera)
 
 void ShadowMappingStep::resize(int width, int height)
 {
-    m_shadowTex->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
-    m_shadowDepthBuffer->storage(GL_DEPTH_COMPONENT32F, width, height);
+    m_shadowTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+    m_shadowDepthBuffer->storage(GL_DEPTH_COMPONENT16, width, height);
     m_shadowFbo->printStatus(true);
     assert(m_shadowFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 }

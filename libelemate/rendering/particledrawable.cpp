@@ -37,14 +37,13 @@ uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
 }
 
 ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount)
-: m_elementName(elementName)
+: Drawable()
+, m_elementName(elementName)
 , m_elementIndex(elementIndex(elementName))
 , m_maxParticleCount(maxParticleCount)
 , m_currentNumParticles(0)
 , m_particleSize(1.0f)
 , m_needBufferUpdate(true)
-, m_vao(nullptr)
-, m_vbo(nullptr)
 , m_program(nullptr)
 {
     s_instances.push_back(this);
@@ -70,10 +69,8 @@ void ParticleDrawable::drawParticles(const CameraEx & camera)
         instance->draw(camera);
 }
 
-void ParticleDrawable::draw(const CameraEx & camera)
+void ParticleDrawable::drawImplementation(const CameraEx & camera)
 {
-    if (!m_vao)
-        initialize();
     if (m_needBufferUpdate)
         updateBuffers();
 
@@ -90,11 +87,7 @@ void ParticleDrawable::draw(const CameraEx & camera)
     m_program->setUniform("znear", camera.zNearEx());
     m_program->setUniform("zfar", camera.zFarEx());
 
-    m_vao->bind();
-
     m_vao->drawArrays(GL_POINTS, 0, m_currentNumParticles);
-
-    m_vao->unbind();
 
     m_program->release();
 }
@@ -106,7 +99,9 @@ void ParticleDrawable::initialize()
     m_vao->bind();
     
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
-    m_vbo->setData(m_vertices, GL_DYNAMIC_DRAW);
+    m_vbo->setData(m_maxParticleCount * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
+
+    m_needBufferUpdate = true;
 
     glow::VertexAttributeBinding * vertexBinding = m_vao->binding(0);
     vertexBinding->setAttribute(0);
@@ -129,7 +124,13 @@ void ParticleDrawable::initialize()
 
 void ParticleDrawable::updateBuffers()
 {
-    m_vbo->setData(m_vertices, GL_DYNAMIC_DRAW);
+    assert(m_vertices.size() <= m_maxParticleCount * sizeof(glm::vec3));
+    
+    glm::vec3 * particleGpuDest = reinterpret_cast<glm::vec3*>(
+        m_vbo->mapRange(0, m_vertices.size() * sizeof(glm::vec3), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
+    assert(particleGpuDest);
+    memcpy(particleGpuDest, static_cast<void*>(m_vertices.data()), m_vertices.size() * sizeof(glm::vec3));
+    m_vbo->unmap();
 
     m_needBufferUpdate = false;
 }
@@ -143,7 +144,7 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 
     assert(numParticles <= m_maxParticleCount);
     if (numParticles > m_maxParticleCount) {
-        glow::warning("ParticleDrawable::updateParticles: recieving more valid new particles than expected (%;)", numParticles);
+        glow::warning("ParticleDrawable::updateParticles: receiving more valid new particles than expected (%;)", numParticles);
         numParticles = m_maxParticleCount;
     }
 

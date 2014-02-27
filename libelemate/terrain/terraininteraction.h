@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include "terrainsettings.h"
@@ -9,11 +8,17 @@ class Terrain;
 class TerrainTile;
 class LuaWrapper;
 
-class TerrainInteractor {
+class TerrainInteraction {
 public:
-    /** Creates an Interactor for the specified terrain.
-      * @param interactElement select the element this interactor works with */
-    TerrainInteractor(std::shared_ptr<Terrain>& terrain, const std::string & interactElement);
+    /** Creates an interaction interface for the specified terrain.
+      * @param interactElement select the element this instance works with */
+    TerrainInteraction(Terrain & terrain, const std::string & interactElement);
+
+    /** Creates an interaction interface for the default terrain.
+      * @param interactElement select the element this instance works with */
+    TerrainInteraction(const std::string & interactElement);
+
+    static void setDefaultTerrain(Terrain & terrain);
 
     const std::string & interactElement() const;
     void setInteractElement(const std::string & elementName);
@@ -30,7 +35,7 @@ public:
       * @return the name of this element */
     const std::string & useSolidElementAt(float worldX, float worldZ);
 
-    /** @return the height of the element this interactor is configured to work with */
+    /** @return the height of the element this instance is configured to work with */
     float heightAt(float worldX, float worldZ) const;
     /** @return whether the current interact element's level is the highest at the world position, meaning the one the player can interact with. */
     bool isHeighestAt(float worldX, float worldZ) const;
@@ -64,19 +69,20 @@ public:
     /** pulls the terrain at worldXZ, setting the height to the grabbed value */
     void heightPull(float worldX, float worldZ);
 
-    std::shared_ptr<const Terrain> terrain() const;
-    void setTerrain(std::shared_ptr<Terrain>& terrain);
+    const Terrain & terrain() const;
 
     static float normalDist(float x, float mean, float stddev);
 
-    void registerLuaFunctions(LuaWrapper * lua);
+    void registerLuaFunctions(LuaWrapper & lua);
 
     /** element name if the interaction element is not set and for out for range access */
     static const std::string s_defaultElementName;
 
 private:
-    std::shared_ptr<Terrain> m_terrain;
-    /** the name of the element this interactor currently works on */
+    static Terrain * s_defaultTerrain;
+
+    Terrain & m_terrain;
+    /** the name of the element this instance currently works on */
     std::string m_interactElement;
     /** for internal usage: the terrain level that hold the configured interact element */
     TerrainLevel m_interactLevel;
@@ -87,7 +93,7 @@ private:
     float m_grabbedHeight;
 
 public:
-    TerrainInteractor(TerrainInteractor&) = delete;
-    void operator=(TerrainInteractor&) = delete;
-    TerrainInteractor() = delete;
+    TerrainInteraction(TerrainInteraction&) = delete;
+    void operator=(TerrainInteraction&) = delete;
+    TerrainInteraction() = delete;
 };

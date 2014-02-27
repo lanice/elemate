@@ -23,8 +23,14 @@ set(SOURCES
     particles/particlegroup.h
     particles/particlescriptaccess.cpp
     particles/particlescriptaccess.h
+    particles/particlecollision.h
+    particles/particlecollision.cpp
+    rendering/debugstep.h
+    rendering/debugstep.cpp
     rendering/drawable.h
     rendering/drawable.cpp
+    rendering/shadowingdrawable.h
+    rendering/shadowingdrawable.cpp
     rendering/renderer.h
     rendering/renderer.cpp
     rendering/renderingstep.h
@@ -48,8 +54,8 @@ set(SOURCES
     terrain/terrainshadows.cpp
     terrain/terrainsettings.h
     terrain/terrainsettings.cpp
-    terrain/terraininteractor.h
-    terrain/terraininteractor.cpp
+    terrain/terraininteraction.h
+    terrain/terraininteraction.cpp
     terrain/terraintile.h
     terrain/terraintile.cpp
     terrain/basetile.h

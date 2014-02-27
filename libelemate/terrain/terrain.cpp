@@ -15,13 +15,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "terraintile.h"
+#include "terraininteraction.h"
 
-Terrain::Terrain(const World & world, const TerrainSettings & settings)
-: Drawable(world)
+Terrain::Terrain(const TerrainSettings & settings)
+: ShadowingDrawable()
 , settings(settings)
 , m_drawLevels(TerrainLevels)
 , m_viewRange(0.0f)
 {
+    TerrainInteraction::setDefaultTerrain(*this);
     m_boudingBox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
     m_boudingBox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
 }
@@ -30,21 +32,21 @@ void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::str
 {
     setViewRange(camera.zFarEx());
     setDrawElements(elements);
-    Drawable::draw(camera);
+    ShadowingDrawable::draw(camera);
     setDrawElements({});
 }
 
 void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
-    Drawable::drawDepthMap(camera);
+    ShadowingDrawable::drawDepthMap(camera);
     setDrawElements({});
 }
 
 void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
 {
     setDrawElements(elements);
-    Drawable::drawShadowMapping(camera, lightSource);
+    ShadowingDrawable::drawShadowMapping(camera, lightSource);
     setDrawElements({});
 }
 
@@ -75,6 +77,10 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(s_restartIndex);
 
+    glFrontFace(GL_CW);
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+
     for (auto & pair : m_tiles) {
         if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
             continue;   // only draw elements that are listed for drawing
@@ -82,6 +88,8 @@ void Terrain::drawImplementation(const CameraEx & camera)
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
         pair.second->unbind();
     }
+
+    glDisable(GL_CULL_FACE);
 
     glDisable(GL_PRIMITIVE_RESTART);
 }

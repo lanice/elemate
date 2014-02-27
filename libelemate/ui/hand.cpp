@@ -22,8 +22,8 @@
 
 const std::string Hand::s_modelFilename = "data/models/hand.3DS";
 
-Hand::Hand(const World & world)
-: Drawable(world)
+Hand::Hand()
+: ShadowingDrawable()
 , m_numIndices(0)
 , m_heightOffset(1.0f)
 {
@@ -34,7 +34,7 @@ Hand::Hand(const World & world)
     m_program = new glow::Program();
     m_program->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/ui/hand.vert"),
-        world.sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"),
+        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/ui/hand.frag"));
 }
 
@@ -72,9 +72,10 @@ void Hand::loadModel()
     m_indexBuffer->setData(indices, GL_STATIC_DRAW);
     m_indexBuffer->unbind();
 
-    glowutils::AxisAlignedBoundingBox bbox;
     std::vector<glm::vec3> vertices;
 
+    // don't set the m_bbox member, as we would need to recalculate it if the hand rotates and don't really need it in the moment.
+    glowutils::AxisAlignedBoundingBox bbox;
     for (unsigned v = 0; v < mesh->mNumVertices; ++v) {
         const glm::vec3 scaledVertex = 
             glm::vec3(initTransform * glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0));
@@ -127,8 +128,7 @@ float Hand::heightCheck(float worldX, float worldZ) const
     float maxHeight = std::numeric_limits<float>::lowest();
     float minHeight = std::numeric_limits<float>::max();
 
-    assert(m_world.terrain);
-    const Terrain & terrain(*m_world.terrain);
+    const Terrain & terrain(*World::instance()->terrain);
 
     for (const glm::vec3 & checkPoint : m_heightCheckPoints) {
         const glm::vec3 worldPos = glm::vec3(worldX, 0, worldZ) + xzTransform() * checkPoint;
@@ -155,7 +155,7 @@ void Hand::drawImplementation(const CameraEx & camera)
     m_program->setUniform("modelViewProjection", camera.viewProjectionEx() * transform());
     m_program->setUniform("rotate", m_rotate);
     m_program->setUniform("cameraposition", camera.eye());
-    m_world.setUpLighting(*m_program);
+    World::instance()->setUpLighting(*m_program);
 
     m_vao->drawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
 

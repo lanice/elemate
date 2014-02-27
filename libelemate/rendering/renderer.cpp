@@ -16,14 +16,16 @@ namespace glow {
 
 #include "world.h"
 #include "terrain/terrain.h"
-#include "particledrawable.h"
 #include "ui/hand.h"
-#include "rendering/particlestep.h"
-#include "shadowmappingstep.h"
 #include "ui/userinterface.h"
+#include "particledrawable.h"
+#include "particlestep.h"
+#include "shadowmappingstep.h"
+#include "debugstep.h"
 
 Renderer::Renderer(const World & world)
-: m_world(world)
+: m_drawDebugStep(false)
+, m_world(world)
 {
     initialize();
 }
@@ -107,6 +109,8 @@ void Renderer::initialize()
         m_quadProgram->setUniform(m_flushSources.at(i).first, i);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
+    
+    m_debugStep = std::make_shared<DebugStep>();
 }
 
 void Renderer::operator()(const CameraEx & camera)
@@ -140,6 +144,9 @@ void Renderer::handStep(const CameraEx & camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_world.hand->draw(camera);
+
+    if (m_drawDebugStep)
+        m_debugStep->draw(camera);  // rendered with the hand, to have it as a part of the scene
     
     m_fboByName.at("hand")->unbind();
 }
@@ -170,15 +177,30 @@ const glow::FrameBufferObject *  Renderer::sceneFbo() const
     return m_fboByName.at("scene");
 }
 
+bool Renderer::drawDebugInfo() const
+{
+    return m_drawDebugStep;
+}
+
+void Renderer::toggleDrawDebugInfo()
+{
+    m_drawDebugStep = !m_drawDebugStep;
+}
+
+void Renderer::setDrawDebugInfo(bool doDraw)
+{
+    m_drawDebugStep = doDraw;
+}
+
 void Renderer::resize(int width, int height)
 {
-    m_textureByName.at("sceneColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-    m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_textureByName.at("sceneColor")->image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("scene")->printStatus(true);
     // assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_textureByName.at("handColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-    m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_textureByName.at("handColor")->image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("hand")->printStatus(true);
     // assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 

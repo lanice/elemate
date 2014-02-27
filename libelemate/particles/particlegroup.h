@@ -14,6 +14,7 @@ namespace physx {
     class PxParticleFluid;
     class PxScene;
 }
+namespace glowutils { class AxisAlignedBoundingBox; }
 class ParticleDrawable;
 
 struct ImmutableParticleProperties
@@ -52,18 +53,36 @@ public:
     ~ParticleGroup();
 
     const std::string & elementName() const;
+    const glowutils::AxisAlignedBoundingBox & boundingBox() const;
+    float particleSize() const;
 
     physx::PxParticleFluid * particleSystem();
 
-    /** Make sure numParticles matches size of position matches size of velocities! */
-    void createParticles(const uint32_t numParticles, const std::vector<glm::vec3> & positions, const std::vector<glm::vec3> & velocities);
-    void releaseParticles(const uint32_t numParticles, const std::vector<uint32_t> & indices);
+    /** If specifying velocities, make sure that its size matches the positions size */
+    void createParticles(const std::vector<glm::vec3> & positions, const std::vector<glm::vec3> * velocities = nullptr);
     /** Create a single particle at given position with given velocity. */
     void createParticle(const glm::vec3 & position, const glm::vec3 & velocity);
+    void releaseParticles(const std::vector<uint32_t> & indices);
+    /** release all particles that are inside the bounding box
+      * @return the number of particles that was deleted. */
+    uint32_t releaseParticles(const glowutils::AxisAlignedBoundingBox & boundingBox);
+    /** Release particles that are inside the bounding box and append their positions to the releasedPositions vector. */
+    void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions);
 
     /** Emit particles with ratio as particles per second. */
     void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
     void stopEmit();
+
+    /** fill particles with all my particles which have there center in the specified bounding box.
+      * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
+      * This should only be called while the physics scene simulation is not running! */
+    void particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const;
+    /** Get the indexes of the particles that are inside the bounding box.
+      * This doesn't clear the particleIndicies container, if it contained any elements before. */
+    void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
+    /** Get the positions and indexes of the particles that are inside the bounding box.
+      * This doesn't clear the referenced containers, if they contained any elements before. */
+    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
 
     /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
     void updateEmitting(const double & delta);

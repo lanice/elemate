@@ -2,7 +2,6 @@
 
 #include <glow/logging.h>
 #include <glowutils/File.h>
-#include "utils/cameraex.h"
 
 #include <GLFW/glfw3.h>
 
@@ -63,6 +62,9 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             break;
         case GLFW_KEY_G:
             m_game.physicsWrapper()->toogleUseGpuParticles();
+            break;
+        case GLFW_KEY_F1:
+            m_game.renderer()->toggleDrawDebugInfo();
             break;
         }
     }
