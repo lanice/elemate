@@ -32,8 +32,10 @@ class TerrainTile {
 public:
     /** @param terrain registers tile at this terrain
       * @param tileID register tile at this position in the terrain
-      * @param elementNames list of elements this tile will contain. */
-    TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames);
+      * @param elementNames list of elements this tile will contain.
+      * @param resolutionScaling use a lower resolution than the maximum defined in the terrain settings.
+               a value lower than 1 will result in resolution scaling. */
+    TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames, float resolutionScaling = 1.0f);
     virtual ~TerrainTile();
 
     /** get the name of the element at the row/column position
@@ -51,7 +53,15 @@ public:
     /** @return interpolated height (y value) at specified normalized in tile position. */
     float interpolatedHeightAt(float normX, float normZ) const;
 
-    glm::mat4 transform() const;
+    const glm::mat4 & transform() const;
+
+    const uint32_t samplesPerAxis;
+    const float resolutionScaling;
+    /** number of samples per world coordinate */
+    const float samplesPerWorldCoord;
+    /** distance between two sample points along one axis */
+    const float sampleInterval;
+
 
     friend class TerrainGenerator;
     friend class TerrainInteraction;

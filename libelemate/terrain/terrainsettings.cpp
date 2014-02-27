@@ -30,7 +30,7 @@ TerrainSettings::TerrainSettings()
 : sizeX(400)
 , sizeZ(400)
 , maxHeight(40.f)
-, tileSamplesPerAxis(1025)
+, maxTileSamplesPerAxis(1025)
 , tilesX(1)
 , tilesZ(1)
 {

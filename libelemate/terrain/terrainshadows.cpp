@@ -53,10 +53,14 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
 
     for (TerrainLevel level : m_drawLevels) {
         TerrainTile & tile = *m_tiles.at(TileID(level));
-        if (level == TerrainLevel::WaterLevel) // for water/fluid drawing: discard samples below the solid terrain
-            baseTile.m_heightTex->bindActive(GL_TEXTURE1);
 
-        program->setUniform("baseTileCompare", level == TerrainLevel::WaterLevel);
+        // for water/fluid drawing: discard samples below the solid terrain
+        bool compareToBaseTile = level == TerrainLevel::WaterLevel;
+
+        program->setUniform("baseTileCompare", compareToBaseTile);
+
+        if (compareToBaseTile)
+            baseTile.m_heightTex->bindActive(GL_TEXTURE1);
 
         tile.prepareDraw();
         tile.m_heightTex->bindActive(GL_TEXTURE0);
@@ -65,7 +69,7 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
 
         tile.m_heightTex->unbindActive(GL_TEXTURE0);
 
-        if (level == TerrainLevel::WaterLevel)
+        if (compareToBaseTile)
             baseTile.m_heightTex->unbindActive(GL_TEXTURE1);
     }
 
@@ -119,7 +123,7 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
     m_depthMapProgram->setUniform("baseHeightField", 1);
-    m_depthMapProgram->setUniform("tileSamplesPerAxis", int(settings.tileSamplesPerAxis));
+    m_depthMapProgram->setUniform("tileSamplesPerAxis", int(settings.maxTileSamplesPerAxis));
 
 
     m_depthMapLinearizedProgram = new glow::Program();
@@ -130,7 +134,7 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
     m_depthMapLinearizedProgram->setUniform("heightField", 0);
     m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);
-    m_depthMapLinearizedProgram->setUniform("tileSamplesPerAxis", int(settings.tileSamplesPerAxis));
+    m_depthMapLinearizedProgram->setUniform("tileSamplesPerAxis", int(settings.maxTileSamplesPerAxis));
 }
 
 void Terrain::initShadowMappingProgram()
@@ -142,7 +146,7 @@ void Terrain::initShadowMappingProgram()
 
     m_shadowMappingProgram->setUniform("heightField", 1);
 
-    m_shadowMappingProgram->setUniform("tileSamplesPerAxis", int(settings.tileSamplesPerAxis));
+    m_shadowMappingProgram->setUniform("tileSamplesPerAxis", int(settings.maxTileSamplesPerAxis));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }

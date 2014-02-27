@@ -96,7 +96,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
     // assuming the edge length of the field is a power of 2, + 1
     // assuming the field is square
 
-    const unsigned fieldEdgeLength = m_settings.tileSamplesPerAxis;
+    const unsigned fieldEdgeLength = tile.samplesPerAxis;
     const float maxHeight = m_settings.maxHeight;
 
     float randomMax = 50.0f;
@@ -183,11 +183,11 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
                 const unsigned int seedpointColumn = columnN * (currentEdgeLength - 1);
 
                 unsigned int rightDiamondColumn = seedpointColumn + currentEdgeLength / 2;
-                if (rightDiamondColumn < m_settings.tileSamplesPerAxis)
+                if (rightDiamondColumn < tile.samplesPerAxis)
                     squareStep(diamondRadius, seedpointRow, rightDiamondColumn, heightRndPos);
 
                 unsigned int bottomDiamondRow = seedpointRow + currentEdgeLength / 2;
-                if (bottomDiamondRow < m_settings.tileSamplesPerAxis)
+                if (bottomDiamondRow < tile.samplesPerAxis)
                     squareStep(diamondRadius, bottomDiamondRow, seedpointColumn, heightRndPos);
             }
         }
@@ -206,8 +206,8 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     float sandMaxHeight = 2.5f;     // under water + shore
     float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
 
-    for (unsigned int row = 0; row < m_settings.tileSamplesPerAxis - 1; ++row) {
-        for (unsigned int column = 0; column < m_settings.tileSamplesPerAxis - 1; ++column) {
+    for (unsigned int row = 0; row < tile.samplesPerAxis - 1; ++row) {
+        for (unsigned int column = 0; column < tile.samplesPerAxis - 1; ++column) {
             float height = 0.25f * (
                 tile.heightAt(row, column)
                 + tile.heightAt(row + 1, column)

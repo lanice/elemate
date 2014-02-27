@@ -159,15 +159,15 @@ void Terrain::setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 
 {
     assert(m_renderGridRadius.isValid());
 
-    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.tileSamplesPerAxis - m_renderGridRadius.value()));
-    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z / settings.sizeZ) * settings.tileSamplesPerAxis - m_renderGridRadius.value()));
+    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
+    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z / settings.sizeZ) * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
 
     program.setUniform("rowColumnOffset", glm::ivec2(offsetX, offsetZ));
 }
 
 void Terrain::generateDrawGrid()
 {
-    m_renderGridRadius.setValue(static_cast<unsigned int>(std::ceil(m_viewRange * settings.samplesPerWorldCoord())));
+    m_renderGridRadius.setValue(static_cast<unsigned int>(std::ceil(m_viewRange * settings.maxSamplesPerWorldCoord())));
     unsigned int diameter = m_renderGridRadius.value() * 2;
     unsigned int numSamples = diameter * diameter;
 
@@ -266,23 +266,22 @@ bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::sh
 {
     // only implemented for 1 tile
     assert(settings.tilesX == 1 && settings.tilesZ == 1);
+
+    TileID tileID(level, 0, 0);
+    terrainTile = m_tiles.at(tileID);
+    assert(terrainTile);
+
     float normX = (x / settings.sizeX + 0.5f);
     float normZ = (z / settings.sizeZ + 0.5f);
     bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
 
     float row_int = 0.0f, column_int = 0.0f;
-    row_fract = std::modf(normX * settings.tileSamplesPerAxis, &row_int);
-    column_fract = std::modf(normZ * settings.tileSamplesPerAxis, &column_int);
-    assert(row_int < settings.tileSamplesPerAxis && column_int < settings.tileSamplesPerAxis);
+    row_fract = std::modf(normX * terrainTile->samplesPerAxis, &row_int);
+    column_fract = std::modf(normZ * terrainTile->samplesPerAxis, &column_int);
+    assert(row_int < terrainTile->samplesPerAxis && column_int < terrainTile->samplesPerAxis);
 
-    row = static_cast<unsigned int>(row_int) % settings.tileSamplesPerAxis;
-    column = static_cast<unsigned int>(column_int) % settings.tileSamplesPerAxis;
-
-    TileID tileID(level, 0, 0);
-
-    terrainTile = m_tiles.at(tileID);
-
-    assert(terrainTile);
+    row = static_cast<unsigned int>(row_int) % terrainTile->samplesPerAxis;
+    column = static_cast<unsigned int>(column_int) % terrainTile->samplesPerAxis;
 
     return valid;
 }

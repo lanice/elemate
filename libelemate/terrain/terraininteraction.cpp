@@ -191,7 +191,7 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
 
     // define the size of the affected interaction area, in grid coords
     const float effectRadiusWorld = stddev * 3;
-    const uint32_t effectRadius = static_cast<uint32_t>(std::ceil(effectRadiusWorld * settings.samplesPerWorldCoord())); // = 0 means to change only the value at (row,column)
+    const uint32_t effectRadius = static_cast<uint32_t>(std::ceil(effectRadiusWorld * tile.samplesPerWorldCoord)); // = 0 means to change only the value at (row,column)
 
     bool moveUp = (value - tile.heightAt(row, column)) > 0;
     int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
@@ -212,18 +212,18 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
         // unchecked signed min/max values, possibly < 0 or > numRows/Column
         int iMinRow = row - effectRadius, iMaxRow = row + effectRadius, iMinColumn = column - effectRadius, iMaxColumn = column + effectRadius;
         // work on rows and column that are in range of the terrain tile settings and larger than 0
-        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMinRow));
-        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMaxRow));
-        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMinColumn));
-        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMaxColumn));
+        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMinRow));
+        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMaxRow));
+        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMinColumn));
+        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMaxColumn));
     }
 
     uint8_t elementIndex = tile.elementIndex(m_interactElement);
 
     for (unsigned int r = minRow; r <= maxRow; ++r) {
-        float relWorldX = (signed(r) - signed(row)) * settings.sampleInterval();
+        float relWorldX = (signed(r) - signed(row)) * tile.sampleInterval;
         for (unsigned int c = minColumn; c <= maxColumn; ++c) {
-            float relWorldZ = (signed(c) - signed(column)) * settings.sampleInterval();
+            float relWorldZ = (signed(c) - signed(column)) * tile.sampleInterval;
 
             float localRadius = std::sqrt(relWorldX*relWorldX + relWorldZ*relWorldZ);
 
@@ -241,7 +241,7 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
             if (setToInteractionElement)
                 tile.setElement(r, c, elementIndex);
         }
-        tile.addBufferUpdateRange(minColumn + r * settings.tileSamplesPerAxis, 1u + effectRadius * 2u);
+        tile.addBufferUpdateRange(minColumn + r * tile.samplesPerAxis, 1u + effectRadius * 2u);
     }
 
     tile.addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
@@ -292,7 +292,7 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
     std::function<int(std::string)> func7 = [=](std::string elementName)
     { setInteractElement(elementName); return 0; };
 
-    std::function<float()> func8 = std::bind(&TerrainSettings::sampleInterval, m_terrain.settings);
+    std::function<float()> func8 = std::bind(&TerrainSettings::minSampleInterval, m_terrain.settings);
 
     lua.Register("terrain_heightAt", func0);
     lua.Register("terrain_isHeighestAt", func1);

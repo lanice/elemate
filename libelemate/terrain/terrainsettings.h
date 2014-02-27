@@ -41,8 +41,8 @@ struct TerrainSettings {
     float sizeZ;
     /** Maximal absolute height value in terrain. */
     float maxHeight;
-    /** number of sample points along the x/y axes in one tile */
-    uint32_t tileSamplesPerAxis;
+    /** maximal number of sample points along the x/y axes in one tile. TerrainTiles may use lower sample rate. */
+    uint32_t maxTileSamplesPerAxis;
     /** number of tiles along the x axis */
     unsigned tilesX;
     /** number of tiles along the z axis */
@@ -53,15 +53,15 @@ struct TerrainSettings {
         assert(std::abs(sizeX / tilesX - sizeZ / tilesZ) < std::numeric_limits<float>::epsilon());
         return sizeX / tilesX;
     };
-    /** number of samples per world coordinate */
-    inline float samplesPerWorldCoord() const {
+    /** number of samples per world coordinate for tiles that use the maximum sample rate */
+    inline float maxSamplesPerWorldCoord() const {
         assert(sizeX > 0 && sizeZ > 0);
-        assert(std::abs(tileSamplesPerAxis * tilesX / sizeX - tileSamplesPerAxis * tilesZ/ sizeZ) < std::numeric_limits<float>::epsilon());
-        return tileSamplesPerAxis * tilesX / sizeX;
+        assert(std::abs(maxTileSamplesPerAxis * tilesX / sizeX - maxTileSamplesPerAxis * tilesZ / sizeZ) < std::numeric_limits<float>::epsilon());
+        return maxTileSamplesPerAxis * tilesX / sizeX;
     }
-    /** distance between two sample points along one axis */
-    inline float sampleInterval() const {
-        assert(tileSamplesPerAxis >= 2);
-        return tileBorderLength() / (tileSamplesPerAxis - 1);
+    /** distance between two sample points along one axis for tiles that use the maximum sample rate */
+    inline float minSampleInterval() const {
+        assert(maxTileSamplesPerAxis >= 2);
+        return tileBorderLength() / (maxTileSamplesPerAxis - 1);
     }
 };

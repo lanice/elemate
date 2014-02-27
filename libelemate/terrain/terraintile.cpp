@@ -30,14 +30,25 @@
 #include "world.h"
 #include "physicswrapper.h"
 
-TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
+namespace {
+    uint32_t calcSamplesPerAxis(uint32_t baseSamples, float scaling) {
+        assert(scaling <= 1.0f && scaling > 0.0f);
+        if (scaling == 1.0f)
+            return baseSamples;
+
+        return baseSamples * scaling;
+    }
+}
+
+TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames, float resolutionScaling)
 : m_tileID(tileID)
 , m_terrain(terrain)
+, samplesPerAxis(calcSamplesPerAxis(terrain.settings.maxTileSamplesPerAxis, resolutionScaling))
+, resolutionScaling(resolutionScaling)
+, samplesPerWorldCoord(samplesPerAxis / terrain.settings.tileBorderLength())
+, sampleInterval(terrain.settings.tileBorderLength() / (samplesPerAxis - 1))
 , m_elementNames(elementNames)
 , m_isInitialized(false)
-, m_heightTex(nullptr)
-, m_heightBuffer(nullptr)
-, m_program(nullptr)
 , m_pxShape(nullptr)
 {
     terrain.registerTile(tileID, *this);
@@ -46,14 +57,14 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
     float minX = terrain.settings.tileBorderLength() * (tileID.x - 0.5f);
     float minZ = terrain.settings.tileBorderLength() * (tileID.z - 0.5f);
     m_transform = glm::mat4(
-        terrain.settings.sampleInterval(), 0, 0, 0,
+        sampleInterval, 0, 0, 0,
         0, 1, 0, 0,
-        0, 0, terrain.settings.sampleInterval(), 0,
+        0, 0, sampleInterval, 0,
         minX, 0, minZ, 1);
 
     clearBufferUpdateRange();
 
-    m_heightField.resize(terrain.settings.tileSamplesPerAxis * terrain.settings.tileSamplesPerAxis);
+    m_heightField.resize(samplesPerAxis * samplesPerAxis);
 }
 
 TerrainTile::~TerrainTile()
@@ -124,7 +135,7 @@ void TerrainTile::initializeProgram()
 {
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
-    m_program->setUniform("tileSamplesPerAxis", int(m_terrain.settings.tileSamplesPerAxis));
+    m_program->setUniform("tileSamplesPerAxis", int(samplesPerAxis));
 
     Elements::setAllUniforms(*m_program);
 }
@@ -139,7 +150,7 @@ PxShape * TerrainTile::pxShape() const
 
 void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 {
-    const unsigned int numSamples = m_terrain.settings.tileSamplesPerAxis * m_terrain.settings.tileSamplesPerAxis;
+    const unsigned int numSamples = samplesPerAxis * samplesPerAxis;
 
     // create the list of material references
     PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
@@ -153,9 +164,9 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     float heightScaleToPx = std::numeric_limits<PxI16>::max() / m_terrain.settings.maxHeight;
 
     // copy the material and height data into the physx height field
-    for (unsigned int row = 0; row < m_terrain.settings.tileSamplesPerAxis; ++row) {
-        const unsigned int rowOffset = row * m_terrain.settings.tileSamplesPerAxis;
-        for (unsigned int column = 0; column < m_terrain.settings.tileSamplesPerAxis; ++column) {
+    for (unsigned int row = 0; row < samplesPerAxis; ++row) {
+        const unsigned int rowOffset = row * samplesPerAxis;
+        for (unsigned int column = 0; column < samplesPerAxis; ++column) {
             const unsigned int index = column + rowOffset;
             hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(row, column);
             hfSamples[index].height = static_cast<PxI16>(m_heightField.at(index) * heightScaleToPx);
@@ -164,17 +175,17 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;
-    hfDesc.nbRows = m_terrain.settings.tileSamplesPerAxis;
-    hfDesc.nbColumns = m_terrain.settings.tileSamplesPerAxis;
+    hfDesc.nbRows = samplesPerAxis;
+    hfDesc.nbColumns = samplesPerAxis;
     hfDesc.samples.data = hfSamples;
     hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
     PxHeightField * pxHeightField = PxGetPhysics().createHeightField(hfDesc);
 
-    assert(m_terrain.settings.sampleInterval() >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
+    assert(sampleInterval >= PX_MIN_HEIGHTFIELD_XZ_SCALE);
     // create height field geometry and set scale
     PxHeightFieldGeometry pxHfGeometry(pxHeightField, PxMeshGeometryFlags(),
-        heightScaleToWorld, m_terrain.settings.sampleInterval(), m_terrain.settings.sampleInterval());
+        heightScaleToWorld, sampleInterval, sampleInterval);
     m_pxShape = pxActor.createShape(pxHfGeometry, materials, 1);
 
     assert(m_pxShape);
@@ -190,13 +201,13 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
 float TerrainTile::heightAt(unsigned int row, unsigned int column) const
 {
-    assert(row < m_terrain.settings.tileSamplesPerAxis && column < m_terrain.settings.tileSamplesPerAxis);
-    return m_heightField.at(column + row * m_terrain.settings.tileSamplesPerAxis);
+    assert(row < samplesPerAxis && column < samplesPerAxis);
+    return m_heightField.at(column + row * samplesPerAxis);
 }
 
 bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height) const
 {
-    if (row >= m_terrain.settings.tileSamplesPerAxis || column >= m_terrain.settings.tileSamplesPerAxis)
+    if (row >= samplesPerAxis || column >= samplesPerAxis)
         return false;
 
     height = heightAt(row, column);
@@ -205,9 +216,9 @@ bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height
 
 void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
 {
-    assert(row < m_terrain.settings.tileSamplesPerAxis && column < m_terrain.settings.tileSamplesPerAxis);
+    assert(row < samplesPerAxis && column < samplesPerAxis);
     assert(std::abs(value) <= m_terrain.settings.maxHeight);
-    m_heightField.at(column + row * m_terrain.settings.tileSamplesPerAxis) = value;
+    m_heightField.at(column + row * samplesPerAxis) = value;
 }
 
 void TerrainTile::setElement(unsigned int row, unsigned int column, const std::string & elementName)
@@ -220,8 +231,8 @@ void TerrainTile::setElement(unsigned int row, unsigned int column, const std::s
 float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
 {
     double row_r, column_r;
-    double rowFraction = std::modf(normX * m_terrain.settings.tileSamplesPerAxis, &row_r);
-    double columnFraction = std::modf(normZ * m_terrain.settings.tileSamplesPerAxis, &column_r);
+    double rowFraction = std::modf(normX * samplesPerAxis, &row_r);
+    double columnFraction = std::modf(normZ * samplesPerAxis, &column_r);
 
     unsigned int row = static_cast<unsigned int>(row_r);
     unsigned int column = static_cast<unsigned int>(column_r);
@@ -267,7 +278,7 @@ float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
     return 0.0f;
 }
 
-glm::mat4 TerrainTile::transform() const
+const glm::mat4 & TerrainTile::transform() const
 {
     return m_transform;
 }
