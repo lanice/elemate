@@ -150,6 +150,7 @@ void  AchievementManager::checkForNewUnlocks(bool threaded)
                 unlockAchievement(unlocked_achievement);
         std::this_thread::sleep_for(std::chrono::milliseconds(2500));
     }
+    m_unlockerThreadRunning = false;
 }
 
 void AchievementManager::interruptUnlockerThread()
@@ -157,5 +158,5 @@ void AchievementManager::interruptUnlockerThread()
     if (!(m_unlockerThread.get() && m_unlockerThreadRunning))
         return;
     m_unlockerThreadRunning = false;
-    m_unlockerThread->join();
+    m_unlockerThread->detach();
 }
