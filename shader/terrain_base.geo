@@ -5,7 +5,6 @@ in vec3 v_worldPos[3];
 in vec3 v_viewPos[3];
 in vec4 v_projPos[3];
 in vec3 v_normal[3];
-in float v_temperatureCelsius[3];
 
 in uint v_isVisible[3];
 
@@ -14,7 +13,6 @@ out vec3 g_normal;
 out vec3 g_worldPos;
 out vec2 g_rowColumn;
 out vec2 g_quadRelativePos;
-out float g_temperatureCelsius;
 
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
@@ -39,7 +37,6 @@ void main()
                   minRowColumn.t != v_vertex[i].t));
         g_rowColumn = vec2(minRowColumn) + g_quadRelativePos - vec2(0.5);
         gl_Position = v_projPos[i];
-        g_temperatureCelsius = v_temperatureCelsius[i];
         EmitVertex();
     }
         
