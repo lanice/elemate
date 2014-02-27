@@ -7,7 +7,7 @@ uniform mat4 depthMVP;
 uniform samplerBuffer heightField;
 uniform samplerBuffer baseHeightField;
 
-uniform ivec2 tileRowsColumns;
+uniform int tileSamplesPerAxis;
 
 uniform bool baseTileCompare;
 
@@ -20,7 +20,7 @@ void main()
     bool visibleTriangle = false;
     
     for (int i=0; i < 3; ++i) {
-        int texIndex = v_vertex[i].t + v_vertex[i].s * tileRowsColumns.t;
+        int texIndex = v_vertex[i].t + v_vertex[i].s * tileSamplesPerAxis;
         float height = texelFetch(heightField, texIndex).x;
         positions[i] = depthMVP * vec4(float(v_vertex[i].x), height, float(v_vertex[i].y), 1.0);
         

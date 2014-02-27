@@ -212,10 +212,10 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
         // unchecked signed min/max values, possibly < 0 or > numRows/Column
         int iMinRow = row - effectRadius, iMaxRow = row + effectRadius, iMinColumn = column - effectRadius, iMaxColumn = column + effectRadius;
         // work on rows and column that are in range of the terrain tile settings and larger than 0
-        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMinRow));
-        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMaxRow));
-        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMinColumn));
-        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMaxColumn));
+        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMinRow));
+        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMaxRow));
+        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMinColumn));
+        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(settings.tileSamplesPerAxis) ? settings.tileSamplesPerAxis - 1 : static_cast<unsigned int>(iMaxColumn));
     }
 
     uint8_t elementIndex = tile.elementIndex(m_interactElement);
@@ -233,7 +233,7 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
             float newLocalHeight = interactHeight(localRadius);
 
             bool localMoveUp = newLocalHeight > tile.heightAt(r, c);
-            // don't do anything if we pull up the terrain but the local heightpoint is already higher than its calculated height. (vice versa)
+            // don't do anything if we pull up the terrain but the local height point is already higher than its calculated height. (vice versa)
             if (localMoveUp != moveUp)
                 continue;
 
@@ -241,7 +241,7 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
             if (setToInteractionElement)
                 tile.setElement(r, c, elementIndex);
         }
-        tile.addBufferUpdateRange(minColumn + r * settings.columns, 1u + effectRadius * 2u);
+        tile.addBufferUpdateRange(minColumn + r * settings.tileSamplesPerAxis, 1u + effectRadius * 2u);
     }
 
     tile.addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);

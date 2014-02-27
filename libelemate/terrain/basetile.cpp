@@ -17,7 +17,7 @@ BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initiali
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
 {
-    m_terrainTypeData.resize(terrain.settings.rows * terrain.settings.columns);
+    m_terrainTypeData.resize(terrain.settings.tileSamplesPerAxis * terrain.settings.tileSamplesPerAxis);
 }
 
 void BaseTile::bind(const CameraEx & camera)
@@ -129,7 +129,7 @@ void BaseTile::updateBuffers()
 
 uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const
 {
-    return m_terrainTypeData.at(column + row * m_terrain.settings.columns);
+    return m_terrainTypeData.at(column + row * m_terrain.settings.tileSamplesPerAxis);
 }
 
 uint8_t BaseTile::elementIndex(const std::string & elementName) const
@@ -142,5 +142,6 @@ uint8_t BaseTile::elementIndex(const std::string & elementName) const
 void BaseTile::setElement(unsigned int row, unsigned int column, uint8_t elementIndex)
 {
     assert(elementIndex < m_elementNames.size());
-    m_terrainTypeData.at(column + row * m_terrain.settings.columns) = elementIndex;
+    assert(row < m_terrain.settings.tileSamplesPerAxis && column < m_terrain.settings.tileSamplesPerAxis);
+    m_terrainTypeData.at(column + row * m_terrain.settings.tileSamplesPerAxis) = elementIndex;
 }

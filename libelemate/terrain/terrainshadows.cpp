@@ -119,7 +119,7 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/passthrough.frag"));
     m_depthMapProgram->setUniform("heightField", 0);
     m_depthMapProgram->setUniform("baseHeightField", 1);
-    m_depthMapProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
+    m_depthMapProgram->setUniform("tileSamplesPerAxis", int(settings.tileSamplesPerAxis));
 
 
     m_depthMapLinearizedProgram = new glow::Program();
@@ -130,7 +130,7 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
     m_depthMapLinearizedProgram->setUniform("heightField", 0);
     m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);
-    m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
+    m_depthMapLinearizedProgram->setUniform("tileSamplesPerAxis", int(settings.tileSamplesPerAxis));
 }
 
 void Terrain::initShadowMappingProgram()
@@ -142,7 +142,7 @@ void Terrain::initShadowMappingProgram()
 
     m_shadowMappingProgram->setUniform("heightField", 1);
 
-    m_shadowMappingProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
+    m_shadowMappingProgram->setUniform("tileSamplesPerAxis", int(settings.tileSamplesPerAxis));
 
     ShadowMappingStep::setUniforms(*m_shadowMappingProgram);
 }

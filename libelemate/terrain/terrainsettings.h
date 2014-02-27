@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <initializer_list>
 #include <limits>
 #include <functional>
@@ -40,38 +41,27 @@ struct TerrainSettings {
     float sizeZ;
     /** Maximal absolute height value in terrain. */
     float maxHeight;
-    /** number of sample points along the x axis in one tile */
-    unsigned rows;
-    /** number of sample points along the z axis in one tile */
-    unsigned columns;
+    /** number of sample points along the x/y axes in one tile */
+    uint32_t tileSamplesPerAxis;
     /** number of tiles along the x axis */
     unsigned tilesX;
     /** number of tiles along the z axis */
     unsigned tilesZ;
-    /** size of one tile along the x axis */
-    inline float tileSizeX() const { assert(tilesX >= 1); return sizeX / tilesX; };
-    /** size of one tile along the z axis */
-    inline float tileSizeZ() const { assert(tilesZ >= 1); return sizeZ / tilesZ; };
-    /** number of sample points along the x axis in the hole terrain */
-    unsigned samplesX() const {
-        assert(((long long) rows*tilesX) < std::numeric_limits<unsigned>::max());
-        return rows * tilesX;
-    }
-    /** number of sample points along the z axis in the hole terrain */
-    unsigned samplesZ() const {
-        assert(((long long) columns*tilesZ) < std::numeric_limits<unsigned>::max());
-        return columns * tilesZ;
-    }
+    /** size of one tile along the x/z axes */
+    inline float tileBorderLength() const {
+        assert(tilesX >= 1 && tilesZ >= 1);
+        assert(std::abs(sizeX / tilesX - sizeZ / tilesZ) < std::numeric_limits<float>::epsilon());
+        return sizeX / tilesX;
+    };
     /** number of samples per world coordinate */
     inline float samplesPerWorldCoord() const {
         assert(sizeX > 0 && sizeZ > 0);
-        assert(std::abs(rows / sizeX - columns / sizeZ) < std::numeric_limits<float>::epsilon());
-        return rows / sizeX;
+        assert(std::abs(tileSamplesPerAxis * tilesX / sizeX - tileSamplesPerAxis * tilesZ/ sizeZ) < std::numeric_limits<float>::epsilon());
+        return tileSamplesPerAxis * tilesX / sizeX;
     }
     /** distance between two sample points along one axis */
     inline float sampleInterval() const {
-        assert(rows >= 2 && columns >= 2);
-        assert(std::abs(tileSizeX() / (rows - 1) - tileSizeZ() / (columns - 1)) < std::numeric_limits<float>::epsilon());
-        return tileSizeX() / (rows - 1);
+        assert(tileSamplesPerAxis >= 2);
+        return tileBorderLength() / (tileSamplesPerAxis - 1);
     }
 };

@@ -159,8 +159,8 @@ void Terrain::setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 
 {
     assert(m_renderGridRadius.isValid());
 
-    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.rows - m_renderGridRadius.value()));
-    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z/settings.sizeZ) * settings.columns - m_renderGridRadius.value()));
+    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.tileSamplesPerAxis - m_renderGridRadius.value()));
+    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z / settings.sizeZ) * settings.tileSamplesPerAxis - m_renderGridRadius.value()));
 
     program.setUniform("rowColumnOffset", glm::ivec2(offsetX, offsetZ));
 }
@@ -184,7 +184,7 @@ void Terrain::generateDrawGrid()
     }
 
 
-    // create a quad for all vertices, except for the last row and column (covered by the forelast)
+    // create a quad for all vertices, except for the last row and column (covered by the second last)
     // see PxHeightFieldDesc::samples documentation: "...(nbRows - 1) * (nbColumns - 1) cells are actually used."
     unsigned numIndices = (diameter - 1) * ((diameter) * 2 + 1);
     m_indices.reserve(numIndices);
@@ -271,11 +271,11 @@ bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::sh
     bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
 
     float row_int = 0.0f, column_int = 0.0f;
-    row_fract = std::modf(normX * settings.rows, &row_int);
-    column_fract = std::modf(normZ * settings.columns, &column_int);
+    row_fract = std::modf(normX * settings.tileSamplesPerAxis, &row_int);
+    column_fract = std::modf(normZ * settings.tileSamplesPerAxis, &column_int);
 
-    row = static_cast<unsigned int>(row_int) % settings.rows;
-    column = static_cast<unsigned int>(column_int) % settings.columns;
+    row = static_cast<unsigned int>(row_int) % settings.tileSamplesPerAxis;
+    column = static_cast<unsigned int>(column_int) % settings.tileSamplesPerAxis;
 
     TileID tileID(level, 0, 0);
 

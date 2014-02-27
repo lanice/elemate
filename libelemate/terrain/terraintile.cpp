@@ -43,8 +43,8 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
     terrain.registerTile(tileID, *this);
 
     // compute position depending on TileID, which sets the row/column positions of the tile
-    float minX = terrain.settings.tileSizeX() * (tileID.x - 0.5f);
-    float minZ = terrain.settings.tileSizeZ() * (tileID.z - 0.5f);
+    float minX = terrain.settings.tileBorderLength() * (tileID.x - 0.5f);
+    float minZ = terrain.settings.tileBorderLength() * (tileID.z - 0.5f);
     m_transform = glm::mat4(
         terrain.settings.sampleInterval(), 0, 0, 0,
         0, 1, 0, 0,
@@ -53,7 +53,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 
     clearBufferUpdateRange();
 
-    m_heightField.resize(terrain.settings.rows * terrain.settings.columns);
+    m_heightField.resize(terrain.settings.tileSamplesPerAxis * terrain.settings.tileSamplesPerAxis);
 }
 
 TerrainTile::~TerrainTile()
@@ -124,7 +124,7 @@ void TerrainTile::initializeProgram()
 {
     m_program->setUniform("modelTransform", m_transform);
     m_program->setUniform("heightField", 0);
-    m_program->setUniform("tileRowsColumns", glm::ivec2(m_terrain.settings.rows, m_terrain.settings.columns));
+    m_program->setUniform("tileSamplesPerAxis", int(m_terrain.settings.tileSamplesPerAxis));
 
     Elements::setAllUniforms(*m_program);
 }
@@ -139,7 +139,7 @@ PxShape * TerrainTile::pxShape() const
 
 void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 {
-    const unsigned int numSamples = m_terrain.settings.rows * m_terrain.settings.columns;
+    const unsigned int numSamples = m_terrain.settings.tileSamplesPerAxis * m_terrain.settings.tileSamplesPerAxis;
 
     // create the list of material references
     PxHeightFieldSample * hfSamples = new PxHeightFieldSample[numSamples];
@@ -152,10 +152,10 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
     assert(heightScaleToWorld >= PX_MIN_HEIGHTFIELD_Y_SCALE);
     float heightScaleToPx = std::numeric_limits<PxI16>::max() / m_terrain.settings.maxHeight;
 
-    // copy the material and height data into the px heightfield
-    for (unsigned int row = 0; row < m_terrain.settings.rows; ++row) {
-        const unsigned int rowOffset = row * m_terrain.settings.columns;
-        for (unsigned int column = 0; column < m_terrain.settings.columns; ++column) {
+    // copy the material and height data into the physx height field
+    for (unsigned int row = 0; row < m_terrain.settings.tileSamplesPerAxis; ++row) {
+        const unsigned int rowOffset = row * m_terrain.settings.tileSamplesPerAxis;
+        for (unsigned int column = 0; column < m_terrain.settings.tileSamplesPerAxis; ++column) {
             const unsigned int index = column + rowOffset;
             hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(row, column);
             hfSamples[index].height = static_cast<PxI16>(m_heightField.at(index) * heightScaleToPx);
@@ -164,8 +164,8 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
     PxHeightFieldDesc hfDesc;
     hfDesc.format = PxHeightFieldFormat::eS16_TM;
-    hfDesc.nbRows = m_terrain.settings.rows;
-    hfDesc.nbColumns = m_terrain.settings.columns;
+    hfDesc.nbRows = m_terrain.settings.tileSamplesPerAxis;
+    hfDesc.nbColumns = m_terrain.settings.tileSamplesPerAxis;
     hfDesc.samples.data = hfSamples;
     hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
@@ -190,12 +190,13 @@ void TerrainTile::createPxObjects(PxRigidStatic & pxActor)
 
 float TerrainTile::heightAt(unsigned int row, unsigned int column) const
 {
-    return m_heightField.at(column + row * m_terrain.settings.columns);
+    assert(row < m_terrain.settings.tileSamplesPerAxis && column < m_terrain.settings.tileSamplesPerAxis);
+    return m_heightField.at(column + row * m_terrain.settings.tileSamplesPerAxis);
 }
 
 bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height) const
 {
-    if (row >= m_terrain.settings.rows || column >= m_terrain.settings.columns)
+    if (row >= m_terrain.settings.tileSamplesPerAxis || column >= m_terrain.settings.tileSamplesPerAxis)
         return false;
 
     height = heightAt(row, column);
@@ -204,7 +205,9 @@ bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height
 
 void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
 {
-    m_heightField.at(column + row * m_terrain.settings.columns) = value;
+    assert(row < m_terrain.settings.tileSamplesPerAxis && column < m_terrain.settings.tileSamplesPerAxis);
+    assert(std::abs(value) <= m_terrain.settings.maxHeight);
+    m_heightField.at(column + row * m_terrain.settings.tileSamplesPerAxis) = value;
 }
 
 void TerrainTile::setElement(unsigned int row, unsigned int column, const std::string & elementName)
@@ -217,8 +220,8 @@ void TerrainTile::setElement(unsigned int row, unsigned int column, const std::s
 float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
 {
     double row_r, column_r;
-    double rowFraction = std::modf(normX * m_terrain.settings.rows, &row_r);
-    double columnFraction = std::modf(normZ * m_terrain.settings.columns, &column_r);
+    double rowFraction = std::modf(normX * m_terrain.settings.tileSamplesPerAxis, &row_r);
+    double columnFraction = std::modf(normZ * m_terrain.settings.tileSamplesPerAxis, &column_r);
 
     unsigned int row = static_cast<unsigned int>(row_r);
     unsigned int column = static_cast<unsigned int>(column_r);
@@ -339,7 +342,7 @@ void TerrainTile::updatePxHeight()
     bool result = m_pxShape->getHeightFieldGeometry(geometry);
     assert(result);
     if (!result) {
-        glow::warning("TerrainInteractor::setPxHeight could not get heightfield geometry from px shape");
+        glow::warning("TerrainInteractor::setPxHeight could not get height field geometry from physx shape");
         return;
     }
     PxHeightField * hf = geometry.heightField;
@@ -375,7 +378,7 @@ void TerrainTile::updatePxHeight()
     bool success = hf->modifySamples(m_pxUpdateBox.minColumn, m_pxUpdateBox.minRow, descM);
     assert(success);
     if (!success) {
-        glow::warning("TerrainInteractor::setPxHeight could not modify heightfield.");
+        glow::warning("TerrainInteractor::setPxHeight could not modify height field.");
         return;
     }
 

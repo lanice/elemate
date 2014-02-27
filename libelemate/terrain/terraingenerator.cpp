@@ -64,7 +64,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         /** create terrain object and pass terrain data */
         BaseTile * baseTile = new BaseTile(*terrain, tileIDBase, baseElements);
 
-        // create the terain using diamond square algorithm
+        // create the terrain using diamond square algorithm
         diamondSquare(*baseTile);
         // and apply the elements to the landscape
         applyElementsByHeight(*baseTile);
@@ -76,7 +76,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
-        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5f), 0.0f, m_settings.tileSizeZ() * (zID - 0.5f)));
+        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileBorderLength() * (xID - 0.5f), 0.0f, m_settings.tileBorderLength() * (zID - 0.5f)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
         terrain->m_pxActors.emplace(tileIDBase, actor);
 
@@ -96,7 +96,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
     // assuming the edge length of the field is a power of 2, + 1
     // assuming the field is square
 
-    const unsigned fieldEdgeLength = m_settings.rows;
+    const unsigned fieldEdgeLength = m_settings.tileSamplesPerAxis;
     const float maxHeight = m_settings.maxHeight;
 
     float randomMax = 50.0f;
@@ -159,7 +159,6 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
             const unsigned int midpointRow = row + (currentEdgeLength - 1) / 2; // this is always divisible, because of the edge length 2^n + 1
             for (unsigned int columnN = 0; columnN < nbSquareRows; ++columnN) {
                 const unsigned int column = columnN * (currentEdgeLength - 1);
-                //const unsigned int index = column + rowOffset;
                 const unsigned int midpointColumn = column + (currentEdgeLength - 1) / 2;
                 float heightValue =
                     (tile.heightAt(row, column)
@@ -182,11 +181,11 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
                 const unsigned int seedpointColumn = columnN * (currentEdgeLength - 1);
 
                 unsigned int rightDiamondColumn = seedpointColumn + currentEdgeLength / 2;
-                if (rightDiamondColumn < m_settings.columns)
+                if (rightDiamondColumn < m_settings.tileSamplesPerAxis)
                     squareStep(diamondRadius, seedpointRow, rightDiamondColumn, heightRndPos);
 
                 unsigned int bottomDiamondRow = seedpointRow + currentEdgeLength / 2;
-                if (bottomDiamondRow < m_settings.rows)
+                if (bottomDiamondRow < m_settings.tileSamplesPerAxis)
                     squareStep(diamondRadius, bottomDiamondRow, seedpointColumn, heightRndPos);
             }
         }
@@ -205,8 +204,8 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     float sandMaxHeight = 2.5f;     // under water + shore
     float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
 
-    for (unsigned int row = 0; row < m_settings.rows - 1; ++row) {
-        for (unsigned int column = 0; column < m_settings.columns - 1; ++column) {
+    for (unsigned int row = 0; row < m_settings.tileSamplesPerAxis - 1; ++row) {
+        for (unsigned int column = 0; column < m_settings.tileSamplesPerAxis - 1; ++column) {
             float height = 0.25f * (
                 tile.heightAt(row, column)
                 + tile.heightAt(row + 1, column)
@@ -223,62 +222,4 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
             tile.setElement(row, column, bedrock);
         }
     }
-}
-
-void TerrainGenerator::setExtentsInWorld(float x, float z)
-{
-    assert(x > 0 && z > 0);
-    m_settings.sizeX = x;
-    m_settings.sizeZ = z;
-}
-
-float TerrainGenerator::xExtens() const
-{
-    return m_settings.sizeX;
-}
-
-float TerrainGenerator::zExtens() const
-{
-    return m_settings.sizeZ;
-}
-
-void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
-{
-    assert(xzSamplesPerCoord > 0.0f);
-    unsigned int xSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeX * xzSamplesPerCoord)));
-    m_settings.rows = xSamplesui >= 2 ? xSamplesui : 2;
-    unsigned int zSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeZ * xzSamplesPerCoord)));
-    m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
-}
-
-float TerrainGenerator::samplesPerWorldCoord() const
-{
-    return m_settings.samplesPerWorldCoord();
-}
-void TerrainGenerator::setTilesPerAxis(unsigned x, unsigned z)
-{
-    assert(x >= 1 && z >= 1);
-    m_settings.tilesX = x;
-    m_settings.tilesZ = z;
-}
-
-int TerrainGenerator::tilesPerXAxis() const
-{
-    return m_settings.tilesX;
-}
-
-int TerrainGenerator::tilesPerZAxis() const
-{
-    return m_settings.tilesZ;
-}
-
-void TerrainGenerator::setMaxHeight(float height)
-{
-    assert(height > 0.0f);
-    m_settings.maxHeight = height;
-}
-
-float TerrainGenerator::maxHeight() const
-{
-    return m_settings.maxHeight;
 }
