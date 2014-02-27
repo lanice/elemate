@@ -159,7 +159,49 @@ void Achievement::update(){
 
 void Achievement::lock()
 {
-    m_unlocked = false;
+    m_unlocked  = false;
+    m_drawn     = false;
+    m_timeMod   = 0;
+}
+
+void Achievement::setUnlockProperty(const std::string& property_name, const std::string& relation, float property_value)
+{
+    m_properties.emplace(property_name, std::make_pair(relation, property_value));
+}
+
+bool Achievement::unlockable(const std::unordered_map<std::string, float>& properties) const
+{
+    float current_value = 0, goal_value = 0;
+    std::string relation = "";
+    bool fulfilled = true;
+
+    for (auto& prop : m_properties)
+    {
+        auto iter = properties.find(prop.first);
+        if (iter != properties.end())
+        {
+            current_value = properties.at(prop.first);
+        }
+        else
+        {
+            glow::debug() << "An achievement-property seems to have no initial value!";
+            return false;
+        }
+
+        relation        = prop.second.first; 
+        goal_value      = prop.second.second;
+        
+        fulfilled = fulfilled &&
+            (relation == "<" && current_value < goal_value) ||
+            (relation == ">" && current_value > goal_value) ||
+            ((relation == ">=" || relation == "=>") && current_value >= goal_value) ||
+            ((relation == "<=" || relation == "=<") && current_value <= goal_value) ||
+            ((relation == "="  || relation == "==") && current_value == goal_value) ||
+            ((relation == "<>" || relation == "!=") && current_value != goal_value);
+        if (!fulfilled)
+            break;
+    }
+    return fulfilled;
 }
 
 void Achievement::unlock()

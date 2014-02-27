@@ -4,7 +4,7 @@
 #include "glm/glm.hpp"
 
 #include <list>
-
+#include <unordered_map>
 #include <chrono>
 
 namespace glow{
@@ -21,8 +21,10 @@ class Achievement
 public:
     Achievement(const std::string& title, const std::string& text = "", bool unlocked = false, const std::string& picture = "default");
 
+    void setUnlockProperty(const std::string& property_name, const std::string& relation, float property_value);
     void lock();
     void unlock();
+    bool unlockable(const std::unordered_map<std::string, float>& properties) const;
     bool isUnlocked() const;
 
     void initialize();
@@ -46,6 +48,8 @@ protected:
     bool        m_unlocked;
     bool        m_drawn;
     std::string m_picture;
+
+    std::unordered_map<std::string, std::pair<std::string, float>> m_properties;
 
     glow::ref_ptr<glow::VertexArrayObject>  m_vao;
     glow::ref_ptr<glow::Program>            m_program;
