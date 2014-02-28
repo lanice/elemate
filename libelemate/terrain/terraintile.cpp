@@ -31,7 +31,8 @@
 #include "physicswrapper.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
-: m_tileID(tileID)
+: tileName(generateName(tileID))
+, m_tileID(tileID)
 , m_terrain(terrain)
 , m_elementNames(elementNames)
 , m_isInitialized(false)
@@ -58,6 +59,11 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::in
 
 TerrainTile::~TerrainTile()
 {
+}
+
+std::string TerrainTile::generateName(const TileID & tileID)
+{
+    return "TerrainTile_" + std::to_string(int(tileID.level)) + "_" + std::to_string(tileID.x) + "x" + std::to_string(tileID.z);
 }
 
 const std::string & TerrainTile::elementAt(unsigned int row, unsigned int column) const

@@ -36,6 +36,8 @@ public:
     TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames);
     virtual ~TerrainTile();
 
+    const std::string tileName;
+
     /** get the name of the element at the row/column position
       * @return a reference to this name from the internal element list */
     const std::string & elementAt(unsigned int row, unsigned int column) const;
@@ -59,6 +61,8 @@ public:
 
 protected:
     const TileID m_tileID;
+
+    static std::string generateName(const TileID & tileID);
 
     const Terrain & m_terrain;
 
