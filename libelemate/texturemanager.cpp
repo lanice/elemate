@@ -22,7 +22,7 @@ void TextureManager::release()
 }
 
 TextureManager::TextureManager()
-: m_nextFreeUnit(10)
+: m_nextFreeUnit(1)
 {
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &m_maxUnits);
     CheckGLError();
