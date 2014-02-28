@@ -11,6 +11,8 @@ set(SOURCES
     game.h
     world.cpp
     world.h
+    texturemanager.h
+    texturemanager.cpp
     io/imagereader.h
     io/imagereader.cpp
     io/soundmanager.cpp

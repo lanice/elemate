@@ -23,6 +23,7 @@
 #include "world.h"
 #include "terrain.h"
 #include "elements.h"
+#include "texturemanager.h"
 
 PhysicalTile::PhysicalTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : TerrainTile(terrain, tileID, -terrain.settings.maxHeight, terrain.settings.maxHeight, 1.0f)
@@ -55,6 +56,7 @@ void PhysicalTile::bind(const CameraEx & camera)
     m_program->setUniform("znear", camera.zNearEx());
     m_program->setUniform("zfar", camera.zFarEx());
     m_terrain.setDrawGridOffsetUniform(*m_program, camera.eye());
+    m_program->setUniform("heightField", TextureManager::getTextureUnit(tileName, "values"));
 
     World::instance()->setUpLighting(*m_program);
 }
@@ -69,7 +71,6 @@ void PhysicalTile::unbind()
 void PhysicalTile::initializeProgram()
 {
     m_program->setUniform("modelTransform", m_transform);
-    m_program->setUniform("heightField", 0);
     m_program->setUniform("tileSamplesPerAxis", int(samplesPerAxis));
 
     Elements::setAllUniforms(*m_program);

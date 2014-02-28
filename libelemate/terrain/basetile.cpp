@@ -10,6 +10,7 @@
 #include "terrain.h"
 #include "io/imagereader.h"
 #include "world.h"
+#include "texturemanager.h"
 
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
@@ -25,17 +26,10 @@ void BaseTile::bind(const CameraEx & camera)
     PhysicalTile::bind(camera);
 
     assert(m_terrainTypeTex);
-    m_terrainTypeTex->bindActive(GL_TEXTURE1);
-
-    for (TextureTuple & tex : m_textures)
-        std::get<1>(tex)->bindActive(GL_TEXTURE0 + std::get<2>(tex));
 }
 
 void BaseTile::unbind()
 {
-    for (TextureTuple & tex : m_textures)
-        std::get<1>(tex)->unbindActive(GL_TEXTURE0 + std::get<2>(tex));
-
     PhysicalTile::unbind();
 }
 
@@ -45,9 +39,9 @@ void BaseTile::initialize()
 
     createTerrainTypeTexture();
 
-    loadInitTexture("bedrock", 2);
-    loadInitTexture("sand", 3);     // http://opengameart.org/content/50-free-textures
-    loadInitTexture("grassland", 4);
+    loadInitTexture("bedrock", TextureManager::reserveTextureUnit(tileName, "bedrock"));
+    loadInitTexture("sand", TextureManager::reserveTextureUnit(tileName, "sand"));     // http://opengameart.org/content/50-free-textures
+    loadInitTexture("grassland", TextureManager::reserveTextureUnit(tileName, "grassland"));
 }
 
 void BaseTile::initializeProgram()
@@ -59,7 +53,7 @@ void BaseTile::initializeProgram()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_base.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"));
 
-    m_program->setUniform("terrainTypeID", 1);
+    m_program->setUniform("terrainTypeID", TextureManager::getTextureUnit(tileName, "terrainType"));
     for (TextureTuple & tex : m_textures)
         m_program->setUniform(std::get<0>(tex), std::get<2>(tex));
 
@@ -77,6 +71,10 @@ void BaseTile::createTerrainTypeTexture()
     m_terrainTypeTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, m_terrainTypeBuffer->id());
     m_terrainTypeTex->unbind();
+
+    m_terrainTypeTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit(tileName, "terrainType"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
 }
 
 void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
@@ -96,7 +94,10 @@ void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
     CheckGLError();
     glGenerateMipmap(GL_TEXTURE_2D);
     CheckGLError();
-    texture->unbind();
+
+    texture->bindActive(GL_TEXTURE0 + textureSlot);
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
 
     m_textures.push_back(TextureTuple(elementName + "Sampler", texture, textureSlot));
 }

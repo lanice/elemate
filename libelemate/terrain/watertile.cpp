@@ -7,6 +7,7 @@
 
 #include "terrain.h"
 #include "world.h"
+#include "texturemanager.h"
 
 WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
 : PhysicalTile(terrain, tileID, {"water"})
@@ -17,9 +18,6 @@ void WaterTile::bind(const CameraEx & camera)
 {
     PhysicalTile::bind(camera);
 
-    assert(m_baseHeightTex);
-    m_baseHeightTex->bindActive(GL_TEXTURE1);
-
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 }
@@ -27,8 +25,6 @@ void WaterTile::bind(const CameraEx & camera)
 void WaterTile::unbind()
 {
     glDisable(GL_BLEND);
-
-    m_baseHeightTex->unbindActive(GL_TEXTURE1);
 
     PhysicalTile::unbind();
 }
@@ -41,7 +37,8 @@ void WaterTile::initializeProgram()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_water.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"));
 
-    m_program->setUniform("baseHeightField", 1);
+    std::string baseTileName = generateName(TileID(TerrainLevel::BaseLevel, m_tileID.x, m_tileID.z));
+    m_program->setUniform("baseHeightField", TextureManager::getTextureUnit(baseTileName, "values"));
 
     PhysicalTile::initializeProgram();
 }

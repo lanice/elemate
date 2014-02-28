@@ -29,6 +29,8 @@ public:
     TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float resolutionScaling = 1.0f);
     virtual ~TerrainTile();
 
+    const std::string tileName;
+
     /** update opengl buffers etc */
     virtual void prepareDraw();
 
@@ -54,6 +56,8 @@ public:
 
 protected:
     const TileID m_tileID;
+
+    static std::string generateName(const TileID & tileID);
 
     const Terrain & m_terrain;
 

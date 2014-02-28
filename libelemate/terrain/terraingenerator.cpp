@@ -72,7 +72,6 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
         TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
         WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
-        waterTile->m_baseHeightTex = baseTile->m_valueTex;
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */

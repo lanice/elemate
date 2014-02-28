@@ -13,10 +13,6 @@ public:
     virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;
 
-    glow::Texture * normalsTex();
-    glow::Texture * depthTex();
-    glow::Texture * elementIdTex();
-
 protected:
     // for geometry drawing step
 
@@ -24,10 +20,7 @@ protected:
     glow::ref_ptr<glow::Texture> m_depthTex;
     glow::ref_ptr<glow::Texture> m_elementIdTex;
 
-    // for postprocessing: use two texture buffers and swap them between the steps
-
-    glow::ref_ptr<glow::Texture> m_postTexA;
-    glow::ref_ptr<glow::Texture> m_postTexB;
+    glow::ref_ptr<glow::Texture> m_postTempTex;
 
 
     glow::ref_ptr<glow::Texture> m_normalsTex;
@@ -37,10 +30,10 @@ protected:
 
     class PostProcess {
     public:
-        PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program);
+        PostProcess(int sourceTexUnit, glow::Texture & target, glow::Program & program);
         void draw();
 
-        glow::Texture & m_source;
+        int m_sourceTexUnit;
         glow::Texture * m_target;
         glow::ref_ptr<glow::FrameBufferObject> m_fbo;
         glow::ref_ptr<glow::Program> m_program;
@@ -49,7 +42,7 @@ protected:
         void operator=(PostProcess&) = delete;
     };
 
-    void addProcess(glow::Texture & source, glow::Texture * target, glow::Program & program);
+    void addProcess(int sourceTexUnit, glow::Texture & target, glow::Program & program);
 
     std::list<PostProcess> m_processes;    
 };

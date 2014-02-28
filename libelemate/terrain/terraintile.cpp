@@ -10,6 +10,7 @@
 #include "terrain.h"
 #include "elements.h"
 #include "world.h"
+#include "texturemanager.h"
 
 namespace {
     uint32_t calcSamplesPerAxis(uint32_t baseSamples, float scaling) {
@@ -22,7 +23,8 @@ namespace {
 }
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float resolutionScaling)
-: m_tileID(tileID)
+: tileName(generateName(tileID))
+, m_tileID(tileID)
 , m_terrain(terrain)
 , samplesPerAxis(calcSamplesPerAxis(terrain.settings.maxTileSamplesPerAxis, resolutionScaling))
 , resolutionScaling(resolutionScaling)
@@ -52,6 +54,11 @@ TerrainTile::~TerrainTile()
 {
 }
 
+std::string TerrainTile::generateName(const TileID & tileID)
+{
+    return "TerrainTile_" + std::to_string(int(tileID.level)) + "_" + std::to_string(tileID.x) + "x" + std::to_string(tileID.z);
+}
+
 void TerrainTile::prepareDraw()
 {
     if (!m_isInitialized)
@@ -65,13 +72,10 @@ void TerrainTile::bind(const CameraEx & /*camera*/)
     prepareDraw();
 
     assert(m_valueTex);
-
-    m_valueTex->bindActive(GL_TEXTURE0);
 }
 
 void TerrainTile::unbind()
 {
-    m_valueTex->unbindActive(GL_TEXTURE0);
 }
 
 void TerrainTile::initialize()
@@ -85,6 +89,11 @@ void TerrainTile::initialize()
     m_valueTex->bind();
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_valueBuffer->id());
     m_valueBuffer->unbind();
+
+    m_valueTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit(tileName, "values"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
+
 
     m_isInitialized = true;
 }
