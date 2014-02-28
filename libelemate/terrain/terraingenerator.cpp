@@ -18,6 +18,7 @@
 #include "terrain.h"
 #include "basetile.h"
 #include "watertile.h"
+#include "temperaturetile.h"
 
 // Mersenne Twister, preconfigured
 namespace {
@@ -85,6 +86,9 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         pxScene->addActor(*actor);
 
         waterTile->pxShape()->setFlag(PxShapeFlag::ePARTICLE_DRAIN, true);
+
+        TileID temperatureID(TerrainLevel::TemperatureLevel, xID, zID);
+        TemperatureTile * tempTile = new TemperatureTile(*terrain, temperatureID);
     }
 
     return terrain;

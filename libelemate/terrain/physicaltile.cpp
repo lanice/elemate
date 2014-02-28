@@ -57,6 +57,8 @@ void PhysicalTile::bind(const CameraEx & camera)
     m_program->setUniform("zfar", camera.zFarEx());
     m_terrain.setDrawGridOffsetUniform(*m_program, camera.eye());
     m_program->setUniform("heightField", TextureManager::getTextureUnit(tileName, "values"));
+    std::string temperatureTileName = generateName(TileID(TerrainLevel::TemperatureLevel, m_tileID.x, m_tileID.z));
+    m_program->setUniform("temperatures", TextureManager::getTextureUnit(temperatureTileName, "values"));
 
     World::instance()->setUpLighting(*m_program);
 }

@@ -66,6 +66,8 @@ set(SOURCES
     terrain/basetile.cpp
     terrain/watertile.h
     terrain/watertile.cpp
+    terrain/temperaturetile.h
+    terrain/temperaturetile.cpp
     terrain/terraingenerator.h
     terrain/terraingenerator.cpp
     ui/eventhandler.cpp

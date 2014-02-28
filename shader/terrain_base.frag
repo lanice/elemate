@@ -5,6 +5,7 @@ in vec3 g_normal;
 in vec3 g_viewPos;
 in vec2 g_rowColumn;
 in vec2 g_quadRelativePos;
+in float g_temperature;
 
 uniform float zfar;
 
@@ -32,6 +33,8 @@ vec3 interpolate(vec2 coeff, vec3 values[4]);
 
 void main()
 {
+    fragColor = vec4(g_temperature * 0.1 + 0.3);
+    return;
     
     vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);
     
