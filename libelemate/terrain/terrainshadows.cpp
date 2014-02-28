@@ -13,6 +13,7 @@
 #include "terraintile.h"
 #include "rendering/shadowmappingstep.h"
 #include "world.h"
+#include "texturemanager.h"
 
 void Terrain::drawDepthMapImpl(const CameraEx & camera)
 {
@@ -53,20 +54,14 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
 
     for (TerrainLevel level : m_drawLevels) {
         TerrainTile & tile = *m_tiles.at(TileID(level));
-        if (level == TerrainLevel::WaterLevel) // for water/fluid drawing: discard samples below the solid terrain
-            baseTile.m_heightTex->bindActive(GL_TEXTURE1);
 
         program->setUniform("baseTileCompare", level == TerrainLevel::WaterLevel);
 
         tile.prepareDraw();
-        tile.m_heightTex->bindActive(GL_TEXTURE0);
+        program->setUniform("heightField", TextureManager::getTextureUnit(tile.tileName, "heightField"));
+        program->setUniform("baseHeightField", TextureManager::getTextureUnit(baseTile.tileName, "heightField"));
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
-
-        tile.m_heightTex->unbindActive(GL_TEXTURE0);
-
-        if (level == TerrainLevel::WaterLevel)
-            baseTile.m_heightTex->unbindActive(GL_TEXTURE1);
     }
 
     glDisable(GL_CULL_FACE);
@@ -100,11 +95,9 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
         TerrainTile & tile = *m_tiles.at(TileID(level));
 
         tile.prepareDraw();
-        tile.m_heightTex->bindActive(GL_TEXTURE1);
+        m_shadowMappingProgram->setUniform("heightField", TextureManager::getTextureUnit(tile.tileName, "heightField"));
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
-
-        tile.m_heightTex->unbindActive(GL_TEXTURE1);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);
@@ -117,8 +110,6 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/shadows/depthmap_terrain.vert"),
         World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/passthrough.frag"));
-    m_depthMapProgram->setUniform("heightField", 0);
-    m_depthMapProgram->setUniform("baseHeightField", 1);
     m_depthMapProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 
 
@@ -128,8 +119,6 @@ void Terrain::initDepthMapProgram()
         World::instance()->sharedShader(GL_GEOMETRY_SHADER, "shader/shadows/depthmap_terrain.geo"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/depth_util.frag"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/depthmapLinearized.frag"));
-    m_depthMapLinearizedProgram->setUniform("heightField", 0);
-    m_depthMapLinearizedProgram->setUniform("baseHeightField", 1);
     m_depthMapLinearizedProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 }
 
@@ -139,8 +128,6 @@ void Terrain::initShadowMappingProgram()
     m_shadowMappingProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/shadows/shadowmapping_terrain.vert"),
         World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/shadows/shadowmapping.frag"));
-
-    m_shadowMappingProgram->setUniform("heightField", 1);
 
     m_shadowMappingProgram->setUniform("tileRowsColumns", glm::ivec2(settings.rows, settings.columns));
 
