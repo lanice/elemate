@@ -7,6 +7,7 @@
 #include <functional>
 #include <string>
 #include <cmath>
+#include <unordered_map>
 
 
 enum class TerrainLevel {
@@ -14,16 +15,15 @@ enum class TerrainLevel {
     WaterLevel,
     TemperatureLevel
 };
-extern std::initializer_list<TerrainLevel> TerrainLevels;
-
-/** initialize the list that defines which terrain level should hold which element */
-void initElementTerrainLevels();
-
-/** @return the terrain level that holds the element with name elementName */
-TerrainLevel levelForElement(const std::string & elementName);
+extern const std::initializer_list<TerrainLevel> PhysicalLevels;
+extern const std::initializer_list<TerrainLevel> AttributeLevels;
 
 /** @return if this tile type has a physical/rendered representation */
-bool levelIsPhysical(TerrainLevel level);
+extern bool levelIsPhysical(TerrainLevel level);
+extern bool levelIsAttribute(TerrainLevel level);
+
+/** mapping from element name to the terrain level that contains this element type */
+extern const std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> levelForElement;
 
 struct TileID {
     TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0);

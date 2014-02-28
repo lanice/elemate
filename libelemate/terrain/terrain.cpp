@@ -20,7 +20,7 @@
 Terrain::Terrain(const TerrainSettings & settings)
 : ShadowingDrawable()
 , settings(settings)
-, m_drawLevels(TerrainLevels)
+, m_drawLevels(PhysicalLevels)
 , m_viewRange(0.0f)
 {
     TerrainInteraction::setDefaultTerrain(*this);
@@ -53,13 +53,13 @@ void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightS
 void Terrain::setDrawElements(const std::initializer_list<std::string> & elements)
 {
     if (elements.size() == 0) {
-        m_drawLevels = TerrainLevels;
+        m_drawLevels = PhysicalLevels;
         return;
     }
 
     m_drawLevels.clear();
     for (const std::string & name : elements)
-        m_drawLevels.insert(levelForElement(name));
+        m_drawLevels.insert(levelForElement.at(name));
 }
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
@@ -67,7 +67,7 @@ const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
 void Terrain::drawImplementation(const CameraEx & camera)
 {
     // we probably don't want to draw an empty terrain
-    assert(m_tiles.size() > 0);
+    assert(m_physicalTiles.size() > 0);
 
     if (!m_renderGridRadius.isValid())
         generateDrawGrid();
@@ -81,7 +81,7 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
 
-    for (auto & pair : m_tiles) {
+    for (auto & pair : m_physicalTiles) {
         if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
             continue;   // only draw elements that are listed for drawing
         pair.second->bind(camera);
@@ -205,9 +205,27 @@ void Terrain::generateDrawGrid()
 
 void Terrain::registerTile(const TileID & tileID, TerrainTile & tile)
 {
-    assert(m_tiles.find(tileID) == m_tiles.end());
+    assert(m_physicalTiles.find(tileID) == m_physicalTiles.end());
+    assert(m_attributeTiles.find(tileID) == m_attributeTiles.end());
 
-    m_tiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
+    if (levelIsPhysical(tileID.level))
+        m_physicalTiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
+    else if (levelIsAttribute(tileID.level))
+        m_attributeTiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
+    else
+        glow::fatal("Terrain: Trying to register a terrain tile with unknown level (%;)", int(tileID.level));
+}
+
+std::shared_ptr<TerrainTile> Terrain::getTile(TileID tileID) const
+{
+    if (levelIsPhysical(tileID.level))
+        return m_physicalTiles.at(tileID);
+    if (levelIsAttribute(tileID.level))
+        return m_attributeTiles.at(tileID); 
+
+    glow::fatal("Terrain: Trying to register a terrain tile with unknown level (%;)", int(tileID.level));
+    assert(nullptr);
+    return nullptr;
 }
 
 const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
@@ -219,9 +237,7 @@ void Terrain::heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, f
 {
     maxHeight = std::numeric_limits<float>::lowest();
     maxLevel = TerrainLevel::BaseLevel;
-    for (TerrainLevel level : TerrainLevels) {
-        if (!levelIsPhysical(level))
-            continue;
+    for (TerrainLevel level : PhysicalLevels) {
         float h = heightAt(x, z, level);
         if (h > maxHeight) {
             maxLevel = level;
@@ -246,7 +262,6 @@ float Terrain::heightTotalAt(float x, float z) const
 
 float Terrain::heightAt(float x, float z, TerrainLevel level) const
 {
-    std::shared_ptr<TerrainTile> tile = nullptr;
     float normX = 0.0f;
     float normZ = 0.0f;
     TileID tileID;
@@ -255,13 +270,13 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
 
     tileID.level = level;
 
-    return m_tiles.at(tileID)->interpolatedValueAt(normX, normZ);
+    return m_physicalTiles.at(tileID)->interpolatedValueAt(normX, normZ);
 }
 
 bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const
 {
-    assert(levelIsPhysical(level));
-    if (!levelIsPhysical(level))
+    assert(std::find(PhysicalLevels.begin(), PhysicalLevels.end(), level) != PhysicalLevels.end());
+    if (std::find(PhysicalLevels.begin(), PhysicalLevels.end(), level) == PhysicalLevels.end())
         return false;
 
     std::shared_ptr<TerrainTile> terrainTile;
@@ -294,7 +309,7 @@ bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::sh
     assert(settings.tilesX == 1 && settings.tilesZ == 1);
 
     TileID tileID(level, 0, 0);
-    terrainTile = m_tiles.at(tileID);
+    terrainTile = getTile(tileID);
     assert(terrainTile);
 
     float normX = (x / settings.sizeX + 0.5f);

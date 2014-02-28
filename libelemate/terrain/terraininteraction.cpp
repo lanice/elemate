@@ -38,7 +38,7 @@ float TerrainInteraction::normalDist(float x, float mean, float stddev)
 TerrainInteraction::TerrainInteraction(Terrain & terrain, const std::string & interactElement)
 : m_terrain(terrain)
 , m_interactElement(interactElement)
-, m_interactLevel(levelForElement(interactElement))
+, m_interactLevel(levelForElement.at(interactElement))
 {
 }
 
@@ -60,7 +60,7 @@ const std::string & TerrainInteraction::interactElement() const
 void TerrainInteraction::setInteractElement(const std::string & elementName)
 {
     m_interactElement = elementName;
-    m_interactLevel = levelForElement(elementName);
+    m_interactLevel = levelForElement.at(elementName);
 }
 
 const std::string & TerrainInteraction::topmostElementAt(float worldX, float worldZ) const
@@ -110,11 +110,11 @@ float TerrainInteraction::heightAt(float worldX, float worldZ) const
 
 bool TerrainInteraction::isHeighestAt(float worldX, float worldZ) const
 {
-    if (TerrainLevels.size() == 1)
+    if (PhysicalLevels.size() == 1)
         return true;
 
     float othersMaxHeight = std::numeric_limits<float>::lowest();
-    for (TerrainLevel level : TerrainLevels) {
+    for (TerrainLevel level : PhysicalLevels) {
         if (level == m_interactLevel)
             continue;
         othersMaxHeight = std::max(m_terrain.heightAt(worldX, worldZ, level), othersMaxHeight);

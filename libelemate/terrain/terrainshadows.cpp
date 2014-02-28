@@ -17,7 +17,7 @@
 void Terrain::drawDepthMapImpl(const CameraEx & camera)
 {
     // we probably don't want to draw an empty terrain
-    assert(m_tiles.size() > 0);
+    assert(m_physicalTiles.size() > 0);
 
     if (!m_renderGridRadius.isValid())
         generateDrawGrid();
@@ -36,7 +36,7 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
 
     setDrawGridOffsetUniform(*program, camera.eye());
 
-    TerrainTile & baseTile = *m_tiles.at(TileID(TerrainLevel::BaseLevel));
+    TerrainTile & baseTile = *m_physicalTiles.at(TileID(TerrainLevel::BaseLevel));
 
     program->setUniform("depthMVP", camera.viewProjectionEx() * baseTile.m_transform);
 
@@ -52,7 +52,7 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
     glEnable(GL_CULL_FACE);
 
     for (TerrainLevel level : m_drawLevels) {
-        TerrainTile & tile = *m_tiles.at(TileID(level));
+        TerrainTile & tile = *m_physicalTiles.at(TileID(level));
 
         // for water/fluid drawing: discard samples below the solid terrain
         bool compareToBaseTile = level == TerrainLevel::WaterLevel;
@@ -87,12 +87,12 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
     if (!m_renderGridRadius.isValid())
         generateDrawGrid();
 
-    auto baseTile = m_tiles.at(TileID(TerrainLevel::BaseLevel));
+    auto baseTile = m_physicalTiles.at(TileID(TerrainLevel::BaseLevel));
 
     glm::mat4 lightBiasMVP = ShadowMappingStep::s_biasMatrix * lightSource.viewProjectionEx() * baseTile->transform();
 
     m_shadowMappingProgram->setUniform("modelTransform", baseTile->transform());
-    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * m_tiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
+    m_shadowMappingProgram->setUniform("modelViewProjection", camera.viewProjectionEx() * m_physicalTiles.at(TileID(TerrainLevel::BaseLevel))->m_transform);
     m_shadowMappingProgram->setUniform("lightBiasMVP", lightBiasMVP);
 
     setDrawGridOffsetUniform(*m_shadowMappingProgram, camera.eye());
@@ -101,7 +101,7 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
     glPrimitiveRestartIndex(s_restartIndex);
 
     for (TerrainLevel level : m_drawLevels) {
-        TerrainTile & tile = *m_tiles.at(TileID(level));
+        TerrainTile & tile = *m_physicalTiles.at(TileID(level));
 
         tile.prepareDraw();
         tile.m_valueTex->bindActive(GL_TEXTURE1);

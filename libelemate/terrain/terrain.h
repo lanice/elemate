@@ -73,7 +73,10 @@ protected:
     /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);
 
-    std::map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
+    std::map<TileID, std::shared_ptr<TerrainTile>> m_physicalTiles;
+    std::map<TileID, std::shared_ptr<TerrainTile>> m_attributeTiles;
+    std::shared_ptr<TerrainTile> getTile(TileID tileID) const;
+
     /** holds one physx actor per tile x/z-ID. TileId.level is always BaseLevel */
     std::map<TileID, physx::PxRigidStatic*> m_pxActors;
 

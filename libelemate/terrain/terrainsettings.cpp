@@ -1,43 +1,43 @@
 #include "terrainsettings.h"
 
-#include <unordered_map>
+namespace {
+    std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> initElementTerrainLevels()
+    {
+        std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> l_elementToLevel;
 
+        l_elementToLevel.emplace("water", TerrainLevel::WaterLevel);
+        l_elementToLevel.emplace("lava", TerrainLevel::WaterLevel);
 
-std::initializer_list<TerrainLevel> TerrainLevels = {
+        l_elementToLevel.emplace("bedrock", TerrainLevel::BaseLevel);
+        l_elementToLevel.emplace("grassland", TerrainLevel::BaseLevel);
+        l_elementToLevel.emplace("sand", TerrainLevel::BaseLevel);
+
+        l_elementToLevel.emplace("temperature", TerrainLevel::TemperatureLevel);
+
+        return l_elementToLevel;
+    }
+
+}
+
+const std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> levelForElement = initElementTerrainLevels();
+
+const std::initializer_list<TerrainLevel> PhysicalLevels = {
     TerrainLevel::BaseLevel,
     TerrainLevel::WaterLevel,
+};
+
+const std::initializer_list<TerrainLevel> AttributeLevels = {
     TerrainLevel::TemperatureLevel
 };
 
-std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> s_elementToLevel;
-
-void initElementTerrainLevels()
-{
-    s_elementToLevel.emplace("water", TerrainLevel::WaterLevel);
-    s_elementToLevel.emplace("lava", TerrainLevel::WaterLevel);
-
-    s_elementToLevel.emplace("bedrock", TerrainLevel::BaseLevel);
-    s_elementToLevel.emplace("grassland", TerrainLevel::BaseLevel);
-    s_elementToLevel.emplace("sand", TerrainLevel::BaseLevel);
-}
-
-TerrainLevel levelForElement(const std::string & elementName)
-{
-    assert(s_elementToLevel.find(elementName) != s_elementToLevel.end());
-    return s_elementToLevel.at(elementName);
-}
-
 bool levelIsPhysical(TerrainLevel level)
 {
-    if (level == TerrainLevel::BaseLevel ||
-        level == TerrainLevel::WaterLevel)
-        return true;
+    return std::find(PhysicalLevels.begin(), PhysicalLevels.end(), level) != PhysicalLevels.end();
+}
 
-    if (level == TerrainLevel::TemperatureLevel)
-        return false;
-    
-    assert(false);
-    return false;
+bool levelIsAttribute(TerrainLevel level)
+{
+    return std::find(AttributeLevels.begin(), AttributeLevels.end(), level) != AttributeLevels.end();
 }
 
 TerrainSettings::TerrainSettings()
