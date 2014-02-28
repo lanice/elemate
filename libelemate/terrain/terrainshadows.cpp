@@ -60,17 +60,17 @@ void Terrain::drawDepthMapImpl(const CameraEx & camera)
         program->setUniform("baseTileCompare", compareToBaseTile);
 
         if (compareToBaseTile)
-            baseTile.m_heightTex->bindActive(GL_TEXTURE1);
+            baseTile.m_valueTex->bindActive(GL_TEXTURE1);
 
         tile.prepareDraw();
-        tile.m_heightTex->bindActive(GL_TEXTURE0);
+        tile.m_valueTex->bindActive(GL_TEXTURE0);
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
-        tile.m_heightTex->unbindActive(GL_TEXTURE0);
+        tile.m_valueTex->unbindActive(GL_TEXTURE0);
 
         if (compareToBaseTile)
-            baseTile.m_heightTex->unbindActive(GL_TEXTURE1);
+            baseTile.m_valueTex->unbindActive(GL_TEXTURE1);
     }
 
     glDisable(GL_CULL_FACE);
@@ -104,11 +104,11 @@ void Terrain::drawShadowMappingImpl(const CameraEx & camera, const CameraEx & li
         TerrainTile & tile = *m_tiles.at(TileID(level));
 
         tile.prepareDraw();
-        tile.m_heightTex->bindActive(GL_TEXTURE1);
+        tile.m_valueTex->bindActive(GL_TEXTURE1);
 
         m_vao->drawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
-        tile.m_heightTex->unbindActive(GL_TEXTURE1);
+        tile.m_valueTex->unbindActive(GL_TEXTURE1);
     }
 
     glDisable(GL_PRIMITIVE_RESTART);

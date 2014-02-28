@@ -72,7 +72,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
         TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
         WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
-        waterTile->m_baseHeightTex = baseTile->m_heightTex;
+        waterTile->m_baseHeightTex = baseTile->m_valueTex;
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
@@ -125,21 +125,21 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
         if (rightColumn >= signed(fieldEdgeLength))
             rightColumn = diamondRadius;
         float value =
-            (tile.heightAt(upperRow, diamondCenterColumn)
-            + tile.heightAt(lowerRow, diamondCenterColumn)
-            + tile.heightAt(diamondCenterRow, leftColumn)
-            + tile.heightAt(diamondCenterRow, rightColumn))
+            (tile.valueAt(upperRow, diamondCenterColumn)
+            + tile.valueAt(lowerRow, diamondCenterColumn)
+            + tile.valueAt(diamondCenterRow, leftColumn)
+            + tile.valueAt(diamondCenterRow, rightColumn))
             * 0.25f
             + heightRnd(diamondCenterRow, diamondCenterColumn);
 
         float clampedHeight = clampHeight(value);
-        tile.setHeight(diamondCenterRow, diamondCenterColumn, clampedHeight);
+        tile.setValue(diamondCenterRow, diamondCenterColumn, clampedHeight);
 
         // in case we are at the borders of the tile: also set the value at the opposite border, to allow seamless tile wrapping
         if (upperRow > signed(diamondCenterRow))
-            tile.setHeight(fieldEdgeLength - 1, diamondCenterColumn, clampedHeight);
+            tile.setValue(fieldEdgeLength - 1, diamondCenterColumn, clampedHeight);
         if (leftColumn > signed(diamondCenterColumn))
-            tile.setHeight(diamondCenterRow, fieldEdgeLength - 1, clampedHeight);
+            tile.setValue(diamondCenterRow, fieldEdgeLength - 1, clampedHeight);
     };
     
     unsigned nbSquareRows = 1; // number of squares in a row, doubles each time the current edge length increases [same for the columns]
@@ -163,14 +163,14 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
                 const unsigned int column = columnN * (currentEdgeLength - 1);
                 const unsigned int midpointColumn = column + (currentEdgeLength - 1) / 2;
                 float heightValue =
-                    (tile.heightAt(row, column)
-                    + tile.heightAt(row + currentEdgeLength - 1, column)
-                    + tile.heightAt(row, column + currentEdgeLength - 1)
-                    + tile.heightAt(row + currentEdgeLength - 1, column + currentEdgeLength - 1))
+                    (tile.valueAt(row, column)
+                    + tile.valueAt(row + currentEdgeLength - 1, column)
+                    + tile.valueAt(row, column + currentEdgeLength - 1)
+                    + tile.valueAt(row + currentEdgeLength - 1, column + currentEdgeLength - 1))
                     * 0.25f
                     + heightRndPos(midpointRow, midpointColumn);
 
-                tile.setHeight(midpointRow, midpointColumn, clampHeight(heightValue));
+                tile.setValue(midpointRow, midpointColumn, clampHeight(heightValue));
             }
         }
 
@@ -209,10 +209,10 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     for (unsigned int row = 0; row < tile.samplesPerAxis - 1; ++row) {
         for (unsigned int column = 0; column < tile.samplesPerAxis - 1; ++column) {
             float height = 0.25f * (
-                tile.heightAt(row, column)
-                + tile.heightAt(row + 1, column)
-                + tile.heightAt(row, column + 1)
-                + tile.heightAt(row + 1, column + 1));
+                tile.valueAt(row, column)
+                + tile.valueAt(row + 1, column)
+                + tile.valueAt(row, column + 1)
+                + tile.valueAt(row + 1, column + 1));
             if (height < sandMaxHeight) {
                 tile.setElement(row, column, sand);
                 continue;

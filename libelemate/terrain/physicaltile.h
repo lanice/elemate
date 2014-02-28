@@ -11,7 +11,8 @@ namespace physx {
     class PxMaterial;
 }
 
-/** Base class for tiles which can be rendered, with a representation as physx shape. */
+/** Base class for tiles which can be rendered, with a representation as physx shape.
+  * Tile values are defined as height values (y coordinate in world coordinate system). */
 class PhysicalTile : public TerrainTile
 {
 public:

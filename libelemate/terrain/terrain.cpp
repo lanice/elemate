@@ -255,7 +255,7 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
 
     tileID.level = level;
 
-    return m_tiles.at(tileID)->interpolatedHeightAt(normX, normZ);
+    return m_tiles.at(tileID)->interpolatedValueAt(normX, normZ);
 }
 
 bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const

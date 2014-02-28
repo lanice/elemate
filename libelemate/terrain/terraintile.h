@@ -26,7 +26,7 @@ public:
       * @param tileID register tile at this position in the terrain
       * @param resolutionScaling use a lower resolution than the maximum defined in the terrain settings.
                a value lower than 1 will result in resolution scaling. */
-    TerrainTile(Terrain & terrain, const TileID & tileID, float resolutionScaling = 1.0f);
+    TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float resolutionScaling = 1.0f);
     virtual ~TerrainTile();
 
     /** update opengl buffers etc */
@@ -35,8 +35,8 @@ public:
     virtual void bind(const CameraEx & camera);
     virtual void unbind();
 
-    /** @return interpolated height (y value) at specified normalized in tile position. */
-    float interpolatedHeightAt(float normX, float normZ) const;
+    /** @return interpolated value at specified normalized in tile position. */
+    float interpolatedValueAt(float normX, float normZ) const;
 
     const glm::mat4 & transform() const;
 
@@ -60,24 +60,31 @@ protected:
     virtual void initialize();
     bool m_isInitialized;
 
-    glow::ref_ptr<glow::Texture> m_heightTex;
-    glow::ref_ptr<glow::Buffer>  m_heightBuffer;
+    glow::ref_ptr<glow::Texture> m_valueTex;
+    glow::ref_ptr<glow::Buffer>  m_valueBuffer;
 
-    /** Contains the height field values in row major order.
+    /** Contains the tile values in row major order.
       * Initially created by the TerrainGenerator. */
-    std::vector<float> m_heightField;
+    std::vector<float> m_values;
+
+    const float m_minValidValue;
+    const float m_maxValidValue;
 
     glm::mat4 m_transform;
 
 
 protected: // interaction specific functions (see class TerrainInteraction)
-    /** @return height at specified row/column position. Parameters must be in range. */
-    float heightAt(unsigned int row, unsigned int column) const;
-    /** @param height value at specified row/column position, if values are in range
+    /** @return tile value at specified row/column position. Parameters must be in range. */
+    float valueAt(unsigned int row, unsigned int column) const;
+    /** @param tile value at specified row/column position, if values are in range
       * @return whether parameters are in range */
-    bool heightAt(unsigned int row, unsigned int column, float & height) const;
-    /** set height at specified row/column position. Parameters must be in range. */
-    void setHeight(unsigned int row, unsigned int column, float value);
+    bool valueAt(unsigned int row, unsigned int column, float & value) const;
+    /** set tile value at specified row/column position. Parameters must be in range. */
+    void setValue(unsigned int row, unsigned int column, float value);
+
+    inline bool isValueInRange(float value) const {
+        return value >= m_minValidValue && value <= m_maxValidValue;
+    }
 
     virtual void updateBuffers();
 

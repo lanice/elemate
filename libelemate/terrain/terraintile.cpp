@@ -21,7 +21,7 @@ namespace {
     }
 }
 
-TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float resolutionScaling)
+TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float resolutionScaling)
 : m_tileID(tileID)
 , m_terrain(terrain)
 , samplesPerAxis(calcSamplesPerAxis(terrain.settings.maxTileSamplesPerAxis, resolutionScaling))
@@ -29,6 +29,8 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float resolut
 , samplesPerWorldCoord(samplesPerAxis / terrain.settings.tileBorderLength())
 , sampleInterval(terrain.settings.tileBorderLength() / (samplesPerAxis - 1))
 , m_isInitialized(false)
+, m_minValidValue(minValidValue)
+, m_maxValidValue(maxValidValue)
 {
     terrain.registerTile(tileID, *this);
 
@@ -43,7 +45,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float resolut
 
     clearBufferUpdateRange();
 
-    m_heightField.resize(samplesPerAxis * samplesPerAxis);
+    m_values.resize(samplesPerAxis * samplesPerAxis);
 }
 
 TerrainTile::~TerrainTile()
@@ -62,55 +64,56 @@ void TerrainTile::bind(const CameraEx & /*camera*/)
 {
     prepareDraw();
 
-    assert(m_heightTex);
+    assert(m_valueTex);
 
-    m_heightTex->bindActive(GL_TEXTURE0);
+    m_valueTex->bindActive(GL_TEXTURE0);
 }
 
 void TerrainTile::unbind()
 {
-    m_heightTex->unbindActive(GL_TEXTURE0);
+    m_valueTex->unbindActive(GL_TEXTURE0);
 }
 
 void TerrainTile::initialize()
 {
     clearBufferUpdateRange();
 
-    m_heightBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
-    m_heightBuffer->setData(m_heightField, GL_DYNAMIC_DRAW);
+    m_valueBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
+    m_valueBuffer->setData(m_values, GL_DYNAMIC_DRAW);
 
-    m_heightTex = new glow::Texture(GL_TEXTURE_BUFFER);
-    m_heightTex->bind();
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
-    m_heightBuffer->unbind();
+    m_valueTex = new glow::Texture(GL_TEXTURE_BUFFER);
+    m_valueTex->bind();
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_valueBuffer->id());
+    m_valueBuffer->unbind();
 
     m_isInitialized = true;
 }
 
-float TerrainTile::heightAt(unsigned int row, unsigned int column) const
+float TerrainTile::valueAt(unsigned int row, unsigned int column) const
 {
     assert(row < samplesPerAxis && column < samplesPerAxis);
-    return m_heightField.at(column + row * samplesPerAxis);
+    return m_values.at(column + row * samplesPerAxis);
 }
 
-bool TerrainTile::heightAt(unsigned int row, unsigned int column, float & height) const
+bool TerrainTile::valueAt(unsigned int row, unsigned int column, float & value) const
 {
     if (row >= samplesPerAxis || column >= samplesPerAxis)
         return false;
 
-    height = heightAt(row, column);
+    value = valueAt(row, column);
+    assert(isValueInRange(value));
     return true;
 }
 
-void TerrainTile::setHeight(unsigned int row, unsigned int column, float value)
+void TerrainTile::setValue(unsigned int row, unsigned int column, float value)
 {
     assert(row < samplesPerAxis && column < samplesPerAxis);
-    assert(std::abs(value) <= m_terrain.settings.maxHeight);
-    m_heightField.at(column + row * samplesPerAxis) = value;
+    assert(isValueInRange(value));
+    m_values.at(column + row * samplesPerAxis) = value;
 }
 
 // mostly from OpenSceneGraph: osgTerrain/Layer
-float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
+float TerrainTile::interpolatedValueAt(float normX, float normZ) const
 {
     double row_r, column_r;
     double rowFraction = std::modf(normX * samplesPerAxis, &row_r);
@@ -125,28 +128,28 @@ float TerrainTile::interpolatedHeightAt(float normX, float normZ) const
     double mix;
 
     mix = (1.0 - rowFraction) * (1.0 - columnFraction);
-    if (mix > 0.0 && heightAt(row, column, gridValue))
+    if (mix > 0.0 && valueAt(row, column, gridValue))
     {
         value += gridValue * mix;
         div += mix;
     }
 
     mix = (rowFraction) * (1.0 - columnFraction);
-    if (mix > 0.0 && heightAt(row + 1, column, gridValue))
+    if (mix > 0.0 && valueAt(row + 1, column, gridValue))
     {
         value += gridValue * mix;
         div += mix;
     }
 
     mix = rowFraction * columnFraction;
-    if (mix > 0.0 && heightAt(row + 1, column + 1, gridValue))
+    if (mix > 0.0 && valueAt(row + 1, column + 1, gridValue))
     {
         value += gridValue * mix;
         div += mix;
     }
 
     mix = (1.0 - rowFraction) * columnFraction;
-    if (mix > 0.0 && heightAt(row, column + 1, gridValue))
+    if (mix > 0.0 && valueAt(row, column + 1, gridValue))
     {
         value += gridValue * mix;
         div += mix;
@@ -169,7 +172,7 @@ void TerrainTile::updateBuffers()
 {
     assert(m_updateRangeMinMaxIndex.x < m_updateRangeMinMaxIndex.y);
 
-    float * bufferDest = reinterpret_cast<float*>(m_heightBuffer->mapRange(
+    float * bufferDest = reinterpret_cast<float*>(m_valueBuffer->mapRange(
         sizeof(float) * m_updateRangeMinMaxIndex.x,
         sizeof(float) * (m_updateRangeMinMaxIndex.y - m_updateRangeMinMaxIndex.x),
         GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
@@ -181,13 +184,13 @@ void TerrainTile::updateBuffers()
     for (const UpdateRange & range : m_bufferUpdateList) {
         assert(indexOffset <= range.startIndex);
         assert(range.startIndex - indexOffset >= 0);
-        assert(range.startIndex - indexOffset + range.nbElements < m_heightField.size());
+        assert(range.startIndex - indexOffset + range.nbElements < m_values.size());
         memcpy(bufferDest + (range.startIndex - indexOffset),
-            reinterpret_cast<float*>(m_heightField.data()) + range.startIndex,
+            reinterpret_cast<float*>(m_values.data()) + range.startIndex,
             range.nbElements * sizeof(float));
     }
 
-    m_heightBuffer->unmap();
+    m_valueBuffer->unmap();
 
     clearBufferUpdateRange();
 }

@@ -173,7 +173,7 @@ float TerrainInteraction::changeLevelHeight(float worldX, float worldZ, TerrainL
 
     assert(tile);
 
-    float height = tile->heightAt(row, column);
+    float height = tile->valueAt(row, column);
 
     return setHeight(*tile.get(), row, column, height + delta, setToInteractionElement);
 }
@@ -193,7 +193,7 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
     const float effectRadiusWorld = stddev * 3;
     const uint32_t effectRadius = static_cast<uint32_t>(std::ceil(effectRadiusWorld * tile.samplesPerWorldCoord)); // = 0 means to change only the value at (row,column)
 
-    bool moveUp = (value - tile.heightAt(row, column)) > 0;
+    bool moveUp = (value - tile.valueAt(row, column)) > 0;
     int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
 
     float norm0 = normalDist(0, 0, stddev);
@@ -241,12 +241,12 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
 
             float newLocalHeight = interactHeight(localRadius);
 
-            bool localMoveUp = newLocalHeight > tile.heightAt(r, c);
+            bool localMoveUp = newLocalHeight > tile.valueAt(r, c);
             // don't do anything if we pull up the terrain but the local height point is already higher than its calculated height. (vice versa)
             if (localMoveUp != moveUp)
                 continue;
 
-            tile.setHeight(r, c, newLocalHeight);
+            tile.setValue(r, c, newLocalHeight);
             if (setToInteractionElement)
                 physicalTile->setElement(r, c, elementIndex);
         }

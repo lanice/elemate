@@ -25,7 +25,7 @@
 #include "elements.h"
 
 PhysicalTile::PhysicalTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
-: TerrainTile(terrain, tileID, 1.0f)
+: TerrainTile(terrain, tileID, -terrain.settings.maxHeight, terrain.settings.maxHeight, 1.0f)
 , m_elementNames(elementNames)
 , m_pxShape(nullptr)
 {
@@ -117,7 +117,7 @@ void PhysicalTile::createPxObjects(PxRigidStatic & pxActor)
         for (unsigned int column = 0; column < samplesPerAxis; ++column) {
             const unsigned int index = column + rowOffset;
             hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(row, column);
-            hfSamples[index].height = static_cast<PxI16>(m_heightField.at(index) * heightScaleToPx);
+            hfSamples[index].height = static_cast<PxI16>(m_values.at(index) * heightScaleToPx);
         }
     }
 
@@ -193,7 +193,7 @@ void PhysicalTile::updatePxHeight()
         unsigned int rowOffset = r * nbColumns;
         for (unsigned int c = 0; c < nbColumns; ++c) {
             const unsigned int index = c + rowOffset;
-            const float terrainHeight = heightAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
+            const float terrainHeight = valueAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
             samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
             samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = elementIndexAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
         }
