@@ -61,7 +61,10 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
             m_game.toggleVSync();
             break;
         case GLFW_KEY_G:
-            m_game.physicsWrapper()->toogleUseGpuParticles();
+            PhysicsWrapper::instance()->toogleUseGpuParticles();
+            break;
+        case GLFW_KEY_F2:
+            PhysicsWrapper::instance()->connectVisualDebugger();
             break;
         case GLFW_KEY_F1:
             m_game.renderer()->toggleDrawDebugInfo();

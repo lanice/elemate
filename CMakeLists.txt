@@ -21,6 +21,8 @@ if(OPTION_LIMIT_CONFIGS)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "Limited Configs" FORCE)
 endif()
 
+set(DEBUG_CONFIGURATIONS "Debug")
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(cmake/Custom.cmake)
