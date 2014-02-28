@@ -1,10 +1,10 @@
 #pragma once
 
-#include "terraintile.h"
+#include "physicaltile.h"
 
 #include <vector>
 
-class BaseTile : public TerrainTile
+class BaseTile : public PhysicalTile
 {
 public:
     BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames);

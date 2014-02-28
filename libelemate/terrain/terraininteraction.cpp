@@ -19,7 +19,7 @@
 #endif
 
 #include "terrain.h"
-#include "terraintile.h"
+#include "physicaltile.h"
 #include "physicswrapper.h"
 #include "lua/luawrapper.h"
 
@@ -67,10 +67,10 @@ const std::string & TerrainInteraction::topmostElementAt(float worldX, float wor
 {
     TerrainLevel topmostLevel = m_terrain.heighestLevelAt(worldX, worldZ);
 
-    std::shared_ptr<TerrainTile> tile = nullptr;
+    std::shared_ptr<PhysicalTile> tile = nullptr;
     unsigned int row, column;
 
-    if (!m_terrain.worldToTileRowColumn(worldX, worldZ, topmostLevel, tile, row, column))
+    if (!m_terrain.worldToPhysicalTileRowColumn(worldX, worldZ, topmostLevel, tile, row, column))
         return s_defaultElementName;
 
     assert(tile);
@@ -86,10 +86,10 @@ const std::string & TerrainInteraction::useTopmostElementAt(float worldX, float 
 
 const std::string & TerrainInteraction::solidElementAt(float worldX, float worldZ) const
 {
-    std::shared_ptr<TerrainTile> tile = nullptr;
+    std::shared_ptr<PhysicalTile> tile = nullptr;
     unsigned int row, column;
 
-    if (!m_terrain.worldToTileRowColumn(worldX, worldZ, TerrainLevel::BaseLevel, tile, row, column))
+    if (!m_terrain.worldToPhysicalTileRowColumn(worldX, worldZ, TerrainLevel::BaseLevel, tile, row, column))
         return s_defaultElementName;
 
     assert(tile);
@@ -218,7 +218,16 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
         maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMaxColumn));
     }
 
-    uint8_t elementIndex = tile.elementIndex(m_interactElement);
+    // also change element id's if requested and the tile supports it
+    PhysicalTile * physicalTile = dynamic_cast<PhysicalTile*>(&tile);
+    
+    if (setToInteractionElement) {
+        assert(physicalTile);
+    }
+
+    uint8_t elementIndex = 0;
+    if (physicalTile)
+        elementIndex = physicalTile->elementIndex(m_interactElement);
 
     for (unsigned int r = minRow; r <= maxRow; ++r) {
         float relWorldX = (signed(r) - signed(row)) * tile.sampleInterval;
@@ -239,12 +248,13 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
 
             tile.setHeight(r, c, newLocalHeight);
             if (setToInteractionElement)
-                tile.setElement(r, c, elementIndex);
+                physicalTile->setElement(r, c, elementIndex);
         }
         tile.addBufferUpdateRange(minColumn + r * tile.samplesPerAxis, 1u + effectRadius * 2u);
     }
 
-    tile.addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
+    if (physicalTile)
+        physicalTile->addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
 
     return value;
 }

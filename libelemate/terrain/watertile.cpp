@@ -9,13 +9,13 @@
 #include "world.h"
 
 WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
-: TerrainTile(terrain, tileID, {"water"})
+: PhysicalTile(terrain, tileID, {"water"})
 {
 }
 
 void WaterTile::bind(const CameraEx & camera)
 {
-    TerrainTile::bind(camera);
+    PhysicalTile::bind(camera);
 
     assert(m_baseHeightTex);
     m_baseHeightTex->bindActive(GL_TEXTURE1);
@@ -30,7 +30,7 @@ void WaterTile::unbind()
 
     m_baseHeightTex->unbindActive(GL_TEXTURE1);
 
-    TerrainTile::unbind();
+    PhysicalTile::unbind();
 }
 
 void WaterTile::initializeProgram()
@@ -43,7 +43,7 @@ void WaterTile::initializeProgram()
 
     m_program->setUniform("baseHeightField", 1);
 
-    TerrainTile::initializeProgram();
+    PhysicalTile::initializeProgram();
 }
 
 uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/) const

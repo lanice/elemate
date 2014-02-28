@@ -1,8 +1,8 @@
 #pragma once
 
-#include "terraintile.h"
+#include "physicaltile.h"
 
-class WaterTile : public TerrainTile
+class WaterTile : public PhysicalTile
 {
 public:
     WaterTile(Terrain & terrain, const TileID & tileID);

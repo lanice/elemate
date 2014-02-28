@@ -13,7 +13,7 @@
 
 
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
-: TerrainTile(terrain, tileID, elementNames)
+: PhysicalTile(terrain, tileID, elementNames)
 , m_terrainTypeTex(nullptr)
 , m_terrainTypeBuffer(nullptr)
 {
@@ -22,7 +22,7 @@ BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initiali
 
 void BaseTile::bind(const CameraEx & camera)
 {
-    TerrainTile::bind(camera);
+    PhysicalTile::bind(camera);
 
     assert(m_terrainTypeTex);
     m_terrainTypeTex->bindActive(GL_TEXTURE1);
@@ -36,12 +36,12 @@ void BaseTile::unbind()
     for (TextureTuple & tex : m_textures)
         std::get<1>(tex)->unbindActive(GL_TEXTURE0 + std::get<2>(tex));
 
-    TerrainTile::unbind();
+    PhysicalTile::unbind();
 }
 
 void BaseTile::initialize()
 {
-    TerrainTile::initialize();
+    PhysicalTile::initialize();
 
     createTerrainTypeTexture();
 
@@ -65,7 +65,7 @@ void BaseTile::initializeProgram()
 
     m_program->setUniform("modelTransform", m_transform);
 
-    TerrainTile::initializeProgram();
+    PhysicalTile::initializeProgram();
 }
 
 void BaseTile::createTerrainTypeTexture()
@@ -124,7 +124,7 @@ void BaseTile::updateBuffers()
 
     m_terrainTypeBuffer->unmap();
 
-    TerrainTile::updateBuffers();
+    PhysicalTile::updateBuffers();
 }
 
 uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const

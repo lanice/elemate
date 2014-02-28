@@ -58,6 +58,8 @@ set(SOURCES
     terrain/terraininteraction.cpp
     terrain/terraintile.h
     terrain/terraintile.cpp
+    terrain/physicaltile.h
+    terrain/physicaltile.cpp
     terrain/basetile.h
     terrain/basetile.cpp
     terrain/watertile.h

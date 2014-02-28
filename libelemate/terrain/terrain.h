@@ -37,24 +37,25 @@ public:
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxRigidStatic * pxActor(const TileID & tileID) const;
     /** Map of static PhysX actors. TileID's level is always BaseLevel.
-      * One actor owns the shapes for all terain levels at its x/z-ID. */
+      * One actor owns the shapes for all terrain levels at its x/z-ID. */
     const std::map<TileID, physx::PxRigidStatic*> pxActorMap() const;
     /** @return interpolated maximal height of all terrain layers at specific world position */
     float heightTotalAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
     float heightAt(float x, float z, TerrainLevel level) const;
-    /** @return heighest terrain level at position */
+    /** @return highest terrain level at position */
     TerrainLevel heighestLevelAt(float x, float z) const;
     void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
-    /** @return the axis aligned bouding box including all tiles */
+    /** @return the axis aligned bounding box including all tiles */
     const glowutils::AxisAlignedBoundingBox & boudingBox() const;
-    /** @return the bouding box reduced by the border width */
+    /** @return the bounding box reduced by the border width */
     const glowutils::AxisAlignedBoundingBox & validBoundingBox() const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
     friend class TerrainGenerator;
     friend class TerrainTile;
+    friend class PhysicalTile;
     friend class TerrainInteraction;
 
 protected:
@@ -107,6 +108,8 @@ protected:
     * @return true, if the position is in terrain extent's range. */
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const;
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const;
+    bool worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column) const;
+    bool worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const;
     /** transform world position into tileID and normalized coordinates in this tile.
     * @param tileID this will set the x, y values of the id, but will not change the level
     * @param normX normZ these parameter will be set the normalized position in the tile, referenced with tileID

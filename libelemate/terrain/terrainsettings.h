@@ -11,7 +11,8 @@
 
 enum class TerrainLevel {
     BaseLevel,
-    WaterLevel
+    WaterLevel,
+    TemperatureLevel
 };
 extern std::initializer_list<TerrainLevel> TerrainLevels;
 
@@ -20,6 +21,9 @@ void initElementTerrainLevels();
 
 /** @return the terrain level that holds the element with name elementName */
 TerrainLevel levelForElement(const std::string & elementName);
+
+/** @return if this tile type has a physical/rendered representation */
+bool levelIsPhysical(TerrainLevel level);
 
 struct TileID {
     TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0);

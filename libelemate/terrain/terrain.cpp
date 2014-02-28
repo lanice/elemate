@@ -14,7 +14,7 @@
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "terraintile.h"
+#include "physicaltile.h"
 #include "terraininteraction.h"
 
 Terrain::Terrain(const TerrainSettings & settings)
@@ -220,6 +220,8 @@ void Terrain::heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, f
     maxHeight = std::numeric_limits<float>::lowest();
     maxLevel = TerrainLevel::BaseLevel;
     for (TerrainLevel level : TerrainLevels) {
+        if (!levelIsPhysical(level))
+            continue;
         float h = heightAt(x, z, level);
         if (h > maxHeight) {
             maxLevel = level;
@@ -254,6 +256,30 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
     tileID.level = level;
 
     return m_tiles.at(tileID)->interpolatedHeightAt(normX, normZ);
+}
+
+bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const
+{
+    assert(levelIsPhysical(level));
+    if (!levelIsPhysical(level))
+        return false;
+
+    std::shared_ptr<TerrainTile> terrainTile;
+    bool result = worldToTileRowColumn(x, z, level, terrainTile, row, column, row_fract, column_fract);
+
+    if (!result)
+        return false;
+
+    physicalTile = std::dynamic_pointer_cast<PhysicalTile>(terrainTile);
+    assert(physicalTile);
+
+    return result;
+}
+
+bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column) const
+{
+    float row_fract = 0.0f, column_fract = 0.0f;
+    return worldToPhysicalTileRowColumn(x, z, level, physicalTile, row, column, row_fract, column_fract);
 }
 
 bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const

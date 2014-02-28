@@ -5,7 +5,8 @@
 
 std::initializer_list<TerrainLevel> TerrainLevels = {
     TerrainLevel::BaseLevel,
-    TerrainLevel::WaterLevel
+    TerrainLevel::WaterLevel,
+    TerrainLevel::TemperatureLevel
 };
 
 std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> s_elementToLevel;
@@ -24,6 +25,19 @@ TerrainLevel levelForElement(const std::string & elementName)
 {
     assert(s_elementToLevel.find(elementName) != s_elementToLevel.end());
     return s_elementToLevel.at(elementName);
+}
+
+bool levelIsPhysical(TerrainLevel level)
+{
+    if (level == TerrainLevel::BaseLevel ||
+        level == TerrainLevel::WaterLevel)
+        return true;
+
+    if (level == TerrainLevel::TemperatureLevel)
+        return false;
+    
+    assert(false);
+    return false;
 }
 
 TerrainSettings::TerrainSettings()
