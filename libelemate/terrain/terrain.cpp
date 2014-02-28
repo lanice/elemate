@@ -81,6 +81,9 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
 
+    for (auto & pair : m_attributeTiles)
+        pair.second->prepareDraw();
+
     for (auto & pair : m_physicalTiles) {
         if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
             continue;   // only draw elements that are listed for drawing

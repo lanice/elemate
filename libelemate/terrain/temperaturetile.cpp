@@ -17,6 +17,4 @@ TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID)
             m_values.at(c + rowOffset) = value;
         }
     }
-
-    prepareDraw();
 }

@@ -66,3 +66,17 @@ function enlargeBox(llf, urb, delta)
     urb[2] = urb[2] + delta
     urb[3] = urb[3] + delta
 end
+
+function temperatureCheck(element, bboxCenter)
+    local delta = 0.0
+    if element == "lava" then
+        delta = 0.11
+    elseif element == "water" then
+        delta = -0.1
+    else
+        return
+    end
+    
+    terrain_setInteractElement("temperature")
+    terrain_changeHeight(bboxCenter[1], bboxCenter[3], delta)
+end

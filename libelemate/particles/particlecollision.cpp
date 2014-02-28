@@ -83,6 +83,11 @@ void ParticleCollision::performCheck()
 {
     const auto & particleGroups = m_psa.m_particleGroups;
 
+    for (auto pair = particleGroups.cbegin(); pair != particleGroups.cend(); ++pair) {
+        const vec3 & center = pair->second->boundingBox().center();
+        m_lua->call("temperatureCheck", pair->second->elementName(), center);
+    }
+
     if (particleGroups.size() < 2)
         return;
 
