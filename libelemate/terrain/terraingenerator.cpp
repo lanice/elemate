@@ -87,7 +87,7 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
 
         TileID temperatureID(TerrainLevel::TemperatureLevel, xID, zID);
         // the tile registers itself in the terrain
-        new TemperatureTile(*terrain, temperatureID);
+        new TemperatureTile(*terrain, temperatureID, *baseTile);
     }
 
     return terrain;

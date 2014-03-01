@@ -16,6 +16,7 @@
 #include "ui/navigation.h"
 #include "ui/hand.h"
 #include "terrain/terraingenerator.h"
+#include "terrain/terrain.h"
 #include "particles/particlescriptaccess.h"
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
@@ -103,6 +104,7 @@ void World::updatePhysics()
         return;
 
     ParticleScriptAccess::instance().checkCollisions(delta);
+    terrain->updatePhysics(delta);
 
     for (auto observer : m_particleGroupObservers)
         observer->updateEmitting(delta);

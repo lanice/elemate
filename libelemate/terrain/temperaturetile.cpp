@@ -3,18 +3,79 @@
 #include <limits>
 #include <cmath>
 
-const float TemperatureTile::minTemperature = -273.15f;
-const float TemperatureTile::maxTemperature = std::numeric_limits<float>::max();
+#include <glow/logging.h>
 
-TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID)
+#include <glm/glm.hpp>
+
+#include "basetile.h"
+
+const °Celsius TemperatureTile::minTemperature = -273.15f;
+const °Celsius TemperatureTile::maxTemperature = std::numeric_limits<°Celsius>::max();
+
+TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, const BaseTile & baseTile)
 : TerrainTile(terrain, tileID, minTemperature, maxTemperature, 1.0f)
+, m_baseTile(baseTile)
+, m_deltaTime(0.0f)
 {
     for (unsigned int r = 0; r < samplesPerAxis; ++r) {
         unsigned int rowOffset = r*samplesPerAxis;
         for (unsigned int c = 0; c < samplesPerAxis; ++c) {
-            
-            float value = (std::sin(0.5f * r) + std::sin(0.5f * c)) *  5.0f;
-            m_values.at(c + rowOffset) = value;
+            m_values.at(c + rowOffset) = temperatureByHeight(m_baseTile.valueAt(r, c));
         }
     }
+}
+
+°Celsius TemperatureTile::temperatureByHeight(meter height)
+{
+    static const °Celsius baseTemp = 20.0f;
+    static const °Celsius baseWaterTemp = 4.0f;
+    if (height > 0)
+        return (-baseTemp / (m_baseTile.maxValidValue * 0.75f)) * height + baseTemp;
+    else
+        return ((baseTemp - baseWaterTemp) / m_baseTile.maxValidValue) * height + baseTemp;
+}
+
+void TemperatureTile::updatePhysics(float delta)
+{
+    m_deltaTime += delta;
+
+    static °Celsius tempStep = .5f;
+    static °Celsius minStep = 0.001f;
+
+    if (m_deltaTime < 0.5f)
+        return;
+    else
+        m_deltaTime = 0.0f;
+
+    unsigned int minActiveIndex = std::numeric_limits<unsigned int>::max();
+    unsigned int maxActiveIndex = std::numeric_limits<unsigned int>::min();
+    bool valuesChanged = false;
+
+    for (unsigned int r = 0; r < samplesPerAxis; ++r) {
+        unsigned int rowOffset = r*samplesPerAxis;
+        for (unsigned int c = 0; c < samplesPerAxis; ++c) {
+            const unsigned int index = c + rowOffset;
+
+            °Celsius currentTemp = m_values.at(c + rowOffset);
+            °Celsius reverend = temperatureByHeight(m_baseTile.valueAt(r, c));
+            °Celsius tempDelta = currentTemp - reverend;
+
+            // ignore small differences
+            if (std::abs(tempDelta) < minStep)
+                continue;
+
+            if (std::abs(tempDelta) < tempStep)
+                m_values.at(index) = reverend;
+            else
+                m_values.at(index) = currentTemp - glm::sign(tempDelta) * tempStep;
+
+            valuesChanged = true;
+            if (minActiveIndex > index)
+                minActiveIndex = index;
+            if (maxActiveIndex < index)
+                maxActiveIndex = index;
+        }
+    }
+    if (valuesChanged)
+        addBufferUpdateRange(minActiveIndex, maxActiveIndex - minActiveIndex + 1);
 }

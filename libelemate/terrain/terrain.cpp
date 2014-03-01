@@ -97,6 +97,12 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glDisable(GL_PRIMITIVE_RESTART);
 }
 
+void Terrain::updatePhysics(float delta)
+{
+    for (auto & pair : m_attributeTiles)
+        pair.second->updatePhysics(delta);
+}
+
 const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
 {
     return m_boudingBox;

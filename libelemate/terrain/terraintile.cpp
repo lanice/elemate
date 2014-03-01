@@ -31,8 +31,8 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minVali
 , samplesPerWorldCoord(samplesPerAxis / terrain.settings.tileBorderLength())
 , sampleInterval(terrain.settings.tileBorderLength() / (samplesPerAxis - 1))
 , m_isInitialized(false)
-, m_minValidValue(minValidValue)
-, m_maxValidValue(maxValidValue)
+, minValidValue(minValidValue)
+, maxValidValue(maxValidValue)
 {
     terrain.registerTile(tileID, *this);
 
@@ -96,6 +96,10 @@ void TerrainTile::initialize()
 
 
     m_isInitialized = true;
+}
+
+void TerrainTile::updatePhysics(float /*delta*/)
+{
 }
 
 float TerrainTile::valueAt(unsigned int row, unsigned int column) const
@@ -193,7 +197,7 @@ void TerrainTile::updateBuffers()
     for (const UpdateRange & range : m_bufferUpdateList) {
         assert(indexOffset <= range.startIndex);
         assert(range.startIndex - indexOffset >= 0);
-        assert(range.startIndex - indexOffset + range.nbElements < m_values.size());
+        assert(range.startIndex - indexOffset + range.nbElements <= m_values.size());
         memcpy(bufferDest + (range.startIndex - indexOffset),
             reinterpret_cast<float*>(m_values.data()) + range.startIndex,
             range.nbElements * sizeof(float));

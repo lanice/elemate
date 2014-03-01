@@ -53,6 +53,8 @@ public:
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
+    void updatePhysics(float delta);
+
     friend class TerrainGenerator;
     friend class TerrainTile;
     friend class PhysicalTile;

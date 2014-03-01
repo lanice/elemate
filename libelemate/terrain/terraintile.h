@@ -37,6 +37,8 @@ public:
     virtual void bind(const CameraEx & camera);
     virtual void unbind();
 
+    virtual void updatePhysics(float delta);
+
     /** @return interpolated value at specified normalized in tile position. */
     float interpolatedValueAt(float normX, float normZ) const;
 
@@ -48,6 +50,21 @@ public:
     const float samplesPerWorldCoord;
     /** distance between two sample points along one axis */
     const float sampleInterval;
+
+    /** @return tile value at specified row/column position. Parameters must be in range. */
+    float valueAt(unsigned int row, unsigned int column) const;
+    /** @param tile value at specified row/column position, if values are in range
+    * @return whether parameters are in range */
+    bool valueAt(unsigned int row, unsigned int column, float & value) const;
+    /** set tile value at specified row/column position. Parameters must be in range. */
+    void setValue(unsigned int row, unsigned int column, float value);
+
+    inline bool isValueInRange(float value) const {
+        return value >= minValidValue && value <= maxValidValue;
+    }
+
+    const float minValidValue;
+    const float maxValidValue;
 
 
     friend class TerrainGenerator;
@@ -71,25 +88,10 @@ protected:
       * Initially created by the TerrainGenerator. */
     std::vector<float> m_values;
 
-    const float m_minValidValue;
-    const float m_maxValidValue;
-
     glm::mat4 m_transform;
 
 
-protected: // interaction specific functions (see class TerrainInteraction)
-    /** @return tile value at specified row/column position. Parameters must be in range. */
-    float valueAt(unsigned int row, unsigned int column) const;
-    /** @param tile value at specified row/column position, if values are in range
-      * @return whether parameters are in range */
-    bool valueAt(unsigned int row, unsigned int column, float & value) const;
-    /** set tile value at specified row/column position. Parameters must be in range. */
-    void setValue(unsigned int row, unsigned int column, float value);
-
-    inline bool isValueInRange(float value) const {
-        return value >= m_minValidValue && value <= m_maxValidValue;
-    }
-
+protected:
     virtual void updateBuffers();
 
     struct UpdateRange {
