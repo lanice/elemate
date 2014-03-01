@@ -90,6 +90,8 @@ protected:
 
     glm::mat4 m_transform;
 
+    bool m_drawHeatMap;
+
 
 protected:
     virtual void updateBuffers();

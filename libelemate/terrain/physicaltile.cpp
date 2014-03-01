@@ -59,6 +59,7 @@ void PhysicalTile::bind(const CameraEx & camera)
     m_program->setUniform("heightField", TextureManager::getTextureUnit(tileName, "values"));
     std::string temperatureTileName = generateName(TileID(TerrainLevel::TemperatureLevel, m_tileID.x, m_tileID.z));
     m_program->setUniform("temperatures", TextureManager::getTextureUnit(temperatureTileName, "values"));
+    m_program->setUniform("drawHeatMap", m_drawHeatMap);
 
     World::instance()->setUpLighting(*m_program);
 }

@@ -37,6 +37,7 @@ public:
     bool drawDebugInfo() const;
     void toggleDrawDebugInfo();
     void setDrawDebugInfo(bool doDraw);
+    void toggleDrawHeatMap();
 
 protected:
     // drawing steps
@@ -44,6 +45,7 @@ protected:
     void handStep(const CameraEx & camera);
     std::shared_ptr<DebugStep> m_debugStep;
     bool m_drawDebugStep;
+    bool m_drawHeatMap;
     void userInterfaceStep(UserInterface * ui);
     std::shared_ptr<ParticleStep> m_particleStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;

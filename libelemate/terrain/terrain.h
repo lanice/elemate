@@ -56,6 +56,8 @@ public:
 
     void updatePhysics(float delta);
 
+    void setDrawHeatMap(bool drawHeatMap);
+
     friend class TerrainGenerator;
     friend class TerrainTile;
     friend class PhysicalTile;

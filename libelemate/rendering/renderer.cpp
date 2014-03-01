@@ -26,6 +26,7 @@ namespace glow {
 
 Renderer::Renderer(const World & world)
 : m_drawDebugStep(false)
+, m_drawHeatMap(false)
 , m_world(world)
 {
     initialize();
@@ -198,6 +199,12 @@ void Renderer::toggleDrawDebugInfo()
 void Renderer::setDrawDebugInfo(bool doDraw)
 {
     m_drawDebugStep = doDraw;
+}
+
+void Renderer::toggleDrawHeatMap()
+{
+    m_drawHeatMap = !m_drawHeatMap;
+    m_world.terrain->setDrawHeatMap(m_drawHeatMap);
 }
 
 void Renderer::resize(int width, int height)

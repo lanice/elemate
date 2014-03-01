@@ -103,6 +103,12 @@ void Terrain::updatePhysics(float delta)
         pair.second->updatePhysics(delta);
 }
 
+void Terrain::setDrawHeatMap(bool drawHeatMap)
+{
+    for (auto & pair : m_physicalTiles)
+        pair.second->m_drawHeatMap = drawHeatMap;
+}
+
 const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
 {
     return m_boudingBox;

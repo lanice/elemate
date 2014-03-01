@@ -24,6 +24,8 @@ uniform sampler2D grasslandSampler;
 
 uniform int tileSamplesPerAxis;
 
+uniform bool drawHeatMap;
+
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 lightdir2, mat4 light2, mat4 material);
 
 
@@ -33,9 +35,12 @@ vec3 interpolate(vec2 coeff, vec3 values[4]);
 
 void main()
 {    
-    float normTemp = (g_temperature + 10.0) / 30.0;
-    fragColor = vec4(normTemp, 0, 1.0 - normTemp, 1);
-    return;
+    if (drawHeatMap)
+    {
+        float normTemp = (g_temperature + 10.0) / 30.0;
+        fragColor = vec4(normTemp, 0, 1.0 - normTemp, 1);
+        return;
+    }
     
     vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);
     

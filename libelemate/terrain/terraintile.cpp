@@ -32,6 +32,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minVali
 , samplesPerWorldCoord(samplesPerAxis / terrain.settings.tileBorderLength())
 , sampleInterval(terrain.settings.tileBorderLength() / (samplesPerAxis - 1))
 , m_isInitialized(false)
+, m_drawHeatMap(false)
 , minValidValue(minValidValue)
 , maxValidValue(maxValidValue)
 {
