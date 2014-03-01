@@ -39,6 +39,7 @@ ParticleGroup::ParticleGroup(
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
 , m_elementName(elementName)
+, m_isDown(false)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
 , m_indices(new PxU32[maxParticleCount]())
@@ -95,6 +96,11 @@ void ParticleGroup::setParticleSize(float size)
 {
     m_particleSize = size;
     m_particleSystem->setRestParticleDistance(size);
+}
+
+bool ParticleGroup::isDown() const
+{
+    return m_isDown;
 }
 
 physx::PxParticleFluid * ParticleGroup::particleSystem()
@@ -279,8 +285,11 @@ void ParticleGroup::updateVisuals()
     glowutils::AxisAlignedBoundingBox bbox;
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
-        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_DRAIN)
-            indices.push_back(i);
+        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) {
+            if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
+                indices.push_back(i);
+            m_isDown = true;
+        }
         if (*flagsIt & PxParticleFlag::eVALID) {
             bbox.extend(vec3(*positionIt));
         }

@@ -55,6 +55,7 @@ public:
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
     void setParticleSize(float size);
+    bool isDown() const;
 
     physx::PxParticleFluid * particleSystem();
 
@@ -122,6 +123,7 @@ protected:
     const std::string m_elementName;
 
     float m_particleSize;
+    bool m_isDown;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

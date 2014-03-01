@@ -33,7 +33,7 @@ vec3 interpolate(vec2 coeff, vec3 values[4]);
 
 void main()
 {
-    fragColor = vec4(g_temperature * 0.1 + 0.3);
+    fragColor = vec4(g_temperature * 0.1 + 0.3, 0, 1 - g_temperature * 0.1 + 0.3, 1);
     return;
     
     vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);

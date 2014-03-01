@@ -85,10 +85,9 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
 
         pxScene->addActor(*actor);
 
-        waterTile->pxShape()->setFlag(PxShapeFlag::ePARTICLE_DRAIN, true);
-
         TileID temperatureID(TerrainLevel::TemperatureLevel, xID, zID);
-        TemperatureTile * tempTile = new TemperatureTile(*terrain, temperatureID);
+        // the tile registers itself in the terrain
+        new TemperatureTile(*terrain, temperatureID);
     }
 
     return terrain;
