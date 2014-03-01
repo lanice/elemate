@@ -12,6 +12,7 @@
 #include "particledrawable.h"
 #include "world.h"
 #include "terrain/terrain.h"
+#include "texturemanager.h"
 
 ParticleStep::ParticleStep()
 {
@@ -22,12 +23,16 @@ ParticleStep::ParticleStep()
     m_depthTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_depthTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_depthTex->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    m_depthTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ParticleStep", "sphereDepth"));
+    glActiveTexture(GL_TEXTURE0);
 
     m_elementIdTex = new glow::Texture(GL_TEXTURE_2D);
     m_elementIdTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     m_elementIdTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_elementIdTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_elementIdTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_elementIdTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ParticleStep", "elementID"));
+    glActiveTexture(GL_TEXTURE0);
 
     m_particleSceneFbo = new glow::FrameBufferObject();
     m_particleSceneFbo->attachTexture2D(GL_COLOR_ATTACHMENT0, m_elementIdTex);
@@ -36,17 +41,21 @@ ParticleStep::ParticleStep()
     m_particleSceneFbo->unbind();
 
 
-    m_postTexA = new glow::Texture(GL_TEXTURE_2D);
-    m_postTexA->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_postTexA->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_postTexA->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_postTexA->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_postTempTex = new glow::Texture(GL_TEXTURE_2D);
+    m_postTempTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_postTempTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_postTempTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_postTempTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_postTempTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ParticleStep", "postTemp"));
+    glActiveTexture(GL_TEXTURE0);
 
-    m_postTexB = new glow::Texture(GL_TEXTURE_2D);
-    m_postTexB->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_postTexB->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_postTexB->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_postTexB->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_depthResultTex = new glow::Texture(GL_TEXTURE_2D);
+    m_depthResultTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_depthResultTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_depthResultTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_depthResultTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_depthResultTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ParticleStep", "particleDepth"));
+    glActiveTexture(GL_TEXTURE0);
 
     // postprocessing: 2x depth blurring
 
@@ -54,15 +63,13 @@ ParticleStep::ParticleStep()
     blurHorizontalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle_depthblurring_v.frag"));
-    addProcess(*m_depthTex, m_postTexA, *blurHorizontalProgram);
+    addProcess(TextureManager::getTextureUnit("ParticleStep", "sphereDepth"), *m_postTempTex, *blurHorizontalProgram);
 
     glow::Program * blurVerticalProgram = new glow::Program();
     blurVerticalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle_depthblurring_h.frag"));
-    addProcess(*m_postTexA, m_postTexB, *blurVerticalProgram);
-
-    m_depthResultTex = m_postTexB;
+    addProcess(TextureManager::getTextureUnit("ParticleStep", "postTemp"), *m_depthResultTex, *blurVerticalProgram);
 
     std::vector<float> binomCoeff;
     std::vector<int32_t> binomOffset;
@@ -92,27 +99,29 @@ ParticleStep::ParticleStep()
     m_normalsTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_normalsTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_normalsTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_normalsTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ParticleStep", "particleNormals"));
+    glActiveTexture(GL_TEXTURE0);
 
     glow::Program * normalProgram = new glow::Program();
     normalProgram->attach(
         World::instance()->sharedShader(GL_VERTEX_SHADER, "shader/flush.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/particles/particle_normals.frag"));
-    addProcess(*m_postTexB, m_normalsTex, *normalProgram);
+    addProcess(TextureManager::getTextureUnit("ParticleStep", "particleDepth"), *m_normalsTex, *normalProgram);
 }
 
-ParticleStep::PostProcess::PostProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
-: m_source(source)
-, m_target(target)
+ParticleStep::PostProcess::PostProcess(int sourceTexUnit, glow::Texture & target, glow::Program & program)
+: m_sourceTexUnit(sourceTexUnit)
+, m_target(nullptr)
 , m_fbo(nullptr)
 , m_program(&program)
 , m_quad(new glowutils::ScreenAlignedQuad(&program))
 {
-    if (m_target) {
-        m_fbo = new glow::FrameBufferObject;
-        m_fbo->attachTexture2D(GL_COLOR_ATTACHMENT0, target);
-        m_fbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
-        m_fbo->unbind();
-    }
+    m_quad->setSamplerUniform(sourceTexUnit);
+
+    m_fbo = new glow::FrameBufferObject;
+    m_fbo->attachTexture2D(GL_COLOR_ATTACHMENT0, &target);
+    m_fbo->setDrawBuffers({ GL_COLOR_ATTACHMENT0 });
+    m_fbo->unbind();
 }
 
 void ParticleStep::PostProcess::draw()
@@ -120,19 +129,15 @@ void ParticleStep::PostProcess::draw()
     if (m_fbo)
         m_fbo->bind();
 
-    m_source.bindActive(GL_TEXTURE0);
-
     m_quad->draw();
-
-    m_source.unbindActive(GL_TEXTURE0);
 
     if (m_fbo)
         m_fbo->unbind();
 }
 
-void ParticleStep::addProcess(glow::Texture & source, glow::Texture * target, glow::Program & program)
+void ParticleStep::addProcess(int sourceTexUnit, glow::Texture & target, glow::Program & program)
 {
-    m_processes.push_back(PostProcess(source, target, program));
+    m_processes.push_back(PostProcess(sourceTexUnit, target, program));
 }
 
 void ParticleStep::draw(const CameraEx & camera)
@@ -164,9 +169,8 @@ void ParticleStep::resize(int width, int height)
     m_particleSceneFbo->printStatus(true);
     //assert(m_particleSceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_postTexA->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
-    m_postTexB->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
-
+    m_postTempTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+    m_depthResultTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
     m_normalsTex->image2D(0, GL_RGB16, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT, nullptr);
 
     for (PostProcess & process : m_processes) {
@@ -175,22 +179,4 @@ void ParticleStep::resize(int width, int height)
 
         process.m_program->setUniform("viewport", glm::ivec2(width, height));
     }
-}
-
-glow::Texture * ParticleStep::depthTex()
-{
-    assert(m_depthResultTex);
-    return m_depthResultTex;
-}
-
-glow::Texture * ParticleStep::normalsTex()
-{
-    assert(m_normalsTex);
-    return m_normalsTex;
-}
-
-glow::Texture * ParticleStep::elementIdTex()
-{
-    assert(m_elementIdTex);
-    return m_elementIdTex;
 }

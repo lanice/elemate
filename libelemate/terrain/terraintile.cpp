@@ -29,9 +29,11 @@
 #include "elements.h"
 #include "world.h"
 #include "physicswrapper.h"
+#include "texturemanager.h"
 
 TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
-: m_tileID(tileID)
+: tileName(generateName(tileID))
+, m_tileID(tileID)
 , m_terrain(terrain)
 , m_elementNames(elementNames)
 , m_isInitialized(false)
@@ -60,6 +62,11 @@ TerrainTile::~TerrainTile()
 {
 }
 
+std::string TerrainTile::generateName(const TileID & tileID)
+{
+    return "TerrainTile_" + std::to_string(int(tileID.level)) + "_" + std::to_string(tileID.x) + "x" + std::to_string(tileID.z);
+}
+
 const std::string & TerrainTile::elementAt(unsigned int row, unsigned int column) const
 {
     return m_elementNames.at(elementIndexAt(row, column));
@@ -83,8 +90,6 @@ void TerrainTile::bind(const CameraEx & camera)
     assert(m_program);
     assert(m_heightTex);
 
-    m_heightTex->bindActive(GL_TEXTURE0);
-
     m_program->use();
     m_program->setUniform("cameraposition", camera.eye());
     glm::mat4 modelView = camera.view() * m_transform;
@@ -101,8 +106,6 @@ void TerrainTile::bind(const CameraEx & camera)
 void TerrainTile::unbind()
 {
     m_program->release();
-
-    m_heightTex->unbindActive(GL_TEXTURE0);
 }
 
 void TerrainTile::initialize()
@@ -117,13 +120,18 @@ void TerrainTile::initialize()
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_heightBuffer->id());
     m_heightBuffer->unbind();
 
+    m_heightTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit(tileName, "heightField"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
+
+
     m_isInitialized = true;
 }
 
 void TerrainTile::initializeProgram()
 {
     m_program->setUniform("modelTransform", m_transform);
-    m_program->setUniform("heightField", 0);
+    m_program->setUniform("heightField", TextureManager::getTextureUnit(tileName, "heightField"));
     m_program->setUniform("tileRowsColumns", glm::ivec2(m_terrain.settings.rows, m_terrain.settings.columns));
 
     Elements::setAllUniforms(*m_program);
