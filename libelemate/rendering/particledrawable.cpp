@@ -139,7 +139,7 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 {
     unsigned numParticles = readData->nbValidParticles;
 
-    if (numParticles == 0)
+    if (numParticles == 0 && m_currentNumParticles == 0)
         return;
 
     assert(numParticles <= m_maxParticleCount);
