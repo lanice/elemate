@@ -26,7 +26,7 @@
 #include "texturemanager.h"
 
 PhysicalTile::PhysicalTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
-: TerrainTile(terrain, tileID, -terrain.settings.maxHeight, terrain.settings.maxHeight, 1.0f)
+: TerrainTile(terrain, tileID, -terrain.settings.maxHeight, terrain.settings.maxHeight, 7, 1.0f)
 , m_elementNames(elementNames)
 , m_pxShape(nullptr)
 {

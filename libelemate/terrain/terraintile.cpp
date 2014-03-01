@@ -23,7 +23,7 @@ namespace {
     }
 }
 
-TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float resolutionScaling)
+TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float interactStdDeviation, float resolutionScaling)
 : tileName(generateName(tileID))
 , m_tileID(tileID)
 , m_terrain(terrain)
@@ -35,6 +35,7 @@ TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minVali
 , m_drawHeatMap(false)
 , minValidValue(minValidValue)
 , maxValidValue(maxValidValue)
+, interactStdDeviation(interactStdDeviation)
 {
     terrain.registerTile(tileID, *this);
 
@@ -216,6 +217,10 @@ void TerrainTile::addBufferUpdateRange(unsigned int startIndex, unsigned int nbE
         m_updateRangeMinMaxIndex.x = startIndex;
     if (m_updateRangeMinMaxIndex.y < startIndex + nbElements)
         m_updateRangeMinMaxIndex.y = startIndex + nbElements;
+    const uint32_t maxIndex = samplesPerAxis * samplesPerAxis - 1;
+    if (m_updateRangeMinMaxIndex.y > maxIndex)
+        m_updateRangeMinMaxIndex.y = maxIndex;
+
     m_bufferUpdateList.push_front({ startIndex, nbElements });
 }
 

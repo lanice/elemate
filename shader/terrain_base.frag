@@ -37,7 +37,8 @@ void main()
 {    
     if (drawHeatMap)
     {
-        float normTemp = (g_temperature + 10.0) / 30.0;
+        float normTemp = (g_temperature + 20.0) / 120.0; // helpful for water
+        // float normTemp = (g_temperature + 273.0) / 1300.0;  // and for lava
         fragColor = vec4(normTemp, 0, 1.0 - normTemp, 1);
         return;
     }

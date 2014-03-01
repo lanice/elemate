@@ -26,7 +26,7 @@ public:
       * @param tileID register tile at this position in the terrain
       * @param resolutionScaling use a lower resolution than the maximum defined in the terrain settings.
                a value lower than 1 will result in resolution scaling. */
-    TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float resolutionScaling = 1.0f);
+    TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float interactStdDeviation, float resolutionScaling = 1.0f);
     virtual ~TerrainTile();
 
     const std::string tileName;
@@ -65,6 +65,7 @@ public:
 
     const float minValidValue;
     const float maxValidValue;
+    const float interactStdDeviation;   // used in the TerrainInteraction to scale the interaction radius
 
 
     friend class TerrainGenerator;

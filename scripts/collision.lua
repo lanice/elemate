@@ -70,7 +70,7 @@ end
 function temperatureCheck(element, bboxCenter)
     local delta = 0.0
     if element == "lava" then
-        delta = 0.11
+        delta = 1
     elseif element == "water" then
         delta = -0.1
     else

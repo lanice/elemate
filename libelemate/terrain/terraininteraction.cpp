@@ -160,7 +160,7 @@ float TerrainInteraction::setLevelHeight(float worldX, float worldZ, TerrainLeve
 
     assert(tile);
 
-    return setHeight(*tile.get(), row, column, value, setToInteractionElement);
+    return setValue(*tile.get(), row, column, value, setToInteractionElement);
 }
 
 float TerrainInteraction::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, bool setToInteractionElement)
@@ -175,19 +175,17 @@ float TerrainInteraction::changeLevelHeight(float worldX, float worldZ, TerrainL
 
     float height = tile->valueAt(row, column);
 
-    return setHeight(*tile.get(), row, column, height + delta, setToInteractionElement);
+    return setValue(*tile.get(), row, column, height + delta, setToInteractionElement);
 }
 
-float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
+float TerrainInteraction::setValue(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
 {
-    float stddev = 7.0f; // TODO: script this, element specific value
+    float stddev = tile.interactStdDeviation;
     assert(stddev > 0);
 
-    const TerrainSettings & settings = m_terrain.settings;
-
-    /** clamp height value */
-    if (value < -settings.maxHeight) value = -settings.maxHeight;
-    if (value > settings.maxHeight) value = settings.maxHeight;
+    /** clamp value */
+    if (value < tile.minValidValue) value = tile.minValidValue;
+    if (value > tile.maxValidValue) value = tile.maxValidValue;
 
     // define the size of the affected interaction area, in grid coords
     const float effectRadiusWorld = stddev * 3;
@@ -197,14 +195,14 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
     int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
 
     float norm0 = normalDist(0, 0, stddev);
-    float maxHeight = settings.maxHeight;
-    std::function<float(float)> interactHeight = [stddev, norm0, value, maxHeight, invert] (float x) {
+    float valueRange = std::abs(tile.maxValidValue - tile.minValidValue);
+    std::function<float(float)> interactHeight = [stddev, norm0, value, valueRange, invert](float x) {
         return normalDist(x, 0, stddev)     // - normalize normDist to
                    / norm0                  //    normDist value at interaction center
-               * (2 * maxHeight + 10)       // - scale to height range + 10 to omit norm values near 0
+               * (valueRange + 10)          // - scale to value range + offset to omit norm values near 0
                * invert                     // - mirror the curve along the y axis if moving downward
                + value                      // - move along y so that value==0 => y==0
-               - (2*maxHeight + 10) * invert;
+               - (valueRange + 10) * invert;
     };
 
     unsigned int minRow, maxRow, minColumn, maxColumn;

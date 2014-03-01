@@ -9,11 +9,12 @@
 
 #include "basetile.h"
 
+// these values also influent the effect range of the TerrainInteraction (using a std deviation)
 const celsius TemperatureTile::minTemperature = -273.15f;
-const celsius TemperatureTile::maxTemperature = std::numeric_limits<celsius>::max();
+const celsius TemperatureTile::maxTemperature = 1200.0f;    // lava is liquid at temperatures from 700°C to 1200°C
 
 TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, const BaseTile & baseTile)
-: TerrainTile(terrain, tileID, minTemperature, maxTemperature, 1.0f)
+: TerrainTile(terrain, tileID, minTemperature, maxTemperature, 5, 1.0f)
 , m_baseTile(baseTile)
 , m_deltaTime(0.0f)
 {
@@ -39,7 +40,7 @@ void TemperatureTile::updatePhysics(double delta)
 {
     m_deltaTime += delta;
 
-    static celsius tempStep = .5f;
+    static celsius tempStep = 2.f;
     static celsius minStep = 0.001f;
 
     if (m_deltaTime < 0.5)
