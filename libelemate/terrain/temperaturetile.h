@@ -17,12 +17,12 @@ public:
 
     celsius temperatureByHeight(meter height);
 
-    virtual void updatePhysics(float delta) override;
+    virtual void updatePhysics(double delta) override;
 
 protected:
     const BaseTile & m_baseTile;
 
-    float m_deltaTime;
+    double m_deltaTime;
 
 public:
     void operator=(TemperatureTile&) = delete;

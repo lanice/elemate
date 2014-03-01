@@ -54,7 +54,7 @@ public:
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
 
-    void updatePhysics(float delta);
+    void updatePhysics(double delta);
 
     void setDrawHeatMap(bool drawHeatMap);
 

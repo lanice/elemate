@@ -100,7 +100,7 @@ void TerrainTile::initialize()
     m_isInitialized = true;
 }
 
-void TerrainTile::updatePhysics(float /*delta*/)
+void TerrainTile::updatePhysics(double /*delta*/)
 {
 }
 

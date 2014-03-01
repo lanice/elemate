@@ -97,7 +97,7 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glDisable(GL_PRIMITIVE_RESTART);
 }
 
-void Terrain::updatePhysics(float delta)
+void Terrain::updatePhysics(double delta)
 {
     for (auto & pair : m_attributeTiles)
         pair.second->updatePhysics(delta);

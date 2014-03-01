@@ -37,7 +37,7 @@ public:
     virtual void bind(const CameraEx & camera);
     virtual void unbind();
 
-    virtual void updatePhysics(float delta);
+    virtual void updatePhysics(double delta);
 
     /** @return interpolated value at specified normalized in tile position. */
     float interpolatedValueAt(float normX, float normZ) const;

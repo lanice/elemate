@@ -35,17 +35,17 @@ celsius TemperatureTile::temperatureByHeight(meter height)
         return ((baseTemp - baseWaterTemp) / m_baseTile.maxValidValue) * height + baseTemp;
 }
 
-void TemperatureTile::updatePhysics(float delta)
+void TemperatureTile::updatePhysics(double delta)
 {
     m_deltaTime += delta;
 
     static celsius tempStep = .5f;
     static celsius minStep = 0.001f;
 
-    if (m_deltaTime < 0.5f)
+    if (m_deltaTime < 0.5)
         return;
     else
-        m_deltaTime = 0.0f;
+        m_deltaTime = 0.0;
 
     unsigned int minActiveIndex = std::numeric_limits<unsigned int>::max();
     unsigned int maxActiveIndex = std::numeric_limits<unsigned int>::min();
