@@ -9,7 +9,6 @@
 
 #include <glm/glm.hpp>
 
-
 namespace physx {
     class PxParticleFluid;
     class PxScene;
@@ -55,6 +54,7 @@ public:
     const std::string & elementName() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
+    void setParticleSize(float size);
 
     physx::PxParticleFluid * particleSystem();
 
@@ -120,6 +120,8 @@ protected:
     physx::PxScene * m_scene;
 
     const std::string m_elementName;
+
+    float m_particleSize;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

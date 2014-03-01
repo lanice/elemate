@@ -366,7 +366,7 @@ void ParticleScriptAccess::setContactOffset(int id, float contactOffset)
 void ParticleScriptAccess::setRestParticleDistance(int id, float restParticleDistance)
 {
     m_pxScene->removeActor(*m_particleGroups.at(id)->particleSystem());
-    m_particleGroups.at(id)->particleSystem()->setRestParticleDistance(restParticleDistance);
+    m_particleGroups.at(id)->setParticleSize(restParticleDistance);
     m_pxScene->addActor(*m_particleGroups.at(id)->particleSystem());
 }
 void ParticleScriptAccess::setRestitution(int id, float restitution)
@@ -392,7 +392,7 @@ float ParticleScriptAccess::restOffset(int id)
 float ParticleScriptAccess::contactOffset(int id)
 { return m_particleGroups.at(id)->particleSystem()->getContactOffset(); }
 float ParticleScriptAccess::restParticleDistance(int id)
-{ return m_particleGroups.at(id)->particleSystem()->getRestParticleDistance(); }
+{ return m_particleGroups.at(id)->particleSize(); }
 float ParticleScriptAccess::restitution(int id)
 { return m_particleGroups.at(id)->particleSystem()->getRestitution(); }
 float ParticleScriptAccess::dynamicFriction(int id)

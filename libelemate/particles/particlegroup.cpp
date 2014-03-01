@@ -88,7 +88,13 @@ const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
 
 float ParticleGroup::particleSize() const
 {
-    return m_particleSystem->getRestParticleDistance();
+    return m_particleSize;
+}
+
+void ParticleGroup::setParticleSize(float size)
+{
+    m_particleSize = size;
+    m_particleSystem->setRestParticleDistance(size);
 }
 
 physx::PxParticleFluid * ParticleGroup::particleSystem()
@@ -282,7 +288,7 @@ void ParticleGroup::updateVisuals()
 
     readData->unlock();
 
-    m_particleDrawable->setParticleSize(m_particleSystem->getRestParticleDistance());
+    m_particleDrawable->setParticleSize(m_particleSize);
     m_particleDrawable->setBoudingBox(bbox);
 
     releaseParticles(indices);
@@ -312,6 +318,7 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     m_particleSystem->setRestOffset(restOffset);
     m_particleSystem->setContactOffset(contactOffset);
     m_particleSystem->setRestParticleDistance(restParticleDistance);
+    m_particleSize = restParticleDistance;
 
     m_scene->addActor(*m_particleSystem);
 }
