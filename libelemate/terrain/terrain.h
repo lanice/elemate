@@ -19,6 +19,7 @@ namespace physx {
     class PxRigidStatic;
 }
 class TerrainTile;
+class PhysicalTile;
 
 class Terrain : public ShadowingDrawable
 {

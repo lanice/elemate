@@ -1,5 +1,7 @@
 #include "terrainsettings.h"
 
+#include <algorithm>
+
 namespace {
     std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> initElementTerrainLevels()
     {

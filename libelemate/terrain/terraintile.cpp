@@ -1,6 +1,7 @@
 #include "terraintile.h"
 
 #include <cmath>
+#include <cstring>
 
 #include <glow/Texture.h>
 #include <glow/Buffer.h>

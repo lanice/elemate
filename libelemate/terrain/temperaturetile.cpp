@@ -9,8 +9,8 @@
 
 #include "basetile.h"
 
-const °Celsius TemperatureTile::minTemperature = -273.15f;
-const °Celsius TemperatureTile::maxTemperature = std::numeric_limits<°Celsius>::max();
+const celsius TemperatureTile::minTemperature = -273.15f;
+const celsius TemperatureTile::maxTemperature = std::numeric_limits<celsius>::max();
 
 TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, const BaseTile & baseTile)
 : TerrainTile(terrain, tileID, minTemperature, maxTemperature, 1.0f)
@@ -25,10 +25,10 @@ TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, const
     }
 }
 
-°Celsius TemperatureTile::temperatureByHeight(meter height)
+celsius TemperatureTile::temperatureByHeight(meter height)
 {
-    static const °Celsius baseTemp = 20.0f;
-    static const °Celsius baseWaterTemp = 4.0f;
+    static const celsius baseTemp = 20.0f;
+    static const celsius baseWaterTemp = 4.0f;
     if (height > 0)
         return (-baseTemp / (m_baseTile.maxValidValue * 0.75f)) * height + baseTemp;
     else
@@ -39,8 +39,8 @@ void TemperatureTile::updatePhysics(float delta)
 {
     m_deltaTime += delta;
 
-    static °Celsius tempStep = .5f;
-    static °Celsius minStep = 0.001f;
+    static celsius tempStep = .5f;
+    static celsius minStep = 0.001f;
 
     if (m_deltaTime < 0.5f)
         return;
@@ -56,9 +56,9 @@ void TemperatureTile::updatePhysics(float delta)
         for (unsigned int c = 0; c < samplesPerAxis; ++c) {
             const unsigned int index = c + rowOffset;
 
-            °Celsius currentTemp = m_values.at(c + rowOffset);
-            °Celsius reverend = temperatureByHeight(m_baseTile.valueAt(r, c));
-            °Celsius tempDelta = currentTemp - reverend;
+            celsius currentTemp = m_values.at(c + rowOffset);
+            celsius reverend = temperatureByHeight(m_baseTile.valueAt(r, c));
+            celsius tempDelta = currentTemp - reverend;
 
             // ignore small differences
             if (std::abs(tempDelta) < minStep)

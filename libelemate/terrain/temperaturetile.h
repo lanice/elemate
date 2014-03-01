@@ -4,7 +4,7 @@
 
 class BaseTile;
 
-typedef float °Celsius;
+typedef float celsius;
 typedef float meter;
 
 class TemperatureTile : public TerrainTile
@@ -12,10 +12,10 @@ class TemperatureTile : public TerrainTile
 public:
     TemperatureTile(Terrain & terrain, const TileID & tileId, const BaseTile & m_baseTile);
 
-    const static °Celsius minTemperature;
-    const static °Celsius maxTemperature;
+    const static celsius minTemperature;
+    const static celsius maxTemperature;
 
-    °Celsius temperatureByHeight(meter height);
+    celsius temperatureByHeight(meter height);
 
     virtual void updatePhysics(float delta) override;
 
