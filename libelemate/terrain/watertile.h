@@ -11,8 +11,6 @@ public:
     virtual void unbind() override;
 
 protected:
-    virtual void initializeProgram() override;
-
     virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const override;
     virtual uint8_t elementIndex(const std::string & elementName) const override;
 

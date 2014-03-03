@@ -36,20 +36,6 @@ void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::str
     setDrawElements({});
 }
 
-void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
-{
-    setDrawElements(elements);
-    ShadowingDrawable::drawDepthMap(camera);
-    setDrawElements({});
-}
-
-void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
-{
-    setDrawElements(elements);
-    ShadowingDrawable::drawShadowMapping(camera, lightSource);
-    setDrawElements({});
-}
-
 void Terrain::setDrawElements(const std::initializer_list<std::string> & elements)
 {
     if (elements.size() == 0) {

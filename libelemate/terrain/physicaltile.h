@@ -23,9 +23,6 @@ public:
       * @return a reference to this name from the internal element list */
     const std::string & elementAt(unsigned int row, unsigned int column) const;
 
-    virtual void bind(const CameraEx & camera) override;
-    virtual void unbind() override;
-
     physx::PxShape * pxShape() const;
 
 protected:
@@ -41,10 +38,8 @@ protected:
     /** set the internal element index at the row/column position to elementIndex.  */
     virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) = 0;
 
-    /** subclass has to override this method to create the program.
-      * Afterward, call this function to set some uniforms. */
-    virtual void initializeProgram() = 0;
-    glow::ref_ptr<glow::Program> m_program;
+    virtual void initialize() override;
+
 
     virtual void createPxObjects(physx::PxRigidStatic & pxActor);
     void pxSamplesAndMaterials(
@@ -53,6 +48,11 @@ protected:
         physx::PxMaterial ** const &materials);
 
     physx::PxShape * m_pxShape;
+
+    virtual void createTerrainTypeTexture();
+    glow::ref_ptr<glow::Texture> m_terrainTypeTex;
+    glow::ref_ptr<glow::Buffer> m_terrainTypeBuffer;
+    std::vector<uint8_t> m_terrainTypeData;
 
     virtual void updateBuffers() override;
 

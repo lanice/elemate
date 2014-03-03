@@ -29,20 +29,6 @@ void WaterTile::unbind()
     PhysicalTile::unbind();
 }
 
-void WaterTile::initializeProgram()
-{
-    m_program = new glow::Program();
-    m_program->attach(
-        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/terrain_water.vert"),
-        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/terrain_water.frag"),
-        World::instance()->sharedShader(GL_FRAGMENT_SHADER, "shader/utils/phongLighting.frag"));
-
-    std::string baseTileName = generateName(TileID(TerrainLevel::BaseLevel, m_tileID.x, m_tileID.z));
-    m_program->setUniform("baseHeightField", TextureManager::getTextureUnit(baseTileName, "values"));
-
-    PhysicalTile::initializeProgram();
-}
-
 uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/) const
 {
     return 0u;  // currently water only, no data for different elements

@@ -58,9 +58,10 @@ public:
 
     void setDrawHeatMap(bool drawHeatMap);
 
+    void setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const;
+
     friend class TerrainGenerator;
     friend class TerrainTile;
-    friend class PhysicalTile;
     friend class TerrainInteraction;
 
 protected:
@@ -98,7 +99,6 @@ protected:
     virtual void initialize() override;
     void generateDrawGrid();
 
-    void setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const;
     glowutils::CachedValue<unsigned int> m_renderGridRadius;
     std::vector<glm::vec2> m_vertices;
     std::vector<uint32_t> m_indices;

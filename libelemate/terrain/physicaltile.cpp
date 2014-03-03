@@ -1,6 +1,8 @@
 #include "physicaltile.h"
 
 #include <glow/Program.h>
+#include <glow/Buffer.h>
+#include <glow/Texture.h>
 #include "utils/cameraex.h"
 
 #include "utils/pxcompilerfix.h"
@@ -37,46 +39,26 @@ const std::string & PhysicalTile::elementAt(unsigned int row, unsigned int colum
     return m_elementNames.at(elementIndexAt(row, column));
 }
 
-
-void PhysicalTile::bind(const CameraEx & camera)
+void PhysicalTile::initialize()
 {
-    TerrainTile::bind(camera);
+    TerrainTile::initialize();
 
-    if (!m_program)
-        initializeProgram();
-
-    assert(m_program);
-
-    m_program->use();
-    m_program->setUniform("cameraposition", camera.eye());
-    glm::mat4 modelView = camera.view() * m_transform;
-    m_program->setUniform("modelView", modelView);
-    glm::mat4 modelViewProjection = camera.viewProjectionEx() * m_transform;
-    m_program->setUniform("modelViewProjection", modelViewProjection);
-    m_program->setUniform("znear", camera.zNearEx());
-    m_program->setUniform("zfar", camera.zFarEx());
-    m_terrain.setDrawGridOffsetUniform(*m_program, camera.eye());
-    m_program->setUniform("heightField", TextureManager::getTextureUnit(tileName, "values"));
-    std::string temperatureTileName = generateName(TileID(TerrainLevel::TemperatureLevel, m_tileID.x, m_tileID.z));
-    m_program->setUniform("temperatures", TextureManager::getTextureUnit(temperatureTileName, "values"));
-    m_program->setUniform("drawHeatMap", m_drawHeatMap);
-
-    World::instance()->setUpLighting(*m_program);
+    createTerrainTypeTexture();
 }
 
-void PhysicalTile::unbind()
+void PhysicalTile::createTerrainTypeTexture()
 {
-    m_program->release();
+    m_terrainTypeBuffer = new glow::Buffer(GL_TEXTURE_BUFFER);
+    m_terrainTypeBuffer->setData(m_terrainTypeData, GL_DYNAMIC_DRAW);
 
-    TerrainTile::unbind();
-}
+    m_terrainTypeTex = new glow::Texture(GL_TEXTURE_BUFFER);
+    m_terrainTypeTex->bind();
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, m_terrainTypeBuffer->id());
+    m_terrainTypeTex->unbind();
 
-void PhysicalTile::initializeProgram()
-{
-    m_program->setUniform("modelTransform", m_transform);
-    m_program->setUniform("tileSamplesPerAxis", int(samplesPerAxis));
-
-    Elements::setAllUniforms(*m_program);
+    m_terrainTypeTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit(tileName, "terrainType"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
 }
 
 void PhysicalTile::setElement(unsigned int row, unsigned int column, const std::string & elementName)
@@ -87,6 +69,27 @@ void PhysicalTile::setElement(unsigned int row, unsigned int column, const std::
 
 void PhysicalTile::updateBuffers()
 {
+    assert(m_updateRangeMinMaxIndex.x < m_updateRangeMinMaxIndex.y);
+
+    uint8_t * bufferDest = reinterpret_cast<uint8_t*>(m_terrainTypeBuffer->mapRange(
+        m_updateRangeMinMaxIndex.x,
+        m_updateRangeMinMaxIndex.y - m_updateRangeMinMaxIndex.x,
+        GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT));
+    assert(bufferDest);
+
+    unsigned int indexOffset = m_updateRangeMinMaxIndex.x;
+
+    for (const UpdateRange & range : m_bufferUpdateList) {
+        assert(indexOffset <= range.startIndex);
+        assert(range.startIndex - indexOffset >= 0);
+        assert(range.startIndex - indexOffset + range.nbElements < m_terrainTypeData.size());
+        memcpy(bufferDest + (range.startIndex - indexOffset),
+            reinterpret_cast<uint8_t*>(m_terrainTypeData.data()) + range.startIndex,
+            range.nbElements);
+    }
+
+    m_terrainTypeBuffer->unmap();
+
     updatePxHeight();
 
     TerrainTile::updateBuffers();

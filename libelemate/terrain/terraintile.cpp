@@ -97,7 +97,6 @@ void TerrainTile::initialize()
     glActiveTexture(GL_TEXTURE0);
     CheckGLError();
 
-
     m_isInitialized = true;
 }
 

@@ -15,6 +15,21 @@
 #include "world.h"
 #include "texturemanager.h"
 
+
+void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    ShadowingDrawable::drawDepthMap(camera);
+    setDrawElements({});
+}
+
+void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
+{
+    setDrawElements(elements);
+    ShadowingDrawable::drawShadowMapping(camera, lightSource);
+    setDrawElements({});
+}
+
 void Terrain::drawDepthMapImpl(const CameraEx & camera)
 {
     // we probably don't want to draw an empty terrain
