@@ -67,10 +67,10 @@ function enlargeBox(llf, urb, delta)
     urb[3] = urb[3] + delta
 end
 
-function temperatureCheck(element, bboxCenter)
+function temperatureCheck(element, bboxCenter, numParticles)
     local delta = 0.0
     if element == "lava" then
-        delta = 1
+        delta = 0.1 * numParticles
     elseif element == "water" then
         delta = -0.1
     else

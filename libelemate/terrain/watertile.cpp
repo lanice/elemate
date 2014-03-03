@@ -14,21 +14,6 @@ WaterTile::WaterTile(Terrain & terrain, const TileID & tileID)
 {
 }
 
-void WaterTile::bind(const CameraEx & camera)
-{
-    PhysicalTile::bind(camera);
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-}
-
-void WaterTile::unbind()
-{
-    glDisable(GL_BLEND);
-
-    PhysicalTile::unbind();
-}
-
 uint8_t WaterTile::elementIndexAt(unsigned int /*row*/, unsigned int /*column*/) const
 {
     return 0u;  // currently water only, no data for different elements

@@ -18,7 +18,6 @@
 BaseTile::BaseTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
 : PhysicalTile(terrain, tileID, elementNames)
 {
-    m_terrainTypeData.resize(samplesPerAxis * samplesPerAxis);
 }
 
 void BaseTile::bind(const CameraEx & camera)

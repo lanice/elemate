@@ -37,8 +37,8 @@ void main()
 {    
     if (drawHeatMap)
     {
-        float normTemp = (g_temperature + 20.0) / 120.0; // helpful for water
-        // float normTemp = (g_temperature + 273.0) / 1300.0;  // and for lava
+        // float normTemp = (g_temperature + 20.0) / 120.0; // helpful for water
+        float normTemp = (g_temperature + 273.0) / 1300.0;  // and for lava
         fragColor = vec4(normTemp, 0, 1.0 - normTemp, 1);
         return;
     }
@@ -77,6 +77,9 @@ void main()
                         // max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0)),
                         max(gl_FragCoord.z / (gl_FragCoord.w * 0.1*zfar) - 9, 0.0)),
                     1.0);
+                    
+    // lava rendering
+    fragColor = mix(fragColor, vec4(1, 0, 0, 1), step(700, g_temperature));
 }
 
 vec3 interpolate(vec2 coeff, vec3 values[4])

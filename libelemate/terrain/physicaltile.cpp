@@ -32,6 +32,7 @@ PhysicalTile::PhysicalTile(Terrain & terrain, const TileID & tileID, const std::
 , m_elementNames(elementNames)
 , m_pxShape(nullptr)
 {
+    m_terrainTypeData.resize(samplesPerAxis * samplesPerAxis);
 }
 
 const std::string & PhysicalTile::elementAt(unsigned int row, unsigned int column) const

@@ -12,6 +12,7 @@
 #include <PxSceneLock.h>
 
 #include "rendering/particledrawable.h"
+#include "terrain/terraininteraction.h"
 
 
 namespace {
@@ -283,12 +284,23 @@ void ParticleGroup::updateVisuals()
     PxStrideIterator<const PxVec3> positionIt = readData->positionBuffer;
 
     glowutils::AxisAlignedBoundingBox bbox;
+    numCollided = 0;
+    
+    TerrainInteraction terrain("water");
+
+    m_isDown = false;
+    collidedParticleBounds = glowutils::AxisAlignedBoundingBox();
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
         if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) {
             if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
-                indices.push_back(i);
-            m_isDown = true;
+            { }
+            else {
+                ++numCollided;
+                m_isDown = true;
+                collidedParticleBounds.extend(glm::vec3(positionIt->x, positionIt->y, positionIt->z));
+            }
+            indices.push_back(i);
         }
         if (*flagsIt & PxParticleFlag::eVALID) {
             bbox.extend(vec3(*positionIt));

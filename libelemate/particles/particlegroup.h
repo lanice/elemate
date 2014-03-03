@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include <glowutils/AxisAlignedBoundingBox.h>
+
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
@@ -56,6 +58,8 @@ public:
     float particleSize() const;
     void setParticleSize(float size);
     bool isDown() const;
+    glowutils::AxisAlignedBoundingBox collidedParticleBounds;
+    unsigned int numCollided;
 
     physx::PxParticleFluid * particleSystem();
 
