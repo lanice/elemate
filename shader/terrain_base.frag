@@ -79,7 +79,7 @@ void main()
                     1.0);
                     
     // lava rendering
-    fragColor = mix(fragColor, vec4(1, 0, 0, 1), step(700, g_temperature));
+    // fragColor = mix(fragColor, vec4(1, 0, 0, 1), step(700, g_temperature));
 }
 
 vec3 interpolate(vec2 coeff, vec3 values[4])

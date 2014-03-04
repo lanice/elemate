@@ -64,8 +64,8 @@ set(SOURCES
     terrain/physicaltile.cpp
     terrain/basetile.h
     terrain/basetile.cpp
-    terrain/watertile.h
-    terrain/watertile.cpp
+    terrain/liquidtile.h
+    terrain/liquidtile.cpp
     terrain/temperaturetile.h
     terrain/temperaturetile.cpp
     terrain/terraingenerator.h

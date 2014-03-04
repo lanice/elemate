@@ -104,6 +104,13 @@ PxShape * PhysicalTile::pxShape() const
     return m_pxShape;
 }
 
+uint8_t PhysicalTile::elementIndex(const std::string & elementName) const
+{
+    size_t index = std::find(m_elementNames.cbegin(), m_elementNames.cend(), elementName) - m_elementNames.cbegin();
+    assert(index < m_elementNames.size());
+    return static_cast<uint8_t>(index);
+}
+
 void PhysicalTile::createPxObjects(PxRigidStatic & pxActor)
 {
     const unsigned int numSamples = samplesPerAxis * samplesPerAxis;

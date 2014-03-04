@@ -300,7 +300,10 @@ void ParticleGroup::updateVisuals()
                 m_isDown = true;
                 collidedParticleBounds.extend(glm::vec3(positionIt->x, positionIt->y, positionIt->z));
             }
-            indices.push_back(i);
+            if (terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava")
+            {
+                indices.push_back(i);
+            }
         }
         if (*flagsIt & PxParticleFlag::eVALID) {
             bbox.extend(vec3(*positionIt));

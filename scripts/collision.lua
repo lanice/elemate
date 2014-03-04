@@ -70,9 +70,9 @@ end
 function temperatureCheck(element, bboxCenter, numParticles)
     local delta = 0.0
     if element == "lava" then
-        delta = 0.1 * numParticles
+        delta = 0.03  * numParticles
     elseif element == "water" then
-        delta = -0.1
+        delta = -0.1 * numParticles
     else
         return
     end

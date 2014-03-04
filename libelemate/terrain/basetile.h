@@ -18,8 +18,6 @@ protected:
     glow::ref_ptr<glow::Program> m_program;
 
     virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const override;
-    /** convenience function to get the tile specific index for an element name */
-    virtual uint8_t elementIndex(const std::string & elementName) const override;
 
     /** set the internal element index at the row/column position to elementIndex.  */
     virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) override;

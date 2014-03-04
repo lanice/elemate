@@ -115,13 +115,6 @@ uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const
     return m_terrainTypeData.at(column + row * samplesPerAxis);
 }
 
-uint8_t BaseTile::elementIndex(const std::string & elementName) const
-{
-    size_t index = std::find(m_elementNames.cbegin(), m_elementNames.cend(), elementName) - m_elementNames.cbegin();
-    assert(index < m_elementNames.size());
-    return static_cast<uint8_t>(index);
-}
-
 void BaseTile::setElement(unsigned int row, unsigned int column, uint8_t elementIndex)
 {
     assert(elementIndex < m_elementNames.size());

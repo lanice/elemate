@@ -17,7 +17,7 @@
 
 #include "terrain.h"
 #include "basetile.h"
-#include "watertile.h"
+#include "liquidtile.h"
 #include "temperaturetile.h"
 
 // Mersenne Twister, preconfigured
@@ -70,9 +70,9 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         // and apply the elements to the landscape
         applyElementsByHeight(*baseTile);
 
-        /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
-        TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
-        WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
+        /** same thing for the liquid level, just that we do not add a terrain type texture */
+        TileID tileIDLiquid(TerrainLevel::WaterLevel, xID, zID);
+        LiquidTile * liquidTile = new LiquidTile(*terrain, tileIDLiquid);
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
@@ -81,13 +81,13 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         terrain->m_pxActors.emplace(tileIDBase, actor);
 
         baseTile->createPxObjects(*actor);
-        waterTile->createPxObjects(*actor);
+        liquidTile->createPxObjects(*actor);
 
         pxScene->addActor(*actor);
 
         TileID temperatureID(TerrainLevel::TemperatureLevel, xID, zID);
         // the tile registers itself in the terrain
-        new TemperatureTile(*terrain, temperatureID, *baseTile);
+        new TemperatureTile(*terrain, temperatureID, *baseTile, *liquidTile);
     }
 
     return terrain;
