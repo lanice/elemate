@@ -12,7 +12,6 @@
 #include <PxSceneLock.h>
 
 #include "rendering/particledrawable.h"
-#include "terrain/terraininteraction.h"
 
 
 namespace {
@@ -40,6 +39,7 @@ ParticleGroup::ParticleGroup(
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
 , m_elementName(elementName)
+, m_temperature(0.0f)
 , m_isDown(false)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
@@ -88,6 +88,11 @@ const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
     return m_particleDrawable->boundingBox();
 }
 
+float ParticleGroup::temperature() const
+{
+    return m_temperature;
+}
+
 float ParticleGroup::particleSize() const
 {
     return m_particleSize;
@@ -97,6 +102,7 @@ void ParticleGroup::setParticleSize(float size)
 {
     m_particleSize = size;
     m_particleSystem->setRestParticleDistance(size);
+    m_particleDrawable->setParticleSize(size);
 }
 
 bool ParticleGroup::isDown() const
@@ -278,44 +284,9 @@ void ParticleGroup::updateVisuals()
 
     m_particleDrawable->updateParticles(readData);
 
-    // Get drained Particles
-    std::vector<uint32_t> indices;
-    PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);
-    PxStrideIterator<const PxVec3> positionIt = readData->positionBuffer;
-
-    glowutils::AxisAlignedBoundingBox bbox;
-    numCollided = 0;
-    
-    TerrainInteraction terrain("water");
-
-    m_isDown = false;
-    collidedParticleBounds = glowutils::AxisAlignedBoundingBox();
-
-    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
-        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) {
-            if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
-            { }
-            else {
-                ++numCollided;
-                m_isDown = true;
-                collidedParticleBounds.extend(glm::vec3(positionIt->x, positionIt->y, positionIt->z));
-            }
-            if (terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava")
-            {
-                indices.push_back(i);
-            }
-        }
-        if (*flagsIt & PxParticleFlag::eVALID) {
-            bbox.extend(vec3(*positionIt));
-        }
-    }
+    updateVisualsAmpl(*readData);
 
     readData->unlock();
-
-    m_particleDrawable->setParticleSize(m_particleSize);
-    m_particleDrawable->setBoudingBox(bbox);
-
-    releaseParticles(indices);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
@@ -342,7 +313,7 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     m_particleSystem->setRestOffset(restOffset);
     m_particleSystem->setContactOffset(contactOffset);
     m_particleSystem->setRestParticleDistance(restParticleDistance);
-    m_particleSize = restParticleDistance;
+    setParticleSize(restParticleDistance);
 
     m_scene->addActor(*m_particleSystem);
 }

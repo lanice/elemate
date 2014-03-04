@@ -139,6 +139,8 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 {
     unsigned numParticles = readData->nbValidParticles;
 
+    m_bbox = glowutils::AxisAlignedBoundingBox();
+
     if (numParticles == 0 && m_currentNumParticles == 0)
         return;
 
@@ -156,7 +158,9 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
         assert(pxPositionIt.ptr());
         if (*pxFlagIt & PxParticleFlag::eVALID) {
             const physx::PxVec3 & vertex = *pxPositionIt;
-            m_vertices.at(nextPointIndex++) = glm::vec3(vertex.x, vertex.y, vertex.z);
+            m_vertices.at(nextPointIndex) = glm::vec3(vertex.x, vertex.y, vertex.z);
+            m_bbox.extend(m_vertices.at(nextPointIndex));
+            ++nextPointIndex;
         }
     }
 

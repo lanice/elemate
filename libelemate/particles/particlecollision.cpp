@@ -344,7 +344,7 @@ int ParticleCollision::particleGroupId(const std::string & elementName)
     if (it != m_particleGroupIds.end())
         return it->second;
 
-    int newId = m_psa.createParticleGroup(elementName);
+    int newId = m_psa.createParticleGroup(false, elementName);
     m_particleGroupIds.emplace(elementName, newId);
     return newId;
 }

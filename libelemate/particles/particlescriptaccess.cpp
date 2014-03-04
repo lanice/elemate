@@ -9,7 +9,8 @@
 #include <PxScene.h>
 #include <PxSceneLock.h>
 
-#include "particlegroup.h"
+#include "emittergroup.h"
+#include "downgroup.h"
 #include "particlecollision.h"
 #include "world.h"
 #include "lua/luawrapper.h"
@@ -81,9 +82,13 @@ ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
     return m_particleGroups.at(id);
 }
 
-int ParticleScriptAccess::createParticleGroup(const std::string & elementType, uint32_t maxParticleCount)
+int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::string & elementType, uint32_t maxParticleCount)
 {
-    ParticleGroup * particleGroup = new ParticleGroup(elementType, m_gpuParticles, maxParticleCount);
+    ParticleGroup * particleGroup = nullptr;
+    if (emittingGroup)
+        particleGroup = new EmitterGroup(elementType, m_gpuParticles, maxParticleCount);
+    else
+        particleGroup = new DownGroup(elementType, m_gpuParticles, maxParticleCount);
 
     m_particleGroups.emplace(m_id, particleGroup);
 
@@ -161,8 +166,8 @@ void ParticleScriptAccess::restoreGPUAccelerated()
 
 void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
 {
-    std::function<int(std::string, unsigned int)> func0 = [=] (std::string elementType, unsigned int maxParticles)
-    { return createParticleGroup(elementType, maxParticles); };
+    std::function<int(bool, std::string, unsigned int)> func0 = [=] (bool emittingGroup, std::string elementType, unsigned int maxParticles)
+    { return createParticleGroup(emittingGroup, elementType, maxParticles); };
 
     std::function<int(int)> func0a = [=] (int id)
     { removeParticleGroup(id); return 0; };

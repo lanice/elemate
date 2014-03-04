@@ -60,7 +60,7 @@ public:
     void setValue(unsigned int row, unsigned int column, float value);
 
     inline bool isValueInRange(float value) const {
-        return value >= minValidValue && value <= maxValidValue;
+        return (value + 0.001f) >= minValidValue && value <= maxValidValue;
     }
 
     const float minValidValue;

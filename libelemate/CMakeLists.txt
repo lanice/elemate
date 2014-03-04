@@ -23,6 +23,10 @@ set(SOURCES
     lua/luawrapperfunction.h
     particles/particlegroup.cpp
     particles/particlegroup.h
+    particles/emittergroup.h
+    particles/emittergroup.cpp
+    particles/downgroup.h
+    particles/downgroup.cpp
     particles/particlescriptaccess.cpp
     particles/particlescriptaccess.h
     particles/particlecollision.h
