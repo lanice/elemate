@@ -67,7 +67,6 @@ local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
 end
 
 function updateHandPosition( posX, posY, posZ )
-    hud_debugText(posY)
     if posY > achievement_getProperty("maxHandY") then
         achievement_setProperty("maxHandY", posY);
     end

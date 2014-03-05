@@ -9,6 +9,8 @@
 #include "particlegroup.h"
 #include "lua/luawrapper.h"
 
+#include "ui/achievementmanager.h"
+
 std::list<ParticleCollision::IntersectionBox> ParticleCollision::debug_intersectionBoxes;
 
 using namespace glowutils;
@@ -200,6 +202,7 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
 
         std::string reaction = m_lua->call<std::string>("elementReaction", m_currentLeftHand->elementName(), m_currentRightHand->elementName(), leftReleasedPositions.size(), rightReleasedPositions.size());
         ParticleGroup * newGroup = particleGroup(reaction);
+        AchievementManager::instance()->setProperty(reaction, 1);
 
         newGroup->createParticles(leftReleasedPositions);
         newGroup->createParticles(rightReleasedPositions);

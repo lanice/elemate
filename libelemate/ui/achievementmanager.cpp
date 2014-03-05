@@ -98,11 +98,7 @@ void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
 
     std::function<int(std::string, float)> setProperty = [=](std::string property_name, float property_value)
     {
-        auto prop = m_properties.find(property_name);
-        if (prop != m_properties.end())
-            prop->second = property_value;
-        else
-            m_properties.emplace(property_name, property_value);
+        AchievementManager::setProperty(property_name, property_value);
         return 0;
     };
 
@@ -122,7 +118,11 @@ void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
 
 void  AchievementManager::setProperty(const std::string& name, float value)
 {
-    m_properties.emplace(name, value);
+    auto prop = m_properties.find(name);
+    if (prop != m_properties.end())
+        prop->second = value;
+    else
+        m_properties.emplace(name, value);
 }
 
 float AchievementManager::getProperty(const std::string& name) const
@@ -142,13 +142,13 @@ void  AchievementManager::checkForNewUnlocks(bool threaded)
     std::list<std::string> new_unlocks;
     while (m_unlockerThreadRunning)
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(2500));
         new_unlocks.clear();
         for (auto& achievement : m_locked)
             if (achievement.second->unlockable(m_properties))
                 new_unlocks.push_back(achievement.first);
             for (const auto& unlocked_achievement : new_unlocks)
                 unlockAchievement(unlocked_achievement);
-        std::this_thread::sleep_for(std::chrono::milliseconds(2500));
     }
     m_unlockerThreadRunning = false;
 }
