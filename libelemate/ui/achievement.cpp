@@ -94,10 +94,12 @@ void Achievement::draw(StringDrawer& stringDrawer)
 
     m_texture->unbindActive(GL_TEXTURE0);
     float pos = 0.9f + m_timeMod;
+    float scale = stringDrawer.scaleToWidth(m_title, 0.53f);
+    glow::debug() << scale;
     stringDrawer.paint(m_title,
-        glm::mat4(0.5, 0, 0, 0,
-        0, 0.5, 0, 0,
-        0, 0, 0.5, 0,
+        glm::mat4(scale, 0, 0, 0,
+        0, scale, 0, 0,
+        0, 0, scale, 0,
         0.7, pos, 0, 1));
     pos -= 0.06f;
 

@@ -50,10 +50,6 @@ void AchievementManager::unlockAchievement(const std::string& title)
         m_unlocked.insert(result, ++iter_found);
         m_locked.erase(result);
     }
-    else 
-    {
-        //glow::debug() << "Tried to unlock " << title << ", but achievement was not found!\n";
-    }
 }
 
 void AchievementManager::drawAchievements()
@@ -105,6 +101,14 @@ void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
     std::function<float(std::string)> getProperty = [=](std::string property_name)
     {
         return m_properties.at(property_name);
+    };
+
+    std::function<int()> lockAll = [=]()
+    {
+        for (auto& achievement : m_unlocked){
+
+        }
+        return 0;
     };
 
     m_lua->Register("achievement_unlock", unlock);

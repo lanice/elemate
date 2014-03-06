@@ -170,3 +170,13 @@ void StringDrawer::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
 }
+
+float StringDrawer::scaleToWidth(const std::string& text, float maxWidth)
+{
+    std::list<CharacterSpecifics *> list = m_stringComposer.characterSequence(text);
+    const float length = std::accumulate(list.begin(), list.end(), 0.0f,
+        [](float sum, CharacterSpecifics * specifics) {
+        return sum + specifics->xAdvance;
+    });
+    return maxWidth*maxWidth/length;
+}

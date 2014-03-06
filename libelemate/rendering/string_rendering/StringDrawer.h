@@ -39,6 +39,8 @@ public:
     void paint(const TextObject& textObject);
     void resize(int width, int height);
 
+    float scaleToWidth(const std::string& text, float maxWidth);
+
 protected:
     bool initializeProgram();
     bool initializeTexture();
