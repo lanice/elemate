@@ -14,6 +14,7 @@ const celsius TemperatureTile::minTemperature = -273.15f;
 const celsius TemperatureTile::maxTemperature = 1200.0f;    // lava is liquid at temperatures from 700°C to 1200°C
 
 const celsius TemperatureTile::minLavaTemperature = 700.0f;
+const celsius TemperatureTile::maxGrassTemperature = 300.0f;
 
 namespace {
     template<typename T>
@@ -39,6 +40,7 @@ TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, Physi
 , m_liquidTile(liquidTile)
 , m_deltaTime(0.0f)
 , m_baseBedrockIndex(baseTile.elementIndex("bedrock"))
+, m_baseGrassIndex(baseTile.elementIndex("grassland"))
 {
     for (unsigned int r = 0; r < samplesPerAxis; ++r) {
         unsigned int rowOffset = r*samplesPerAxis;
@@ -84,7 +86,11 @@ void TemperatureTile::updatePhysics(double delta)
 
             temperaturesChanged = true;
             activeIndex.extend(index);
-            
+
+            if (updateTerrainType(index)) {
+                physicalTilesChanged = true;
+                activeHeightIndex.extend(index);
+            }
 
             if (!updateSolidLiquid(index))
                 continue;
@@ -148,5 +154,20 @@ bool TemperatureTile::updateSolidLiquid(unsigned int index)
         m_liquidTile.setValue(index, m_baseTile.valueAt(index) - 0.1f);
     }
 
+    return true;
+}
+
+bool TemperatureTile::updateTerrainType(unsigned int index)
+{
+    // don't need to remove grass if temperature below the limit
+    if (m_values.at(index) < maxGrassTemperature)
+        return false;
+
+    // don't need to remove grass that isn't there
+    if (m_baseTile.elementIndexAt(index) != m_baseGrassIndex)
+        return false;
+
+    // kill the green stuff
+    m_baseTile.setElement(index, m_baseBedrockIndex);
     return true;
 }

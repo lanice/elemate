@@ -15,6 +15,7 @@ public:
     const static celsius minTemperature;
     const static celsius maxTemperature;
     const static celsius minLavaTemperature;
+    const static celsius maxGrassTemperature;
 
     celsius temperatureByHeight(meter height);
 
@@ -27,6 +28,7 @@ protected:
     double m_deltaTime;
 
     const uint8_t m_baseBedrockIndex;
+    const uint8_t m_baseGrassIndex;
 
     bool updateTemperature(unsigned int index);
     bool updateSolidLiquid(unsigned int index);
