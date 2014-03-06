@@ -13,7 +13,7 @@
 #include "rendering/string_rendering/StringDrawer.h"
 
 
-const float Achievement::ACHIEVEMENT_DISPLAY_TIME = 1;
+const float Achievement::ACHIEVEMENT_DISPLAY_TIME = 4;
 
 Achievement::Achievement(const std::string& title, const std::string& text, bool unlocked, const std::string& picture) :
 m_title(title)
@@ -93,7 +93,7 @@ void Achievement::draw(StringDrawer& stringDrawer)
     m_program->release();
 
     m_texture->unbindActive(GL_TEXTURE0);
-    float pos = 0.9f + m_timeMod;
+    float pos = 0.9f + m_timeMod/1.2;
     float scale = stringDrawer.scaleToWidth(m_title, 0.25f);
     stringDrawer.paint(m_title,
         glm::mat4(  scale, 0, 0, 0,
@@ -156,11 +156,9 @@ void Achievement::update(){
     if (!m_timeMod)
         m_unlockTime = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = std::chrono::system_clock::now() - m_unlockTime;
-    m_timeMod = static_cast<float>(1.0 - diff.count()/ACHIEVEMENT_DISPLAY_TIME);
-    m_timeMod *= m_timeMod;
-    for (int i = 0; i < ACHIEVEMENT_DISPLAY_TIME;i++)
-        m_timeMod *= m_timeMod*m_timeMod;
-    if (diff.count() > 2*ACHIEVEMENT_DISPLAY_TIME)
+    m_timeMod = static_cast<float>(ACHIEVEMENT_DISPLAY_TIME- diff.count())/ACHIEVEMENT_DISPLAY_TIME;
+    m_timeMod *= m_timeMod * m_timeMod * m_timeMod * m_timeMod * m_timeMod * m_timeMod*m_timeMod;
+    if (diff.count() > 2 * ACHIEVEMENT_DISPLAY_TIME)
     {
         m_drawn = true;
     }
