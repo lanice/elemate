@@ -178,5 +178,5 @@ float StringDrawer::scaleToWidth(const std::string& text, float maxWidth)
         [](float sum, CharacterSpecifics * specifics) {
         return sum + specifics->xAdvance;
     });
-    return maxWidth*maxWidth/length;
+    return maxWidth/length;
 }

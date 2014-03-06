@@ -94,22 +94,23 @@ void Achievement::draw(StringDrawer& stringDrawer)
 
     m_texture->unbindActive(GL_TEXTURE0);
     float pos = 0.9f + m_timeMod;
-    float scale = stringDrawer.scaleToWidth(m_title, 0.53f);
-    glow::debug() << scale;
+    float scale = stringDrawer.scaleToWidth(m_title, 0.25f);
     stringDrawer.paint(m_title,
-        glm::mat4(scale, 0, 0, 0,
-        0, scale, 0, 0,
-        0, 0, scale, 0,
-        0.7, pos, 0, 1));
+        glm::mat4(  scale, 0, 0, 0,
+                    0, scale, 0, 0,
+                    0, 0, scale, 0,
+                    0.7, pos, 0, 1));
     pos -= 0.06f;
 
-    for (auto& line : splitText(m_text,25))
+    scale = stringDrawer.scaleToWidth(m_text, 0.25f);
+    glow::debug() << scale;
+    for (auto& line : splitText(m_text, 5/scale))
     {
         stringDrawer.paint(line,
-            glm::mat4(0.25, 0, 0, 0,
-            0, 0.25, 0, 0,
-            0, 0, 0.25, 0,
-            0.7, pos, 0, 1));
+            glm::mat4(  scale, 0, 0, 0,
+                        0, scale, 0, 0,
+                        0, 0, scale, 0,
+                        0.7, pos, 0, 1));
         pos -= 0.05f;
     }
 }
