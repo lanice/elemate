@@ -37,7 +37,14 @@ PhysicalTile::PhysicalTile(Terrain & terrain, const TileID & tileID, const std::
 
 const std::string & PhysicalTile::elementAt(unsigned int row, unsigned int column) const
 {
-    return m_elementNames.at(elementIndexAt(row, column));
+    assert(row < samplesPerAxis && column < samplesPerAxis);
+    return m_elementNames.at(elementIndexAt(column + row * samplesPerAxis));
+}
+
+const std::string & PhysicalTile::elementAt(unsigned int tileValueIndex) const
+{
+    assert(tileValueIndex < samplesPerAxis * samplesPerAxis);
+    return m_elementNames.at(elementIndexAt(tileValueIndex));
 }
 
 void PhysicalTile::initialize()
@@ -66,6 +73,11 @@ void PhysicalTile::setElement(unsigned int row, unsigned int column, const std::
 {
     uint8_t index = elementIndex(elementName);
     setElement(row, column, index);
+}
+
+void PhysicalTile::setElement(unsigned int row, unsigned int column, uint8_t elementIndex)
+{
+    setElement(column + row * samplesPerAxis, elementIndex);
 }
 
 void PhysicalTile::updateBuffers()
@@ -131,7 +143,7 @@ void PhysicalTile::createPxObjects(PxRigidStatic & pxActor)
         const unsigned int rowOffset = row * samplesPerAxis;
         for (unsigned int column = 0; column < samplesPerAxis; ++column) {
             const unsigned int index = column + rowOffset;
-            hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(row, column);
+            hfSamples[index].materialIndex0 = hfSamples[index].materialIndex1 = elementIndexAt(index);
             hfSamples[index].height = static_cast<PxI16>(m_values.at(index) * heightScaleToPx);
         }
     }
@@ -208,9 +220,10 @@ void PhysicalTile::updatePxHeight()
         unsigned int rowOffset = r * nbColumns;
         for (unsigned int c = 0; c < nbColumns; ++c) {
             const unsigned int index = c + rowOffset;
-            const float terrainHeight = valueAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
+            const unsigned int tileValueIndex = (c * m_pxUpdateBox.minColumn) + (r + m_pxUpdateBox.minRow) * samplesPerAxis;
+            const float terrainHeight = valueAt(tileValueIndex);
             samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
-            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = elementIndexAt(r + m_pxUpdateBox.minRow, c + m_pxUpdateBox.minColumn);
+            samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = elementIndexAt(tileValueIndex);
         }
     }
 

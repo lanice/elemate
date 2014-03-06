@@ -17,10 +17,10 @@ protected:
     virtual void initializeProgram();
     glow::ref_ptr<glow::Program> m_program;
 
-    virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const override;
+    virtual uint8_t elementIndexAt(unsigned int tileValueIndex) const override;
 
     /** set the internal element index at the row/column position to elementIndex.  */
-    virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) override;
+    virtual void setElement(unsigned int tileValueIndex, uint8_t elementIndex) override;
 
     void loadInitTexture(const std::string & elementName, int textureSlot);
     

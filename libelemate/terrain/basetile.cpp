@@ -110,14 +110,15 @@ void BaseTile::loadInitTexture(const std::string & elementName, int textureSlot)
     m_textures.push_back(TextureTuple(elementName + "Sampler", texture, textureSlot));
 }
 
-uint8_t BaseTile::elementIndexAt(unsigned int row, unsigned int column) const
+uint8_t BaseTile::elementIndexAt(unsigned int tileValueIndex) const
 {
-    return m_terrainTypeData.at(column + row * samplesPerAxis);
+    assert(tileValueIndex < samplesPerAxis * samplesPerAxis);
+    return m_terrainTypeData.at(tileValueIndex);
 }
 
-void BaseTile::setElement(unsigned int row, unsigned int column, uint8_t elementIndex)
+void BaseTile::setElement(unsigned int tileValueIndex, uint8_t elementIndex)
 {
     assert(elementIndex < m_elementNames.size());
-    assert(row < samplesPerAxis && column < samplesPerAxis);
-    m_terrainTypeData.at(column + row * samplesPerAxis) = elementIndex;
+    assert(tileValueIndex < samplesPerAxis * samplesPerAxis);
+    m_terrainTypeData.at(tileValueIndex) = elementIndex;
 }

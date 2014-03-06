@@ -26,9 +26,11 @@ protected:
 
     double m_deltaTime;
 
-    bool updateTemperature(unsigned int row, unsigned int column, unsigned int index);
-    bool updateSolidLiquid(unsigned int row, unsigned int column, unsigned int index);
-    bool updateTerrainType(unsigned int row, unsigned int column, unsigned int index);
+    const uint8_t m_baseBedrockIndex;
+
+    bool updateTemperature(unsigned int index);
+    bool updateSolidLiquid(unsigned int index);
+    bool updateTerrainType(unsigned int index);
 
 public:
     void operator=(TemperatureTile&) = delete;

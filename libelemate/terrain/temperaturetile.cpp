@@ -38,6 +38,7 @@ TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, Physi
 , m_baseTile(baseTile)
 , m_liquidTile(liquidTile)
 , m_deltaTime(0.0f)
+, m_baseBedrockIndex(baseTile.elementIndex("bedrock"))
 {
     for (unsigned int r = 0; r < samplesPerAxis; ++r) {
         unsigned int rowOffset = r*samplesPerAxis;
@@ -71,30 +72,30 @@ void TemperatureTile::updatePhysics(double delta)
 
         Bounds<unsigned int> activeIndex;
         Bounds<unsigned int> activeHeightIndex;
-        bool valuesChanged = false;
-        bool heightsChanged = false;
+        bool temperaturesChanged = false;
+        bool physicalTilesChanged = false;
 
         for (unsigned int c = 0; c < samplesPerAxis; ++c) {
             const unsigned int index = c + rowOffset;
 
             // update temperature at current position, continue if it didn't change
-            if (!updateTemperature(r, c, index))
+            if (!updateTemperature(index))
                 continue;
 
-            valuesChanged = true;
-            activeIndex.extend(index);            
+            temperaturesChanged = true;
+            activeIndex.extend(index);
             
 
-            if (!updateSolidLiquid(r, c, index))
+            if (!updateSolidLiquid(index))
                 continue;
 
-            heightsChanged = true;
+            physicalTilesChanged = true;
             activeHeightIndex.extend(index);
         }
 
-        if (valuesChanged)
+        if (temperaturesChanged)
             addBufferUpdateRange(activeIndex.min, activeIndex.max - activeIndex.max + 1);
-        if (heightsChanged) {
+        if (physicalTilesChanged) {
             m_baseTile.addBufferUpdateRange(activeHeightIndex.min, activeHeightIndex.max - activeHeightIndex.min + 1);
             m_liquidTile.addBufferUpdateRange(activeHeightIndex.min, activeHeightIndex.max - activeHeightIndex.min + 1);
 
@@ -104,13 +105,13 @@ void TemperatureTile::updatePhysics(double delta)
     }
 }
 
-bool TemperatureTile::updateTemperature(unsigned int row, unsigned int column, unsigned int index)
+bool TemperatureTile::updateTemperature(unsigned int index)
 {
     static const celsius tempStep = 0.5f;
     static const celsius minStep = 0.001f;
 
     celsius currentTemp = m_values.at(index);
-    celsius reverend = temperatureByHeight(m_baseTile.valueAt(row, column));
+    celsius reverend = temperatureByHeight(m_baseTile.valueAt(index));
     celsius tempDelta = currentTemp - reverend;
 
     // ignore small differences
@@ -125,7 +126,7 @@ bool TemperatureTile::updateTemperature(unsigned int row, unsigned int column, u
     return true;
 }
 
-bool TemperatureTile::updateSolidLiquid(unsigned int row, unsigned int column, unsigned int index)
+bool TemperatureTile::updateSolidLiquid(unsigned int index)
 {
     // change base terrain / lava terrain heights depending on temperature at current position
     // as the terrain type of the liquid tile depends only on the height for now: ignore heights below 0
@@ -140,7 +141,7 @@ bool TemperatureTile::updateSolidLiquid(unsigned int row, unsigned int column, u
     if (lavaUp) {
         m_liquidTile.setValue(index, m_baseTile.valueAt(index));
         m_baseTile.setValue(index, m_baseTile.valueAt(index) - 0.1f);
-        m_baseTile.setElement(row, column, "bedrock");
+        m_baseTile.setElement(index, m_baseBedrockIndex);
     }
     else {
         m_baseTile.setValue(index, m_liquidTile.valueAt(index));

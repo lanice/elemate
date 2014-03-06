@@ -209,21 +209,24 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
 
     for (unsigned int row = 0; row < tile.samplesPerAxis - 1; ++row) {
+        const unsigned int rowOffset = row * tile.samplesPerAxis;
         for (unsigned int column = 0; column < tile.samplesPerAxis - 1; ++column) {
+            const unsigned int index = rowOffset + column;
+
             float height = 0.25f * (
-                tile.valueAt(row, column)
+                tile.valueAt(index)
                 + tile.valueAt(row + 1, column)
                 + tile.valueAt(row, column + 1)
                 + tile.valueAt(row + 1, column + 1));
             if (height < sandMaxHeight) {
-                tile.setElement(row, column, sand);
+                tile.setElement(index, sand);
                 continue;
             }
             if (height < grasslandMaxHeight) {
-                tile.setElement(row, column, grassland);
+                tile.setElement(index, grassland);
                 continue;
             }
-            tile.setElement(row, column, bedrock);
+            tile.setElement(index, bedrock);
         }
     }
 }

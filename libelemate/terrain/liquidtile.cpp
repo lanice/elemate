@@ -14,13 +14,14 @@ LiquidTile::LiquidTile(Terrain & terrain, const TileID & tileID)
 {
 }
 
-uint8_t LiquidTile::elementIndexAt(unsigned int row, unsigned int column) const
+uint8_t LiquidTile::elementIndexAt(unsigned int tileValueIndex) const
 {
     // hack: see constructor :)
-    return valueAt(row, column) > 0.01 ? 1u : 0u;
+    assert(tileValueIndex < samplesPerAxis * samplesPerAxis);
+    return m_values.at(tileValueIndex) > 0.01 ? 1u : 0u;
 }
 
-void LiquidTile::setElement(unsigned int /*row*/, unsigned int /*column*/, uint8_t /*elementIndex*/)
+void LiquidTile::setElement(unsigned int /*row*/, uint8_t /*elementIndex*/)
 {
     glow::warning("setting element type on LiquidTile is not supported.");
     assert(false);

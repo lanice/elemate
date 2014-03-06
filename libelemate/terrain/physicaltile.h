@@ -22,6 +22,7 @@ public:
     /** get the name of the element at the row/column position
       * @return a reference to this name from the internal element list */
     const std::string & elementAt(unsigned int row, unsigned int column) const;
+    const std::string & elementAt(unsigned int tileValueIndex) const;
 
     physx::PxShape * pxShape() const;
 
@@ -31,12 +32,13 @@ protected:
     /** convenience function to get the tile specific index for an element name */
     virtual uint8_t elementIndex(const std::string & elementName) const;
     /** @return the index this tile internally uses for the element at the row/column position. Parameters must be in range. */
-    virtual uint8_t elementIndexAt(unsigned int row, unsigned int column) const = 0;
+    virtual uint8_t elementIndexAt(unsigned int tileValueIndex) const = 0;
 
     /** set the internal element index at the row/column position corresponding to the element name */
-    virtual void setElement(unsigned int row, unsigned int column, const std::string & elementName);
+    void setElement(unsigned int row, unsigned int column, const std::string & elementName);
     /** set the internal element index at the row/column position to elementIndex.  */
-    virtual void setElement(unsigned int row, unsigned int column, uint8_t elementIndex) = 0;
+    void setElement(unsigned int row, unsigned int column, uint8_t elementIndex);
+    virtual void setElement(unsigned int tileValueIndex, uint8_t elementIndex) = 0;
 
     virtual void initialize() override;
 
