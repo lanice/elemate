@@ -61,9 +61,6 @@ void TemperatureTile::updatePhysics(double delta)
 {
     m_deltaTime += delta;
 
-    static celsius tempStep = 0.5f;
-    static celsius minStep = 0.001f;
-
     if (m_deltaTime < 0.5)
         return;
     else
@@ -80,40 +77,18 @@ void TemperatureTile::updatePhysics(double delta)
         for (unsigned int c = 0; c < samplesPerAxis; ++c) {
             const unsigned int index = c + rowOffset;
 
-            celsius currentTemp = m_values.at(c + rowOffset);
-            celsius reverend = temperatureByHeight(m_baseTile.valueAt(r, c));
-            celsius tempDelta = currentTemp - reverend;
-
-            // ignore small differences
-            if (std::abs(tempDelta) < minStep)
+            // update temperature at current position, continue if it didn't change
+            if (!updateTemperature(r, c, index))
                 continue;
-
-            if (std::abs(tempDelta) < tempStep)
-                m_values.at(index) = reverend;
-            else
-                m_values.at(index) = currentTemp - glm::sign(tempDelta) * tempStep;
 
             valuesChanged = true;
-            activeIndex.extend(index);
-
-            // change base terrain / lava terrain heights depending on temperature at current position
-            // as the terrain type of the liquid tile depends only on the height for now: ignore heights below 0
-            if (m_baseTile.valueAt(r, c) <= 0.0f)
-                continue;
-            bool lavaUp = m_values.at(index) >= minLavaTemperature;
-            // don't change the heights if they already represent the current temperature
-            if (lavaUp == (m_liquidTile.valueAt(r, c) > m_baseTile.valueAt(r, c)))
-                continue;
+            activeIndex.extend(index);            
             
+
+            if (!updateSolidLiquid(r, c, index))
+                continue;
+
             heightsChanged = true;
-            if (lavaUp) {
-                m_liquidTile.setValue(r, c, m_baseTile.valueAt(r, c));
-                m_baseTile.setValue(r, c, m_baseTile.valueAt(r, c) - 0.1f);
-            }
-            else {
-                m_baseTile.setValue(r, c, m_liquidTile.valueAt(r, c));
-                m_liquidTile.setValue(r, c, m_baseTile.valueAt(r, c) - 0.1f);
-            }
             activeHeightIndex.extend(index);
         }
 
@@ -127,4 +102,50 @@ void TemperatureTile::updatePhysics(double delta)
             m_liquidTile.addToPxUpdateBox(0, 0, 0, 0);
         }
     }
+}
+
+bool TemperatureTile::updateTemperature(unsigned int row, unsigned int column, unsigned int index)
+{
+    static const celsius tempStep = 0.5f;
+    static const celsius minStep = 0.001f;
+
+    celsius currentTemp = m_values.at(index);
+    celsius reverend = temperatureByHeight(m_baseTile.valueAt(row, column));
+    celsius tempDelta = currentTemp - reverend;
+
+    // ignore small differences
+    if (std::abs(tempDelta) < minStep)
+        return false;
+
+    if (std::abs(tempDelta) < tempStep)
+        m_values.at(index) = reverend;
+    else
+        m_values.at(index) = currentTemp - glm::sign(tempDelta) * tempStep;
+
+    return true;
+}
+
+bool TemperatureTile::updateSolidLiquid(unsigned int row, unsigned int column, unsigned int index)
+{
+    // change base terrain / lava terrain heights depending on temperature at current position
+    // as the terrain type of the liquid tile depends only on the height for now: ignore heights below 0
+    if (m_baseTile.valueAt(index) <= 0.0f)
+        return false;
+
+    bool lavaUp = m_values.at(index) >= minLavaTemperature;
+    // don't change the heights if they already represent the current temperature
+    if (lavaUp == (m_liquidTile.valueAt(index) > m_baseTile.valueAt(index)))
+        return false;
+
+    if (lavaUp) {
+        m_liquidTile.setValue(index, m_baseTile.valueAt(index));
+        m_baseTile.setValue(index, m_baseTile.valueAt(index) - 0.1f);
+        m_baseTile.setElement(row, column, "bedrock");
+    }
+    else {
+        m_baseTile.setValue(index, m_liquidTile.valueAt(index));
+        m_liquidTile.setValue(index, m_baseTile.valueAt(index) - 0.1f);
+    }
+
+    return true;
 }

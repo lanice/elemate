@@ -53,11 +53,13 @@ public:
 
     /** @return tile value at specified row/column position. Parameters must be in range. */
     float valueAt(unsigned int row, unsigned int column) const;
+    float valueAt(unsigned int index) const;
     /** @param tile value at specified row/column position, if values are in range
     * @return whether parameters are in range */
     bool valueAt(unsigned int row, unsigned int column, float & value) const;
     /** set tile value at specified row/column position. Parameters must be in range. */
     void setValue(unsigned int row, unsigned int column, float value);
+    void setValue(unsigned int index, float value);
 
     inline bool isValueInRange(float value) const {
         return (value + 0.001f) >= minValidValue && value <= maxValidValue;

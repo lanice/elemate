@@ -25,4 +25,3 @@ void LiquidTile::setElement(unsigned int /*row*/, unsigned int /*column*/, uint8
     glow::warning("setting element type on LiquidTile is not supported.");
     assert(false);
 }
-

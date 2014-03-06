@@ -110,6 +110,12 @@ float TerrainTile::valueAt(unsigned int row, unsigned int column) const
     return m_values.at(column + row * samplesPerAxis);
 }
 
+float TerrainTile::valueAt(unsigned int index) const
+{
+    assert(index < samplesPerAxis * samplesPerAxis);
+    return m_values.at(index);
+}
+
 bool TerrainTile::valueAt(unsigned int row, unsigned int column, float & value) const
 {
     if (row >= samplesPerAxis || column >= samplesPerAxis)
@@ -125,6 +131,12 @@ void TerrainTile::setValue(unsigned int row, unsigned int column, float value)
     assert(row < samplesPerAxis && column < samplesPerAxis);
     assert(isValueInRange(value));
     m_values.at(column + row * samplesPerAxis) = value;
+}
+
+void TerrainTile::setValue(unsigned int index, float value)
+{
+    assert(index < samplesPerAxis * samplesPerAxis);
+    m_values.at(index) = value;
 }
 
 // mostly from OpenSceneGraph: osgTerrain/Layer
