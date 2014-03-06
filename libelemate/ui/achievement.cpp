@@ -100,28 +100,29 @@ void Achievement::draw(StringDrawer& stringDrawer)
                     0, scale, 0, 0,
                     0, 0, scale, 0,
                     0.7, pos, 0, 1));
-    pos -= 0.06f;
+    pos -= 0.078f;
 
-    scale = stringDrawer.scaleToWidth(m_text, 0.25f);
-    glow::debug() << scale;
-    for (auto& line : splitText(m_text, 5/scale))
+    scale = stringDrawer.scaleToWidth(m_text, 0.4f);
+    scale = scale > 0.22f ? 0.22f : scale;
+    scale = scale < 0.17f ? 0.17f : scale;
+    for (auto& line : splitText(m_text, static_cast<size_t>(5.75/scale)))
     {
         stringDrawer.paint(line,
             glm::mat4(  scale, 0, 0, 0,
                         0, scale, 0, 0,
                         0, 0, scale, 0,
                         0.7, pos, 0, 1));
-        pos -= 0.05f;
+        pos -= 0.17f*scale;
     }
 }
 
-std::list<std::string> Achievement::splitText(std::string text, size_t maxLength)
+std::list<std::string> Achievement::splitText(std::string text, size_t maxLineLength)
 {
     std::list<std::string> split;
     size_t pos = 0;
     size_t last_split_pos = 0;
     while (!text.empty()){
-        while (pos < maxLength && pos <= text.length()){
+        while (pos < maxLineLength && pos <= text.length()){
             if (text[pos] == ' ' || text[pos] == '\n' || text[pos] == '-' || text[pos] == '\0')
                 last_split_pos = pos;
             if (text[pos] == '\n')
@@ -129,18 +130,23 @@ std::list<std::string> Achievement::splitText(std::string text, size_t maxLength
             pos++;
         }
         if (!last_split_pos)
-            last_split_pos = maxLength;
-        if (text.length() > last_split_pos) {
-            std::string nextLine(text.substr(0, last_split_pos));
-            if (' ' == nextLine[0] || '\n' == nextLine[0])
-                nextLine = nextLine.substr(1);
-            split.push_back(nextLine);
-            text = text.substr(last_split_pos);
-            pos = 0;
-        }
-        else {
-            split.push_back(text);
-            text = "";
+            last_split_pos = maxLineLength;
+        std::string nextLine(text);
+        if (text.length() > last_split_pos) 
+            nextLine = nextLine.substr(0, last_split_pos);
+
+        while (nextLine.length() && ' ' == nextLine[0] || '\n' == nextLine[0])
+            nextLine = nextLine.substr(1);
+
+        split.push_back(nextLine);
+        text = text.substr(last_split_pos);
+        pos = 0;
+        
+        if (split.size() > 6){
+            while (split.size() > 6)
+                split.pop_back();
+            split.back() = "...";
+            break;
         }
     }
     return split;
