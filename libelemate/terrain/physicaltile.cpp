@@ -224,7 +224,7 @@ void PhysicalTile::updatePxHeight()
         unsigned int rowOffset = r * nbColumns;
         for (unsigned int c = 0; c < nbColumns; ++c) {
             const unsigned int index = c + rowOffset;
-            const unsigned int tileValueIndex = (c * m_pxUpdateBox.minColumn) + (r + m_pxUpdateBox.minRow) * samplesPerAxis;
+            const unsigned int tileValueIndex = (c + m_pxUpdateBox.minColumn) + (r + m_pxUpdateBox.minRow) * samplesPerAxis;
             const float terrainHeight = valueAt(tileValueIndex);
             samplesM[index].height = static_cast<PxI16>(terrainHeight / geometry.heightScale);
             samplesM[index].materialIndex0 = samplesM[index].materialIndex1 = elementIndexAt(tileValueIndex);
