@@ -43,6 +43,7 @@ ParticleGroup::ParticleGroup(
 , m_isDown(false)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
+, m_numParticles(0)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_lastFreeIndex(maxParticleCount-1)
@@ -76,11 +77,17 @@ ParticleGroup::~ParticleGroup()
     m_particleSystem->releaseParticles();
     m_scene->removeActor(*m_particleSystem);
     m_particleSystem = nullptr;
+    delete m_indices;
 }
 
 const std::string & ParticleGroup::elementName() const
 {
     return m_elementName;
+}
+
+uint32_t ParticleGroup::numParticles() const
+{
+    return m_numParticles;
 }
 
 const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
@@ -153,6 +160,7 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
         particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(velocities, 0);
 
     bool success = m_particleSystem->createParticles(particleCreationData);
+    m_numParticles += numParticles;
 
     if (!success)
         glow::warning("ParticleGroup::createParticles creation of %; physx particles failed", numParticles);
@@ -182,6 +190,7 @@ void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
     PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
 
     m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+    m_numParticles -= numParticles;
 
     delete[] indexBuffer;
 }
@@ -201,6 +210,7 @@ void ParticleGroup::releaseParticles(const std::vector<uint32_t> & indices)
     PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
 
     m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+    m_numParticles -= numParticles;
 
     delete[] indexBuffer;
 }
@@ -415,6 +425,35 @@ void ParticleGroup::particlePositionsIndicesInVolume(const glowutils::AxisAligne
             continue;
         positions.push_back(pos);
         particleIndices.push_back(i);
+    }
+
+    readData->unlock();
+}
+
+void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const
+{
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, false);
+    assert(readData);
+
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+    PxStrideIterator<const PxVec3> pxVelocityIt = readData->velocityBuffer;
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt, ++pxVelocityIt) {
+        assert(pxPositionIt.ptr());
+        if (!(*pxFlagIt & PxParticleFlag::eVALID))
+            continue;
+        const physx::PxVec3 & pxPosition = *pxPositionIt;
+        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        if (!boundingBox.inside(pos))
+            continue;
+        const physx::PxVec3 & pxVelocity = *pxVelocityIt;
+        const glm::vec3 vel = glm::vec3(pxVelocity.x, pxVelocity.y, pxVelocity.z);
+        positions.push_back(pos);
+        particleIndices.push_back(i);
+        velocities.push_back(vel);
     }
 
     readData->unlock();

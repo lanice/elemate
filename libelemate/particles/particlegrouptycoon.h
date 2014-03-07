@@ -19,6 +19,9 @@ private:
     ParticleGroupTycoon();
     ~ParticleGroupTycoon();
 
+    void splitGroups();
+    double m_timeSinceSplit;
+
     static ParticleGroupTycoon * s_instance;
 
     std::unordered_map<unsigned int, ParticleGroup *> m_particleGroups;

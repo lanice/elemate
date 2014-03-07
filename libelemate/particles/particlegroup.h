@@ -55,6 +55,7 @@ public:
     virtual ~ParticleGroup();
 
     const std::string & elementName() const;
+    uint32_t numParticles() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
     void setParticleSize(float size);
@@ -91,6 +92,7 @@ public:
     /** Get the positions and indexes of the particles that are inside the bounding box.
       * This doesn't clear the referenced containers, if they contained any elements before. */
     void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
+    void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
     /** Subscribed to World to receive time delta for timed emit of particles. */
     void updatePhysics(double delta);
@@ -137,7 +139,8 @@ protected:
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
-    uint32_t m_maxParticleCount;
+    const uint32_t m_maxParticleCount;
+    uint32_t m_numParticles;
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
