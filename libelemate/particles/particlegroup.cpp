@@ -246,7 +246,7 @@ void ParticleGroup::stopEmit()
     m_timeSinceLastEmit = 0.0;
 }
 
-void ParticleGroup::updateEmitting(const double & delta)
+void ParticleGroup::updatePhysics(double delta)
 {
     if (!m_emitting) return;
 

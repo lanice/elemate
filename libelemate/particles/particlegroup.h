@@ -92,9 +92,9 @@ public:
       * This doesn't clear the referenced containers, if they contained any elements before. */
     void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
 
-    /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
-    void updateEmitting(const double & delta);
-    /** Subscribed to World to update particle visuals. (Observer pattern) */
+    /** Subscribed to World to receive time delta for timed emit of particles. */
+    void updatePhysics(double delta);
+    /** Subscribed to World to update particle visuals. */
     virtual void updateVisuals();
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);

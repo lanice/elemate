@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <utility>
 #include <inttypes.h>
 #include <memory>
@@ -9,7 +9,6 @@
 namespace physx { class PxScene; }
 class ParticleGroup;
 class ParticleCollision;
-class World;
 class LuaWrapper;
 
 
@@ -20,7 +19,7 @@ class ParticleScriptAccess
 {
 public:
     /** Must be called from outside to initialize the global instance and its LuaWrapper. */
-    static void initialize(World & notifier);
+    static void initialize(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups);
     static void release();
     static ParticleScriptAccess& instance();
 
@@ -30,8 +29,6 @@ public:
     int createParticleGroup(bool emittingGroup, const std::string & elementType = "default", uint32_t maxParticleCount = 10000U);
     void removeParticleGroup(const int id);
     void clearParticleGroups();
-
-    void setNotifier(World * notifier);
 
     /** enable/disable GPU acceleration. */
     void setUseGpuParticles(const bool enable);
@@ -46,7 +43,7 @@ public:
 
 
 protected:
-    ParticleScriptAccess();
+    ParticleScriptAccess(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups);
     ~ParticleScriptAccess();
     static ParticleScriptAccess * s_instance;
 
@@ -89,13 +86,11 @@ protected:
 
     void setUpParticleGroup(const int id, const std::string & elementType);
 
-    std::map<int, ParticleGroup *> m_particleGroups;
-    int m_id;
+    std::unordered_map<unsigned int, ParticleGroup *> & m_particleGroups;
+    unsigned int m_id;
 
     std::shared_ptr<ParticleCollision> m_collisions;
     double m_collisionCheckDelta;
-
-    World * m_worldNotifier;
 
     bool m_gpuParticles;
     uint8_t m_gpuParticlesPauseFlags;
@@ -105,4 +100,7 @@ protected:
     physx::PxScene * m_pxScene;
 
     friend class ParticleCollision;
+
+public:
+    void operator=(ParticleScriptAccess&) = delete;
 };

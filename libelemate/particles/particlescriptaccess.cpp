@@ -18,11 +18,10 @@
 
 ParticleScriptAccess * ParticleScriptAccess::s_instance = nullptr;
 
-void ParticleScriptAccess::initialize(World & notifier)
+void ParticleScriptAccess::initialize(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups)
 {
     assert(s_instance == nullptr);
-    s_instance = new ParticleScriptAccess();
-    s_instance->m_worldNotifier = &notifier;
+    s_instance = new ParticleScriptAccess(particleGroups);
 }
 
 void ParticleScriptAccess::release()
@@ -32,11 +31,11 @@ void ParticleScriptAccess::release()
     s_instance = nullptr;
 }
 
-ParticleScriptAccess::ParticleScriptAccess()
-: m_id(0)
+ParticleScriptAccess::ParticleScriptAccess(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups)
+: m_particleGroups(particleGroups)
+, m_id(0)
 , m_collisions(std::make_shared<ParticleCollision>(*this))
 , m_collisionCheckDelta(0.0)
-, m_worldNotifier(nullptr)
 , m_gpuParticles(false)
 , m_lua(nullptr)
 , m_pxScene(nullptr)
@@ -93,7 +92,6 @@ int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::str
     m_particleGroups.emplace(m_id, particleGroup);
 
     setUpParticleGroup(m_id, elementType);
-    m_worldNotifier->registerObserver(particleGroup);
 
     return m_id++;
 }
@@ -101,7 +99,6 @@ int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::str
 void ParticleScriptAccess::removeParticleGroup(const int id)
 {
     ParticleGroup * group = m_particleGroups.at(id);
-    m_worldNotifier->unregisterObserver(group);
 
     m_collisions->particleGroupDeleted(group->elementName(), id);
 
@@ -113,7 +110,6 @@ void ParticleScriptAccess::clearParticleGroups()
 {
     for (auto it = m_particleGroups.begin(); it != m_particleGroups.end(); ++it)
     {
-        m_worldNotifier->unregisterObserver(it->second);
         delete it->second;
     }
     m_collisions->clearParticleGroups();
