@@ -33,6 +33,8 @@ set(SOURCES
     particles/particlescriptaccess.h
     particles/particlecollision.h
     particles/particlecollision.cpp
+    particles/particlehelper.h
+    particles/particlehelper.cpp
     rendering/debugstep.h
     rendering/debugstep.cpp
     rendering/drawable.h
