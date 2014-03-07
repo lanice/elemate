@@ -201,6 +201,10 @@ void PhysicalTile::addToPxUpdateBox(unsigned int minRow, unsigned int maxRow, un
 
 void PhysicalTile::updatePxHeight()
 {
+    // do the physx update only when needed
+    if (m_pxUpdateBox.maxColumn < m_pxUpdateBox.minColumn)
+        return;
+
     PxHeightFieldGeometry geometry;
     bool result = m_pxShape->getHeightFieldGeometry(geometry);
     assert(result);

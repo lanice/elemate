@@ -24,7 +24,6 @@ EmitterGroup::EmitterGroup(const std::string & elementName, const bool enableGpu
 void EmitterGroup::updateVisualsAmpl(const PxParticleReadData & readData)
 {
     // Get drained Particles
-    std::vector<uint32_t> indices;
     PxStrideIterator<const PxParticleFlags> flagsIt(readData.flagsBuffer);
     PxStrideIterator<const PxVec3> positionIt = readData.positionBuffer;
 
@@ -47,10 +46,8 @@ void EmitterGroup::updateVisualsAmpl(const PxParticleReadData & readData)
             }
             if (terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava")
             {
-                indices.push_back(i);
+                m_particlesToDelete.push_back(i);
             }
         }
     }
-
-    releaseParticles(indices);
 }

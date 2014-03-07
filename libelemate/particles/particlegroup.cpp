@@ -282,11 +282,15 @@ void ParticleGroup::updateVisuals()
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
     assert(readData);
 
+    m_particlesToDelete.clear();
+
     m_particleDrawable->updateParticles(readData);
 
     updateVisualsAmpl(*readData);
 
     readData->unlock();
+
+    releaseParticles(m_particlesToDelete);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)

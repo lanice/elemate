@@ -104,9 +104,6 @@ void TemperatureTile::updatePhysics(double delta)
         if (physicalTilesChanged) {
             m_baseTile.addBufferUpdateRange(activeHeightIndex.min, activeHeightIndex.max - activeHeightIndex.min + 1);
             m_liquidTile.addBufferUpdateRange(activeHeightIndex.min, activeHeightIndex.max - activeHeightIndex.min + 1);
-
-            m_baseTile.addToPxUpdateBox(0, 0, 0, 0);
-            m_liquidTile.addToPxUpdateBox(0, 0, 0, 0);
         }
     }
 }

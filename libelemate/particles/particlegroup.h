@@ -151,6 +151,8 @@ protected:
 
     bool m_gpuParticles;
 
+    std::vector<uint32_t> m_particlesToDelete;
+
 
 public:
     ParticleGroup(ParticleGroup&) = delete;
