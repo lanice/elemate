@@ -1,5 +1,7 @@
 #include "physicaltile.h"
 
+#include <algorithm>
+
 #include <glow/Program.h>
 #include <glow/Buffer.h>
 #include <glow/Texture.h>

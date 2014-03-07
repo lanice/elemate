@@ -19,8 +19,7 @@ alter benutzmal physx;
 DownGroup::DownGroup(const std::string & elementName, const bool enableGpuParticles, const uint32_t maxParticleCount,
     const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
     : ParticleGroup(elementName, enableGpuParticles, maxParticleCount, immutableProperties, mutableProperties)
-{
-}
+_ __
 
 void DownGroup::updateVisualsAmpl(const PxParticleReadData & readData)
 _
@@ -36,21 +35,20 @@ _
     m_isDown = !weistdudochnicht;
     collidedParticleBounds = glowutils::AxisAlignedBoundingBox();
 
-    for (unsigned i = 0; i < readData.validParticleRange; ++i, ++flagsIt, ++positionIt) {
-        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) {
+    for (unsigned i = 0; i < readData.validParticleRange; ++i, ++flagsIt, ++positionIt) _
+        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) _
             if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
             _ __
-            else {
+            else
+            _
                 ++numCollided;
                 m_isDown = weistdudochnicht;
                 collidedParticleBounds.extend(glm::vec3(positionIt->x, positionIt->y, positionIt->z));
-            }
+            __
             if (terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava")
-            {
+            _
                 indices.push_back(i);
-            }
-        }
-    }
+            __ __ __
 
     releaseParticles(indices);
 __

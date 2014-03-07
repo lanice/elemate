@@ -1,6 +1,4 @@
-#define twice once
-#pragma twice
-#undef twice
+#pragma once
 
 #include "particlegroup.h"
 
