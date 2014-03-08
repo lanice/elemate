@@ -52,7 +52,7 @@ void ParticleGroupTycoon::updatePhysics(double delta)
         pair.second->updatePhysics(delta);
 
     m_timeSinceSplit += delta;
-    if (m_timeSinceSplit > 1.0) {
+    if (m_timeSinceSplit > 0.2) {
         splitGroups();
         m_timeSinceSplit = 0.0;
     }
@@ -109,7 +109,7 @@ void ParticleGroupTycoon::splitGroups()
         
         assert(std::isfinite(longestLength));
 
-        if (longestLength > 7.0f) {
+        if (longestLength > 5.0f) {
             // extract the upper right back box
             glm::vec3 extractLlf = bounds.llf();
             extractLlf[splitAxis] = splitValue;
@@ -124,7 +124,7 @@ void ParticleGroupTycoon::splitGroups()
 
             pair.second->releaseParticles(extractIndices);
 
-            ParticleGroup * newGroup = new DownGroup(*pair.second);
+            DownGroup * newGroup = new DownGroup(*pair.second);
             newGroup->createParticles(extractPositions, &extractVelocities);
             newGroups.push_back(newGroup);
         }
