@@ -48,11 +48,17 @@ ParticleGroupTycoon::~ParticleGroupTycoon()
 
 void ParticleGroupTycoon::updatePhysics(double delta)
 {
-    for (auto pair : m_particleGroups)
-        pair.second->updatePhysics(delta);
+    for (auto pair : m_particleGroups) {
+        ParticleGroup * group = pair.second;
+        if (group->isDown && group->numParticles() == 0)
+            ParticleScriptAccess::instance().removeParticleGroup(pair.first);
+        else
+            group->updatePhysics(delta);
+    }
 
     m_timeSinceSplit += delta;
     if (m_timeSinceSplit > 0.2) {
+
         splitGroups();
         m_timeSinceSplit = 0.0;
     }
