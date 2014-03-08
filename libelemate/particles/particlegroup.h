@@ -3,8 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include <glowutils/AxisAlignedBoundingBox.h>
-
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
@@ -48,6 +46,7 @@ public:
     ParticleGroup(
         const std::string & elementName,
         const bool enableGpuParticles,
+        const bool isDown,
         const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
@@ -59,9 +58,7 @@ public:
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
     void setParticleSize(float size);
-    bool isDown() const;
-    glowutils::AxisAlignedBoundingBox collidedParticleBounds;
-    unsigned int numCollided;
+    const bool isDown;
 
     float temperature() const;
 
@@ -97,7 +94,7 @@ public:
     /** Subscribed to World to receive time delta for timed emit of particles. */
     void updatePhysics(double delta);
     /** Subscribed to World to update particle visuals. */
-    virtual void updateVisuals();
+    virtual void updateVisuals() = 0;
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
@@ -125,9 +122,7 @@ public:
 
 protected:
     void releaseOldParticles(const uint32_t numParticles);
-
-    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) = 0;
-
+    
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
@@ -135,7 +130,6 @@ protected:
 
     float m_particleSize;
     float m_temperature;
-    bool m_isDown;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 

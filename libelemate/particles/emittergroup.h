@@ -2,6 +2,7 @@
 
 #include "particlegroup.h"
 
+
 class EmitterGroup : public ParticleGroup
 {
 public:
@@ -13,8 +14,11 @@ public:
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
 
+    virtual void updateVisuals() override;
+
 protected:
-    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) override;
+    std::vector<glm::vec3> m_downPositions;
+    std::vector<glm::vec3> m_downVelocities;
 
 public:
     EmitterGroup() = delete;

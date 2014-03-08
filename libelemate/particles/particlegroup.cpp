@@ -32,6 +32,7 @@ namespace {
 ParticleGroup::ParticleGroup(
     const std::string & elementName,
     const bool enableGpuParticles,
+    const bool isDown,
     const PxU32 maxParticleCount,
     const ImmutableParticleProperties & immutableProperties,
     const MutableParticleProperties & mutableProperties
@@ -40,10 +41,9 @@ ParticleGroup::ParticleGroup(
 , m_scene(nullptr)
 , m_elementName(elementName)
 , m_temperature(0.0f)
-, m_isDown(false)
+, isDown(isDown)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
-, m_numParticles(0)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_lastFreeIndex(maxParticleCount-1)
@@ -110,11 +110,6 @@ void ParticleGroup::setParticleSize(float size)
     m_particleSize = size;
     m_particleSystem->setRestParticleDistance(size);
     m_particleDrawable->setParticleSize(size);
-}
-
-bool ParticleGroup::isDown() const
-{
-    return m_isDown;
 }
 
 physx::PxParticleFluid * ParticleGroup::particleSystem()
@@ -285,22 +280,6 @@ void ParticleGroup::updatePhysics(double delta)
 glm::vec3 vec3(const physx::PxVec3 & vec3)
 {
     return glm::vec3(vec3.x, vec3.y, vec3.z);
-}
-
-void ParticleGroup::updateVisuals()
-{
-    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
-    assert(readData);
-
-    m_particlesToDelete.clear();
-
-    m_particleDrawable->updateParticles(readData);
-
-    updateVisualsAmpl(*readData);
-
-    readData->unlock();
-
-    releaseParticles(m_particlesToDelete);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)

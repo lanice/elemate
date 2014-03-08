@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 
+#include <glm/glm.hpp>
+
 class ParticleGroup;
 
 class ParticleGroupTycoon
@@ -14,6 +16,8 @@ public:
 
     void updatePhysics(double delta);
     void updateVisuals();
+
+    ParticleGroup * getNearestGroup(const std::string & elementName, const glm::vec3 & position);
 
 private:
     ParticleGroupTycoon();

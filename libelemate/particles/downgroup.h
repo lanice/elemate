@@ -14,7 +14,7 @@ public:
         );
 
 protected:
-    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) override;
+    virtual void updateVisuals() override;
 
 
 public:

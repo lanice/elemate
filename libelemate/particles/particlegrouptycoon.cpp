@@ -3,8 +3,10 @@
 #include <cassert>
 
 #include <glow/logging.h>
+#include <glowutils/AxisAlignedBoundingBox.h>
 
 #include "particlegroup.h"
+#include "downgroup.h"
 #include "particlescriptaccess.h"
 #include "particlehelper.h"
 
@@ -61,6 +63,30 @@ void ParticleGroupTycoon::updateVisuals()
         pair.second->updateVisuals();
 }
 
+ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & elementName, const glm::vec3 & position)
+{
+    ParticleGroup * group = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+
+    for (auto & pair : m_particleGroups)
+    {
+        if (!(pair.second->elementName() == elementName && pair.second->isDown))
+            continue;
+        float currentDistance = glm::distance(pair.second->boundingBox().center(), position);
+        if (currentDistance >= nearestDistance)
+            continue;
+        nearestDistance = currentDistance;
+        group = pair.second;
+    }
+
+    if (group != nullptr)
+        return group;
+
+    int id = ParticleScriptAccess::instance().createParticleGroup(false, elementName);
+
+    return m_particleGroups.at(id);
+}
+
 void ParticleGroupTycoon::splitGroups()
 {
     std::vector<glm::vec3> extractPositions;
@@ -68,7 +94,7 @@ void ParticleGroupTycoon::splitGroups()
     std::vector<uint32_t> extractIndices;
 
     for (auto pair : m_particleGroups) {
-        if (pair.second->numParticles() == 0)
+        if (pair.second->numParticles() == 0 || dynamic_cast<DownGroup*>(pair.second) == nullptr)
             continue;
 
         const glowutils::AxisAlignedBoundingBox & bounds = pair.second->boundingBox();
@@ -78,11 +104,7 @@ void ParticleGroupTycoon::splitGroups()
 
         float longestLength = std::abs(bounds.urb()[splitAxis] - bounds.llf()[splitAxis]);
 
-
-        glow::debug("group size: %; with %; particles", longestLength, pair.second->numParticles());
-
-
-        if (longestLength > 5.0f) {
+        if (longestLength > 10.0f) {
             // extract the upper right back box
             glm::vec3 extractLlf = bounds.llf();
             extractLlf[splitAxis] = splitValue;
