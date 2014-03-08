@@ -53,7 +53,7 @@ void EmitterGroup::updateVisuals()
             if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
             {
             }
-            else if (!(terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava"))
+            else if (!(terrain.topmostElementAt(positionIt->x, positionIt->z) == m_elementName))
             {
                 glm::vec3 pos = glm::vec3(positionIt->x, positionIt->y, positionIt->z);
                 m_downPositions.push_back(pos);
@@ -69,12 +69,14 @@ void EmitterGroup::updateVisuals()
             }
         }
     }
-
+    
+    assert(m_numParticles == readData->nbValidParticles);
     readData->unlock();
 
     if (m_particlesToDelete.empty())
         return;
     releaseParticles(m_particlesToDelete);
+
     if (m_downPositions.empty())
         return;
     ParticleGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());

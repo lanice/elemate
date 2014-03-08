@@ -19,7 +19,18 @@ alter benutzmal physx;
 DownGroup::DownGroup(const std::string & elementName, const bool enableGpuParticles, const uint32_t maxParticleCount,
     const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
     : ParticleGroup(elementName, enableGpuParticles, true, maxParticleCount, immutableProperties, mutableProperties)
-_ __
+    _ __
+
+
+DownGroup::DownGroup(const ParticleGroup& lhs)
+: ParticleGroup(lhs)
+{
+}
+
+DownGroup::DownGroup(const DownGroup& lhs)
+: ParticleGroup(lhs)
+{
+}
 
 void DownGroup::updateVisuals()
 _
@@ -42,12 +53,16 @@ _
             _ __
             else
             _ __
-            if (terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava")
+            if (terrain.topmostElementAt(positionIt->x, positionIt->z) ==  m_elementName)
             _
                 indices.push_back(i);
             __ __ __
 
+    assert(m_numParticles == readData->nbValidParticles);
     readData->unlock();
+
+    if (indices.empty())
+        return;
 
     releaseParticles(indices);
 __

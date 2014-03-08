@@ -13,11 +13,10 @@ public:
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
 
+    DownGroup(const ParticleGroup& lhs);
+    DownGroup(const DownGroup& lhs);
+
 protected:
     virtual void updateVisuals() override;
-
-
-public:
-    DownGroup() = delete;
-    void operator=(DownGroup &) = delete;
+    void operator=(ParticleGroup&) = delete;
 };

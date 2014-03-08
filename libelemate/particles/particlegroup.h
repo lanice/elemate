@@ -53,6 +53,9 @@ public:
         );
     virtual ~ParticleGroup();
 
+    /** copy all attributes of the particle group (but not the particles) */
+    ParticleGroup(const ParticleGroup & lhs);
+
     const std::string & elementName() const;
     uint32_t numParticles() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
@@ -118,11 +121,14 @@ public:
         );
 
     void setUseGpuParticles(const bool enable);
+    bool useGpuParticles() const;
 
 
 protected:
     void releaseOldParticles(const uint32_t numParticles);
-    
+
+    ImmutableParticleProperties m_immutableProperties;
+    MutableParticleProperties m_mutableProperties;
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
@@ -150,8 +156,6 @@ protected:
 
     std::vector<uint32_t> m_particlesToDelete;
 
-
 public:
-    ParticleGroup(ParticleGroup&) = delete;
     void operator=(ParticleGroup&) = delete;
 };

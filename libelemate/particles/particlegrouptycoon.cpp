@@ -1,6 +1,7 @@
 #include "particlegrouptycoon.h"
 
 #include <cassert>
+#include <list>
 
 #include <glow/logging.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
@@ -93,6 +94,8 @@ void ParticleGroupTycoon::splitGroups()
     std::vector<glm::vec3> extractVelocities;
     std::vector<uint32_t> extractIndices;
 
+    std::list<ParticleGroup*> newGroups;
+
     for (auto pair : m_particleGroups) {
         if (pair.second->numParticles() == 0 || dynamic_cast<DownGroup*>(pair.second) == nullptr)
             continue;
@@ -103,8 +106,10 @@ void ParticleGroupTycoon::splitGroups()
         int splitAxis = longestAxis(bounds, splitValue);
 
         float longestLength = std::abs(bounds.urb()[splitAxis] - bounds.llf()[splitAxis]);
+        
+        assert(std::isfinite(longestLength));
 
-        if (longestLength > 10.0f) {
+        if (longestLength > 7.0f) {
             // extract the upper right back box
             glm::vec3 extractLlf = bounds.llf();
             extractLlf[splitAxis] = splitValue;
@@ -119,8 +124,14 @@ void ParticleGroupTycoon::splitGroups()
 
             pair.second->releaseParticles(extractIndices);
 
-            int newIndex = ParticleScriptAccess::instance().createParticleGroup(false, pair.second->elementName());
-            m_particleGroups.at(newIndex)->createParticles(extractPositions, &extractVelocities);
+            ParticleGroup * newGroup = new DownGroup(*pair.second);
+            newGroup->createParticles(extractPositions, &extractVelocities);
+            newGroups.push_back(newGroup);
         }
     }
+
+    for (ParticleGroup * newGroup : newGroups) {
+        ParticleScriptAccess::instance().addParticleGroup(newGroup);
+    }
+
 }

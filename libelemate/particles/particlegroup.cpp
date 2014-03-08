@@ -44,6 +44,7 @@ ParticleGroup::ParticleGroup(
 , isDown(isDown)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
+, m_numParticles(0)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_lastFreeIndex(maxParticleCount-1)
@@ -78,6 +79,41 @@ ParticleGroup::~ParticleGroup()
     m_scene->removeActor(*m_particleSystem);
     m_particleSystem = nullptr;
     delete m_indices;
+}
+
+ParticleGroup::ParticleGroup(const ParticleGroup & lhs)
+: m_particleSystem(nullptr)
+, m_scene(nullptr)
+, m_elementName(lhs.m_elementName)
+, m_temperature(lhs.m_temperature)
+, isDown(false)
+, m_particleDrawable(std::make_shared<ParticleDrawable>(lhs.m_elementName, lhs.m_maxParticleCount))
+, m_maxParticleCount(lhs.m_maxParticleCount)
+, m_numParticles(0)
+, m_indices(new PxU32[lhs.m_maxParticleCount]())
+, m_nextFreeIndex(0)
+, m_lastFreeIndex(lhs.m_maxParticleCount - 1)
+, m_emitting(false)
+, m_timeSinceLastEmit(0.0)
+, m_gpuParticles(lhs.m_gpuParticles)
+{
+    for (PxU32 i = 0; i < m_maxParticleCount; ++i) m_indices[i] = i;
+
+    assert(PxGetPhysics().getNbScenes() == 1);
+    PxScene * pxScenePtrs[1];
+    PxGetPhysics().getScenes(pxScenePtrs, 1);
+    m_scene = pxScenePtrs[0];
+
+    PxSceneWriteLock scopedLock(*m_scene);
+
+    m_particleSystem = PxGetPhysics().createParticleFluid(m_maxParticleCount, false);
+    assert(m_particleSystem);
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+
+    m_scene->addActor(*m_particleSystem);
+
+    setImmutableProperties(lhs.m_immutableProperties);
+    setMutableProperties(lhs.m_mutableProperties);
 }
 
 const std::string & ParticleGroup::elementName() const
@@ -297,6 +333,12 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     assert(m_particleSystem);
     assert(m_scene);
 
+    m_immutableProperties.maxMotionDistance = maxMotionDistance;
+    m_immutableProperties.gridSize = gridSize;
+    m_immutableProperties.restOffset = restOffset;
+    m_immutableProperties.contactOffset = contactOffset;
+    m_immutableProperties.restParticleDistance = restParticleDistance;
+
     PxSceneWriteLock scopedLock(* m_scene);
 
     m_scene->removeActor(*m_particleSystem);
@@ -313,6 +355,15 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
 
 void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
 {
+    m_mutableProperties.restitution = restitution;
+    m_mutableProperties.dynamicFriction = dynamicFriction;
+    m_mutableProperties.staticFriction = staticFriction;
+    m_mutableProperties.damping = damping;
+    m_mutableProperties.externalAcceleration = physx::PxVec3();
+    m_mutableProperties.particleMass = particleMass;
+    m_mutableProperties.viscosity = viscosity;
+    m_mutableProperties.stiffness = stiffness;
+
     m_particleSystem->setRestitution(restitution);
     m_particleSystem->setDynamicFriction(dynamicFriction);
     m_particleSystem->setStaticFriction(staticFriction);
@@ -337,6 +388,11 @@ void ParticleGroup::setUseGpuParticles(const bool enable)
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
 
     m_scene->addActor(*m_particleSystem);
+}
+
+bool ParticleGroup::useGpuParticles() const
+{
+    return m_gpuParticles;
 }
 
 void ParticleGroup::particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const

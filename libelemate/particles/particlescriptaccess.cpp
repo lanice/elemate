@@ -96,6 +96,13 @@ int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::str
     return m_id++;
 }
 
+int ParticleScriptAccess::addParticleGroup(ParticleGroup * group)
+{
+    m_particleGroups.emplace(m_id, group);
+
+    return m_id++;
+}
+
 void ParticleScriptAccess::removeParticleGroup(const int id)
 {
     ParticleGroup * group = m_particleGroups.at(id);
