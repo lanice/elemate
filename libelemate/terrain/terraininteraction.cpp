@@ -194,11 +194,11 @@ float TerrainInteraction::setValue(TerrainTile & tile, unsigned row, unsigned co
     bool moveUp = (value - tile.valueAt(row, column)) > 0;
     int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
 
-    float norm0 = normalDist(0, 0, stddev);
+    float norm0Inv = 1.0f / normalDist(0, 0, stddev);
     float valueRange = std::abs(tile.maxValidValue - tile.minValidValue);
-    std::function<float(float)> interactHeight = [stddev, norm0, value, valueRange, invert](float x) {
+    std::function<float(float)> interactHeight = [stddev, norm0Inv, value, valueRange, invert](float x) {
         return normalDist(x, 0, stddev)     // - normalize normDist to
-                   / norm0                  //    normDist value at interaction center
+                   * norm0Inv               //    normDist value at interaction center
                * (valueRange + 10)          // - scale to value range + offset to omit norm values near 0
                * invert                     // - mirror the curve along the y axis if moving downward
                + value                      // - move along y so that value==0 => y==0

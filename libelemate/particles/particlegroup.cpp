@@ -397,6 +397,39 @@ bool ParticleGroup::useGpuParticles() const
     return m_gpuParticles;
 }
 
+void ParticleGroup::giveGiftTo(ParticleGroup & other)
+{
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> velocities;
+
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, false);
+    assert(readData);
+
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+    PxStrideIterator<const PxVec3> pxVelocityIt = readData->velocityBuffer;
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt, ++pxVelocityIt) {
+        assert(pxPositionIt.ptr());
+        if (!(*pxFlagIt & PxParticleFlag::eVALID))
+            continue;
+        const physx::PxVec3 & pxPosition = *pxPositionIt;
+        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        const physx::PxVec3 & pxVelocity = *pxVelocityIt;
+        const glm::vec3 vel = glm::vec3(pxVelocity.x, pxVelocity.y, pxVelocity.z);
+        positions.push_back(pos);
+        velocities.push_back(vel);
+    }
+
+    readData->unlock();
+
+    other.createParticles(positions, &velocities);
+
+    // mix the temperatures :)
+}
+
 void ParticleGroup::particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const
 {
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();

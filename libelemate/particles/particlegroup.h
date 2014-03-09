@@ -89,9 +89,6 @@ public:
     /** Get the indexes of the particles that are inside the bounding box.
       * This doesn't clear the particleIndicies container, if it contained any elements before. */
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
-    /** Get the positions and indexes of the particles that are inside the bounding box.
-      * This doesn't clear the referenced containers, if they contained any elements before. */
-    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
     void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
     /** Subscribed to World to receive time delta for timed emit of particles. */
@@ -123,9 +120,14 @@ public:
     void setUseGpuParticles(const bool enable);
     bool useGpuParticles() const;
 
+    void giveGiftTo(ParticleGroup & other);
 
 protected:
     void releaseOldParticles(const uint32_t numParticles);
+
+    /** Get the positions and indexes of the particles that are inside the bounding box.
+    * This doesn't clear the referenced containers, if they contained any elements before. */
+    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
 
     ImmutableParticleProperties m_immutableProperties;
     MutableParticleProperties m_mutableProperties;

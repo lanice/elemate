@@ -13,6 +13,8 @@
 
 ParticleGroupTycoon * ParticleGroupTycoon::s_instance = nullptr;
 
+const float gridSize = 6.0f;
+
 void ParticleGroupTycoon::initialize()
 {
     assert(s_instance == nullptr);
@@ -48,18 +50,24 @@ ParticleGroupTycoon::~ParticleGroupTycoon()
 
 void ParticleGroupTycoon::updatePhysics(double delta)
 {
+    std::vector<unsigned int> groupsToDelete;
+    groupsToDelete.reserve(10);
     for (auto pair : m_particleGroups) {
         ParticleGroup * group = pair.second;
         if (group->isDown && group->numParticles() == 0)
-            ParticleScriptAccess::instance().removeParticleGroup(pair.first);
+            groupsToDelete.push_back(pair.first);
         else
             group->updatePhysics(delta);
     }
+    for (unsigned int index : groupsToDelete) {
+        ParticleScriptAccess::instance().removeParticleGroup(index);
+    }
 
     m_timeSinceSplit += delta;
-    if (m_timeSinceSplit > 0.2) {
+    if (m_timeSinceSplit > 0.34) {
 
         splitGroups();
+        mergeGroups();
         m_timeSinceSplit = 0.0;
     }
 }
@@ -103,7 +111,7 @@ void ParticleGroupTycoon::splitGroups()
     std::list<ParticleGroup*> newGroups;
 
     for (auto pair : m_particleGroups) {
-        if (pair.second->numParticles() == 0 || dynamic_cast<DownGroup*>(pair.second) == nullptr)
+        if (pair.second->numParticles() == 0 || !pair.second->isDown)
             continue;
 
         const glowutils::AxisAlignedBoundingBox & bounds = pair.second->boundingBox();
@@ -115,7 +123,7 @@ void ParticleGroupTycoon::splitGroups()
         
         assert(std::isfinite(longestLength));
 
-        if (longestLength > 5.0f) {
+        if (longestLength > gridSize) {
             // extract the upper right back box
             glm::vec3 extractLlf = bounds.llf();
             extractLlf[splitAxis] = splitValue;
@@ -140,4 +148,74 @@ void ParticleGroupTycoon::splitGroups()
         ParticleScriptAccess::instance().addParticleGroup(newGroup);
     }
 
+}
+
+void ParticleGroupTycoon::mergeGroups()
+{
+    /*for (auto elementToMapPair : m_grid)
+    {
+        elementToMapPair.second.clear();
+    }*/
+    m_grid.clear();
+
+    std::vector<unsigned int> groupsToRemove;
+    groupsToRemove.reserve(10);
+    for (auto pair : m_particleGroups) {
+        if (pair.second->numParticles() == 0 || !pair.second->isDown)
+            continue;
+
+        const glowutils::AxisAlignedBoundingBox & bounds = pair.second->boundingBox();
+
+        glm::vec3 center = bounds.center();
+
+        uint64_t gridIndex = gridIndexFromPosition(center);
+
+        DownGroup * gridGroup = particleGroupAtGridIndex(gridIndex, pair.second->elementName());
+
+        if (gridGroup == nullptr)
+        {
+            insertGroupIntoGrid(static_cast<DownGroup*>(pair.second), gridIndex);
+            continue;
+        }
+
+        if (gridGroup == pair.second)
+            continue;
+
+        pair.second->giveGiftTo(*gridGroup);
+
+        groupsToRemove.push_back(pair.first);
+    }
+
+    for (unsigned int index : groupsToRemove)
+        ParticleScriptAccess::instance().removeParticleGroup(index);
+}
+
+uint64_t ParticleGroupTycoon::gridIndexFromPosition(const glm::vec3 & position)
+{
+    uint64_t posX = static_cast<uint64_t>(position.x / gridSize);
+    uint64_t posZ = static_cast<uint64_t>(position.z / gridSize);
+
+    return (posX << 32) + posZ;
+}
+
+DownGroup * ParticleGroupTycoon::particleGroupAtGridIndex(uint64_t index, const std::string elementName)
+{
+    auto it = m_grid.find(elementName);
+    if (it == m_grid.end())
+        return nullptr;
+
+    auto it2 = it->second.find(index);
+    if (it2 == it->second.end())
+        return nullptr;
+
+    return it2->second;
+}
+
+void ParticleGroupTycoon::insertGroupIntoGrid(DownGroup * group, uint64_t index)
+{
+    const std::string & elementName = group->elementName();
+    auto it = m_grid.emplace(elementName, std::unordered_map<uint64_t, DownGroup*>());
+
+    auto it2 = it.first->second.emplace(index, group);
+    assert(it2.second);
 }
