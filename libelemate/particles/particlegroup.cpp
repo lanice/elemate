@@ -164,8 +164,10 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
         velocities = new PxVec3[numParticles];
     }
 
+    glowutils::AxisAlignedBoundingBox & bbox = m_particleDrawable->m_bbox;
     for (PxU32 i = 0; i < numParticles; ++i)
     {
+        bbox.extend(pos.at(i));
         if (m_freeIndices.size() > 0)
         {
             indices[i] = m_freeIndices.back();
