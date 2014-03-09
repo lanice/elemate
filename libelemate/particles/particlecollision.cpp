@@ -83,6 +83,14 @@ void ParticleCollision::performCheck()
 {
     const auto & particleGroups = m_psa.m_particleGroups;
 
+    for (auto pair = particleGroups.cbegin(); pair != particleGroups.cend(); ++pair) {
+        if (!pair->second->isDown())
+            continue;
+
+        const vec3 & center = pair->second->collidedParticleBounds.center();
+        m_lua->call("temperatureCheck", pair->second->elementName(), center, pair->second->numCollided);
+    }
+
     if (particleGroups.size() < 2)
         return;
 
@@ -336,7 +344,7 @@ int ParticleCollision::particleGroupId(const std::string & elementName)
     if (it != m_particleGroupIds.end())
         return it->second;
 
-    int newId = m_psa.createParticleGroup(elementName);
+    int newId = m_psa.createParticleGroup(false, elementName);
     m_particleGroupIds.emplace(elementName, newId);
     return newId;
 }

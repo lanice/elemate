@@ -1,5 +1,8 @@
 #include "renderer.h"
 
+#include <fstream>
+#include <ctime>
+
 namespace glow {
     class Buffer; // missing forward declaration in FrameBufferObject.h
 }
@@ -26,7 +29,9 @@ namespace glow {
 
 Renderer::Renderer(const World & world)
 : m_drawDebugStep(false)
+, m_drawHeatMap(false)
 , m_world(world)
+, m_takeScreenShot(false)
 {
     initialize();
 }
@@ -136,6 +141,52 @@ void Renderer::operator()(const CameraEx & camera)
     flushStep(camera);
 }
 
+void Renderer::takeScreenShot()
+{
+    m_takeScreenShot = true;
+}
+
+void Renderer::writeScreenShot()
+{
+    const int w = m_viewport.x;
+    const int h = m_viewport.y;
+    const int s = w * h * 3;
+
+    static time_t lastTime = 0;
+    static int n = 0;
+
+    char * pixels = new char[s];
+    if (m_takeScreenShot) {
+        CheckGLError();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        CheckGLError();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glReadBuffer(GL_BACK);
+        CheckGLError();
+        glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+        CheckGLError();
+
+        time_t now = std::time(0);
+        if (now == lastTime)
+            ++n;
+        else
+            n = 0;
+        lastTime = now;
+
+        std::string fn = "screen_" + std::to_string(w) + "x" + std::to_string(h) + "_" + std::to_string(now) + "_" + std::to_string(n) + ".raw";
+        glow::info("screenshot saved to %;", fn);
+        std::ofstream file(fn, std::ios_base::trunc | std::ios_base::binary | std::ios_base::out);
+        // flip the image
+        for (int row = h - 1; row >= 0; --row) {
+            file.write(&pixels[3*w*row], 3 * w);
+        }
+        file.close();
+        m_takeScreenShot = false;
+    }
+    delete[] pixels;
+}
+
 void Renderer::sceneStep(const CameraEx & camera)
 {
     glEnable(GL_DEPTH_TEST);
@@ -200,8 +251,16 @@ void Renderer::setDrawDebugInfo(bool doDraw)
     m_drawDebugStep = doDraw;
 }
 
+void Renderer::toggleDrawHeatMap()
+{
+    m_drawHeatMap = !m_drawHeatMap;
+    m_world.terrain->setDrawHeatMap(m_drawHeatMap);
+}
+
 void Renderer::resize(int width, int height)
 {
+    m_viewport.x = width; m_viewport.y = height;
+
     m_textureByName.at("sceneColor")->image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("scene")->printStatus(true);

@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 
+#include <glm/glm.hpp>
+
 #include <glow/ref_ptr.h>
 
 namespace glow {
@@ -37,6 +39,10 @@ public:
     bool drawDebugInfo() const;
     void toggleDrawDebugInfo();
     void setDrawDebugInfo(bool doDraw);
+    void toggleDrawHeatMap();
+
+    void takeScreenShot();
+    void writeScreenShot();
 
 protected:
     // drawing steps
@@ -44,6 +50,7 @@ protected:
     void handStep(const CameraEx & camera);
     std::shared_ptr<DebugStep> m_debugStep;
     bool m_drawDebugStep;
+    bool m_drawHeatMap;
     void userInterfaceStep(UserInterface * ui);
     std::shared_ptr<ParticleStep> m_particleStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
@@ -51,6 +58,10 @@ protected:
 
     /** maintain a list of rendering all steps to apply operations on all of them, regardless of the ordering */
     std::vector<RenderingStep*> m_steps;
+
+    bool m_takeScreenShot;
+
+    glm::ivec2 m_viewport;
 
     const World & m_world;
 

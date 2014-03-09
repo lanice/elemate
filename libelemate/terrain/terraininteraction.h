@@ -87,7 +87,7 @@ private:
     /** for internal usage: the terrain level that hold the configured interact element */
     TerrainLevel m_interactLevel;
 
-    float setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement);
+    float setValue(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement);
 
     TerrainLevel m_grabbedLevel;
     float m_grabbedHeight;

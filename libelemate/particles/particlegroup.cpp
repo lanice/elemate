@@ -39,6 +39,8 @@ ParticleGroup::ParticleGroup(
 : m_particleSystem(nullptr)
 , m_scene(nullptr)
 , m_elementName(elementName)
+, m_temperature(0.0f)
+, m_isDown(false)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
 , m_indices(new PxU32[maxParticleCount]())
@@ -86,9 +88,26 @@ const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
     return m_particleDrawable->boundingBox();
 }
 
+float ParticleGroup::temperature() const
+{
+    return m_temperature;
+}
+
 float ParticleGroup::particleSize() const
 {
-    return m_particleSystem->getRestParticleDistance();
+    return m_particleSize;
+}
+
+void ParticleGroup::setParticleSize(float size)
+{
+    m_particleSize = size;
+    m_particleSystem->setRestParticleDistance(size);
+    m_particleDrawable->setParticleSize(size);
+}
+
+bool ParticleGroup::isDown() const
+{
+    return m_isDown;
 }
 
 physx::PxParticleFluid * ParticleGroup::particleSystem()
@@ -263,29 +282,15 @@ void ParticleGroup::updateVisuals()
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
     assert(readData);
 
+    m_particlesToDelete.clear();
+
     m_particleDrawable->updateParticles(readData);
 
-    // Get drained Particles
-    std::vector<uint32_t> indices;
-    PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);
-    PxStrideIterator<const PxVec3> positionIt = readData->positionBuffer;
-
-    glowutils::AxisAlignedBoundingBox bbox;
-
-    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
-        if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_DRAIN)
-            indices.push_back(i);
-        if (*flagsIt & PxParticleFlag::eVALID) {
-            bbox.extend(vec3(*positionIt));
-        }
-    }
+    updateVisualsAmpl(*readData);
 
     readData->unlock();
 
-    m_particleDrawable->setParticleSize(m_particleSystem->getRestParticleDistance());
-    m_particleDrawable->setBoudingBox(bbox);
-
-    releaseParticles(indices);
+    releaseParticles(m_particlesToDelete);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
@@ -312,6 +317,7 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     m_particleSystem->setRestOffset(restOffset);
     m_particleSystem->setContactOffset(contactOffset);
     m_particleSystem->setRestParticleDistance(restParticleDistance);
+    setParticleSize(restParticleDistance);
 
     m_scene->addActor(*m_particleSystem);
 }

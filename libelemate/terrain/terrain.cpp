@@ -14,13 +14,13 @@
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "terraintile.h"
+#include "physicaltile.h"
 #include "terraininteraction.h"
 
 Terrain::Terrain(const TerrainSettings & settings)
 : ShadowingDrawable()
 , settings(settings)
-, m_drawLevels(TerrainLevels)
+, m_drawLevels(PhysicalLevels)
 , m_viewRange(0.0f)
 {
     TerrainInteraction::setDefaultTerrain(*this);
@@ -36,30 +36,16 @@ void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::str
     setDrawElements({});
 }
 
-void Terrain::drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements)
-{
-    setDrawElements(elements);
-    ShadowingDrawable::drawDepthMap(camera);
-    setDrawElements({});
-}
-
-void Terrain::drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements)
-{
-    setDrawElements(elements);
-    ShadowingDrawable::drawShadowMapping(camera, lightSource);
-    setDrawElements({});
-}
-
 void Terrain::setDrawElements(const std::initializer_list<std::string> & elements)
 {
     if (elements.size() == 0) {
-        m_drawLevels = TerrainLevels;
+        m_drawLevels = PhysicalLevels;
         return;
     }
 
     m_drawLevels.clear();
     for (const std::string & name : elements)
-        m_drawLevels.insert(levelForElement(name));
+        m_drawLevels.insert(levelForElement.at(name));
 }
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
@@ -67,7 +53,7 @@ const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();
 void Terrain::drawImplementation(const CameraEx & camera)
 {
     // we probably don't want to draw an empty terrain
-    assert(m_tiles.size() > 0);
+    assert(m_physicalTiles.size() > 0);
 
     if (!m_renderGridRadius.isValid())
         generateDrawGrid();
@@ -81,7 +67,10 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
 
-    for (auto & pair : m_tiles) {
+    for (auto & pair : m_attributeTiles)
+        pair.second->prepareDraw();
+
+    for (auto & pair : m_physicalTiles) {
         if (m_drawLevels.find(pair.first.level) == m_drawLevels.end())
             continue;   // only draw elements that are listed for drawing
         pair.second->bind(camera);
@@ -92,6 +81,18 @@ void Terrain::drawImplementation(const CameraEx & camera)
     glDisable(GL_CULL_FACE);
 
     glDisable(GL_PRIMITIVE_RESTART);
+}
+
+void Terrain::updatePhysics(double delta)
+{
+    for (auto & pair : m_attributeTiles)
+        pair.second->updatePhysics(delta);
+}
+
+void Terrain::setDrawHeatMap(bool drawHeatMap)
+{
+    for (auto & pair : m_physicalTiles)
+        pair.second->m_drawHeatMap = drawHeatMap;
 }
 
 const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
@@ -159,15 +160,15 @@ void Terrain::setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 
 {
     assert(m_renderGridRadius.isValid());
 
-    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.rows - m_renderGridRadius.value()));
-    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z/settings.sizeZ) * settings.columns - m_renderGridRadius.value()));
+    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
+    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z / settings.sizeZ) * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
 
     program.setUniform("rowColumnOffset", glm::ivec2(offsetX, offsetZ));
 }
 
 void Terrain::generateDrawGrid()
 {
-    m_renderGridRadius.setValue(static_cast<unsigned int>(std::ceil(m_viewRange * settings.samplesPerWorldCoord())));
+    m_renderGridRadius.setValue(static_cast<unsigned int>(std::ceil(m_viewRange * settings.maxSamplesPerWorldCoord())));
     unsigned int diameter = m_renderGridRadius.value() * 2;
     unsigned int numSamples = diameter * diameter;
 
@@ -184,7 +185,7 @@ void Terrain::generateDrawGrid()
     }
 
 
-    // create a quad for all vertices, except for the last row and column (covered by the forelast)
+    // create a quad for all vertices, except for the last row and column (covered by the second last)
     // see PxHeightFieldDesc::samples documentation: "...(nbRows - 1) * (nbColumns - 1) cells are actually used."
     unsigned numIndices = (diameter - 1) * ((diameter) * 2 + 1);
     m_indices.reserve(numIndices);
@@ -205,9 +206,27 @@ void Terrain::generateDrawGrid()
 
 void Terrain::registerTile(const TileID & tileID, TerrainTile & tile)
 {
-    assert(m_tiles.find(tileID) == m_tiles.end());
+    assert(m_physicalTiles.find(tileID) == m_physicalTiles.end());
+    assert(m_attributeTiles.find(tileID) == m_attributeTiles.end());
 
-    m_tiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
+    if (levelIsPhysical(tileID.level))
+        m_physicalTiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
+    else if (levelIsAttribute(tileID.level))
+        m_attributeTiles.emplace(tileID, std::shared_ptr<TerrainTile>(&tile));
+    else
+        glow::fatal("Terrain: Trying to register a terrain tile with unknown level (%;)", int(tileID.level));
+}
+
+std::shared_ptr<TerrainTile> Terrain::getTile(TileID tileID) const
+{
+    if (levelIsPhysical(tileID.level))
+        return m_physicalTiles.at(tileID);
+    if (levelIsAttribute(tileID.level))
+        return m_attributeTiles.at(tileID); 
+
+    glow::fatal("Terrain: Trying to register a terrain tile with unknown level (%;)", int(tileID.level));
+    assert(nullptr);
+    return nullptr;
 }
 
 const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
@@ -219,7 +238,7 @@ void Terrain::heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, f
 {
     maxHeight = std::numeric_limits<float>::lowest();
     maxLevel = TerrainLevel::BaseLevel;
-    for (TerrainLevel level : TerrainLevels) {
+    for (TerrainLevel level : PhysicalLevels) {
         float h = heightAt(x, z, level);
         if (h > maxHeight) {
             maxLevel = level;
@@ -244,7 +263,6 @@ float Terrain::heightTotalAt(float x, float z) const
 
 float Terrain::heightAt(float x, float z, TerrainLevel level) const
 {
-    std::shared_ptr<TerrainTile> tile = nullptr;
     float normX = 0.0f;
     float normZ = 0.0f;
     TileID tileID;
@@ -253,7 +271,31 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
 
     tileID.level = level;
 
-    return m_tiles.at(tileID)->interpolatedHeightAt(normX, normZ);
+    return m_physicalTiles.at(tileID)->interpolatedValueAt(normX, normZ);
+}
+
+bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const
+{
+    assert(std::find(PhysicalLevels.begin(), PhysicalLevels.end(), level) != PhysicalLevels.end());
+    if (std::find(PhysicalLevels.begin(), PhysicalLevels.end(), level) == PhysicalLevels.end())
+        return false;
+
+    std::shared_ptr<TerrainTile> terrainTile;
+    bool result = worldToTileRowColumn(x, z, level, terrainTile, row, column, row_fract, column_fract);
+
+    if (!result)
+        return false;
+
+    physicalTile = std::dynamic_pointer_cast<PhysicalTile>(terrainTile);
+    assert(physicalTile);
+
+    return result;
+}
+
+bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column) const
+{
+    float row_fract = 0.0f, column_fract = 0.0f;
+    return worldToPhysicalTileRowColumn(x, z, level, physicalTile, row, column, row_fract, column_fract);
 }
 
 bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const
@@ -266,22 +308,22 @@ bool Terrain::worldToTileRowColumn(float x, float z, TerrainLevel level, std::sh
 {
     // only implemented for 1 tile
     assert(settings.tilesX == 1 && settings.tilesZ == 1);
+
+    TileID tileID(level, 0, 0);
+    terrainTile = getTile(tileID);
+    assert(terrainTile);
+
     float normX = (x / settings.sizeX + 0.5f);
     float normZ = (z / settings.sizeZ + 0.5f);
     bool valid = normX >= 0 && normX <= 1 && normZ >= 0 && normZ <= 1;
 
     float row_int = 0.0f, column_int = 0.0f;
-    row_fract = std::modf(normX * settings.rows, &row_int);
-    column_fract = std::modf(normZ * settings.columns, &column_int);
+    row_fract = std::modf(normX * terrainTile->samplesPerAxis, &row_int);
+    column_fract = std::modf(normZ * terrainTile->samplesPerAxis, &column_int);
+    assert(row_int < terrainTile->samplesPerAxis && column_int < terrainTile->samplesPerAxis);
 
-    row = static_cast<unsigned int>(row_int) % settings.rows;
-    column = static_cast<unsigned int>(column_int) % settings.columns;
-
-    TileID tileID(level, 0, 0);
-
-    terrainTile = m_tiles.at(tileID);
-
-    assert(terrainTile);
+    row = static_cast<unsigned int>(row_int) % terrainTile->samplesPerAxis;
+    column = static_cast<unsigned int>(column_int) % terrainTile->samplesPerAxis;
 
     return valid;
 }

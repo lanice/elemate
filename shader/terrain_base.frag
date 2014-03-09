@@ -5,6 +5,7 @@ in vec3 g_normal;
 in vec3 g_viewPos;
 in vec2 g_rowColumn;
 in vec2 g_quadRelativePos;
+in float g_temperature;
 
 uniform float zfar;
 
@@ -21,7 +22,9 @@ uniform sampler2D bedrockSampler;
 uniform sampler2D sandSampler;
 uniform sampler2D grasslandSampler;
 
-uniform ivec2 tileRowsColumns;
+uniform int tileSamplesPerAxis;
+
+uniform bool drawHeatMap;
 
 vec4 phongLighting(vec3 n, vec3 v_pos, vec3 lightdir2, mat4 light2, mat4 material);
 
@@ -31,7 +34,14 @@ layout(location = 0)out vec4 fragColor;
 vec3 interpolate(vec2 coeff, vec3 values[4]);
 
 void main()
-{
+{    
+    if (drawHeatMap)
+    {
+        // float normTemp = (g_temperature + 20.0) / 120.0; // helpful for water
+        float normTemp = (g_temperature + 273.0) / 1300.0;  // and for lava
+        fragColor = vec4(normTemp, 0, 1.0 - normTemp, 1);
+        return;
+    }
     
     vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);
     
@@ -46,10 +56,10 @@ void main()
         phongLighting(g_normal, g_viewPos, lightdir2, light2, element_grassland).rgb);
     
     int ids[4] = int[4](// upper left, upper right, lower left, lower right
-        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileRowsColumns.t * int(g_rowColumn.s  )).s,
-        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileRowsColumns.t * int(g_rowColumn.s+1)).s,
-        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileRowsColumns.t * int(g_rowColumn.s  )).s,
-        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileRowsColumns.t * int(g_rowColumn.s+1)).s);
+        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileSamplesPerAxis * int(g_rowColumn.s  )).s,
+        texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileSamplesPerAxis * int(g_rowColumn.s+1)).s,
+        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileSamplesPerAxis * int(g_rowColumn.s  )).s,
+        texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileSamplesPerAxis * int(g_rowColumn.s+1)).s);
 
     vec3 textureColors[4];        
     vec3 lightColors[4];
@@ -67,6 +77,9 @@ void main()
                         // max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0)),
                         max(gl_FragCoord.z / (gl_FragCoord.w * 0.1*zfar) - 9, 0.0)),
                     1.0);
+                    
+    // lava rendering
+    // fragColor = mix(fragColor, vec4(1, 0, 0, 1), step(700, g_temperature));
 }
 
 vec3 interpolate(vec2 coeff, vec3 values[4])

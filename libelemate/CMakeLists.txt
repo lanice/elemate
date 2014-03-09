@@ -23,6 +23,10 @@ set(SOURCES
     lua/luawrapperfunction.h
     particles/particlegroup.cpp
     particles/particlegroup.h
+    particles/emittergroup.h
+    particles/emittergroup.cpp
+    particles/downgroup.h
+    particles/downgroup.cpp
     particles/particlescriptaccess.cpp
     particles/particlescriptaccess.h
     particles/particlecollision.h
@@ -60,10 +64,14 @@ set(SOURCES
     terrain/terraininteraction.cpp
     terrain/terraintile.h
     terrain/terraintile.cpp
+    terrain/physicaltile.h
+    terrain/physicaltile.cpp
     terrain/basetile.h
     terrain/basetile.cpp
-    terrain/watertile.h
-    terrain/watertile.cpp
+    terrain/liquidtile.h
+    terrain/liquidtile.cpp
+    terrain/temperaturetile.h
+    terrain/temperaturetile.cpp
     terrain/terraingenerator.h
     terrain/terraingenerator.cpp
     ui/eventhandler.cpp
