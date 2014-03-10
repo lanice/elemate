@@ -85,6 +85,7 @@ void Achievement::draw(float x, float y, bool popup, float scale)
     m_program->setUniform("x", x);
     m_program->setUniform("y", y);
     m_program->setUniform("scale", scale);
+    m_program->setUniform("locked", static_cast<float>(!m_unlocked));
     m_program->setUniform("time_mod", m_timeMod);
     m_program->setUniform("ratio", m_viewport.x / m_viewport.y);
 
@@ -110,7 +111,12 @@ void Achievement::draw(float x, float y, bool popup, float scale)
     sca = StringDrawer::instance()->scaleToWidth(m_text, 0.4f);
     sca = sca > 0.22f ? 0.22f : sca;
     sca = sca < 0.17f ? 0.17f : sca;
-    for (auto& line : splitText(m_text, static_cast<size_t>(5.75/sca)))
+    std::list <std::string> lines;
+    if (m_unlocked)
+        lines = splitText(m_text, static_cast<size_t>(5.75 / sca));
+    else
+        lines.push_back("???");
+    for (auto& line : lines)
     {
         StringDrawer::instance()->paint(line,
             glm::mat4(  sca*scale, 0, 0, 0,
