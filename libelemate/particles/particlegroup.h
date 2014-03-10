@@ -35,7 +35,7 @@ struct MutableParticleProperties
     physx::PxReal dynamicFriction = 0.05f;
     physx::PxReal staticFriction = 0.0f;
     physx::PxReal damping = 0.0f;
-    physx::PxVec3 externalAcceleration = physx::PxVec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 externalAcceleration;
     physx::PxReal particleMass = 0.001f;
 
     physx::PxReal viscosity = 5.0f;
@@ -112,7 +112,7 @@ public:
         const physx::PxReal dynamicFriction,
         const physx::PxReal staticFriction,
         const physx::PxReal damping,
-        // const physx::PxVec3 externalAcceleration,
+        const glm::vec3 &externalAcceleration,
         const physx::PxReal particleMass,
         const physx::PxReal viscosity,
         const physx::PxReal stiffness

@@ -300,7 +300,7 @@ void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & p
 
 void ParticleGroup::setMutableProperties(const MutableParticleProperties & properties)
 {
-    setMutableProperties(properties.restitution, properties.dynamicFriction, properties.staticFriction, properties.damping, /*properties.externalAcceleration,*/ properties.particleMass, properties.viscosity, properties.stiffness);
+    setMutableProperties(properties.restitution, properties.dynamicFriction, properties.staticFriction, properties.damping, properties.externalAcceleration, properties.particleMass, properties.viscosity, properties.stiffness);
 }
 
 void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
@@ -322,13 +322,13 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     m_scene->addActor(*m_particleSystem);
 }
 
-void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
+void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, const glm::vec3 &externalAcceleration, const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
 {
     m_particleSystem->setRestitution(restitution);
     m_particleSystem->setDynamicFriction(dynamicFriction);
     m_particleSystem->setStaticFriction(staticFriction);
     m_particleSystem->setDamping(damping);
-    // m_particleSystem->setExternalAcceleration(externalAcceleration);
+    m_particleSystem->setExternalAcceleration(*reinterpret_cast<const physx::PxVec3*>(&externalAcceleration));
     m_particleSystem->setParticleMass(particleMass);
     m_particleSystem->setViscosity(viscosity);
     m_particleSystem->setStiffness(stiffness);

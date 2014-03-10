@@ -6,6 +6,8 @@
 #include <inttypes.h>
 #include <memory>
 
+#include <glm/glm.hpp>
+
 namespace physx { class PxScene; }
 class ParticleGroup;
 class ParticleCollision;
@@ -55,7 +57,7 @@ protected:
     void emit(const int id, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ);
     void stopEmit(const int id);
     void setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance);
-    void setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness);
+    void setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const glm::vec3 &externalAcceleration, const float particleMass, const float viscosity, const float stiffness);
     int numParticleGroups();
     const std::string & elementAtId(int id);
     int nextParticleGroup(int id);
@@ -72,6 +74,7 @@ protected:
     void setParticleMass(int id, float particleMass);
     void setViscosity(int id, float viscosity);
     void setStiffness(int id, float stiffness);
+    void setExternalAcceleration(int id, const glm::vec3 &externalAcceleration);
 
     float maxMotionDistance(int id);
     float gridSize(int id);
@@ -85,6 +88,7 @@ protected:
     float particleMass(int id);
     float viscosity(int id);
     float stiffness(int id);
+    glm::vec3 externalAcceleration(int id);
     /************************************************/    
 
     void setUpParticleGroup(const int id, const std::string & elementType);

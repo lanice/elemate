@@ -51,8 +51,8 @@ ParticleScriptAccess::ParticleScriptAccess()
     std::function<int(int, float, float, float, float, float)> func1 = [=] (int id, float a, float b, float c, float d, float e)
     { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
 
-    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=] (int id, float a, float b, float c, float d, float e, float f, float g)
-    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
+    std::function<int(int, float, float, float, float, glm::vec3, float, float, float)> func2 = [=](int id, float a, float b, float c, float d, glm::vec3 d5, float e, float f, float g)
+    { particleGroup(id)->setMutableProperties(a, b, c, d, d5, e, f, g); return 0; };
 
     m_lua->Register("psa_setImmutableProperties", func1);
     m_lua->Register("psa_setMutableProperties", func2);
@@ -226,8 +226,10 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
     { setParticleMass(id, particleMass); return 0; };
     std::function<int(int, float)> func16 = [=] (int id, float viscosity)
     { setViscosity(id, viscosity); return 0; };
-    std::function<int(int, float)> func17 = [=] (int id, float stiffness)
+    std::function<int(int, float)> func17 = [=](int id, float stiffness)
     { setStiffness(id, stiffness); return 0; };
+    std::function<int(int, glm::vec3)> func17_5 = [=](int id, glm::vec3 externalAcceleration)
+    { setExternalAcceleration(id, externalAcceleration); return 0; };
 
     lua.Register("psa_setMaxMotionDistance", func6);
     lua.Register("psa_setGridSize", func7);
@@ -241,6 +243,7 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
     lua.Register("psa_setParticleMass", func15);
     lua.Register("psa_setViscosity", func16);
     lua.Register("psa_setStiffness", func17);
+    lua.Register("psa_setExternalAcceleration", func17_5);
 
     std::function<float(int)> func18 = [=] (int id)
     { return maxMotionDistance(id); };
@@ -264,8 +267,10 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
     { return particleMass(id); };
     std::function<float(int)> func28 = [=] (int id)
     { return viscosity(id); };
-    std::function<float(int)> func29 = [=] (int id)
+    std::function<float(int)> func29 = [=](int id)
     { return stiffness(id); };
+    std::function<glm::vec3(int)> func29_5 = [=](int id)
+    { return externalAcceleration(id); };
 
     lua.Register("psa_maxMotionDistance", func18);
     lua.Register("psa_gridSize", func19);
@@ -279,13 +284,14 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
     lua.Register("psa_particleMass", func27);
     lua.Register("psa_viscosity", func28);
     lua.Register("psa_stiffness", func29);
+    lua.Register("psa_externalAcceleration", func29_5);
 
 
     std::function<int(int, float, float, float, float, float)> func30 = [=](int id, float a, float b, float c, float d, float e)
     { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
 
-    std::function<int(int, float, float, float, float, float, float, float)> func31 = [=](int id, float a, float b, float c, float d, float e, float f, float g)
-    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
+    std::function<int(int, float, float, float, float, glm::vec3, float, float, float)> func31 = [=](int id, float a, float b, float c, float d, glm::vec3 d5, float e, float f, float g)
+    { particleGroup(id)->setMutableProperties(a, b, c, d, d5, e, f, g); return 0; };
 
     lua.Register("psa_setImmutableProperties", func30);
     lua.Register("psa_setMutableProperties", func31);
@@ -311,9 +317,9 @@ void ParticleScriptAccess::setImmutableProperties( const int id, const float max
     m_particleGroups.at(id)->setImmutableProperties(maxMotionDistance, gridSize, restOffset, contactOffset, restParticleDistance);
 }
 
-void ParticleScriptAccess::setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const float particleMass, const float viscosity, const float stiffness)
+void ParticleScriptAccess::setMutableProperties(const int id, const float restitution, const float dynamicFriction, const float staticFriction, const float damping, const glm::vec3 &externalAcceleration, float particleMass, const float viscosity, const float stiffness)
 {
-    m_particleGroups.at(id)->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness);
+    m_particleGroups.at(id)->setMutableProperties(restitution, dynamicFriction, staticFriction, damping, externalAcceleration, particleMass, viscosity, stiffness);
 }
 
 int ParticleScriptAccess::numParticleGroups()
@@ -386,8 +392,10 @@ void ParticleScriptAccess::setParticleMass(int id, float particleMass)
 { m_particleGroups.at(id)->particleSystem()->setParticleMass(particleMass); }
 void ParticleScriptAccess::setViscosity(int id, float viscosity)
 { m_particleGroups.at(id)->particleSystem()->setViscosity(viscosity); }
+void ParticleScriptAccess::setExternalAcceleration(int id, const glm::vec3 &externalAcceleration)
+{ m_particleGroups.at(id)->particleSystem()->setExternalAcceleration(*reinterpret_cast<const physx::PxVec3*>(&externalAcceleration));}
 void ParticleScriptAccess::setStiffness(int id, float stiffness)
-{ m_particleGroups.at(id)->particleSystem()->setStiffness(stiffness); }
+{ m_particleGroups.at(id)->particleSystem()->setStiffness(stiffness);}
 float ParticleScriptAccess::maxMotionDistance(int id)
 { return m_particleGroups.at(id)->particleSystem()->getMaxMotionDistance(); }
 float ParticleScriptAccess::gridSize(int id)
@@ -412,3 +420,8 @@ float ParticleScriptAccess::viscosity(int id)
 { return m_particleGroups.at(id)->particleSystem()->getViscosity(); }
 float ParticleScriptAccess::stiffness(int id)
 { return m_particleGroups.at(id)->particleSystem()->getStiffness(); }
+glm::vec3 ParticleScriptAccess::externalAcceleration(int id)
+{
+    physx::PxVec3 v = m_particleGroups.at(id)->particleSystem()->getExternalAcceleration();
+    return glm::vec3(v.x, v.y, v.z);
+}
