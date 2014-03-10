@@ -1,7 +1,8 @@
 #include "menupage.h"
 
 MenuPage::MenuPage(const std::string& page_name):
-m_pageName(page_name)
+m_pageName(page_name),
+m_topOffset(0.0f)
 {
     m_entries.reserve(6);
 }
@@ -9,6 +10,15 @@ m_pageName(page_name)
 MenuPage::~MenuPage()
 {
     m_entries.clear();
+}
+float MenuPage::topOffset() const
+{
+    return m_topOffset;
+}
+
+void MenuPage::setTopOffset(float topOffset)
+{
+    m_topOffset = topOffset;
 }
 
 unsigned int MenuPage::activeEntry()const

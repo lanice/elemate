@@ -100,6 +100,7 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
     m_menus.emplace("Achievements", new MenuPage("Achievements"));
+    m_menus["Achievements"]->setTopOffset(-0.3f);
     m_menus["Achievements"]->addEntry("Zurück zur Hauptseite");
 }
 
@@ -184,7 +185,7 @@ void UserInterface::drawMenuEntries()
             glm::mat4(0.5, 0, 0, 0,
                       0, 0.5, 0, 0,
                       0, 0, 0.5, 0,
-                      0, 0.5 - (i*distance), 0, 1),
+                      0, 0.5 - m_menus[m_activeMenu]->topOffset() -(i*distance), 0, 1),
                       StringDrawer::Alignment::kAlignCenter,
                       color);
     }    
@@ -195,9 +196,16 @@ void UserInterface::drawMenuEntries()
 void UserInterface::drawAchievements()
 {
     auto locked = AchievementManager::instance()->getUnlocked();
+    float x = -0.7f;
+    float y = 0.6f;
     for (auto& achievement : *locked)
     {
-        achievement.second->draw(0.0f,0.0f,false);
+        achievement.second->draw(x,y,false);
+        x += 0.55f;
+        if (x >= 0.6f){
+            y -= 0.4f;
+            x = -0.7f;
+        }
     }
 }
 
