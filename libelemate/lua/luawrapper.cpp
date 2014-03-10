@@ -228,17 +228,19 @@ glm::vec3 LuaWrapper::fetch<glm::vec3>(const int index) const
         return glm::vec3();
     }
 
+    int ix = index - 1;
+
     glm::vec3 v;
     int v_index = 0;
     lua_pushnil(m_state);
-    while (lua_next(m_state, index) != 0) {
+    while (lua_next(m_state, ix) != 0) {
         if (!lua_isnumber(m_state, -1))
             glow::critical("LuaWrapper: Return table value is not number, while trying to read a vec3.");
         else
             if (v_index < 3)   // only try to copy the value into the vector if size table has not more than 3 entries
                 v[v_index] = static_cast<float>(lua_tonumber(m_state, -1));
-        ++v_index;
         lua_pop(m_state, 1);
+        ++v_index;
         if (v_index > 3) {
             glow::critical("LuaWrapper: Return table larger than expected, while trying to read a vec3.");
             break;
