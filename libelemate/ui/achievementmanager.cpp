@@ -19,7 +19,10 @@ AchievementManager::~AchievementManager()
         delete achievement.second;
     for (auto& achievement : m_locked)
         delete achievement.second;
+    for (auto& achievement : m_drawQueue)
+        delete achievement.second;
     m_unlocked.clear();
+    m_drawQueue.clear();
     m_locked.clear();
 }
 
@@ -42,23 +45,24 @@ void AchievementManager::addAchievement(const std::string& title, const std::str
 void AchievementManager::unlockAchievement(const std::string& title)
 {
     auto iter_found = m_locked.find(title);
-    if (iter_found != m_locked.end() && m_unlocked.end() == m_unlocked.find(title) && !iter_found->second->isUnlocked())
+    if (iter_found != m_locked.end() && m_drawQueue.end() == m_drawQueue.find(title) && !iter_found->second->isUnlocked())
     {
         auto result = iter_found;
         result->second->unlock();
-        m_unlocked.insert(result, ++iter_found);
+        m_drawQueue.insert(result, ++iter_found);
         m_locked.erase(result);
     }
 }
 
 void AchievementManager::drawAchievements()
 {
-    while (!m_unlocked.empty() && m_unlocked.begin()->second->wasDrawn()){
-        delete m_unlocked.begin()->second;
-        m_unlocked.erase(m_unlocked.begin());
+    while (!m_drawQueue.empty() && m_drawQueue.begin()->second->wasDrawn()){
+        auto first_achievement = m_drawQueue.begin();
+        m_unlocked.insert(m_drawQueue.begin(), ++first_achievement);
+        m_drawQueue.erase(m_drawQueue.begin());
     }
-    if (!m_unlocked.empty())
-        m_unlocked.begin()->second->draw();
+    if (!m_drawQueue.empty())
+        m_drawQueue.begin()->second->draw();
 }
 
 void AchievementManager::resizeAchievements(int width, int height)
@@ -101,15 +105,7 @@ void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
     {
         return m_properties.at(property_name);
     };
-
-    std::function<int()> lockAll = [=]()
-    {
-        for (auto& achievement : m_unlocked){
-
-        }
-        return 0;
-    };
-
+    
     m_lua->Register("achievement_unlock", unlock);
     m_lua->Register("achievement_add", add);
     m_lua->Register("achievement_condition", condition);

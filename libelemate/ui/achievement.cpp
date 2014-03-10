@@ -73,7 +73,7 @@ void Achievement::initialize()
     m_texture->unbind();
 }
 
-void Achievement::draw()
+void Achievement::draw(float x, float y)
 {
     if (!m_unlocked)
         return;
@@ -93,13 +93,13 @@ void Achievement::draw()
     m_program->release();
 
     m_texture->unbindActive(GL_TEXTURE0);
-    float pos = 0.9f + m_timeMod/1.2f;
+    float pos = y + m_timeMod/1.2f;
     float scale = StringDrawer::instance()->scaleToWidth(m_title, 0.25f);
     StringDrawer::instance()->paint(m_title,
         glm::mat4(  scale, 0, 0, 0,
                     0, scale, 0, 0,
                     0, 0, scale, 0,
-                    0.7, pos, 0, 1));
+                    x, pos, 0, 1));
     pos -= 0.078f;
 
     scale = StringDrawer::instance()->scaleToWidth(m_text, 0.4f);
@@ -111,7 +111,7 @@ void Achievement::draw()
             glm::mat4(  scale, 0, 0, 0,
                         0, scale, 0, 0,
                         0, 0, scale, 0,
-                        0.7, pos, 0, 1));
+                        x, pos, 0, 1));
         pos -= 0.17f*scale;
     }
 }

@@ -28,7 +28,7 @@ public:
 
     void initialize();
     void update();
-    void draw();
+    void draw(float x = 0.7f, float y = 0.9f);
     bool wasDrawn()const;
     void resize(int width, int height);
 

@@ -39,6 +39,7 @@ protected:
     bool                                    m_unlockerThreadRunning;
 
     std::unordered_map<std::string, Achievement*> m_locked;
+    std::unordered_map<std::string, Achievement*> m_drawQueue;
     std::unordered_map<std::string, Achievement*> m_unlocked;
 
     LuaWrapper*  m_lua;
