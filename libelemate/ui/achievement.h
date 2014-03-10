@@ -12,7 +12,6 @@ namespace glow{
     class Program;
     class Texture;
 }
-class StringDrawer;
 
 #include <string>
 
@@ -29,7 +28,7 @@ public:
 
     void initialize();
     void update();
-    void draw(StringDrawer& stringDrawer);
+    void draw();
     bool wasDrawn()const;
     void resize(int width, int height);
 

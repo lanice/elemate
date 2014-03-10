@@ -41,7 +41,6 @@ protected:
     std::unordered_map<std::string, Achievement*> m_locked;
     std::unordered_map<std::string, Achievement*> m_unlocked;
 
-    StringDrawer m_stringDrawer;
     LuaWrapper*  m_lua;
 
     AchievementManager();

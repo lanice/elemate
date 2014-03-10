@@ -35,7 +35,6 @@ UserInterface::~UserInterface()
 
 void UserInterface::initialize()
 {
-    m_stringDrawer.initialize();
     std::vector<glm::vec2> points({
         glm::vec2(+1.f, -1.f)
         , glm::vec2(+1.f, +1.f)
@@ -114,7 +113,7 @@ void UserInterface::drawHUD()
 
     drawPreview();
     for (const auto& text : m_hudTexts){
-        m_stringDrawer.paint(text);
+        StringDrawer::instance()->paint(text);
     }
 }
 
@@ -177,7 +176,7 @@ void UserInterface::drawMenuEntries()
             color = kDefaultHighlightedMenuEntryColor;
         else
             color = kDefaultMenuEntryColor;
-        m_stringDrawer.paint(m_menus[m_activeMenu]->entryCaption(i),
+        StringDrawer::instance()->paint(m_menus[m_activeMenu]->entryCaption(i),
             glm::mat4(0.5, 0, 0, 0,
                       0, 0.5, 0, 0,
                       0, 0, 0.5, 0,
@@ -190,7 +189,7 @@ void UserInterface::drawMenuEntries()
 void UserInterface::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
-    m_stringDrawer.resize(width, height);
+    StringDrawer::instance()->resize(width, height);
     AchievementManager::instance()->resizeAchievements(width, height);
 }
 

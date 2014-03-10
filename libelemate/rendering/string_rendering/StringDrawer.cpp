@@ -17,15 +17,24 @@
 
 
 const float StringDrawer::s_textureSize = 1024.0f;
+std::unique_ptr<StringDrawer> StringDrawer::m_instance;
 
 StringDrawer::StringDrawer()
 {
-
 }
 
 StringDrawer::~StringDrawer()
 {
+}
 
+StringDrawer* StringDrawer::instance()
+{
+    if (!m_instance.get())
+    {
+        m_instance.reset(new StringDrawer);
+        m_instance->initialize();
+    }
+    return m_instance.get();
 }
 
 bool StringDrawer::initialize()

@@ -49,7 +49,6 @@ protected:
     bool m_mainMenuOnTop;
     bool m_activeHUD;
 
-    StringDrawer m_stringDrawer;
     std::list<TextObject> m_hudTexts;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;

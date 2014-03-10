@@ -73,7 +73,7 @@ void Achievement::initialize()
     m_texture->unbind();
 }
 
-void Achievement::draw(StringDrawer& stringDrawer)
+void Achievement::draw()
 {
     if (!m_unlocked)
         return;
@@ -93,21 +93,21 @@ void Achievement::draw(StringDrawer& stringDrawer)
     m_program->release();
 
     m_texture->unbindActive(GL_TEXTURE0);
-    float pos = 0.9f + m_timeMod/1.2;
-    float scale = stringDrawer.scaleToWidth(m_title, 0.25f);
-    stringDrawer.paint(m_title,
+    float pos = 0.9f + m_timeMod/1.2f;
+    float scale = StringDrawer::instance()->scaleToWidth(m_title, 0.25f);
+    StringDrawer::instance()->paint(m_title,
         glm::mat4(  scale, 0, 0, 0,
                     0, scale, 0, 0,
                     0, 0, scale, 0,
                     0.7, pos, 0, 1));
     pos -= 0.078f;
 
-    scale = stringDrawer.scaleToWidth(m_text, 0.4f);
+    scale = StringDrawer::instance()->scaleToWidth(m_text, 0.4f);
     scale = scale > 0.22f ? 0.22f : scale;
     scale = scale < 0.17f ? 0.17f : scale;
     for (auto& line : splitText(m_text, static_cast<size_t>(5.75/scale)))
     {
-        stringDrawer.paint(line,
+        StringDrawer::instance()->paint(line,
             glm::mat4(  scale, 0, 0, 0,
                         0, scale, 0, 0,
                         0, 0, scale, 0,
