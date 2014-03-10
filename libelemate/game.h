@@ -27,7 +27,6 @@ public:
 
     /** Starts the Game Loop until recieving a window close event. */
     void start();
-    void toggleMenu();
 
     void setVSync(bool enabled);
     void toggleVSync();

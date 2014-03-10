@@ -17,7 +17,6 @@ namespace glow{
 class MenuPage;
 struct GLFWwindow;
 class LuaWrapper;
-class Achievement;
 
 class UserInterface{
 public:
@@ -70,6 +69,7 @@ protected:
 
     void drawGreyScreen();
     void drawMenuEntries();
+    void drawAchievements();
 
     void drawPreview();
     void drawPreviewCircle(float x, float y, const std::string& element, float height, bool highlighted);

@@ -73,14 +73,17 @@ void Achievement::initialize()
     m_texture->unbind();
 }
 
-void Achievement::draw(float x, float y)
+void Achievement::draw(float x, float y, bool popup)
 {
-    if (!m_unlocked)
-        return;
+    if (popup)
+        update();
+    else
+        m_timeMod = 0;
 
-    update();
     m_texture->bindActive(GL_TEXTURE0);
 
+    m_program->setUniform("x", x);
+    m_program->setUniform("y", y);
     m_program->setUniform("time_mod", m_timeMod);
     m_program->setUniform("ratio", m_viewport.x / m_viewport.y);
 

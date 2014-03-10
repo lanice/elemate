@@ -37,12 +37,6 @@ Game::~Game()
     delete m_physicsWrapper;
 }
 
-void Game::toggleMenu()
-{
-    m_world->togglePause();
-    m_userInterface.toggleMainMenu();
-}
-
 void Game::start()
 {
     glfwSetTime(0.0);   

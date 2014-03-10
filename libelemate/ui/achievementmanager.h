@@ -29,6 +29,9 @@ public:
     void drawAchievements();
     void resizeAchievements(int width, int height);
 
+    std::unordered_map<std::string, Achievement*>* getLocked();
+    std::unordered_map<std::string, Achievement*>* getUnlocked();
+
     void registerLuaFunctions(LuaWrapper * lua);
 
 protected:

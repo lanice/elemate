@@ -129,6 +129,17 @@ float AchievementManager::getProperty(const std::string& name) const
     return m_properties.at(name);
 }
 
+
+std::unordered_map<std::string, Achievement*>* AchievementManager::getLocked()
+{
+    return &m_locked;
+}
+
+std::unordered_map<std::string, Achievement*>* AchievementManager::getUnlocked()
+{
+    return &m_unlocked;
+}
+
 void  AchievementManager::checkForNewUnlocks(bool threaded)
 {
     if (threaded)
