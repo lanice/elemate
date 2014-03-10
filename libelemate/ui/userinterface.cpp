@@ -196,15 +196,16 @@ void UserInterface::drawMenuEntries()
 void UserInterface::drawAchievements()
 {
     auto locked = AchievementManager::instance()->getUnlocked();
-    float x = -0.7f;
+    float x = -0.8f;
     float y = 0.6f;
     for (auto& achievement : *locked)
     {
-        achievement.second->draw(x,y,false);
-        x += 0.55f;
-        if (x >= 0.6f){
-            y -= 0.4f;
-            x = -0.7f;
+        achievement.second->draw(x,y,false,0.5);
+        x += 0.3f;
+        if (x >= 0.8f)
+        {
+            y -= 0.2f;
+            x = -0.8f;
         }
     }
 }

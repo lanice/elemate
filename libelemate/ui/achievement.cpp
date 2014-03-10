@@ -73,7 +73,7 @@ void Achievement::initialize()
     m_texture->unbind();
 }
 
-void Achievement::draw(float x, float y, bool popup)
+void Achievement::draw(float x, float y, bool popup, float scale)
 {
     if (popup)
         update();
@@ -84,6 +84,7 @@ void Achievement::draw(float x, float y, bool popup)
 
     m_program->setUniform("x", x);
     m_program->setUniform("y", y);
+    m_program->setUniform("scale", scale);
     m_program->setUniform("time_mod", m_timeMod);
     m_program->setUniform("ratio", m_viewport.x / m_viewport.y);
 
@@ -97,25 +98,26 @@ void Achievement::draw(float x, float y, bool popup)
 
     m_texture->unbindActive(GL_TEXTURE0);
     float pos = y + m_timeMod/1.2f;
-    float scale = StringDrawer::instance()->scaleToWidth(m_title, 0.25f);
+    float sca = StringDrawer::instance()->scaleToWidth(m_title, 0.25f);
+    float scale_offset = 0.05*(1.0f - scale);
     StringDrawer::instance()->paint(m_title,
-        glm::mat4(  scale, 0, 0, 0,
-                    0, scale, 0, 0,
-                    0, 0, scale, 0,
-                    x, pos, 0, 1));
-    pos -= 0.078f;
+        glm::mat4(  sca*scale, 0, 0, 0,
+                    0, sca*scale, 0, 0,
+                    0, 0, sca*scale, 0,
+                    x + scale_offset, pos - scale_offset, 0, 1));
+    pos -= 0.078f*scale;
 
-    scale = StringDrawer::instance()->scaleToWidth(m_text, 0.4f);
-    scale = scale > 0.22f ? 0.22f : scale;
-    scale = scale < 0.17f ? 0.17f : scale;
-    for (auto& line : splitText(m_text, static_cast<size_t>(5.75/scale)))
+    sca = StringDrawer::instance()->scaleToWidth(m_text, 0.4f);
+    sca = sca > 0.22f ? 0.22f : sca;
+    sca = sca < 0.17f ? 0.17f : sca;
+    for (auto& line : splitText(m_text, static_cast<size_t>(5.75/sca)))
     {
         StringDrawer::instance()->paint(line,
-            glm::mat4(  scale, 0, 0, 0,
-                        0, scale, 0, 0,
-                        0, 0, scale, 0,
-                        x, pos, 0, 1));
-        pos -= 0.17f*scale;
+            glm::mat4(  sca*scale, 0, 0, 0,
+                        0, sca*scale, 0, 0,
+                        0, 0, sca*scale, 0,
+                        x + scale_offset, pos - scale_offset, 0, 1));
+        pos -= 0.17f*sca*scale;
     }
 }
 

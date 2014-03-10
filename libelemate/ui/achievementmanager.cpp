@@ -71,6 +71,8 @@ void AchievementManager::resizeAchievements(int width, int height)
         achievement.second->resize(width, height);
     for (auto& achievement : m_locked)
         achievement.second->resize(width, height);
+    for (auto& achievement : m_drawQueue)
+        achievement.second->resize(width, height);
     StringDrawer::instance()->resize(width, height);
 }
 

@@ -1,6 +1,11 @@
 -- Define Achievements + their conditions
 
 achievement_add("Baby steps", "OK, you opened the game. What now?","default")
+achievement_add("Baby steps1", "OK, you opened the game. What now?","default")
+achievement_add("Baby steps2", "OK, you opened the game. What now?","default")
+achievement_add("Baby steps3", "OK, you opened the game. What now?","default")
+achievement_add("Baby steps4", "OK, you opened the game. What now?","default")
+achievement_add("Baby steps5", "OK, you opened the game. What now?","default")
 
 achievement_add("Raise your hand", "Lift the hand in the air like you don't care...","default")
 achievement_setProperty("maxHandY", 0)
