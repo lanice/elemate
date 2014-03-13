@@ -38,6 +38,7 @@ ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 , m_lua(new LuaWrapper())
 , m_terrainInteraction(new TerrainInteraction("bedrock"))
 {
+    AchievementManager::instance()->registerLuaFunctions(m_lua);
     m_lua->loadScript("scripts/collision.lua");
     m_psa.registerLuaFunctions(*m_lua);
     m_terrainInteraction->registerLuaFunctions(*m_lua);
