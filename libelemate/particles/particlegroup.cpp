@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <functional>
+#include <type_traits>
 
 #include <glow/logging.h>
 
@@ -35,6 +36,8 @@ ParticleGroup::ParticleGroup(
 , m_lastFreeIndex(maxParticleCount-1)
 , m_gpuParticles(enableGpuParticles)
 {
+    static_assert(sizeof(glm::vec3) == sizeof(physx::PxVec3), "size of physx vec3 does not match the size of glm::vec3.");
+
     for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
 
     assert(PxGetPhysics().getNbScenes() == 1);
@@ -143,11 +146,8 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
 {
     PxU32 numParticles = static_cast<PxU32>(pos.size());
     PxU32 * indices = new PxU32[numParticles];
-    PxVec3 * positions = new PxVec3[numParticles];
-    PxVec3 * velocities = nullptr;
     if (vel) {
         assert(vel->size() == numParticles);
-        velocities = new PxVec3[numParticles];
     }
 
     glowutils::AxisAlignedBoundingBox & bbox = m_particleDrawable->m_bbox;
@@ -163,20 +163,14 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
             if (m_nextFreeIndex == m_lastFreeIndex) releaseOldParticles(numParticles);
             if (++m_nextFreeIndex == m_maxParticleCount) m_nextFreeIndex = 0;
         }
-
-        positions[i] = PxVec3(pos.at(i).x, pos.at(i).y, pos.at(i).z);
-    }
-    if (vel) {
-        for (PxU32 i = 0; i < numParticles; ++i)
-            velocities[i] = PxVec3(vel->at(i).x, vel->at(i).y, vel->at(i).z);
     }
 
     PxParticleCreationData particleCreationData;
     particleCreationData.numParticles = numParticles;
     particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(indices);
-    particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(positions);
+    particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(reinterpret_cast<const PxVec3*>(pos.data()));
     if (vel)
-        particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(velocities, 0);
+        particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(reinterpret_cast<const PxVec3*>(vel->data()), 0);
 
     bool success = m_particleSystem->createParticles(particleCreationData);
     m_numParticles += numParticles;
@@ -185,8 +179,6 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
         glow::warning("ParticleGroup::createParticles creation of %; physx particles failed", numParticles);
 
     delete[] indices;
-    delete[] positions;
-    delete[] velocities;
 }
 
 void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
@@ -194,44 +186,29 @@ void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
     std::vector<uint32_t> indices;
     for (uint32_t i = 0; i < numParticles; ++i)
     {
-        if (++m_lastFreeIndex == m_maxParticleCount) m_lastFreeIndex = 0;
+        if (++m_lastFreeIndex == m_maxParticleCount)
+            m_lastFreeIndex = 0;
         indices.push_back(m_lastFreeIndex);
     }
+    PxStrideIterator<const PxU32> indexBuffer(indices.data());
 
-    PxU32 * indexBuffer = new PxU32[numParticles];
-
-    for (PxU32 i = 0; i < numParticles; ++i)
-    {
-        PxU32 index = indices.at(i);
-        indexBuffer[i] = index;
-    }
-
-    PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
-
-    m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+    m_particleSystem->releaseParticles(numParticles, indexBuffer);
     m_numParticles -= numParticles;
-
-    delete[] indexBuffer;
 }
 
 void ParticleGroup::releaseParticles(const std::vector<uint32_t> & indices)
 {
     PxU32 numParticles = static_cast<PxU32>(indices.size());
-    PxU32 * indexBuffer = new PxU32[numParticles];
 
     for (PxU32 i = 0; i < numParticles; ++i)
     {
-        PxU32 index = indices.at(i);
-        indexBuffer[i] = index;
-        m_freeIndices.push_back(index);
+        m_freeIndices.push_back(indices.at(i));
     }
 
-    PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
+    PxStrideIterator<const PxU32> indexBuffer(indices.data());
 
-    m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+    m_particleSystem->releaseParticles(numParticles, indexBuffer);
     m_numParticles -= numParticles;
-
-    delete[] indexBuffer;
 }
 
 uint32_t ParticleGroup::releaseParticles(const glowutils::AxisAlignedBoundingBox & boundingBox)
@@ -260,8 +237,7 @@ void ParticleGroup::releaseParticlesGetPositions(const glowutils::AxisAlignedBou
         assert(pxPositionIt.ptr());
         if (!(*pxFlagIt & PxParticleFlag::eVALID))
             continue;
-        const physx::PxVec3 & pxPosition = *pxPositionIt;
-        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*pxPositionIt.ptr());
         if (!boundingBox.inside(pos))
             continue;
         releasedPositions.push_back(pos);
@@ -278,11 +254,6 @@ void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 &
 {
     std::vector<glm::vec3> vel({ velocity });
     createParticles({ position }, &vel);
-}
-
-glm::vec3 vec3(const physx::PxVec3 & vec3)
-{
-    return glm::vec3(vec3.x, vec3.y, vec3.z);
 }
 
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
@@ -380,10 +351,8 @@ void ParticleGroup::giveGiftTo(ParticleGroup & other)
         assert(pxPositionIt.ptr());
         if (!(*pxFlagIt & PxParticleFlag::eVALID))
             continue;
-        const physx::PxVec3 & pxPosition = *pxPositionIt;
-        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
-        const physx::PxVec3 & pxVelocity = *pxVelocityIt;
-        const glm::vec3 vel = glm::vec3(pxVelocity.x, pxVelocity.y, pxVelocity.z);
+        const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*pxPositionIt.ptr());
+        const glm::vec3 & vel = reinterpret_cast<const glm::vec3&>(*pxVelocityIt.ptr());
         positions.push_back(pos);
         velocities.push_back(vel);
     }
@@ -409,8 +378,7 @@ void ParticleGroup::particlesInVolume(const glowutils::AxisAlignedBoundingBox & 
         assert(pxPositionIt.ptr());
         if (!(*pxFlagIt & PxParticleFlag::eVALID))
             continue;
-        const physx::PxVec3 & pxPosition = *pxPositionIt;
-        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*pxPositionIt.ptr());
         if (!boundingBox.inside(pos))
             continue;
         particles.push_back(pos);
@@ -432,8 +400,7 @@ void ParticleGroup::particleIndicesInVolume(const glowutils::AxisAlignedBounding
         assert(pxPositionIt.ptr());
         if (!(*pxFlagIt & PxParticleFlag::eVALID))
             continue;
-        const physx::PxVec3 & pxPosition = *pxPositionIt;
-        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*pxPositionIt.ptr());
         if (!boundingBox.inside(pos))
             continue;
         particleIndices.push_back(i);
@@ -457,12 +424,10 @@ void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::
         assert(pxPositionIt.ptr());
         if (!(*pxFlagIt & PxParticleFlag::eVALID))
             continue;
-        const physx::PxVec3 & pxPosition = *pxPositionIt;
-        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*pxPositionIt.ptr());
         if (!boundingBox.inside(pos))
             continue;
-        const physx::PxVec3 & pxVelocity = *pxVelocityIt;
-        const glm::vec3 vel = glm::vec3(pxVelocity.x, pxVelocity.y, pxVelocity.z);
+        const glm::vec3 & vel = reinterpret_cast<const glm::vec3&>(*pxVelocityIt.ptr());
         positions.push_back(pos);
         particleIndices.push_back(i);
         velocities.push_back(vel);

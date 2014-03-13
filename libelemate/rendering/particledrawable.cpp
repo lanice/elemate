@@ -157,9 +157,9 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt) {
         assert(pxPositionIt.ptr());
         if (*pxFlagIt & PxParticleFlag::eVALID) {
-            const physx::PxVec3 & vertex = *pxPositionIt;
-            m_vertices.at(nextPointIndex) = glm::vec3(vertex.x, vertex.y, vertex.z);
-            m_bbox.extend(m_vertices.at(nextPointIndex));
+            const glm::vec3 & vertex = reinterpret_cast<const glm::vec3&>(*pxPositionIt.ptr());
+            m_vertices.at(nextPointIndex) = vertex;
+            m_bbox.extend(vertex);
             ++nextPointIndex;
         }
     }

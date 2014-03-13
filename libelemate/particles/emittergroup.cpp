@@ -113,9 +113,9 @@ void EmitterGroup::updateVisuals()
             }
             else if (!(terrain.topmostElementAt(positionIt->x, positionIt->z) == m_elementName))
             {
-                glm::vec3 pos = glm::vec3(positionIt->x, positionIt->y, positionIt->z);
+                const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*positionIt.ptr());
+                const glm::vec3 & vel = reinterpret_cast<const glm::vec3&>(*pxVelocityIt.ptr());
                 m_downPositions.push_back(pos);
-                glm::vec3 vel = glm::vec3(pxVelocityIt->x, pxVelocityIt->y, pxVelocityIt->z);
                 m_downVelocities.push_back(vel);
                 m_particlesToDelete.push_back(i);
 
