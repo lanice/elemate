@@ -104,7 +104,6 @@ void ParticleCollision::performCheck()
 
     debug_intersectionBoxes.clear();
 
-    // this .. tends to be ...slooooow
     for (auto leftHand = particleGroups.cbegin(); leftHand != lastLeftHand; ++leftHand) {
         auto rightHand = leftHand;
         ++rightHand;
@@ -226,32 +225,8 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
     float maxLength = std::max(dimensions.x, std::max(dimensions.y, dimensions.z));
 
     if (maxLength < 0.3f || depth <= 0) {   // magic number: minimal size of the box for tree based check
-
-/*<<<<<<< HEAD
-        if (depth == 0) {
-            glow::debug("treeCheckEnd, boxSize: %; (maxRecursionDepth)", maxLength);
-        }
-        else
-            glow::debug("treeCheckEnd, boxSize: %; (low box size)", maxLength);
-        std::vector<vec3> leftReleasedPositions;
-        std::vector<vec3> rightReleasedPositions;
-
-        float reactionBias = std::max(m_currentLeftHand->particleSize(), m_currentRightHand->particleSize());
-        AxisAlignedBoundingBox reactionVolume;
-        reactionVolume.extend(volume.llf() - vec3(reactionBias));
-        reactionVolume.extend(volume.urb() + vec3(reactionBias));
-
-        m_currentLeftHand->releaseParticlesGetPositions(reactionVolume, leftReleasedPositions);
-        m_currentRightHand->releaseParticlesGetPositions(reactionVolume, rightReleasedPositions);
-
-        glow::debug("deleting %; particles", leftReleasedPositions.size() + rightReleasedPositions.size());
-
-        std::string reaction = m_lua->call<std::string>("elementReaction", m_currentLeftHand->elementName(), m_currentRightHand->elementName(), leftReleasedPositions.size(), rightReleasedPositions.size());
-        ParticleGroup * newGroup = particleGroup(reaction);
-=======*/
         // call the script to handle this particle collision
         m_lua->call("particleCollision", volume.llf(), volume.urb());
-//>>>>>>> master
 
         debug_intersectionBoxes.push_back({ volume.llf(), volume.urb() });
 
