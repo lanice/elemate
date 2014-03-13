@@ -34,6 +34,8 @@ m_lua(new LuaWrapper())
     m_terrainInteractor->registerLuaFunctions(*m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
+
+    m_lua->loadScript("scripts/achievements.lua");
 }
 
 Manipulator::~Manipulator()

@@ -125,8 +125,6 @@ void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
     lua->Register("achievement_condition", condition);
     lua->Register("achievement_setProperty", setProperty);
     lua->Register("achievement_getProperty", getProperty);
-
-    lua->loadScript("scripts/achievements.lua");
 }
 
 void  AchievementManager::setProperty(const std::string& name, float value)
