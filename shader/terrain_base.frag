@@ -33,6 +33,9 @@ layout(location = 0)out vec4 fragColor;
 
 vec3 interpolate(vec2 coeff, vec3 values[4]);
 
+vec3 texColorForElement(int elementId, vec2 texCoord, vec2 texDx, vec2 texDy);
+vec3 lightingForElement(int elementId);
+
 void main()
 {    
     if (drawHeatMap)
@@ -43,34 +46,48 @@ void main()
         return;
     }
     
-    vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);
-    
-    vec3 elementTexs[3] = vec3[3](
-        texture(bedrockSampler, g_worldPos.xz * 0.1).rgb,
-        texture(sandSampler, g_worldPos.xz * 0.3).rgb,
-        texture(grasslandSampler, g_worldPos.xz * 0.3).rgb);
-        
-    vec3 elementLights[3] = vec3[3](
-        phongLighting(g_normal, g_viewPos, lightdir2, light2, element_bedrock).rgb,
-        phongLighting(g_normal, g_viewPos, lightdir2, light2, element_sand).rgb,
-        phongLighting(g_normal, g_viewPos, lightdir2, light2, element_grassland).rgb);
-    
+    // get all relevant element ids
     int ids[4] = int[4](// upper left, upper right, lower left, lower right
         texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileSamplesPerAxis * int(g_rowColumn.s  )).s,
         texelFetch(terrainTypeID, int(g_rowColumn.t  ) + tileSamplesPerAxis * int(g_rowColumn.s+1)).s,
         texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileSamplesPerAxis * int(g_rowColumn.s  )).s,
         texelFetch(terrainTypeID, int(g_rowColumn.t+1) + tileSamplesPerAxis * int(g_rowColumn.s+1)).s);
 
-    vec3 textureColors[4];        
-    vec3 lightColors[4];
-
-    for (int i = 0; i < 4; ++i) {
-        textureColors[i] = elementTexs[ids[i]];
-        lightColors[i] = elementLights[ids[i]];
-    }
     
-    vec3 textureColor = interpolate(texCoeff, textureColors);
-    vec3 lightColor = interpolate(texCoeff, lightColors);
+    vec3 textureColor;
+    vec3 lightColor;
+    
+    // see http://www.opengl.org/wiki/Sampler_%28GLSL%29#Non-uniform_flow_control
+    vec2 texCoord = g_worldPos.xz * 0.3;
+    vec2 texDx = dFdx(texCoord);
+    vec2 texDy = dFdy(texCoord);
+    
+    if (ids[0] == ids[1] && ids[1] == ids[2] && ids[2] == ids[3]) {
+        textureColor = texColorForElement(ids[0], texCoord, texDx, texDy);
+        lightColor = lightingForElement(ids[0]);
+    }
+    else {        
+        vec2 texCoeff = mod(g_quadRelativePos + 0.5, 1.0);
+        
+        vec3 elementTexs[3] = vec3[3](
+            textureGrad(bedrockSampler, texCoord, texDx, texDy).rgb,
+            textureGrad(sandSampler, texCoord, texDx, texDy).rgb,
+            textureGrad(grasslandSampler, texCoord, texDx, texDy).rgb);
+            
+        vec3 elementLights[3] = vec3[3](
+            phongLighting(g_normal, g_viewPos, lightdir2, light2, element_bedrock).rgb,
+            phongLighting(g_normal, g_viewPos, lightdir2, light2, element_sand).rgb,
+            phongLighting(g_normal, g_viewPos, lightdir2, light2, element_grassland).rgb);
+    
+        vec3 textureColors[4];
+        vec3 lightColors[4];
+        for (int i = 0; i < 4; ++i) {
+            textureColors[i] = elementTexs[ids[i]];
+            lightColors[i] = elementLights[ids[i]];
+        }
+        textureColor = interpolate(texCoeff, textureColors);
+        lightColor = interpolate(texCoeff, lightColors);
+    }
     
     vec3 fragColorRgb = mix(lightColor, textureColor, 0.7);
     fragColor = vec4(mix(fragColorRgb, skyColor, // blend at the horizon 
@@ -89,4 +106,26 @@ vec3 interpolate(vec2 coeff, vec3 values[4])
         mix(values[2], values[3], coeff.s));
 
     return mix(v[0], v[1], coeff.t);
+}
+
+vec3 texColorForElement(int elementId, vec2 texCoord, vec2 texDx, vec2 texDy)
+{
+    if (elementId == 0)
+        return textureGrad(bedrockSampler, texCoord, texDx, texDy).rgb;
+    if (elementId == 1)
+        return textureGrad(sandSampler, texCoord, texDx, texDy).rgb;
+    if (elementId == 2)
+        return textureGrad(grasslandSampler, texCoord, texDx, texDy).rgb;
+    return vec3(1, 0, 0);
+}
+
+vec3 lightingForElement(int elementId)
+{
+    if (elementId == 0)
+        return phongLighting(g_normal, g_viewPos, lightdir2, light2, element_bedrock).rgb;
+    if (elementId == 1)
+        return phongLighting(g_normal, g_viewPos, lightdir2, light2, element_sand).rgb;
+    if (elementId == 2)
+        return phongLighting(g_normal, g_viewPos, lightdir2, light2, element_grassland).rgb;    
+    return vec3(1, 0, 0);
 }
