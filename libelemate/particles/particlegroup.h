@@ -77,7 +77,7 @@ public:
       * @return the number of particles that was deleted. */
     uint32_t releaseParticles(const glowutils::AxisAlignedBoundingBox & boundingBox);
     /** Release particles that are inside the bounding box and append their positions to the releasedPositions vector. */
-    void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions);
+    void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions, glowutils::AxisAlignedBoundingBox & releasedBounds);
 
     /** fill particles with all my particles which have there center in the specified bounding box.
       * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
@@ -120,10 +120,6 @@ public:
 
 protected:
     void releaseOldParticles(const uint32_t numParticles);
-
-    /** Get the positions and indexes of the particles that are inside the bounding box.
-    * This doesn't clear the referenced containers, if they contained any elements before. */
-    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
 
     ImmutableParticleProperties m_immutableProperties;
     MutableParticleProperties m_mutableProperties;

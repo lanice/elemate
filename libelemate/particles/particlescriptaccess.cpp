@@ -11,7 +11,6 @@
 
 #include "emittergroup.h"
 #include "downgroup.h"
-#include "particlecollision.h"
 #include "world.h"
 #include "lua/luawrapper.h"
 
@@ -34,8 +33,6 @@ void ParticleScriptAccess::release()
 ParticleScriptAccess::ParticleScriptAccess(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups)
 : m_particleGroups(particleGroups)
 , m_id(0)
-, m_collisions(std::make_shared<ParticleCollision>(*this))
-, m_collisionCheckDelta(0.0)
 , m_gpuParticles(false)
 , m_lua(nullptr)
 , m_pxScene(nullptr)
@@ -60,18 +57,11 @@ ParticleScriptAccess& ParticleScriptAccess::instance()
     return *s_instance;
 }
 
-void ParticleScriptAccess::checkCollisions(double deltaTime)
-{
-    m_collisionCheckDelta += deltaTime;
-    if (m_collisionCheckDelta > 0.5) {
-        m_collisions->performCheck();
-        m_collisionCheckDelta = 0.0;
-    }
-}
-
 ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
 {
-    return m_particleGroups.at(id);
+    auto it = m_particleGroups.find(id);
+    assert(it != m_particleGroups.end());
+    return it->second;
 }
 
 int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::string & elementType, uint32_t maxParticleCount)
@@ -100,8 +90,6 @@ void ParticleScriptAccess::removeParticleGroup(const int id)
 {
     ParticleGroup * group = m_particleGroups.at(id);
 
-    m_collisions->particleGroupDeleted(group->elementName(), id);
-
     delete group;
     m_particleGroups.erase(id);
 }
@@ -112,7 +100,6 @@ void ParticleScriptAccess::clearParticleGroups()
     {
         delete it->second;
     }
-    m_collisions->clearParticleGroups();
     m_particleGroups.clear();
 }
 

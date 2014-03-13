@@ -246,11 +246,30 @@ uint32_t ParticleGroup::releaseParticles(const glowutils::AxisAlignedBoundingBox
     return static_cast<uint32_t>(releaseIndices.size());
 }
 
-void ParticleGroup::releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions)
+void ParticleGroup::releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions, glowutils::AxisAlignedBoundingBox & releasedBounds)
 {
     std::vector<uint32_t> releaseIndices;
 
-    particlePositionsIndicesInVolume(boundingBox, releasedPositions, releaseIndices);
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    assert(readData);
+
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt) {
+        assert(pxPositionIt.ptr());
+        if (!(*pxFlagIt & PxParticleFlag::eVALID))
+            continue;
+        const physx::PxVec3 & pxPosition = *pxPositionIt;
+        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        if (!boundingBox.inside(pos))
+            continue;
+        releasedPositions.push_back(pos);
+        releaseIndices.push_back(i);
+        releasedBounds.extend(pos);
+    }
+
+    readData->unlock();
 
     releaseParticles(releaseIndices);
 }
@@ -417,29 +436,6 @@ void ParticleGroup::particleIndicesInVolume(const glowutils::AxisAlignedBounding
         const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
         if (!boundingBox.inside(pos))
             continue;
-        particleIndices.push_back(i);
-    }
-
-    readData->unlock();
-}
-
-void ParticleGroup::particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const
-{
-    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
-    assert(readData);
-
-    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
-    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
-
-    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt) {
-        assert(pxPositionIt.ptr());
-        if (!(*pxFlagIt & PxParticleFlag::eVALID))
-            continue;
-        const physx::PxVec3 & pxPosition = *pxPositionIt;
-        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
-        if (!boundingBox.inside(pos))
-            continue;
-        positions.push_back(pos);
         particleIndices.push_back(i);
     }
 
