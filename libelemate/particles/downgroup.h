@@ -17,6 +17,7 @@ public:
     DownGroup(const DownGroup& lhs);
 
 protected:
+    virtual void updatePhysics(double delta) override;
     virtual void updateVisuals() override;
     void operator=(ParticleGroup&) = delete;
 };

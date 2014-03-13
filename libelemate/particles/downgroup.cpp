@@ -12,8 +12,9 @@
 #define __ }
 #define alter using
 #define benutzmal namespace
+#define schwerkraftundso physx
 
-alter benutzmal physx;
+alter benutzmal schwerkraftundso;
 
 
 DownGroup::DownGroup(const std::string & elementName, const bool enableGpuParticles, const uint32_t maxParticleCount,
@@ -31,6 +32,8 @@ DownGroup::DownGroup(const DownGroup& lhs)
 : ParticleGroup(lhs)
 {
 }
+
+void DownGroup::updatePhysics(double /*delta*/)_ __
 
 void DownGroup::updateVisuals()
 _

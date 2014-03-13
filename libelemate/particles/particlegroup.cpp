@@ -1,8 +1,6 @@
 #include "particlegroup.h"
 
 #include <cassert>
-#include <random>
-#include <ctime>
 #include <functional>
 
 #include <glow/logging.h>
@@ -14,20 +12,7 @@
 #include "rendering/particledrawable.h"
 
 
-namespace {
-    std::mt19937 rng;
-}
-
 using namespace physx;
-
-namespace {
-    uint32_t seed_val = static_cast<uint32_t>(std::time(0));
-    bool initRng() {
-        rng.seed(seed_val);
-        return true;
-    }
-    bool didRngInit = initRng();
-}
 
 ParticleGroup::ParticleGroup(
     const std::string & elementName,
@@ -48,8 +33,6 @@ ParticleGroup::ParticleGroup(
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_lastFreeIndex(maxParticleCount-1)
-, m_emitting(false)
-, m_timeSinceLastEmit(0.0)
 , m_gpuParticles(enableGpuParticles)
 {
     for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
@@ -93,8 +76,6 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs)
 , m_indices(new PxU32[lhs.m_maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_lastFreeIndex(lhs.m_maxParticleCount - 1)
-, m_emitting(false)
-, m_timeSinceLastEmit(0.0)
 , m_gpuParticles(lhs.m_gpuParticles)
 {
     for (PxU32 i = 0; i < m_maxParticleCount; ++i) m_indices[i] = i;
@@ -273,46 +254,6 @@ void ParticleGroup::createParticle(const glm::vec3 & position, const glm::vec3 &
 {
     std::vector<glm::vec3> vel({ velocity });
     createParticles({ position }, &vel);
-}
-
-void ParticleGroup::emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction)
-{
-    m_emitRatio = ratio;
-    m_emitPosition = position;
-    m_emitDirection = glm::normalize(direction);
-    m_emitting = true;
-}
-
-void ParticleGroup::stopEmit()
-{
-    m_emitting = false;
-    m_timeSinceLastEmit = 0.0;
-}
-
-void ParticleGroup::updatePhysics(double delta)
-{
-    if (!m_emitting) return;
-
-    unsigned int particlesToEmit = static_cast<unsigned int>(glm::floor(m_emitRatio * delta));
-
-    std::uniform_real_distribution<float> uniform_dist(-0.75f, 0.75f);
-    std::function<float()> scatterFactor = [&](){ return uniform_dist(rng); };
-
-    if (particlesToEmit > 0)
-    {
-        for (unsigned int i = 0; i < particlesToEmit; ++i)
-            createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
-
-        m_timeSinceLastEmit = 0.0;
-    } else {
-        if (m_timeSinceLastEmit >= 1.0 / m_emitRatio)
-        {
-            createParticle(m_emitPosition, glm::vec3((m_emitDirection.x + scatterFactor()), (m_emitDirection.y + scatterFactor()), (m_emitDirection.z + scatterFactor())) * 100.f);
-            m_timeSinceLastEmit = 0.0;
-        } else {
-            m_timeSinceLastEmit += delta;
-        }
-    }
 }
 
 glm::vec3 vec3(const physx::PxVec3 & vec3)

@@ -301,12 +301,16 @@ void ParticleScriptAccess::createParticle(const int id, const float positionX, c
 
 void ParticleScriptAccess::emit(const int id, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ)
 {
-    m_particleGroups.at(id)->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
+    EmitterGroup * e = dynamic_cast<EmitterGroup*>(m_particleGroups.at(id));
+    assert(e);
+    e->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
 }
 
 void ParticleScriptAccess::stopEmit(const int id)
 {
-    m_particleGroups.at(id)->stopEmit();
+    EmitterGroup * e = dynamic_cast<EmitterGroup*>(m_particleGroups.at(id));
+    assert(e);
+    e->stopEmit();
 }
 
 void ParticleScriptAccess::setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance)

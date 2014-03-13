@@ -78,10 +78,6 @@ public:
     /** Release particles that are inside the bounding box and append their positions to the releasedPositions vector. */
     void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions);
 
-    /** Emit particles with ratio as particles per second. */
-    void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
-    void stopEmit();
-
     /** fill particles with all my particles which have there center in the specified bounding box.
       * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
       * This should only be called while the physics scene simulation is not running! */
@@ -91,8 +87,7 @@ public:
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
     void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
-    /** Subscribed to World to receive time delta for timed emit of particles. */
-    void updatePhysics(double delta);
+    virtual void updatePhysics(double delta) = 0;
     /** Subscribed to World to update particle visuals. */
     virtual void updateVisuals() = 0;
 
@@ -147,12 +142,6 @@ protected:
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
     uint32_t m_lastFreeIndex;
-
-    float m_emitRatio;
-    glm::vec3 m_emitPosition;
-    glm::vec3 m_emitDirection;
-    bool m_emitting;
-    double m_timeSinceLastEmit;
 
     bool m_gpuParticles;
 
