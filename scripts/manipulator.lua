@@ -11,11 +11,11 @@ local isEmitting = false
 local emitParameters = {}
 local emitId = particleGroupId
 
-local function createParticleGroup( eleType , maxParticles)
+local function createParticleGroup( emittingGroup, eleType , maxParticles)
     if maxParticles == nil then
         maxParticles = 10000
     end
-    local id = psa_createParticleGroup(eleType, maxParticles)
+    local id = psa_createParticleGroup( emittingGroup, eleType, maxParticles)
     io.write("Created ParticleGroup '", eleType, "' at id ", id, "\n")
     return id
 end
@@ -24,7 +24,7 @@ local function selectElement( eleType )
     if elements[eleType] ~= nil then
         return elements[eleType]
     else
-        local id = createParticleGroup(eleType)
+        local id = createParticleGroup(true, eleType)
         elements[eleType] = id
         return id
     end
@@ -46,7 +46,7 @@ local function spawnSource(posX, posY, posZ)
         terrain_dropElement(posX+math.sin(x)*RADIUS,   posZ+math.cos(x)*RADIUS, SOURCE_HEIGHT)   
     end
     local randomElement = math.random(2)*2 -1
-    Id = createParticleGroup(elementTable[randomElement], 1000)
+    Id = createParticleGroup(true, elementTable[randomElement], 1000)
     psa_emit(Id, 200, posX, posY-1.0+SOURCE_HEIGHT, posZ, 0, 1, 0)
 end
 
@@ -102,7 +102,13 @@ function handleMouseButtonEvent( button, action )
 end
 
 function handleScrollEvent( yoffset )
-    hud_debugText(yoffset)
+    if particleGroupId ~= -1 then
+        local dist = psa_restParticleDistance(particleGroupId)+(0.01*yoffset)
+        if dist > 0.01 and dist < 5.0 then
+            psa_setRestParticleDistance(particleGroupId, dist)
+            hud_debugText(dist)
+        end
+    end
 end
 
 function handleKeyEvent( inputKey, action )

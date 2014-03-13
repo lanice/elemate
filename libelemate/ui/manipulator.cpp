@@ -10,7 +10,7 @@
 #include "world.h"
 #include "navigation.h"
 #include "hand.h"
-#include "terrain/terraininteractor.h"
+#include "terrain/terraininteraction.h"
 #include "particles/particlescriptaccess.h"
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
@@ -22,17 +22,16 @@ m_navigation(navigation),
 m_camera(navigation.camera()),
 m_world(world),
 m_hand(*world.hand),
-m_terrainInteractor(std::make_shared<TerrainInteractor>(m_world.terrain, "bedrock")),
+m_terrainInteractor(std::make_shared<TerrainInteraction>("bedrock")),
 m_grabbedTerrain(false),
 m_lua(new LuaWrapper())
 {
     registerLuaFunctions(m_lua);
     AchievementManager::instance()->registerLuaFunctions(m_lua);
-    
-    ParticleScriptAccess::instance().registerLuaFunctions(m_lua);
+    ParticleScriptAccess::instance().registerLuaFunctions(*m_lua);
     m_hand.registerLuaFunctions(m_lua);
     m_world.registerLuaFunctions(m_lua);
-    m_terrainInteractor->registerLuaFunctions(m_lua);
+    m_terrainInteractor->registerLuaFunctions(*m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
 }

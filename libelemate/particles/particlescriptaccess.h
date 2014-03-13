@@ -27,7 +27,7 @@ public:
     ParticleGroup * particleGroup(const int id);
 
     /** Creates an instance of ParticleGroup and registers it, returning the access id */
-    int createParticleGroup(const std::string & elementType = "default", uint32_t maxParticleCount = 10000U);
+    int createParticleGroup(bool emittingGroup, const std::string & elementType = "default", uint32_t maxParticleCount = 10000U);
     void removeParticleGroup(const int id);
     void clearParticleGroups();
 
@@ -40,7 +40,7 @@ public:
     /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
     void restoreGPUAccelerated();
 
-    void registerLuaFunctions(LuaWrapper * lua);
+    void registerLuaFunctions(LuaWrapper & lua);
 
     void checkCollisions(double deltaTime);
 

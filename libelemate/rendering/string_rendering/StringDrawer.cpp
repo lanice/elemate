@@ -14,6 +14,7 @@
 #include <glowutils/global.h>
 
 #include "RawFile.h"
+#include "texturemanager.h"
 
 
 const float StringDrawer::s_textureSize = 1024.0f;
@@ -39,10 +40,10 @@ StringDrawer* StringDrawer::instance()
 
 bool StringDrawer::initialize()
 {
-    if (!initializeProgram())
+    if (!initializeTexture())
         return false;
 
-    if (!initializeTexture())
+    if (!initializeProgram())
         return false;
     
     if (!m_stringComposer.readSpecificsFromFile("data/font/P22UndergroundPro-Medium.txt", s_textureSize))
@@ -57,11 +58,11 @@ bool StringDrawer::initializeProgram()
 {
     m_program = new glow::Program();
 
-    auto vertShader = glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/utils/string_drawer.vert");
-    auto fragShader = glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/utils/string_drawer.frag");
+    m_program->attach(
+        glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/utils/string_drawer.vert"),
+        glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/utils/string_drawer.frag"));
 
-    m_program->attach(vertShader, fragShader);
-    m_program->link();
+    m_program->setUniform("characterAtlas", TextureManager::getTextureUnit("StringDrawer", "characterAtlas"));
 
     return true;
 }
@@ -89,6 +90,10 @@ bool StringDrawer::initializeTexture()
     m_characterAtlas->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     m_characterAtlas->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    m_characterAtlas->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("StringDrawer", "characterAtlas"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
+
     return true;
 }
 
@@ -98,10 +103,7 @@ void StringDrawer::paint(
     Alignment alignment, 
     const glm::vec3 color)
 {
-    m_program->setUniform("characterAtlas", 0);
     m_program->setUniform("color", color);
-    
-    m_characterAtlas->bindActive(GL_TEXTURE0);
     
     std::list<CharacterSpecifics *> list = m_stringComposer.characterSequence(text);
     
@@ -134,8 +136,6 @@ void StringDrawer::paint(
     }
     
     glDisable(GL_BLEND);
-
-    m_characterAtlas->unbindActive(GL_TEXTURE0);
 }
 
 void StringDrawer::paint(const TextObject& textObject)

@@ -87,6 +87,8 @@ void Game::loop(double delta)
                 m_renderer(*m_camera);
                 m_userInterface.draw();
 
+                m_renderer.writeScreenShot();
+
                 glfwSwapBuffers(&m_window);
 
                 skippedFrames = 1;

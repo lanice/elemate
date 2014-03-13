@@ -14,9 +14,11 @@
 #include "lua/luawrapper.h"
 #include "io/imagereader.h"
 #include "menupage.h"
+
 #include "world.h"
 #include "achievementmanager.h"
 #include "achievement.h"
+#include "texturemanager.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
 const glm::vec3 UserInterface::kDefaultMenuEntryColor = glm::vec3(1.0f,1.0f,1.0f);
@@ -63,8 +65,6 @@ void UserInterface::initialize()
     m_previewProgram->attach(
         glowutils::createShaderFromFile(GL_VERTEX_SHADER, "shader/ui/preview.vert"),
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/ui/preview.frag"));
-
-    m_previewProgram->setUniform("element_texture", 0);
 
     m_screenProgram = new glow::Program();
     m_screenProgram->attach(
@@ -140,13 +140,12 @@ void UserInterface::drawPreview()
 
 void UserInterface::drawPreviewCircle(float x, float y, const std::string& element, float height, bool highlighted)
 {
-    m_textures.at(element)->bindActive(GL_TEXTURE0);
-
     m_previewProgram->setUniform("x", x);
     m_previewProgram->setUniform("y", y);
     m_previewProgram->setUniform("width", height);
     m_previewProgram->setUniform("ratio", m_viewport.x / m_viewport.y);
     m_previewProgram->setUniform("highlighted", static_cast<int>(highlighted));
+    m_previewProgram->setUniform("element_texture", TextureManager::getTextureUnit("UserInterface", element));
 
     m_previewProgram->use();
     m_vao->bind();
@@ -155,8 +154,6 @@ void UserInterface::drawPreviewCircle(float x, float y, const std::string& eleme
 
     m_vao->unbind();
     m_previewProgram->release();
-
-    m_textures.at(element)->unbindActive(GL_TEXTURE0);
 }
 
 void UserInterface::drawGreyScreen()
@@ -244,9 +241,10 @@ void UserInterface::loadInitTexture(const std::string & elementName)
 
     RawImage image("data/textures/preview/" + elementName + "_preview.raw", TEXTURE_SIZE, TEXTURE_SIZE);
 
-    texture->bind();
     texture->image2D(0, GL_RGB8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
-    texture->unbind();
+    texture->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("UserInterface", elementName));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
 
     m_textures.emplace(elementName, texture);
 }

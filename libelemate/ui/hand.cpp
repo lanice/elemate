@@ -74,11 +74,13 @@ void Hand::loadModel()
 
     std::vector<glm::vec3> vertices;
 
+    // don't set the m_bbox member, as we would need to recalculate it if the hand rotates and don't really need it in the moment.
+    glowutils::AxisAlignedBoundingBox bbox;
     for (unsigned v = 0; v < mesh->mNumVertices; ++v) {
         const glm::vec3 scaledVertex = 
             glm::vec3(initTransform * glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0));
         vertices.push_back(scaledVertex);
-        m_bbox.extend(scaledVertex);
+        bbox.extend(scaledVertex);
     }
 
     m_vbo = new glow::Buffer(GL_ARRAY_BUFFER);
@@ -86,10 +88,10 @@ void Hand::loadModel()
     m_vbo->unbind();
 
     // use four lower corners of the bounding box as compare/checkpoints with terrain height
-    m_heightCheckPoints.push_back(m_bbox.llf());
-    m_heightCheckPoints.push_back(glm::vec3(m_bbox.llf().x, m_bbox.llf().y, m_bbox.urb().z));
-    m_heightCheckPoints.push_back(glm::vec3(m_bbox.urb().x, m_bbox.llf().y, m_bbox.llf().z));
-    m_heightCheckPoints.push_back(glm::vec3(m_bbox.urb().x, m_bbox.llf().y, m_bbox.urb().z));
+    m_heightCheckPoints.push_back(bbox.llf());
+    m_heightCheckPoints.push_back(glm::vec3(bbox.llf().x, bbox.llf().y, bbox.urb().z));
+    m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.llf().z));
+    m_heightCheckPoints.push_back(glm::vec3(bbox.urb().x, bbox.llf().y, bbox.urb().z));
 
     std::vector<glm::vec3> normals;
     for (unsigned n = 0; n < mesh->mNumVertices; ++n) {

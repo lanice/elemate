@@ -16,6 +16,7 @@ namespace glow {
 #include "world.h"
 #include "terrain/terrain.h"
 #include "ui/hand.h"
+#include "texturemanager.h"
 
 #undef far  // that's for windows (minwindef.h)
 
@@ -32,7 +33,6 @@ std::vector<glm::vec2> initDepthSamples() {
     return samples;
 }
 const std::vector<glm::vec2> ShadowMappingStep::s_depthSamples = initDepthSamples();
-const GLint ShadowMappingStep::s_lightmapSlot = 0;
 static const float earlyBailDistance = 3.0f;
 const std::vector<glm::vec2> ShadowMappingStep::s_earlyBailSamples({
     glm::vec2(0, 0),
@@ -59,7 +59,9 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     float lightBorderColor[4] = { 1, 1, 1, 1 };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, lightBorderColor);
     CheckGLError();
-    m_lightTex->image2D(0, GL_DEPTH_COMPONENT32F, m_lightCam->viewport().x, m_lightCam->viewport().y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_lightTex->image2D(0, GL_DEPTH_COMPONENT24, m_lightCam->viewport().x, m_lightCam->viewport().y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_lightTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ShadowMapping", "lightMap"));
+    glActiveTexture(GL_TEXTURE0);
 
     m_lightFbo = new glow::FrameBufferObject();
     m_lightFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_lightTex);
@@ -74,6 +76,8 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
     m_shadowTex->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     m_shadowTex->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_shadowTex->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_shadowTex->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("ShadowMapping", "shadowMap"));
+    glActiveTexture(GL_TEXTURE0);
 
     m_shadowDepthBuffer = new glow::RenderBufferObject();
 
@@ -120,7 +124,6 @@ void ShadowMappingStep::draw(const CameraEx & camera)
 {
     drawLightMap(camera);
 
-    m_lightTex->bindActive(GL_TEXTURE0 + s_lightmapSlot);
     m_shadowFbo->bind();
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -129,13 +132,12 @@ void ShadowMappingStep::draw(const CameraEx & camera)
     m_world.hand->drawShadowMapping(camera, *m_lightCam);
 
     m_shadowFbo->unbind();
-    m_lightTex->unbindActive(GL_TEXTURE0 + s_lightmapSlot);
 }
 
 void ShadowMappingStep::resize(int width, int height)
 {
-    m_shadowTex->image2D(0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
-    m_shadowDepthBuffer->storage(GL_DEPTH_COMPONENT32F, width, height);
+    m_shadowTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+    m_shadowDepthBuffer->storage(GL_DEPTH_COMPONENT16, width, height);
     m_shadowFbo->printStatus(true);
     assert(m_shadowFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 }
@@ -154,7 +156,7 @@ glow::Texture * ShadowMappingStep::result()
 
 void ShadowMappingStep::setUniforms(glow::Program & program)
 {
-    program.setUniform("lightMap", s_lightmapSlot);
+    program.setUniform("lightMap", TextureManager::getTextureUnit("ShadowMapping", "lightMap"));
     program.setUniform("depthSamples", s_depthSamples);
     program.setUniform("earlyBailSamples", s_earlyBailSamples);
 }

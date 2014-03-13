@@ -154,6 +154,16 @@ void LuaWrapper::push(const bool value) const
     lua_pushboolean(m_state, value);
 }
 
+void LuaWrapper::push(const glm::vec3 & value) const
+{
+    lua_createtable(m_state, 3, 0);
+    int table = lua_gettop(m_state);
+    for (unsigned int i = 1; i <= 3; ++i) {
+        lua_pushnumber(m_state, value[i - 1]);
+        lua_rawseti(m_state, table, i);
+    }
+}
+
 
 template<>
 std::string LuaWrapper::fetch<std::string>(const int index) const
@@ -208,4 +218,32 @@ bool LuaWrapper::fetch<bool>(const int index) const
         glow::critical("LuaWrapper: Return value not a boolean.");
 
     return lua_toboolean(m_state, index) != 0;
+}
+
+template<>
+glm::vec3 LuaWrapper::fetch<glm::vec3>(const int index) const
+{
+    if (!lua_istable(m_state, index)) {
+        glow::critical("LuaWrapper: Return value is not a table. (Expected table containing a vec3)");
+        return glm::vec3();
+    }
+
+    glm::vec3 v;
+    int v_index = 0;
+    lua_pushnil(m_state);
+    while (lua_next(m_state, index) != 0) {
+        if (!lua_isnumber(m_state, -1))
+            glow::critical("LuaWrapper: Return table value is not number, while trying to read a vec3.");
+        else
+            if (v_index < 3)   // only try to copy the value into the vector if size table has not more than 3 entries
+                v[v_index] = static_cast<float>(lua_tonumber(m_state, -1));
+        ++v_index;
+        lua_pop(m_state, 1);
+        if (v_index > 3) {
+            glow::critical("LuaWrapper: Return table larger than expected, while trying to read a vec3.");
+            break;
+        }
+    }
+
+    return v;
 }

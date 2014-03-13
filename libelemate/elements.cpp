@@ -65,8 +65,6 @@ void Elements::initialize()
             glow::warning("Elements::initialize could not create PhysX material: %;", pair.first);
     }
 
-    initElementTerrainLevels();
-
     s_isInitialized = true;
 }
 

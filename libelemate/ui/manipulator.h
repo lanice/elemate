@@ -12,7 +12,7 @@
 class World;
 class Navigation;
 class Hand;
-class TerrainInteractor;
+class TerrainInteraction;
 class LuaWrapper;
 class CameraEx;
 
@@ -42,7 +42,7 @@ protected:
     const CameraEx & m_camera;
     World & m_world;
     Hand & m_hand;
-    std::shared_ptr<TerrainInteractor> m_terrainInteractor;
+    std::shared_ptr<TerrainInteraction> m_terrainInteractor;
     bool m_grabbedTerrain;
     LuaWrapper * m_lua;
 

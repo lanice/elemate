@@ -14,7 +14,6 @@ namespace glow {
     class Program;
 }
 namespace physx {
-    class PxVec3;
     class PxParticleReadData;
 }
 class CameraEx;
@@ -29,7 +28,7 @@ public:
 
     void initialize();
 
-    /** fetches the number of valid particles and the particle positions from readData and updates interal buffers */
+    /** fetches the number of valid particles and the particle positions from readData and updates the vertex buffers data */
     void updateParticles(const physx::PxParticleReadData * readData);
 
     void setParticleSize(float particleSize);

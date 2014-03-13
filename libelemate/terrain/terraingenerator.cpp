@@ -17,7 +17,8 @@
 
 #include "terrain.h"
 #include "basetile.h"
-#include "watertile.h"
+#include "liquidtile.h"
+#include "temperaturetile.h"
 
 // Mersenne Twister, preconfigured
 namespace {
@@ -64,28 +65,29 @@ std::shared_ptr<Terrain> TerrainGenerator::generate() const
         /** create terrain object and pass terrain data */
         BaseTile * baseTile = new BaseTile(*terrain, tileIDBase, baseElements);
 
-        // create the terain using diamond square algorithm
+        // create the terrain using diamond square algorithm
         diamondSquare(*baseTile);
         // and apply the elements to the landscape
         applyElementsByHeight(*baseTile);
 
-        /** same thing for the water lever, just that we do not add a terrain type texture (it consists only of water) */
-        TileID tileIDWater(TerrainLevel::WaterLevel, xID, zID);
-        WaterTile * waterTile = new WaterTile(*terrain, tileIDWater);
-        waterTile->m_baseHeightTex = baseTile->m_heightTex;
+        /** same thing for the liquid level, just that we do not add a terrain type texture */
+        TileID tileIDLiquid(TerrainLevel::WaterLevel, xID, zID);
+        LiquidTile * liquidTile = new LiquidTile(*terrain, tileIDLiquid);
 
         /** Create physx objects: an actor with its transformed shapes
           * move tile according to its id, and by one half tile size, so the center of Tile(0,0,0) is in the origin */
-        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileSizeX() * (xID - 0.5f), 0.0f, m_settings.tileSizeZ() * (zID - 0.5f)));
+        PxTransform pxTerrainTransform = PxTransform(PxVec3(m_settings.tileBorderLength() * (xID - 0.5f), 0.0f, m_settings.tileBorderLength() * (zID - 0.5f)));
         PxRigidStatic * actor = PxGetPhysics().createRigidStatic(pxTerrainTransform);
         terrain->m_pxActors.emplace(tileIDBase, actor);
 
         baseTile->createPxObjects(*actor);
-        waterTile->createPxObjects(*actor);
+        liquidTile->createPxObjects(*actor);
 
         pxScene->addActor(*actor);
 
-        waterTile->pxShape()->setFlag(PxShapeFlag::ePARTICLE_DRAIN, true);
+        TileID temperatureID(TerrainLevel::TemperatureLevel, xID, zID);
+        // the tile registers itself in the terrain
+        new TemperatureTile(*terrain, temperatureID, *baseTile, *liquidTile);
     }
 
     return terrain;
@@ -96,7 +98,7 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
     // assuming the edge length of the field is a power of 2, + 1
     // assuming the field is square
 
-    const unsigned fieldEdgeLength = m_settings.rows;
+    const unsigned fieldEdgeLength = tile.samplesPerAxis;
     const float maxHeight = m_settings.maxHeight;
 
     float randomMax = 50.0f;
@@ -125,19 +127,21 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
         if (rightColumn >= signed(fieldEdgeLength))
             rightColumn = diamondRadius;
         float value =
-            (tile.heightAt(upperRow, diamondCenterColumn)
-            + tile.heightAt(lowerRow, diamondCenterColumn)
-            + tile.heightAt(diamondCenterRow, leftColumn)
-            + tile.heightAt(diamondCenterRow, rightColumn))
+            (tile.valueAt(upperRow, diamondCenterColumn)
+            + tile.valueAt(lowerRow, diamondCenterColumn)
+            + tile.valueAt(diamondCenterRow, leftColumn)
+            + tile.valueAt(diamondCenterRow, rightColumn))
             * 0.25f
             + heightRnd(diamondCenterRow, diamondCenterColumn);
-        tile.setHeight(diamondCenterRow, diamondCenterColumn, clampHeight(value));
+
+        float clampedHeight = clampHeight(value);
+        tile.setValue(diamondCenterRow, diamondCenterColumn, clampedHeight);
 
         // in case we are at the borders of the tile: also set the value at the opposite border, to allow seamless tile wrapping
         if (upperRow > signed(diamondCenterRow))
-            tile.setHeight(fieldEdgeLength - 1, diamondCenterColumn, value);
+            tile.setValue(fieldEdgeLength - 1, diamondCenterColumn, clampedHeight);
         if (leftColumn > signed(diamondCenterColumn))
-            tile.setHeight(diamondCenterRow, fieldEdgeLength - 1, value);
+            tile.setValue(diamondCenterRow, fieldEdgeLength - 1, clampedHeight);
     };
     
     unsigned nbSquareRows = 1; // number of squares in a row, doubles each time the current edge length increases [same for the columns]
@@ -159,17 +163,16 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
             const unsigned int midpointRow = row + (currentEdgeLength - 1) / 2; // this is always divisible, because of the edge length 2^n + 1
             for (unsigned int columnN = 0; columnN < nbSquareRows; ++columnN) {
                 const unsigned int column = columnN * (currentEdgeLength - 1);
-                //const unsigned int index = column + rowOffset;
                 const unsigned int midpointColumn = column + (currentEdgeLength - 1) / 2;
                 float heightValue =
-                    (tile.heightAt(row, column)
-                    + tile.heightAt(row + currentEdgeLength - 1, column)
-                    + tile.heightAt(row, column + currentEdgeLength - 1)
-                    + tile.heightAt(row + currentEdgeLength - 1, column + currentEdgeLength - 1))
+                    (tile.valueAt(row, column)
+                    + tile.valueAt(row + currentEdgeLength - 1, column)
+                    + tile.valueAt(row, column + currentEdgeLength - 1)
+                    + tile.valueAt(row + currentEdgeLength - 1, column + currentEdgeLength - 1))
                     * 0.25f
                     + heightRndPos(midpointRow, midpointColumn);
 
-                tile.setHeight(midpointRow, midpointColumn, clampHeight(heightValue));
+                tile.setValue(midpointRow, midpointColumn, clampHeight(heightValue));
             }
         }
 
@@ -182,11 +185,11 @@ void TerrainGenerator::diamondSquare(TerrainTile & tile) const
                 const unsigned int seedpointColumn = columnN * (currentEdgeLength - 1);
 
                 unsigned int rightDiamondColumn = seedpointColumn + currentEdgeLength / 2;
-                if (rightDiamondColumn < m_settings.columns)
+                if (rightDiamondColumn < tile.samplesPerAxis)
                     squareStep(diamondRadius, seedpointRow, rightDiamondColumn, heightRndPos);
 
                 unsigned int bottomDiamondRow = seedpointRow + currentEdgeLength / 2;
-                if (bottomDiamondRow < m_settings.rows)
+                if (bottomDiamondRow < tile.samplesPerAxis)
                     squareStep(diamondRadius, bottomDiamondRow, seedpointColumn, heightRndPos);
             }
         }
@@ -205,80 +208,25 @@ void TerrainGenerator::applyElementsByHeight(BaseTile & tile) const
     float sandMaxHeight = 2.5f;     // under water + shore
     float grasslandMaxHeight = m_settings.maxHeight * 0.2f;
 
-    for (unsigned int row = 0; row < m_settings.rows - 1; ++row) {
-        for (unsigned int column = 0; column < m_settings.columns - 1; ++column) {
+    for (unsigned int row = 0; row < tile.samplesPerAxis - 1; ++row) {
+        const unsigned int rowOffset = row * tile.samplesPerAxis;
+        for (unsigned int column = 0; column < tile.samplesPerAxis - 1; ++column) {
+            const unsigned int index = rowOffset + column;
+
             float height = 0.25f * (
-                tile.heightAt(row, column)
-                + tile.heightAt(row + 1, column)
-                + tile.heightAt(row, column + 1)
-                + tile.heightAt(row + 1, column + 1));
+                tile.valueAt(index)
+                + tile.valueAt(row + 1, column)
+                + tile.valueAt(row, column + 1)
+                + tile.valueAt(row + 1, column + 1));
             if (height < sandMaxHeight) {
-                tile.setElement(row, column, sand);
+                tile.setElement(index, sand);
                 continue;
             }
             if (height < grasslandMaxHeight) {
-                tile.setElement(row, column, grassland);
+                tile.setElement(index, grassland);
                 continue;
             }
-            tile.setElement(row, column, bedrock);
+            tile.setElement(index, bedrock);
         }
     }
-}
-
-void TerrainGenerator::setExtentsInWorld(float x, float z)
-{
-    assert(x > 0 && z > 0);
-    m_settings.sizeX = x;
-    m_settings.sizeZ = z;
-}
-
-float TerrainGenerator::xExtens() const
-{
-    return m_settings.sizeX;
-}
-
-float TerrainGenerator::zExtens() const
-{
-    return m_settings.sizeZ;
-}
-
-void TerrainGenerator::applySamplesPerWorldCoord(float xzSamplesPerCoord)
-{
-    assert(xzSamplesPerCoord > 0.0f);
-    unsigned int xSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeX * xzSamplesPerCoord)));
-    m_settings.rows = xSamplesui >= 2 ? xSamplesui : 2;
-    unsigned int zSamplesui = static_cast<unsigned int>((ceil(m_settings.sizeZ * xzSamplesPerCoord)));
-    m_settings.columns = zSamplesui >= 2 ? zSamplesui : 2;
-}
-
-float TerrainGenerator::samplesPerWorldCoord() const
-{
-    return m_settings.samplesPerWorldCoord();
-}
-void TerrainGenerator::setTilesPerAxis(unsigned x, unsigned z)
-{
-    assert(x >= 1 && z >= 1);
-    m_settings.tilesX = x;
-    m_settings.tilesZ = z;
-}
-
-int TerrainGenerator::tilesPerXAxis() const
-{
-    return m_settings.tilesX;
-}
-
-int TerrainGenerator::tilesPerZAxis() const
-{
-    return m_settings.tilesZ;
-}
-
-void TerrainGenerator::setMaxHeight(float height)
-{
-    assert(height > 0.0f);
-    m_settings.maxHeight = height;
-}
-
-float TerrainGenerator::maxHeight() const
-{
-    return m_settings.maxHeight;
 }

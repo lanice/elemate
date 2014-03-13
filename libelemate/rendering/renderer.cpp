@@ -1,5 +1,8 @@
 #include "renderer.h"
 
+#include <fstream>
+#include <ctime>
+
 namespace glow {
     class Buffer; // missing forward declaration in FrameBufferObject.h
 }
@@ -22,10 +25,13 @@ namespace glow {
 #include "particlestep.h"
 #include "shadowmappingstep.h"
 #include "debugstep.h"
+#include "texturemanager.h"
 
 Renderer::Renderer(const World & world)
 : m_drawDebugStep(false)
+, m_drawHeatMap(false)
 , m_world(world)
+, m_takeScreenShot(false)
 {
     initialize();
 }
@@ -40,6 +46,8 @@ void Renderer::initialize()
     sceneColor.second->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     sceneColor.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     sceneColor.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    sceneColor.second->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "sceneColor"));
+    glActiveTexture(GL_TEXTURE0);
     m_textureByName.insert(sceneColor);
 
     NamedTexture sceneDepth = { "sceneDepth", new glow::Texture(GL_TEXTURE_2D) };
@@ -48,6 +56,8 @@ void Renderer::initialize()
     sceneDepth.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     sceneDepth.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     sceneDepth.second->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    sceneDepth.second->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "sceneDepth"));
+    glActiveTexture(GL_TEXTURE0);
     m_textureByName.insert(sceneDepth);
 
     NamedFbo sceneFbo = { "scene", new glow::FrameBufferObject() };
@@ -64,6 +74,8 @@ void Renderer::initialize()
     handColor.second->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     handColor.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     handColor.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    handColor.second->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "handColor"));
+    glActiveTexture(GL_TEXTURE0);
     m_textureByName.insert(handColor);
 
     NamedTexture handDepth = { "handDepth", new glow::Texture(GL_TEXTURE_2D) };
@@ -72,6 +84,8 @@ void Renderer::initialize()
     handDepth.second->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     handDepth.second->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     handDepth.second->setParameter(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    handDepth.second->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "handDepth"));
+    glActiveTexture(GL_TEXTURE0);
     m_textureByName.insert(handDepth);
 
     NamedFbo handFbo = { "hand", new glow::FrameBufferObject() };
@@ -97,16 +111,21 @@ void Renderer::initialize()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag")
     );
 
-    m_flushSources =
-    { sceneColor, sceneDepth, handColor, handDepth,
-    NamedTexture("particleNormals", m_particleStep->normalsTex()),
-    NamedTexture("particleDepth", m_particleStep->depthTex()),
-    NamedTexture("shadowMap", m_shadowMappingStep->result()),
-    NamedTexture("lightMap", m_shadowMappingStep->lightMap()),
-    NamedTexture("elementID", m_particleStep->elementIdTex())};
-
-    for (int i = 0; i < m_flushSources.size(); ++i)
-        m_quadProgram->setUniform(m_flushSources.at(i).first, i);
+    std::function<void(const std::string &)> setOwnSamplerUniform = [&](const std::string & name) {
+        m_quadProgram->setUniform(name, TextureManager::getTextureUnit("Renderer", name));
+    };
+    std::function<void(const std::string &, const std::string &)> setSamplerUniform = [&](const std::string & owner, const std::string & name) {
+        m_quadProgram->setUniform(name, TextureManager::getTextureUnit(owner, name));
+    };
+    setOwnSamplerUniform("sceneColor");
+    setOwnSamplerUniform("sceneDepth");
+    setOwnSamplerUniform("handColor");
+    setOwnSamplerUniform("handDepth");
+    setSamplerUniform("ParticleStep", "particleNormals");
+    setSamplerUniform("ParticleStep", "particleDepth");
+    setSamplerUniform("ParticleStep", "elementID");
+    setSamplerUniform("ShadowMapping", "lightMap");
+    setSamplerUniform("ShadowMapping", "shadowMap");
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
     
@@ -120,6 +139,52 @@ void Renderer::operator()(const CameraEx & camera)
     m_particleStep->draw(camera);
     m_shadowMappingStep->draw(camera);
     flushStep(camera);
+}
+
+void Renderer::takeScreenShot()
+{
+    m_takeScreenShot = true;
+}
+
+void Renderer::writeScreenShot()
+{
+    const int w = m_viewport.x;
+    const int h = m_viewport.y;
+    const int s = w * h * 3;
+
+    static time_t lastTime = 0;
+    static int n = 0;
+
+    char * pixels = new char[s];
+    if (m_takeScreenShot) {
+        CheckGLError();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        CheckGLError();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glReadBuffer(GL_BACK);
+        CheckGLError();
+        glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+        CheckGLError();
+
+        time_t now = std::time(0);
+        if (now == lastTime)
+            ++n;
+        else
+            n = 0;
+        lastTime = now;
+
+        std::string fn = "screen_" + std::to_string(w) + "x" + std::to_string(h) + "_" + std::to_string(now) + "_" + std::to_string(n) + ".raw";
+        glow::info("screenshot saved to %;", fn);
+        std::ofstream file(fn, std::ios_base::trunc | std::ios_base::binary | std::ios_base::out);
+        // flip the image
+        for (int row = h - 1; row >= 0; --row) {
+            file.write(&pixels[3*w*row], 3 * w);
+        }
+        file.close();
+        m_takeScreenShot = false;
+    }
+    delete[] pixels;
 }
 
 void Renderer::sceneStep(const CameraEx & camera)
@@ -156,9 +221,6 @@ void Renderer::flushStep(const CameraEx & camera)
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    for (int i = 0; i < m_flushSources.size(); ++i)
-        m_flushSources.at(i).second->bindActive(GL_TEXTURE0 + i);
-
     m_quad->program()->setUniform("znear", camera.zNearEx());
     m_quad->program()->setUniform("zfar", camera.zFarEx());
     m_quad->program()->setUniform("timef", int(m_world.getTime()));
@@ -167,9 +229,6 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("viewport", camera.viewport());
 
     m_quad->draw();
-
-    for (int i = 0; i < m_flushSources.size(); ++i)
-        m_flushSources.at(i).second->unbindActive(GL_TEXTURE0 + i);
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const
@@ -192,15 +251,23 @@ void Renderer::setDrawDebugInfo(bool doDraw)
     m_drawDebugStep = doDraw;
 }
 
+void Renderer::toggleDrawHeatMap()
+{
+    m_drawHeatMap = !m_drawHeatMap;
+    m_world.terrain->setDrawHeatMap(m_drawHeatMap);
+}
+
 void Renderer::resize(int width, int height)
 {
-    m_textureByName.at("sceneColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-    m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_viewport.x = width; m_viewport.y = height;
+
+    m_textureByName.at("sceneColor")->image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    m_textureByName.at("sceneDepth")->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("scene")->printStatus(true);
     // assert(m_fboByName.at("scene")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
-    m_textureByName.at("handColor")->image2D(0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-    m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    m_textureByName.at("handColor")->image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    m_textureByName.at("handDepth")->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     m_fboByName.at("hand")->printStatus(true);
     // assert(m_fboByName.at("hand")->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
