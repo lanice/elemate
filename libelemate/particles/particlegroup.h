@@ -64,6 +64,7 @@ public:
     const bool isDown;
 
     float temperature() const;
+    void setTemperature(float temperature);
 
     physx::PxParticleFluid * particleSystem();
 

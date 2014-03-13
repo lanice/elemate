@@ -117,6 +117,11 @@ float ParticleGroup::temperature() const
     return m_temperature;
 }
 
+void ParticleGroup::setTemperature(float temperature)
+{
+    m_temperature = temperature;
+}
+
 float ParticleGroup::particleSize() const
 {
     return m_particleSize;

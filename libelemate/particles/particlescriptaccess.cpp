@@ -47,14 +47,7 @@ ParticleScriptAccess::ParticleScriptAccess(std::unordered_map<unsigned int, Part
 
     m_lua = new LuaWrapper();
 
-    std::function<int(int, float, float, float, float, float)> func1 = [=] (int id, float a, float b, float c, float d, float e)
-    { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
-
-    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=] (int id, float a, float b, float c, float d, float e, float f, float g)
-    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
-
-    m_lua->Register("psa_setImmutableProperties", func1);
-    m_lua->Register("psa_setMutableProperties", func2);
+    registerLuaFunctions(*m_lua);
 }
 
 ParticleScriptAccess::~ParticleScriptAccess()
@@ -70,7 +63,7 @@ ParticleScriptAccess& ParticleScriptAccess::instance()
 void ParticleScriptAccess::checkCollisions(double deltaTime)
 {
     m_collisionCheckDelta += deltaTime;
-    /*if (m_collisionCheckDelta > 0.5)*/ {
+    if (m_collisionCheckDelta > 0.5) {
         m_collisions->performCheck();
         m_collisionCheckDelta = 0.0;
     }
@@ -292,6 +285,15 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
 
     lua.Register("psa_setImmutableProperties", func30);
     lua.Register("psa_setMutableProperties", func31);
+
+    std::function<float(int)> func32 = [=](int id)
+    { return particleGroup(id)->temperature(); };
+
+    std::function<int(int, float)> func33 = [=](int id, float temperature)
+    { particleGroup(id)->setTemperature(temperature); return 0; };
+
+    lua.Register("psa_temperature", func32);
+    lua.Register("psa_setTemperature", func33);
 }
 
 void ParticleScriptAccess::createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)

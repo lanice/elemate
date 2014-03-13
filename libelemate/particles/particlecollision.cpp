@@ -92,7 +92,7 @@ void ParticleCollision::performCheck()
             continue;
 
         const vec3 & center = pair->second->boundingBox().center();
-        m_lua->call("temperatureCheck", pair->second->elementName(), center, pair->second->numParticles());
+        m_lua->call("temperatureCheck", pair->first, pair->second->elementName(), center, pair->second->numParticles());
     }
 
     if (particleGroups.size() < 2)

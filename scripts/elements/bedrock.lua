@@ -24,4 +24,5 @@ function setMutableProperties( index )
     stiffness = 8.134
 
     psa_setMutableProperties(index, restitution, dynamicFriction, staticFriction, damping, particleMass, viscosity, stiffness)
+    psa_setTemperature(index, 10.0)
 end
