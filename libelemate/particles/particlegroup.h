@@ -3,16 +3,18 @@
 #include <memory>
 #include <vector>
 
+#include <glowutils/AxisAlignedBoundingBox.h>
+
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
 
 #include <glm/glm.hpp>
 
-
 namespace physx {
     class PxParticleFluid;
     class PxScene;
+    class PxParticleReadData;
 }
 namespace glowutils { class AxisAlignedBoundingBox; }
 class ParticleDrawable;
@@ -50,11 +52,17 @@ public:
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
-    ~ParticleGroup();
+    virtual ~ParticleGroup();
 
     const std::string & elementName() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
+    void setParticleSize(float size);
+    bool isDown() const;
+    glowutils::AxisAlignedBoundingBox collidedParticleBounds;
+    unsigned int numCollided;
+
+    float temperature() const;
 
     physx::PxParticleFluid * particleSystem();
 
@@ -87,7 +95,7 @@ public:
     /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
     void updateEmitting(const double & delta);
     /** Subscribed to World to update particle visuals. (Observer pattern) */
-    void updateVisuals();
+    virtual void updateVisuals();
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
@@ -118,12 +126,18 @@ public:
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
+    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) = 0;
+
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
     const std::string m_elementName;
 
-    std::shared_ptr<ParticleDrawable>   m_particleDrawable;
+    float m_particleSize;
+    float m_temperature;
+    bool m_isDown;
+
+    std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
     uint32_t m_maxParticleCount;
     physx::PxU32 * m_indices;
@@ -141,6 +155,7 @@ protected:
 
     bool m_wasSoundPlaying;
     unsigned int m_soundChannel;
+    std::vector<uint32_t> m_particlesToDelete;
 
 public:
     ParticleGroup(ParticleGroup&) = delete;

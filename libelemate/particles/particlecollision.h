@@ -50,7 +50,7 @@ protected:
 
 
     void checkCollidedParticles(int leftGroup, int rightGroup, const glowutils::AxisAlignedBoundingBox & intersectVolume);
-    std::pair<int, int> treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth);
+    void treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth);
     /** this list contains particles released by the script, but which i will remember to create new particles at the same positions, if requested. */
     std::vector<glm::vec3> m_remeberedParticles;
     unsigned int forgetOldParticles();

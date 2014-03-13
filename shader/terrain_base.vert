@@ -7,6 +7,7 @@ out vec3 v_worldPos;
 out vec3 v_viewPos;
 out vec4 v_projPos;
 out vec3 v_normal;
+out float v_temperature;
 
 out uint v_isVisible;   // 0==false
 
@@ -14,16 +15,18 @@ uniform mat4 modelTransform;
 uniform mat4 modelView;
 uniform mat4 modelViewProjection;
 uniform samplerBuffer heightField;
+uniform samplerBuffer temperatures;
 
-uniform ivec2 tileRowsColumns;
+uniform int tileSamplesPerAxis;
 uniform ivec2 rowColumnOffset;
 
 void main()
 {
     v_vertex = ivec2(_vertex) + rowColumnOffset;
 
-    int texIndex = v_vertex.t + v_vertex.s * tileRowsColumns.t; // texelFetch expects an integer position
+    int texIndex = v_vertex.t + v_vertex.s * tileSamplesPerAxis; // texelFetch expects an integer position
     float height = texelFetch(heightField, texIndex).x;
+    v_temperature = texelFetch(temperatures, texIndex).x;
     
     vec4 vertex = vec4(v_vertex.s, height, v_vertex.t, 1.0);
     v_projPos = modelViewProjection * vertex;
@@ -40,8 +43,8 @@ void main()
     v_viewPos = viewPos4.xyz / viewPos4.w;
     
     // normal calculation, see http://stackoverflow.com/a/5284527
-    float height_left = texelFetch(heightField, texIndex - tileRowsColumns.s).x;
-    float height_right = texelFetch(heightField, texIndex + tileRowsColumns.s).x;
+    float height_left = texelFetch(heightField, texIndex - tileSamplesPerAxis).x;
+    float height_right = texelFetch(heightField, texIndex + tileSamplesPerAxis).x;
     float height_front = texelFetch(heightField, texIndex - 1).x;
     float height_back = texelFetch(heightField, texIndex + 1).x;
     vec3 va =  normalize(vec3(2.0, height_right - height_left, 0.0));

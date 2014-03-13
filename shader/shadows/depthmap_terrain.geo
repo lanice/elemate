@@ -2,12 +2,14 @@
 
 in ivec2 v_vertex[3];
 
+out float g_height;
+
 uniform mat4 depthMVP;
 
 uniform samplerBuffer heightField;
 uniform samplerBuffer baseHeightField;
 
-uniform ivec2 tileRowsColumns;
+uniform int tileSamplesPerAxis;
 
 uniform bool baseTileCompare;
 
@@ -20,14 +22,14 @@ void main()
     bool visibleTriangle = false;
     
     for (int i=0; i < 3; ++i) {
-        int texIndex = v_vertex[i].t + v_vertex[i].s * tileRowsColumns.t;
-        float height = texelFetch(heightField, texIndex).x;
-        positions[i] = depthMVP * vec4(float(v_vertex[i].x), height, float(v_vertex[i].y), 1.0);
+        int texIndex = v_vertex[i].t + v_vertex[i].s * tileSamplesPerAxis;
+        g_height = texelFetch(heightField, texIndex).x;
+        positions[i] = depthMVP * vec4(float(v_vertex[i].x), g_height, float(v_vertex[i].y), 1.0);
         
         vec3 normProjPos = positions[i].xyz / positions[i].w;
         bool isOnTop = true;
         if (baseTileCompare)
-            isOnTop = height >= texelFetch(baseHeightField, texIndex).x;
+            isOnTop = g_height >= texelFetch(baseHeightField, texIndex).x;
         
         visibleTriangle = visibleTriangle ||
             (isOnTop &&

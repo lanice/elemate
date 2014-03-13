@@ -16,9 +16,11 @@
 #include "ui/navigation.h"
 #include "ui/hand.h"
 #include "terrain/terraingenerator.h"
+#include "terrain/terrain.h"
 #include "particles/particlescriptaccess.h"
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
+#include "texturemanager.h"
 
 World * World::s_instance = nullptr;
 
@@ -35,6 +37,8 @@ World::World(PhysicsWrapper & physicsWrapper)
 {
     assert(s_instance == nullptr);
     s_instance = this;
+
+    TextureManager::initialize();
 
     // Create two non-3D channels (piano and rain)
     //initialize as paused
@@ -60,6 +64,7 @@ World::World(PhysicsWrapper & physicsWrapper)
 
 World::~World()
 {
+    TextureManager::release();
     s_instance = nullptr;
 }
 
@@ -101,6 +106,7 @@ void World::updatePhysics()
         return;
 
     ParticleScriptAccess::instance().checkCollisions(delta);
+    terrain->updatePhysics(delta);
 
     for (auto observer : m_particleGroupObservers)
         observer->updateEmitting(delta);

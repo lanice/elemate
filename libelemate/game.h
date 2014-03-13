@@ -25,7 +25,7 @@ public:
 
     ~Game();
 
-    /** Starts the Game Loop until recieving a window close event. */
+    /** Starts the Game Loop until receiving a window close event. */
     void start();
     void toggleMenu();
 

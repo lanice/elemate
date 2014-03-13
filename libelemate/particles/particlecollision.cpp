@@ -83,6 +83,14 @@ void ParticleCollision::performCheck()
 {
     const auto & particleGroups = m_psa.m_particleGroups;
 
+    for (auto pair = particleGroups.cbegin(); pair != particleGroups.cend(); ++pair) {
+        if (!pair->second->isDown())
+            continue;
+
+        const vec3 & center = pair->second->collidedParticleBounds.center();
+        m_lua->call("temperatureCheck", pair->second->elementName(), center, pair->second->numCollided);
+    }
+
     if (particleGroups.size() < 2)
         return;
 
@@ -134,9 +142,7 @@ void ParticleCollision::checkCollidedParticles(int leftGroup, int rightGroup, co
         return;
 
     // now do the more complex work: tree based collision check, to detect collisions at multiple independent positions
-    auto a = treeCheck(commonSubbox, leftMinimalParticleSubset, rightMinimalParticleSubset, 20);
-    if (a.second > 0)
-        glow::debug("treeCheckResult: calls: %;, hits: %;", a.first, a.second);
+    treeCheck(commonSubbox, leftMinimalParticleSubset, rightMinimalParticleSubset, 20);
 }
 
 bool ParticleCollision::checkBoundingBoxCollision(const AxisAlignedBoundingBox & box1, const AxisAlignedBoundingBox & box2, AxisAlignedBoundingBox * intersectVolume)
@@ -200,13 +206,13 @@ bool ParticleCollision::extractCommonPositionBox(const std::vector<vec3> & leftH
     return true;
 }
 
-std::pair<int, int> ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const std::vector<vec3> & leftHandPositions, const std::vector<vec3> & rightHandPositions, int depth)
+void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const std::vector<vec3> & leftHandPositions, const std::vector<vec3> & rightHandPositions, int depth)
 {
     // recursion end
 
     if (leftHandPositions.empty() || rightHandPositions.empty()) {
         // nothing to do here, having only particles of one kind (or none)
-        return std::make_pair(1, 0);
+        return;
     }
 
     //!!! AxisAlignedBoundingBox center and radius don't do what we want here.. they seem.. wrong
@@ -218,18 +224,12 @@ std::pair<int, int> ParticleCollision::treeCheck(const AxisAlignedBoundingBox & 
 
     if (maxLength < 0.3f || depth <= 0) {   // magic number: minimal size of the box for tree based check
 
-        if (depth == 0) {
-            glow::debug("treeCheckEnd, boxSize: %; (maxRecursionDepth)", maxLength);
-        }
-        else
-            glow::debug("treeCheckEnd, boxSize: %; (low box size, rec: %;)", maxLength, depth);
-
         // call the script to handle this particle collision
         m_lua->call("particleCollision", volume.llf(), volume.urb());
 
         debug_intersectionBoxes.push_back({ volume.llf(), volume.urb() });
 
-        return std::make_pair(1, 1);
+        return;
     }
 
     // still particles in the current box, and box is too large -> recursive split
@@ -298,16 +298,15 @@ std::pair<int, int> ParticleCollision::treeCheck(const AxisAlignedBoundingBox & 
     // for each created splitting subset: extract the particles that may interact with the other group
     if (extractCommonPositionBox(group1LeftHand, group1RightHand, bboxGroup1Left, bboxGroup1Right, leftExtracted, rightExtracted, commonBoundingBox)) {
         // and if so, try continuing with another spacial splitting
-        a = treeCheck(commonBoundingBox, leftExtracted, rightExtracted, depth - 1);
+        treeCheck(commonBoundingBox, leftExtracted, rightExtracted, depth - 1);
     }
     // same for the second splitting subset, reuse the container and bounding box objects
     leftExtracted.clear();
     rightExtracted.clear();
     commonBoundingBox = AxisAlignedBoundingBox();
     if (extractCommonPositionBox(group2LeftHand, group2RightHand, bboxGroup2Left, bboxGroup2Right, leftExtracted, rightExtracted, commonBoundingBox)) {
-        b = treeCheck(commonBoundingBox, leftExtracted, rightExtracted, depth - 1);
+        treeCheck(commonBoundingBox, leftExtracted, rightExtracted, depth - 1);
     }
-    return std::make_pair(a.first + b.first, a.second + b.second);
 }
 
 unsigned int ParticleCollision::forgetOldParticles()
@@ -345,7 +344,7 @@ int ParticleCollision::particleGroupId(const std::string & elementName)
     if (it != m_particleGroupIds.end())
         return it->second;
 
-    int newId = m_psa.createParticleGroup(elementName);
+    int newId = m_psa.createParticleGroup(false, elementName);
     m_particleGroupIds.emplace(elementName, newId);
     return newId;
 }

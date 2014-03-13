@@ -19,7 +19,7 @@
 #endif
 
 #include "terrain.h"
-#include "terraintile.h"
+#include "physicaltile.h"
 #include "physicswrapper.h"
 #include "lua/luawrapper.h"
 
@@ -38,7 +38,7 @@ float TerrainInteraction::normalDist(float x, float mean, float stddev)
 TerrainInteraction::TerrainInteraction(Terrain & terrain, const std::string & interactElement)
 : m_terrain(terrain)
 , m_interactElement(interactElement)
-, m_interactLevel(levelForElement(interactElement))
+, m_interactLevel(levelForElement.at(interactElement))
 {
 }
 
@@ -60,17 +60,17 @@ const std::string & TerrainInteraction::interactElement() const
 void TerrainInteraction::setInteractElement(const std::string & elementName)
 {
     m_interactElement = elementName;
-    m_interactLevel = levelForElement(elementName);
+    m_interactLevel = levelForElement.at(elementName);
 }
 
 const std::string & TerrainInteraction::topmostElementAt(float worldX, float worldZ) const
 {
     TerrainLevel topmostLevel = m_terrain.heighestLevelAt(worldX, worldZ);
 
-    std::shared_ptr<TerrainTile> tile = nullptr;
+    std::shared_ptr<PhysicalTile> tile = nullptr;
     unsigned int row, column;
 
-    if (!m_terrain.worldToTileRowColumn(worldX, worldZ, topmostLevel, tile, row, column))
+    if (!m_terrain.worldToPhysicalTileRowColumn(worldX, worldZ, topmostLevel, tile, row, column))
         return s_defaultElementName;
 
     assert(tile);
@@ -86,10 +86,10 @@ const std::string & TerrainInteraction::useTopmostElementAt(float worldX, float 
 
 const std::string & TerrainInteraction::solidElementAt(float worldX, float worldZ) const
 {
-    std::shared_ptr<TerrainTile> tile = nullptr;
+    std::shared_ptr<PhysicalTile> tile = nullptr;
     unsigned int row, column;
 
-    if (!m_terrain.worldToTileRowColumn(worldX, worldZ, TerrainLevel::BaseLevel, tile, row, column))
+    if (!m_terrain.worldToPhysicalTileRowColumn(worldX, worldZ, TerrainLevel::BaseLevel, tile, row, column))
         return s_defaultElementName;
 
     assert(tile);
@@ -110,11 +110,11 @@ float TerrainInteraction::heightAt(float worldX, float worldZ) const
 
 bool TerrainInteraction::isHeighestAt(float worldX, float worldZ) const
 {
-    if (TerrainLevels.size() == 1)
+    if (PhysicalLevels.size() == 1)
         return true;
 
     float othersMaxHeight = std::numeric_limits<float>::lowest();
-    for (TerrainLevel level : TerrainLevels) {
+    for (TerrainLevel level : PhysicalLevels) {
         if (level == m_interactLevel)
             continue;
         othersMaxHeight = std::max(m_terrain.heightAt(worldX, worldZ, level), othersMaxHeight);
@@ -160,7 +160,7 @@ float TerrainInteraction::setLevelHeight(float worldX, float worldZ, TerrainLeve
 
     assert(tile);
 
-    return setHeight(*tile.get(), row, column, value, setToInteractionElement);
+    return setValue(*tile.get(), row, column, value, setToInteractionElement);
 }
 
 float TerrainInteraction::changeLevelHeight(float worldX, float worldZ, TerrainLevel level, float delta, bool setToInteractionElement)
@@ -173,38 +173,36 @@ float TerrainInteraction::changeLevelHeight(float worldX, float worldZ, TerrainL
 
     assert(tile);
 
-    float height = tile->heightAt(row, column);
+    float height = tile->valueAt(row, column);
 
-    return setHeight(*tile.get(), row, column, height + delta, setToInteractionElement);
+    return setValue(*tile.get(), row, column, height + delta, setToInteractionElement);
 }
 
-float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
+float TerrainInteraction::setValue(TerrainTile & tile, unsigned row, unsigned column, float value, bool setToInteractionElement)
 {
-    float stddev = 7.0f; // TODO: script this, element specific value
+    float stddev = tile.interactStdDeviation;
     assert(stddev > 0);
 
-    const TerrainSettings & settings = m_terrain.settings;
-
-    /** clamp height value */
-    if (value < -settings.maxHeight) value = -settings.maxHeight;
-    if (value > settings.maxHeight) value = settings.maxHeight;
+    /** clamp value */
+    if (value < tile.minValidValue) value = tile.minValidValue;
+    if (value > tile.maxValidValue) value = tile.maxValidValue;
 
     // define the size of the affected interaction area, in grid coords
     const float effectRadiusWorld = stddev * 3;
-    const uint32_t effectRadius = static_cast<uint32_t>(std::ceil(effectRadiusWorld * settings.samplesPerWorldCoord())); // = 0 means to change only the value at (row,column)
+    const uint32_t effectRadius = static_cast<uint32_t>(std::ceil(effectRadiusWorld * tile.samplesPerWorldCoord)); // = 0 means to change only the value at (row,column)
 
-    bool moveUp = (value - tile.heightAt(row, column)) > 0;
+    bool moveUp = (value - tile.valueAt(row, column)) > 0;
     int invert = moveUp ? 1 : -1;   // invert the curve if moving downwards
 
     float norm0 = normalDist(0, 0, stddev);
-    float maxHeight = settings.maxHeight;
-    std::function<float(float)> interactHeight = [stddev, norm0, value, maxHeight, invert] (float x) {
+    float valueRange = std::abs(tile.maxValidValue - tile.minValidValue);
+    std::function<float(float)> interactHeight = [stddev, norm0, value, valueRange, invert](float x) {
         return normalDist(x, 0, stddev)     // - normalize normDist to
                    / norm0                  //    normDist value at interaction center
-               * (2 * maxHeight + 10)       // - scale to height range + 10 to omit norm values near 0
+               * (valueRange + 10)          // - scale to value range + offset to omit norm values near 0
                * invert                     // - mirror the curve along the y axis if moving downward
                + value                      // - move along y so that value==0 => y==0
-               - (2*maxHeight + 10) * invert;
+               - (valueRange + 10) * invert;
     };
 
     unsigned int minRow, maxRow, minColumn, maxColumn;
@@ -212,18 +210,27 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
         // unchecked signed min/max values, possibly < 0 or > numRows/Column
         int iMinRow = row - effectRadius, iMaxRow = row + effectRadius, iMinColumn = column - effectRadius, iMaxColumn = column + effectRadius;
         // work on rows and column that are in range of the terrain tile settings and larger than 0
-        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMinRow));
-        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(settings.rows) ? settings.rows - 1 : static_cast<unsigned int>(iMaxRow));
-        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMinColumn));
-        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(settings.columns) ? settings.columns - 1 : static_cast<unsigned int>(iMaxColumn));
+        minRow = iMinRow < 0 ? 0 : (iMinRow >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMinRow));
+        maxRow = iMaxRow < 0 ? 0 : (iMaxRow >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMaxRow));
+        minColumn = iMinColumn < 0 ? 0 : (iMinColumn >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMinColumn));
+        maxColumn = iMaxColumn < 0 ? 0 : (iMaxColumn >= static_cast<signed>(tile.samplesPerAxis) ? tile.samplesPerAxis - 1 : static_cast<unsigned int>(iMaxColumn));
     }
 
-    uint8_t elementIndex = tile.elementIndex(m_interactElement);
+    // also change element id's if requested and the tile supports it
+    PhysicalTile * physicalTile = dynamic_cast<PhysicalTile*>(&tile);
+    
+    if (setToInteractionElement) {
+        assert(physicalTile);
+    }
+
+    uint8_t elementIndex = 0;
+    if (physicalTile)
+        elementIndex = physicalTile->elementIndex(m_interactElement);
 
     for (unsigned int r = minRow; r <= maxRow; ++r) {
-        float relWorldX = (signed(r) - signed(row)) * settings.sampleInterval();
+        float relWorldX = (signed(r) - signed(row)) * tile.sampleInterval;
         for (unsigned int c = minColumn; c <= maxColumn; ++c) {
-            float relWorldZ = (signed(c) - signed(column)) * settings.sampleInterval();
+            float relWorldZ = (signed(c) - signed(column)) * tile.sampleInterval;
 
             float localRadius = std::sqrt(relWorldX*relWorldX + relWorldZ*relWorldZ);
 
@@ -232,19 +239,20 @@ float TerrainInteraction::setHeight(TerrainTile & tile, unsigned row, unsigned c
 
             float newLocalHeight = interactHeight(localRadius);
 
-            bool localMoveUp = newLocalHeight > tile.heightAt(r, c);
-            // don't do anything if we pull up the terrain but the local heightpoint is already higher than its calculated height. (vice versa)
+            bool localMoveUp = newLocalHeight > tile.valueAt(r, c);
+            // don't do anything if we pull up the terrain but the local height point is already higher than its calculated height. (vice versa)
             if (localMoveUp != moveUp)
                 continue;
 
-            tile.setHeight(r, c, newLocalHeight);
+            tile.setValue(r, c, newLocalHeight);
             if (setToInteractionElement)
-                tile.setElement(r, c, elementIndex);
+                physicalTile->setElement(r, c, elementIndex);
         }
-        tile.addBufferUpdateRange(minColumn + r * settings.columns, 1u + effectRadius * 2u);
+        tile.addBufferUpdateRange(minColumn + r * tile.samplesPerAxis, 1u + effectRadius * 2u);
     }
 
-    tile.addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
+    if (physicalTile)
+        physicalTile->addToPxUpdateBox(minRow, maxRow, minColumn, maxColumn);
 
     return value;
 }
@@ -289,9 +297,10 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
     std::function<float(float, float)> func6 = [=](float worldX, float worldZ)
     { return heightGrab(worldX, worldZ); };
 
-
     std::function<int(std::string)> func7 = [=](std::string elementName)
     { setInteractElement(elementName); return 0; };
+
+    std::function<float()> func8 = std::bind(&TerrainSettings::minSampleInterval, m_terrain.settings);
 
     lua.Register("terrain_heightAt", func0);
     lua.Register("terrain_isHeighestAt", func1);
@@ -301,4 +310,5 @@ void TerrainInteraction::registerLuaFunctions(LuaWrapper & lua)
     lua.Register("terrain_terrainHeightAt", func5);
     lua.Register("terrain_heightGrab", func6);
     lua.Register("terrain_setInteractElement", func7);
+    lua.Register("terrain_sampleInterval", func8);
 }

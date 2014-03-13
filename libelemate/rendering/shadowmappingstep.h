@@ -43,7 +43,6 @@ protected:
 
     static const std::vector<glm::vec2> s_depthSamples;
     static const std::vector<glm::vec2> s_earlyBailSamples;
-    static const GLint s_lightmapSlot;
 
 public:
     void operator=(ShadowMappingStep&) = delete;

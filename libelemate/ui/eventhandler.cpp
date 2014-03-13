@@ -66,6 +66,12 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
         case GLFW_KEY_F1:
             m_game.renderer()->toggleDrawDebugInfo();
             break;
+        case GLFW_KEY_F2:
+            m_game.renderer()->toggleDrawHeatMap();
+            break;
+        case GLFW_KEY_F10:
+            m_game.renderer()->takeScreenShot();
+            break;
         }
     }
 

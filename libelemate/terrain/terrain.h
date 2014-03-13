@@ -19,6 +19,7 @@ namespace physx {
     class PxRigidStatic;
 }
 class TerrainTile;
+class PhysicalTile;
 
 class Terrain : public ShadowingDrawable
 {
@@ -37,21 +38,27 @@ public:
     * Terrain tile in origin is identified by TileId(0, 0, 0) */
     physx::PxRigidStatic * pxActor(const TileID & tileID) const;
     /** Map of static PhysX actors. TileID's level is always BaseLevel.
-      * One actor owns the shapes for all terain levels at its x/z-ID. */
+      * One actor owns the shapes for all terrain levels at its x/z-ID. */
     const std::map<TileID, physx::PxRigidStatic*> pxActorMap() const;
     /** @return interpolated maximal height of all terrain layers at specific world position */
     float heightTotalAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
     float heightAt(float x, float z, TerrainLevel level) const;
-    /** @return heighest terrain level at position */
+    /** @return highest terrain level at position */
     TerrainLevel heighestLevelAt(float x, float z) const;
     void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
-    /** @return the axis aligned bouding box including all tiles */
+    /** @return the axis aligned bounding box including all tiles */
     const glowutils::AxisAlignedBoundingBox & boudingBox() const;
-    /** @return the bouding box reduced by the border width */
+    /** @return the bounding box reduced by the border width */
     const glowutils::AxisAlignedBoundingBox & validBoundingBox() const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
     const TerrainSettings settings;
+
+    void updatePhysics(double delta);
+
+    void setDrawHeatMap(bool drawHeatMap);
+
+    void setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const;
 
     friend class TerrainGenerator;
     friend class TerrainTile;
@@ -72,7 +79,10 @@ protected:
     /** register terrain tile to be part of this terrain with unique tileID */
     void registerTile(const TileID & tileID, TerrainTile & tile);
 
-    std::map<TileID, std::shared_ptr<TerrainTile>> m_tiles;
+    std::map<TileID, std::shared_ptr<TerrainTile>> m_physicalTiles;
+    std::map<TileID, std::shared_ptr<TerrainTile>> m_attributeTiles;
+    std::shared_ptr<TerrainTile> getTile(TileID tileID) const;
+
     /** holds one physx actor per tile x/z-ID. TileId.level is always BaseLevel */
     std::map<TileID, physx::PxRigidStatic*> m_pxActors;
 
@@ -89,7 +99,6 @@ protected:
     virtual void initialize() override;
     void generateDrawGrid();
 
-    void setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const;
     glowutils::CachedValue<unsigned int> m_renderGridRadius;
     std::vector<glm::vec2> m_vertices;
     std::vector<uint32_t> m_indices;
@@ -107,6 +116,8 @@ protected:
     * @return true, if the position is in terrain extent's range. */
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column) const;
     bool worldToTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<TerrainTile> & terrainTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const;
+    bool worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column) const;
+    bool worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const;
     /** transform world position into tileID and normalized coordinates in this tile.
     * @param tileID this will set the x, y values of the id, but will not change the level
     * @param normX normZ these parameter will be set the normalized position in the tile, referenced with tileID
