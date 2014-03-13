@@ -18,15 +18,24 @@
 
 
 const float StringDrawer::s_textureSize = 1024.0f;
+std::unique_ptr<StringDrawer> StringDrawer::m_instance;
 
 StringDrawer::StringDrawer()
 {
-
 }
 
 StringDrawer::~StringDrawer()
 {
+}
 
+StringDrawer* StringDrawer::instance()
+{
+    if (!m_instance.get())
+    {
+        m_instance.reset(new StringDrawer);
+        m_instance->initialize();
+    }
+    return m_instance.get();
 }
 
 bool StringDrawer::initialize()
@@ -169,4 +178,14 @@ glm::mat4 StringDrawer::alignmentTransform(const std::list<CharacterSpecifics *>
 void StringDrawer::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
+}
+
+float StringDrawer::scaleToWidth(const std::string& text, float maxWidth)
+{
+    std::list<CharacterSpecifics *> list = m_stringComposer.characterSequence(text);
+    const float length = std::accumulate(list.begin(), list.end(), 0.0f,
+        [](float sum, CharacterSpecifics * specifics) {
+        return sum + specifics->xAdvance;
+    });
+    return maxWidth/length;
 }

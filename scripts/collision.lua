@@ -49,6 +49,7 @@ function collisionWaterLava(waterGroup, lavaGroup)
     -- pc_createFromRemembered("steam")
     
     terrain_setInteractElement("bedrock")
+    achievement_setProperty("bedrock", 1)
     -- assuming the collision bbox is not "too large"
     -- calculate a height delta that looks fine =)
     heightDelta = psa_restOffset(waterGroup) * numLavaParticles * terrain_sampleInterval() * 0.2

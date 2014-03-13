@@ -30,6 +30,14 @@ local function selectElement( eleType )
     end
 end
 
+local function activeElement( eleType )
+    if elements[eleType] ~= nil and particleGroupId ~= nil then
+        return elements[eleType] == particleGroupId
+    else
+        return false
+    end
+end
+
 local function spawnSource(posX, posY, posZ)
     local RADIUS = 1.5;
     local SOURCE_HEIGHT = 0.3
@@ -43,6 +51,9 @@ local function spawnSource(posX, posY, posZ)
 end
 
 local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
+    if activeElement("water") and posY > achievement_getProperty("maxWaterFallingHeight") then
+        achievement_setProperty("maxWaterFallingHeight", posY)
+    end
     emitParameters[1] = particleGroupId
     emitParameters[2] = rate
     emitParameters[3] = posX
@@ -56,6 +67,9 @@ local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
 end
 
 function updateHandPosition( posX, posY, posZ )
+    if posY > achievement_getProperty("maxHandY") then
+        achievement_setProperty("maxHandY", posY);
+    end
     emitParameters[3] = posX
     emitParameters[4] = posY
     emitParameters[5] = posZ

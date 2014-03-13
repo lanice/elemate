@@ -10,6 +10,8 @@
 #include "lua/luawrapper.h"
 #include "terrain/terraininteraction.h"
 
+#include "ui/achievementmanager.h"
+
 std::list<ParticleCollision::IntersectionBox> ParticleCollision::debug_intersectionBoxes;
 
 using namespace glowutils;
@@ -36,6 +38,7 @@ ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
 , m_lua(new LuaWrapper())
 , m_terrainInteraction(new TerrainInteraction("bedrock"))
 {
+    AchievementManager::instance()->registerLuaFunctions(m_lua);
     m_lua->loadScript("scripts/collision.lua");
     m_psa.registerLuaFunctions(*m_lua);
     m_terrainInteraction->registerLuaFunctions(*m_lua);
@@ -101,7 +104,6 @@ void ParticleCollision::performCheck()
 
     debug_intersectionBoxes.clear();
 
-    // this .. tends to be ...slooooow
     for (auto leftHand = particleGroups.cbegin(); leftHand != lastLeftHand; ++leftHand) {
         auto rightHand = leftHand;
         ++rightHand;
@@ -223,7 +225,6 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
     float maxLength = std::max(dimensions.x, std::max(dimensions.y, dimensions.z));
 
     if (maxLength < 0.3f || depth <= 0) {   // magic number: minimal size of the box for tree based check
-
         // call the script to handle this particle collision
         m_lua->call("particleCollision", volume.llf(), volume.urb());
 
