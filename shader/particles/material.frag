@@ -80,3 +80,28 @@ vec4 lavaColor(vec2 v_uv){
         )
         ), 0.0);
 }
+
+vec4 sandColor(vec2 v_uv){
+
+    vec3 light   = normalize(vec3(0.0,1.0,-0.5));
+    vec3 normal  = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
+    vec3 sandCol = vec3(vec2(0.5), 0.0);
+
+    return 
+    vec4(
+        mix(
+            mix(
+                vec3(0.1,0.0,0.0),
+                sandCol,
+                0.6+
+                0.2*max(
+                        dot(normal,light),
+                        0.0
+                )
+            ),
+            vec3(1.0,0.8,0.1),
+            0.1
+        ), 
+        0.0
+    );
+}

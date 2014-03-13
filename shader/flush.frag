@@ -17,6 +17,7 @@ layout(location = 0)out vec4 fragColor;
 float linearize(float depth);
 vec4 waterColor(vec2 v_uv);
 vec4 lavaColor(vec2 v_uv);
+vec4 sandColor(vec2 v_uv);
 
 void main()
 {    
@@ -41,7 +42,7 @@ void main()
         particleC = lavaColor(v_uv);
         break;
     case 3u:
-        particleC = vec4(1, 1, 0, 1);
+        particleC = sandColor(v_uv);
         break;
     case 4u:
         particleC = vec4(0.3, 0.3, 0.3, 1.0);
