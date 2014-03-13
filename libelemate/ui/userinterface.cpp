@@ -14,6 +14,10 @@
 #include "lua/luawrapper.h"
 #include "io/imagereader.h"
 #include "menupage.h"
+
+#include "world.h"
+#include "achievementmanager.h"
+#include "achievement.h"
 #include "texturemanager.h"
 
 const float UserInterface::kDefaultPreviewHeight = 0.1f;
@@ -30,11 +34,14 @@ UserInterface::UserInterface(GLFWwindow& window) :
 
 UserInterface::~UserInterface()
 {
+    AchievementManager::release();
+    StringDrawer::release();
 }
 
 void UserInterface::initialize()
 {
-    m_stringDrawer.initialize();
+    StringDrawer::initialize();
+
     std::vector<glm::vec2> points({
         glm::vec2(+1.f, -1.f)
         , glm::vec2(+1.f, +1.f)
@@ -81,6 +88,7 @@ void UserInterface::initialize()
     m_menus.emplace("MainMenu", new MenuPage("MainMenu"));
     m_menus["MainMenu"]->addEntry("Fortsetzen");
     m_menus["MainMenu"]->addEntry("Hilfe");
+    m_menus["MainMenu"]->addEntry("Achievements");
     m_menus["MainMenu"]->addEntry("Beenden");
     m_menus.emplace("Settings", new MenuPage("Settings"));
     m_menus["Settings"]->addEntry("Zurück zur Hauptseite");
@@ -95,12 +103,16 @@ void UserInterface::initialize()
     m_menus["Help"]->addEntry("Strg halten und scrollen zum Kippen der Kamera");
     m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
     m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
+    m_menus.emplace("Achievements", new MenuPage("Achievements"));
+    m_menus["Achievements"]->setTopOffset(-0.3f);
+    m_menus["Achievements"]->addEntry("Zurück zur Hauptseite");
 }
 
 void UserInterface::draw()
 {
     drawHUD();
     drawMainMenu();
+    AchievementManager::instance()->drawAchievements();
 }
 
 void UserInterface::drawHUD()
@@ -110,7 +122,7 @@ void UserInterface::drawHUD()
 
     drawPreview();
     for (const auto& text : m_hudTexts){
-        m_stringDrawer.paint(text);
+        StringDrawer::instance()->paint(text);
     }
 }
 
@@ -170,20 +182,53 @@ void UserInterface::drawMenuEntries()
             color = kDefaultHighlightedMenuEntryColor;
         else
             color = kDefaultMenuEntryColor;
-        m_stringDrawer.paint(m_menus[m_activeMenu]->entryCaption(i),
+        StringDrawer::instance()->paint(m_menus[m_activeMenu]->entryCaption(i),
             glm::mat4(0.5, 0, 0, 0,
                       0, 0.5, 0, 0,
                       0, 0, 0.5, 0,
-                      0, 0.5 - (i*distance), 0, 1),
+                      0, 0.5 - m_menus[m_activeMenu]->topOffset() -(i*distance), 0, 1),
                       StringDrawer::Alignment::kAlignCenter,
                       color);
     }    
+    if (m_activeMenu == "Achievements")
+        drawAchievements();
+}
+
+void UserInterface::drawAchievements()
+{
+    auto locked   = AchievementManager::instance()->getLocked();
+    auto unlocked = AchievementManager::instance()->getUnlocked();
+    float x = -0.8f;
+    float y = 0.6f;
+    for (auto& achievement : *unlocked)
+    {
+        achievement.second->draw(x, y, false, 0.5);
+        x += 0.3f;
+        if (x >= 0.8f)
+        {
+            y -= 0.2f;
+            x = -0.8f;
+        }
+    }
+    y -= 0.2f;
+    x = -0.8f;
+    for (auto& achievement : *locked)
+    {
+        achievement.second->draw(x, y, false, 0.5);
+        x += 0.3f;
+        if (x >= 0.8f)
+        {
+            y -= 0.2f;
+            x = -0.8f;
+        }
+    }
 }
 
 void UserInterface::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
-    m_stringDrawer.resize(width, height);
+    StringDrawer::instance()->resize(width, height);
+    AchievementManager::instance()->resizeAchievements(width, height);
 }
 
 void UserInterface::loadInitTexture(const std::string & elementName)
@@ -218,6 +263,7 @@ void UserInterface::toggleMainMenu()
 {
     m_mainMenuOnTop = !m_mainMenuOnTop;
     m_activeMenu = "MainMenu";
+    World::instance()->togglePause();
 }
 
 bool UserInterface::isMainMenuOnTop() const 
@@ -241,16 +287,18 @@ void UserInterface::invokeMenuEntryFunction()
             case 1:     // Help
                 m_activeMenu = "Help";
                 break;
-            case 2:     // Settings
+            case 2:     // Achievements
+                m_activeMenu = "Achievements";
+                break;
+            case 3:     // Settings
                 /* Settings have no effect, therefore disabled
                 m_activeMenu = "Settings";
                 break;
-            case 3:     //Exit 
+            case 4:     //Exit 
                 */
                 glfwSetWindowShouldClose(&m_window, GL_TRUE);
                 break;
             default:
-                toggleMainMenu();
                 break;
         }
     else if (m_activeMenu == "Help")
@@ -273,6 +321,15 @@ void UserInterface::invokeMenuEntryFunction()
                 break;
             case 2:     // Toggle VSync
                 // Toggle VSync
+                break;
+            default:
+                break;
+        }
+    else if (m_activeMenu == "Achievements")
+        switch (m_menus[m_activeMenu]->activeEntry())
+        {
+            case 0:     // Back to Main Menu
+                m_activeMenu = "MainMenu";
                 break;
             default:
                 break;

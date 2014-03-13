@@ -14,7 +14,7 @@
 #include "particles/particlescriptaccess.h"
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
-
+#include "ui/achievementmanager.h"
 
 Manipulator::Manipulator(GLFWwindow & window, const Navigation & navigation, World & world) :
 m_window(window),
@@ -27,13 +27,15 @@ m_grabbedTerrain(false),
 m_lua(new LuaWrapper())
 {
     registerLuaFunctions(m_lua);
-
+    AchievementManager::instance()->registerLuaFunctions(m_lua);
     ParticleScriptAccess::instance().registerLuaFunctions(*m_lua);
     m_hand.registerLuaFunctions(m_lua);
     m_world.registerLuaFunctions(m_lua);
     m_terrainInteractor->registerLuaFunctions(*m_lua);
 
     m_lua->loadScript("scripts/manipulator.lua");
+
+    m_lua->loadScript("scripts/achievements.lua");
 }
 
 Manipulator::~Manipulator()

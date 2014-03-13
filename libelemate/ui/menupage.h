@@ -11,6 +11,9 @@ public:
     unsigned int activeEntry()const;
     void highlightPreviousEntry();
     void highlightNextEntry();
+
+    float topOffset()const;
+    void setTopOffset(float topOffset);
     
     void addEntry(std::string caption);
 
@@ -20,6 +23,7 @@ protected:
     std::vector<std::string> m_entries;
     unsigned int             m_activeEntry;
     std::string              m_pageName;
+    float                    m_topOffset;
 
 private:
     MenuPage(const MenuPage&) = delete;

@@ -22,6 +22,7 @@
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
 #include "texturemanager.h"
+#include "ui/achievementmanager.h"
 
 World * World::s_instance = nullptr;
 
@@ -39,6 +40,8 @@ World::World(PhysicsWrapper & physicsWrapper)
 {
     assert(s_instance == nullptr);
     s_instance = this;
+
+    AchievementManager::initialize();
 
     TextureManager::initialize();
 

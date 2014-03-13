@@ -18,31 +18,39 @@
 
 
 const float StringDrawer::s_textureSize = 1024.0f;
+StringDrawer * StringDrawer::m_instance = nullptr;
+
+void StringDrawer::initialize()
+{
+    assert(m_instance == nullptr);
+    m_instance = new StringDrawer();
+}
+
+void StringDrawer::release()
+{
+    assert(m_instance);
+    delete m_instance;
+    m_instance = nullptr;
+}
 
 StringDrawer::StringDrawer()
 {
+    initializeTexture();
+    initializeProgram();
 
+    m_stringComposer.readSpecificsFromFile("data/font/P22UndergroundPro-Medium.txt", s_textureSize);
+
+    m_drawable.initialize();
 }
 
 StringDrawer::~StringDrawer()
 {
-
 }
 
-bool StringDrawer::initialize()
+StringDrawer* StringDrawer::instance()
 {
-    if (!initializeTexture())
-        return false;
-
-    if (!initializeProgram())
-        return false;
-    
-    if (!m_stringComposer.readSpecificsFromFile("data/font/P22UndergroundPro-Medium.txt", s_textureSize))
-        return false;
-    
-    m_drawable.initialize();
-
-    return true;
+    assert(m_instance);
+    return m_instance;
 }
 
 bool StringDrawer::initializeProgram()
@@ -169,4 +177,14 @@ glm::mat4 StringDrawer::alignmentTransform(const std::list<CharacterSpecifics *>
 void StringDrawer::resize(int width, int height)
 {
     m_viewport = glm::vec2(width, height);
+}
+
+float StringDrawer::scaleToWidth(const std::string& text, float maxWidth)
+{
+    std::list<CharacterSpecifics *> list = m_stringComposer.characterSequence(text);
+    const float length = std::accumulate(list.begin(), list.end(), 0.0f,
+        [](float sum, CharacterSpecifics * specifics) {
+        return sum + specifics->xAdvance;
+    });
+    return maxWidth/length;
 }

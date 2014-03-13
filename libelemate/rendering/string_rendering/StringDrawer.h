@@ -28,10 +28,11 @@ class StringDrawer
 public:
     enum Alignment { kAlignLeft, kAlignCenter, kAlignRight };
     
-    StringDrawer();
-    ~StringDrawer();
+    static void initialize();
+    static void release();
 
-    bool initialize();
+    static StringDrawer* instance();
+
     void paint(const std::string & text,
                const glm::mat4 & modelMatrix,
                Alignment alignment = kAlignLeft,
@@ -39,7 +40,12 @@ public:
     void paint(const TextObject& textObject);
     void resize(int width, int height);
 
+    float scaleToWidth(const std::string& text, float maxWidth);
+
 protected:
+    StringDrawer();
+    ~StringDrawer();
+    
     bool initializeProgram();
     bool initializeTexture();
     
@@ -49,6 +55,7 @@ protected:
 protected:
     static const float s_textureSize;
     
+    static StringDrawer *        m_instance;
     glow::ref_ptr<glow::Program> m_program;
     glow::ref_ptr<glow::Texture> m_characterAtlas;
     glm::vec2                    m_viewport;

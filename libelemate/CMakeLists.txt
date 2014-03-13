@@ -90,6 +90,10 @@ set(SOURCES
     ui/userinterface.h
     ui/menupage.cpp
     ui/menupage.h
+    ui/achievement.cpp
+    ui/achievement.h
+    ui/achievementmanager.cpp
+    ui/achievementmanager.h
     utils/cameraex.h
     utils/cameraex.cpp
     utils/pxcompilerfix.h

@@ -39,7 +39,7 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
     if (m_game.userInterface()->isMainMenuOnTop())
     {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-            m_game.toggleMenu();
+            m_game.userInterface()->toggleMainMenu();
         else
             m_game.userInterface()->handleKeyEvent(key, scancode, action, mods);
         return;
@@ -47,7 +47,7 @@ void EventHandler::handleKeyEvent(int key, int scancode, int action, int mods)
     if (action == GLFW_PRESS) {
         switch (key) {
         case GLFW_KEY_ESCAPE:
-            m_game.toggleMenu();
+            m_game.userInterface()->toggleMainMenu();
             break;
         case GLFW_KEY_F5:
             glow::info("Updating shader...");
