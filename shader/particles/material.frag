@@ -84,13 +84,13 @@ vec4 lavaColor(vec2 v_uv){
 vec4 sandColor(vec2 v_uv){
     float x = gl_FragCoord.x*sin(gl_FragCoord.x);
     float y = gl_FragCoord.y*cos(gl_FragCoord.y);
-    float rand_val = 1.0 - clamp(int(x+y)*100 %(int(x-y)%2) /1000.0,0,0.2);
+    float rand_val = 1.0 - clamp(int(x+y)*100 %(int(x-y)%2) /1000.0,0.0,0.2);
     x = 123+x;
     y = 321+y;
-    rand_val = rand_val - clamp(int(x+y)*100 %(int(x-y)%5) /1000.0,0,0.25);;
+    rand_val = rand_val - clamp(int(x+y)*100 %(int(x-y)%5) /1000.0,0.0,0.25);;
     x = 321+x;
     y = 123+y;
-    rand_val = rand_val - clamp(int(x+y)*100 %(int(x-y)%10) /1000.0,0,0.3);;
+    rand_val = rand_val - clamp(int(x+y)*100 %(int(x-y)%10) /1000.0,0.0,0.3);;
 
     vec3 light   = normalize(vec3(0.0,1.0,-0.5));
     vec3 normal  = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
