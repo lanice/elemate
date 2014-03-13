@@ -100,7 +100,7 @@ void Achievement::draw(float x, float y, bool popup, float scale)
     m_texture->unbindActive(GL_TEXTURE0);
     float pos = y + m_timeMod/1.2f;
     float sca = StringDrawer::instance()->scaleToWidth(m_title, 0.25f);
-    float scale_offset = 0.05*(1.0f - scale);
+    float scale_offset = 0.05f*(1.0f - scale);
     StringDrawer::instance()->paint(m_title,
         glm::mat4(  sca*scale, 0, 0, 0,
                     0, sca*scale, 0, 0,

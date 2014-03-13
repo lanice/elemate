@@ -18,10 +18,29 @@
 
 
 const float StringDrawer::s_textureSize = 1024.0f;
-std::unique_ptr<StringDrawer> StringDrawer::m_instance;
+StringDrawer * StringDrawer::m_instance = nullptr;
+
+void StringDrawer::initialize()
+{
+    assert(m_instance == nullptr);
+    m_instance = new StringDrawer();
+}
+
+void StringDrawer::release()
+{
+    assert(m_instance);
+    delete m_instance;
+    m_instance = nullptr;
+}
 
 StringDrawer::StringDrawer()
 {
+    initializeTexture();
+    initializeProgram();
+
+    m_stringComposer.readSpecificsFromFile("data/font/P22UndergroundPro-Medium.txt", s_textureSize);
+
+    m_drawable.initialize();
 }
 
 StringDrawer::~StringDrawer()
@@ -30,28 +49,8 @@ StringDrawer::~StringDrawer()
 
 StringDrawer* StringDrawer::instance()
 {
-    if (!m_instance.get())
-    {
-        m_instance.reset(new StringDrawer);
-        m_instance->initialize();
-    }
-    return m_instance.get();
-}
-
-bool StringDrawer::initialize()
-{
-    if (!initializeTexture())
-        return false;
-
-    if (!initializeProgram())
-        return false;
-    
-    if (!m_stringComposer.readSpecificsFromFile("data/font/P22UndergroundPro-Medium.txt", s_textureSize))
-        return false;
-    
-    m_drawable.initialize();
-
-    return true;
+    assert(m_instance);
+    return m_instance;
 }
 
 bool StringDrawer::initializeProgram()

@@ -4,7 +4,6 @@
 
 #include <list>
 #include <string>
-#include <memory>
 
 #include <glm/glm.hpp>
 #include <glow/ref_ptr.h>
@@ -29,11 +28,11 @@ class StringDrawer
 public:
     enum Alignment { kAlignLeft, kAlignCenter, kAlignRight };
     
+    static void initialize();
+    static void release();
+
     static StringDrawer* instance();
 
-    ~StringDrawer();
-
-    bool initialize();
     void paint(const std::string & text,
                const glm::mat4 & modelMatrix,
                Alignment alignment = kAlignLeft,
@@ -44,7 +43,8 @@ public:
     float scaleToWidth(const std::string& text, float maxWidth);
 
 protected:
-    StringDrawer(); 
+    StringDrawer();
+    ~StringDrawer();
     
     bool initializeProgram();
     bool initializeTexture();
@@ -55,7 +55,7 @@ protected:
 protected:
     static const float s_textureSize;
     
-    static std::unique_ptr<StringDrawer> m_instance;
+    static StringDrawer *        m_instance;
     glow::ref_ptr<glow::Program> m_program;
     glow::ref_ptr<glow::Texture> m_characterAtlas;
     glm::vec2                    m_viewport;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <unordered_map>
 #include <string>
 #include <thread>
@@ -13,9 +12,9 @@ class LuaWrapper;
 class AchievementManager
 {
 public:
+    static void initialize();
+    static void release();
     static AchievementManager* instance();
-
-    ~AchievementManager();
 
     void addAchievement(const std::string& title, const std::string& text = "", const std::string& picture = "default", bool unlocked = false);
     void unlockAchievement(const std::string& title);
@@ -35,19 +34,19 @@ public:
     void registerLuaFunctions(LuaWrapper * lua);
 
 protected:
-    static std::unique_ptr<AchievementManager> m_instance;
+    AchievementManager();
+    ~AchievementManager();
+
+    static AchievementManager * m_instance;
     
     std::unordered_map<std::string, float>  m_properties;
-    std::unique_ptr<std::thread>            m_unlockerThread;
-    bool                                    m_unlockerThreadRunning;
+    std::thread *                           m_unlockerThread;
+    bool                                    m_stopUnlockerThread;
 
     std::unordered_map<std::string, Achievement*> m_locked;
     std::unordered_map<std::string, Achievement*> m_drawQueue;
     std::unordered_map<std::string, Achievement*> m_unlocked;
 
-    LuaWrapper*  m_lua;
-
-    AchievementManager();
     void interruptUnlockerThread();
 
 private:

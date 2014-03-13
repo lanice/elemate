@@ -34,10 +34,14 @@ UserInterface::UserInterface(GLFWwindow& window) :
 
 UserInterface::~UserInterface()
 {
+    AchievementManager::release();
+    StringDrawer::release();
 }
 
 void UserInterface::initialize()
 {
+    StringDrawer::initialize();
+
     std::vector<glm::vec2> points({
         glm::vec2(+1.f, -1.f)
         , glm::vec2(+1.f, +1.f)
@@ -108,7 +112,7 @@ void UserInterface::draw()
 {
     drawHUD();
     drawMainMenu();
-	AchievementManager::instance()->drawAchievements();
+    AchievementManager::instance()->drawAchievements();
 }
 
 void UserInterface::drawHUD()
@@ -124,11 +128,11 @@ void UserInterface::drawHUD()
 
 void UserInterface::drawMainMenu()
 {
-	if (!m_mainMenuOnTop)
-		return;
+    if (!m_mainMenuOnTop)
+        return;
 
-	drawGreyScreen();
-	drawMenuEntries();
+    drawGreyScreen();
+    drawMenuEntries();
 }
 
 void UserInterface::drawPreview()

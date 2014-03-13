@@ -1,15 +1,32 @@
 #include "achievementmanager.h"
 
+#include <cassert>
+
 #include <glow/logging.h>
 
 #include <ui/achievement.h>
 #include <lua/luawrapper.h>
 
-std::unique_ptr<AchievementManager> AchievementManager::m_instance;
+AchievementManager * AchievementManager::m_instance = nullptr;
+
+void AchievementManager::initialize()
+{
+    assert(m_instance == nullptr);
+    m_instance = new AchievementManager();
+    m_instance->checkForNewUnlocks(true);
+}
+
+void AchievementManager::release()
+{
+    assert(m_instance);
+    delete m_instance;
+    m_instance = nullptr;
+}
 
 AchievementManager::AchievementManager()
+: m_unlockerThread(nullptr)
+, m_stopUnlockerThread(false)
 {
-    checkForNewUnlocks(true);
 }
 
 AchievementManager::~AchievementManager()
@@ -21,17 +38,13 @@ AchievementManager::~AchievementManager()
         delete achievement.second;
     for (auto& achievement : m_drawQueue)
         delete achievement.second;
-    m_unlocked.clear();
-    m_drawQueue.clear();
-    m_locked.clear();
+    delete m_unlockerThread;
 }
 
-AchievementManager* AchievementManager::instance()
+AchievementManager * AchievementManager::instance()
 {
-    if (!m_instance.get()){
-        m_instance.reset(new AchievementManager());
-    }
-    return m_instance.get();
+    assert(m_instance);
+    return m_instance;
 }
 
 void AchievementManager::addAchievement(const std::string& title, const std::string& text, const std::string& picture, bool unlocked)
@@ -78,7 +91,6 @@ void AchievementManager::resizeAchievements(int width, int height)
 
 void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
 {
-    m_lua = lua;
     std::function<int(std::string)> unlock = [=](std::string title)
     { 
         unlockAchievement(title);
@@ -108,13 +120,13 @@ void AchievementManager::registerLuaFunctions(LuaWrapper * lua)
         return m_properties.at(property_name);
     };
     
-    m_lua->Register("achievement_unlock", unlock);
-    m_lua->Register("achievement_add", add);
-    m_lua->Register("achievement_condition", condition);
-    m_lua->Register("achievement_setProperty", setProperty);
-    m_lua->Register("achievement_getProperty", getProperty);
+    lua->Register("achievement_unlock", unlock);
+    lua->Register("achievement_add", add);
+    lua->Register("achievement_condition", condition);
+    lua->Register("achievement_setProperty", setProperty);
+    lua->Register("achievement_getProperty", getProperty);
 
-    m_lua->loadScript("scripts/achievements.lua");
+    lua->loadScript("scripts/achievements.lua");
 }
 
 void  AchievementManager::setProperty(const std::string& name, float value)
@@ -147,14 +159,15 @@ void  AchievementManager::checkForNewUnlocks(bool threaded)
     if (threaded)
     {
         interruptUnlockerThread();
-        m_unlockerThread.reset(new std::thread(&AchievementManager::checkForNewUnlocks, this, false));
+        assert(m_unlockerThread == nullptr);
+        m_unlockerThread = new std::thread(&AchievementManager::checkForNewUnlocks, this, false);
         return;
     }
-    m_unlockerThreadRunning = true;
+    m_stopUnlockerThread = false;
     std::list<std::string> new_unlocks;
-    while (m_unlockerThreadRunning)
+    while (!m_stopUnlockerThread)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         new_unlocks.clear();
         for (auto& achievement : m_locked)
             if (achievement.second->unlockable(m_properties))
@@ -162,13 +175,12 @@ void  AchievementManager::checkForNewUnlocks(bool threaded)
             for (const auto& unlocked_achievement : new_unlocks)
                 unlockAchievement(unlocked_achievement);
     }
-    m_unlockerThreadRunning = false;
 }
 
 void AchievementManager::interruptUnlockerThread()
 {
-    if (!(m_unlockerThread.get() && m_unlockerThreadRunning))
+    if (m_unlockerThread == nullptr)
         return;
-    m_unlockerThreadRunning = false;
-    m_unlockerThread->detach();
+    m_stopUnlockerThread = true;
+    m_unlockerThread->join();
 }
