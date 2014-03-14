@@ -45,6 +45,7 @@ class ParticleGroup
 public:
     ParticleGroup(
         const std::string & elementName,
+        const unsigned int id,
         const bool enableGpuParticles,
         const bool isDown,
         const uint32_t maxParticleCount = 10000,
@@ -54,7 +55,7 @@ public:
     virtual ~ParticleGroup();
 
     /** copy all attributes of the particle group (but not the particles) */
-    ParticleGroup(const ParticleGroup & lhs);
+    ParticleGroup(const ParticleGroup & lhs, unsigned int id);
 
     const std::string & elementName() const;
     uint32_t numParticles() const;
@@ -121,12 +122,14 @@ public:
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
+    const unsigned int m_id;
+
     ImmutableParticleProperties m_immutableProperties;
     MutableParticleProperties m_mutableProperties;
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
-    const std::string m_elementName;
+    std::string m_elementName;
 
     float m_particleSize;
     float m_temperature;

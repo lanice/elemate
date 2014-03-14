@@ -8,6 +8,7 @@ class EmitterGroup : public ParticleGroup
 public:
     EmitterGroup(
         const std::string & elementName,
+        const unsigned int id,
         const bool enableGpuParticles,
         const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),

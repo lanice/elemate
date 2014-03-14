@@ -27,9 +27,9 @@ namespace {
 
 using namespace physx;
 
-EmitterGroup::EmitterGroup(const std::string & elementName, const bool enableGpuParticles, const uint32_t maxParticleCount,
+EmitterGroup::EmitterGroup(const std::string & elementName, const unsigned int id, const bool enableGpuParticles, const uint32_t maxParticleCount,
     const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
-: ParticleGroup(elementName, enableGpuParticles, false, maxParticleCount, immutableProperties, mutableProperties)
+: ParticleGroup(elementName, id, enableGpuParticles, false, maxParticleCount, immutableProperties, mutableProperties)
 , m_emitting(false)
 , m_timeSinceLastEmit(0.0)
 {

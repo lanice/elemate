@@ -50,6 +50,13 @@ ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int
     m_vertices.resize(m_maxParticleCount);
 }
 
+void ParticleDrawable::setElement(const std::string & elementName)
+{
+    m_elementName = elementName;
+    m_elementIndex = elementIndex(elementName);
+    m_program->setUniform("elementIndex", m_elementIndex);
+}
+
 ParticleDrawable::~ParticleDrawable()
 {
     s_instances.remove(this);

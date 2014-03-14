@@ -7,6 +7,7 @@
 
 #include "rendering/particledrawable.h"
 #include "terrain/terraininteraction.h"
+#include "particles/particlescriptaccess.h"
 
 #define _ {
 #define __ }
@@ -17,23 +18,42 @@
 alter benutzmal schwerkraftundso;
 
 
-DownGroup::DownGroup(const std::string & elementName, const bool enableGpuParticles, const uint32_t maxParticleCount,
+DownGroup::DownGroup(const std::string & elementName, const unsigned int id, const bool enableGpuParticles, const uint32_t maxParticleCount,
     const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
-    : ParticleGroup(elementName, enableGpuParticles, true, maxParticleCount, immutableProperties, mutableProperties)
+    : ParticleGroup(elementName, id, enableGpuParticles, true, maxParticleCount, immutableProperties, mutableProperties)
     _ __
 
 
-DownGroup::DownGroup(const ParticleGroup& lhs)
-: ParticleGroup(lhs)
+DownGroup::DownGroup(const ParticleGroup& lhs, unsigned int id)
+: ParticleGroup(lhs, id)
 {
 }
 
-DownGroup::DownGroup(const DownGroup& lhs)
-: ParticleGroup(lhs)
+DownGroup::DownGroup(const DownGroup& lhs, unsigned int id)
+: ParticleGroup(lhs, id)
 {
 }
 
-void DownGroup::updatePhysics(double /*delta*/)_ __
+void DownGroup::updatePhysics(double /*delta*/)
+_
+if (m_elementName == "lava" && m_temperature < 690.f)
+    _
+    float temp = m_temperature;
+ParticleScriptAccess::instance().setUpParticleGroup(m_id, "bedrock");
+m_temperature = temp;
+m_elementName = "bedrock";
+m_particleDrawable->setElement(m_elementName);
+__
+
+if (m_elementName == "bedrock" && m_temperature > 710.f)
+    _
+    float temp = m_temperature;
+ParticleScriptAccess::instance().setUpParticleGroup(m_id, "lava");
+m_temperature = temp;
+m_elementName = "lava";
+m_particleDrawable->setElement(m_elementName);
+__
+__
 
 void DownGroup::updateVisuals()
 _

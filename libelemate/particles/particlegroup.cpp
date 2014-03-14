@@ -17,6 +17,7 @@ using namespace physx;
 
 ParticleGroup::ParticleGroup(
     const std::string & elementName,
+    const unsigned int id,
     const bool enableGpuParticles,
     const bool isDown,
     const PxU32 maxParticleCount,
@@ -24,6 +25,7 @@ ParticleGroup::ParticleGroup(
     const MutableParticleProperties & mutableProperties
     )
 : m_particleSystem(nullptr)
+, m_id(id)
 , m_scene(nullptr)
 , m_elementName(elementName)
 , m_temperature(0.0f)
@@ -68,8 +70,9 @@ ParticleGroup::~ParticleGroup()
     delete m_indices;
 }
 
-ParticleGroup::ParticleGroup(const ParticleGroup & lhs)
+ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 : m_particleSystem(nullptr)
+, m_id(id)
 , m_scene(nullptr)
 , m_elementName(lhs.m_elementName)
 , m_temperature(lhs.m_temperature)

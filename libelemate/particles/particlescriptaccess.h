@@ -24,6 +24,7 @@ public:
 
     /** Creates an instance of ParticleGroup and registers it, returning the access id */
     int createParticleGroup(bool emittingGroup, const std::string & elementType = "default", uint32_t maxParticleCount = 10000U);
+    void setUpParticleGroup(const int id, const std::string & elementType);
     int addParticleGroup(ParticleGroup * group);
     void removeParticleGroup(const int id);
     void clearParticleGroups();
@@ -39,6 +40,8 @@ public:
 
 
 protected:
+    friend class ParticleGroupTycoon;
+
     ParticleScriptAccess(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups);
     ~ParticleScriptAccess();
     static ParticleScriptAccess * s_instance;
@@ -81,8 +84,6 @@ protected:
     float viscosity(int id);
     float stiffness(int id);
     /************************************************/    
-
-    void setUpParticleGroup(const int id, const std::string & elementType);
 
     std::unordered_map<unsigned int, ParticleGroup *> & m_particleGroups;
     unsigned int m_id;

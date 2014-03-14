@@ -68,9 +68,9 @@ int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::str
 {
     ParticleGroup * particleGroup = nullptr;
     if (emittingGroup)
-        particleGroup = new EmitterGroup(elementType, m_gpuParticles, maxParticleCount);
+        particleGroup = new EmitterGroup(elementType, m_id, m_gpuParticles, maxParticleCount);
     else
-        particleGroup = new DownGroup(elementType, m_gpuParticles, maxParticleCount);
+        particleGroup = new DownGroup(elementType, m_id, m_gpuParticles, maxParticleCount);
 
     m_particleGroups.emplace(m_id, particleGroup);
 
@@ -109,6 +109,7 @@ void ParticleScriptAccess::setUpParticleGroup(const int id, const std::string & 
     m_lua->loadScript(script);
     m_lua->call("setImmutableProperties", id);
     m_lua->call("setMutableProperties", id);
+    m_lua->call("setTemperature", id);
     m_lua->removeScript(script);
 }
 
