@@ -50,6 +50,7 @@ ParticleGroup::ParticleGroup(
     m_particleSystem = PxGetPhysics().createParticleFluid(maxParticleCount, false);
     assert(m_particleSystem);
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
 
     m_scene->addActor(*m_particleSystem);
     
@@ -93,6 +94,7 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs)
     m_particleSystem = PxGetPhysics().createParticleFluid(m_maxParticleCount, false);
     assert(m_particleSystem);
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
 
     m_scene->addActor(*m_particleSystem);
 
@@ -338,13 +340,7 @@ void ParticleGroup::giveGiftTo(ParticleGroup & other)
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> velocities;
 
-    m_scene->removeActor(*m_particleSystem);
-
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, false);
-
-    m_scene->addActor(*m_particleSystem);
     assert(readData);
 
     PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
@@ -415,13 +411,7 @@ void ParticleGroup::particleIndicesInVolume(const glowutils::AxisAlignedBounding
 
 void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const
 {
-    m_scene->removeActor(*m_particleSystem);
-
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, false);
-
-    m_scene->addActor(*m_particleSystem);
     assert(readData);
 
     PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
