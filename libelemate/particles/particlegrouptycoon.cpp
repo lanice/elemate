@@ -121,7 +121,7 @@ void ParticleGroupTycoon::splitGroups()
 
         float longestLength = std::abs(bounds.urb()[splitAxis] - bounds.llf()[splitAxis]);
         
-        assert(std::isfinite(longestLength));
+        assert(isfinite(longestLength));
 
         if (longestLength > gridSize) {
             // extract the upper right back box

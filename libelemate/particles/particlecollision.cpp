@@ -98,7 +98,7 @@ void ParticleCollision::performCheck()
     if (particleGroups.size() < 2)
         return;
 
-    auto lastLeftHand = --particleGroups.cend();
+    auto lastLeftHand = particleGroups.cend();
     auto lastRightHand = particleGroups.cend();
 
     glowutils::AxisAlignedBoundingBox intersectVolume;
