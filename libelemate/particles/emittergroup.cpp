@@ -27,13 +27,7 @@ EmitterGroup::EmitterGroup(const std::string & elementName, const bool enableGpu
 
 void EmitterGroup::updateVisuals()
 {
-    m_scene->removeActor(*m_particleSystem);
-
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, false);
-    
-    m_scene->addActor(*m_particleSystem);
     assert(readData);
 
     m_particlesToDelete.clear();
