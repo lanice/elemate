@@ -360,8 +360,8 @@ void ParticleGroup::giveGiftTo(ParticleGroup & other)
     readData->unlock();
 
     other.createParticles(positions, &velocities);
-
-    // mix the temperatures :)
+    
+    other.setTemperature((m_temperature * m_numParticles + other.m_temperature * other.m_numParticles) / (m_numParticles + other.m_numParticles));
 }
 
 void ParticleGroup::particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const

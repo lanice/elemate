@@ -137,4 +137,5 @@ void EmitterGroup::updateVisuals()
         return;
     ParticleGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());
     group->createParticles(m_downPositions, &m_downVelocities);
+    group->setTemperature((m_numParticles * m_temperature + group->numParticles() * group->temperature()) / (m_numParticles + group->numParticles()));
 }
