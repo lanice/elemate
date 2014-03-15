@@ -5,13 +5,17 @@
 #include <PxPhysics.h>
 #include <PxScene.h>
 
+#include <glowutils/AxisAlignedBoundingBox.h>
+
+#include "particlegrouptycoon.h"
+#include "rendering/particledrawable.h"
 #include "terrain/terraininteraction.h"
 
 using namespace physx;
 
 EmitterGroup::EmitterGroup(const std::string & elementName, const bool enableGpuParticles, const uint32_t maxParticleCount,
     const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
-: ParticleGroup(elementName, enableGpuParticles, maxParticleCount, immutableProperties, mutableProperties)
+: ParticleGroup(elementName, enableGpuParticles, false, maxParticleCount, immutableProperties, mutableProperties)
 {
     if (m_elementName == "lava")
         m_temperature = 700.0f;
@@ -21,33 +25,58 @@ EmitterGroup::EmitterGroup(const std::string & elementName, const bool enableGpu
         m_temperature = 20.0f;
 }
 
-void EmitterGroup::updateVisualsAmpl(const PxParticleReadData & readData)
+void EmitterGroup::updateVisuals()
 {
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    assert(readData);
+
+    m_particlesToDelete.clear();
+    m_downPositions.clear();
+    m_downVelocities.clear();
+
+    m_particleDrawable->updateParticles(readData);
+        
+
     // Get drained Particles
-    PxStrideIterator<const PxParticleFlags> flagsIt(readData.flagsBuffer);
-    PxStrideIterator<const PxVec3> positionIt = readData.positionBuffer;
-
-    numCollided = 0;
-
+    PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);
+    PxStrideIterator<const PxVec3> positionIt = readData->positionBuffer;
+    PxStrideIterator<const PxVec3> pxVelocityIt = readData->velocityBuffer;
+    
     TerrainInteraction terrain("water");
 
-    m_isDown = false;
-    collidedParticleBounds = glowutils::AxisAlignedBoundingBox();
+    glowutils::AxisAlignedBoundingBox downBox;
 
-    for (unsigned i = 0; i < readData.validParticleRange; ++i, ++flagsIt, ++positionIt) {
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt, ++pxVelocityIt) {
         if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) {
             if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
             {
             }
-            else {
-                ++numCollided;
-                m_isDown = true;
-                collidedParticleBounds.extend(glm::vec3(positionIt->x, positionIt->y, positionIt->z));
+            else if (!(terrain.topmostElementAt(positionIt->x, positionIt->z) == m_elementName))
+            {
+                glm::vec3 pos = glm::vec3(positionIt->x, positionIt->y, positionIt->z);
+                m_downPositions.push_back(pos);
+                glm::vec3 vel = glm::vec3(pxVelocityIt->x, pxVelocityIt->y, pxVelocityIt->z);
+                m_downVelocities.push_back(vel);
+                m_particlesToDelete.push_back(i);
+
+                downBox.extend(pos);
             }
-            if (terrain.topmostElementAt(positionIt->x, positionIt->z) == "lava" && m_elementName == "lava")
+            else
             {
                 m_particlesToDelete.push_back(i);
             }
         }
     }
+    
+    assert(m_numParticles == readData->nbValidParticles);
+    readData->unlock();
+
+    if (m_particlesToDelete.empty())
+        return;
+    releaseParticles(m_particlesToDelete);
+
+    if (m_downPositions.empty())
+        return;
+    ParticleGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());
+    group->createParticles(m_downPositions, &m_downVelocities);
 }

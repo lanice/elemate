@@ -7,6 +7,7 @@
 
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
+#include "particlehelper.h"
 #include "lua/luawrapper.h"
 #include "terrain/terraininteraction.h"
 
@@ -87,17 +88,17 @@ void ParticleCollision::performCheck()
     const auto & particleGroups = m_psa.m_particleGroups;
 
     for (auto pair = particleGroups.cbegin(); pair != particleGroups.cend(); ++pair) {
-        if (!pair->second->isDown())
+        if (!pair->second->isDown)
             continue;
 
-        const vec3 & center = pair->second->collidedParticleBounds.center();
-        m_lua->call("temperatureCheck", pair->second->elementName(), center, pair->second->numCollided);
+        const vec3 & center = pair->second->boundingBox().center();
+        m_lua->call("temperatureCheck", pair->second->elementName(), center, pair->second->numParticles());
     }
 
     if (particleGroups.size() < 2)
         return;
 
-    auto lastLeftHand = --particleGroups.cend();
+    auto lastLeftHand = particleGroups.cend();
     auto lastRightHand = particleGroups.cend();
 
     glowutils::AxisAlignedBoundingBox intersectVolume;
@@ -235,27 +236,8 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
 
     // still particles in the current box, and box is too large -> recursive split
 
-    float splitValue = std::numeric_limits<float>::max();
-    int splitAxis = -1;
-
-    // split along the longest axis
-    if (dimensions.x > dimensions.y) {
-        if (dimensions.x > dimensions.z) { // x-split
-            splitValue = (volume.urb().x - volume.llf().x) * 0.5f + volume.llf().x;
-            splitAxis = 0;
-        }
-    }
-    else {
-        if (dimensions.y > dimensions.z) { // y-split
-            splitValue = (volume.urb().y - volume.llf().y) * 0.5f + volume.llf().y;
-            splitAxis = 1;
-        }
-    }
-    if (splitAxis == -1) {  // z-split
-        splitValue = (volume.urb().z - volume.llf().x) * 0.5f + volume.llf().z;
-        splitAxis = 2;
-    }
-    assert(splitValue < std::numeric_limits<float>::max());
+    float splitValue = 0;
+    int splitAxis = longestAxis(volume, splitValue);
 
     // split the left hand and right hand particle lists into two special groups
     // group 1 for the smaller coordinates, group 2 for the greater ones

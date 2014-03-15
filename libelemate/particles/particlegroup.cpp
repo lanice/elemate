@@ -32,6 +32,7 @@ namespace {
 ParticleGroup::ParticleGroup(
     const std::string & elementName,
     const bool enableGpuParticles,
+    const bool isDown,
     const PxU32 maxParticleCount,
     const ImmutableParticleProperties & immutableProperties,
     const MutableParticleProperties & mutableProperties
@@ -40,9 +41,10 @@ ParticleGroup::ParticleGroup(
 , m_scene(nullptr)
 , m_elementName(elementName)
 , m_temperature(0.0f)
-, m_isDown(false)
+, isDown(isDown)
 , m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
 , m_maxParticleCount(maxParticleCount)
+, m_numParticles(0)
 , m_indices(new PxU32[maxParticleCount]())
 , m_nextFreeIndex(0)
 , m_lastFreeIndex(maxParticleCount-1)
@@ -62,6 +64,7 @@ ParticleGroup::ParticleGroup(
     m_particleSystem = PxGetPhysics().createParticleFluid(maxParticleCount, false);
     assert(m_particleSystem);
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
 
     m_scene->addActor(*m_particleSystem);
     
@@ -76,11 +79,53 @@ ParticleGroup::~ParticleGroup()
     m_particleSystem->releaseParticles();
     m_scene->removeActor(*m_particleSystem);
     m_particleSystem = nullptr;
+    delete m_indices;
+}
+
+ParticleGroup::ParticleGroup(const ParticleGroup & lhs)
+: m_particleSystem(nullptr)
+, m_scene(nullptr)
+, m_elementName(lhs.m_elementName)
+, m_temperature(lhs.m_temperature)
+, isDown(true)
+, m_particleDrawable(std::make_shared<ParticleDrawable>(lhs.m_elementName, lhs.m_maxParticleCount))
+, m_maxParticleCount(lhs.m_maxParticleCount)
+, m_numParticles(0)
+, m_indices(new PxU32[lhs.m_maxParticleCount]())
+, m_nextFreeIndex(0)
+, m_lastFreeIndex(lhs.m_maxParticleCount - 1)
+, m_emitting(false)
+, m_timeSinceLastEmit(0.0)
+, m_gpuParticles(lhs.m_gpuParticles)
+{
+    for (PxU32 i = 0; i < m_maxParticleCount; ++i) m_indices[i] = i;
+
+    assert(PxGetPhysics().getNbScenes() == 1);
+    PxScene * pxScenePtrs[1];
+    PxGetPhysics().getScenes(pxScenePtrs, 1);
+    m_scene = pxScenePtrs[0];
+
+    PxSceneWriteLock scopedLock(*m_scene);
+
+    m_particleSystem = PxGetPhysics().createParticleFluid(m_maxParticleCount, false);
+    assert(m_particleSystem);
+    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
+    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
+
+    m_scene->addActor(*m_particleSystem);
+
+    setImmutableProperties(lhs.m_immutableProperties);
+    setMutableProperties(lhs.m_mutableProperties);
 }
 
 const std::string & ParticleGroup::elementName() const
 {
     return m_elementName;
+}
+
+uint32_t ParticleGroup::numParticles() const
+{
+    return m_numParticles;
 }
 
 const glowutils::AxisAlignedBoundingBox & ParticleGroup::boundingBox() const
@@ -105,11 +150,6 @@ void ParticleGroup::setParticleSize(float size)
     m_particleDrawable->setParticleSize(size);
 }
 
-bool ParticleGroup::isDown() const
-{
-    return m_isDown;
-}
-
 physx::PxParticleFluid * ParticleGroup::particleSystem()
 {
     return m_particleSystem;
@@ -126,8 +166,10 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
         velocities = new PxVec3[numParticles];
     }
 
+    glowutils::AxisAlignedBoundingBox & bbox = m_particleDrawable->m_bbox;
     for (PxU32 i = 0; i < numParticles; ++i)
     {
+        bbox.extend(pos.at(i));
         if (m_freeIndices.size() > 0)
         {
             indices[i] = m_freeIndices.back();
@@ -153,6 +195,7 @@ void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const st
         particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(velocities, 0);
 
     bool success = m_particleSystem->createParticles(particleCreationData);
+    m_numParticles += numParticles;
 
     if (!success)
         glow::warning("ParticleGroup::createParticles creation of %; physx particles failed", numParticles);
@@ -182,6 +225,7 @@ void ParticleGroup::releaseOldParticles(const uint32_t numParticles)
     PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
 
     m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+    m_numParticles -= numParticles;
 
     delete[] indexBuffer;
 }
@@ -201,6 +245,7 @@ void ParticleGroup::releaseParticles(const std::vector<uint32_t> & indices)
     PxStrideIterator<const PxU32> indexxBuffer(indexBuffer);
 
     m_particleSystem->releaseParticles(numParticles, indexxBuffer);
+    m_numParticles -= numParticles;
 
     delete[] indexBuffer;
 }
@@ -246,7 +291,7 @@ void ParticleGroup::stopEmit()
     m_timeSinceLastEmit = 0.0;
 }
 
-void ParticleGroup::updateEmitting(const double & delta)
+void ParticleGroup::updatePhysics(double delta)
 {
     if (!m_emitting) return;
 
@@ -277,22 +322,6 @@ glm::vec3 vec3(const physx::PxVec3 & vec3)
     return glm::vec3(vec3.x, vec3.y, vec3.z);
 }
 
-void ParticleGroup::updateVisuals()
-{
-    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
-    assert(readData);
-
-    m_particlesToDelete.clear();
-
-    m_particleDrawable->updateParticles(readData);
-
-    updateVisualsAmpl(*readData);
-
-    readData->unlock();
-
-    releaseParticles(m_particlesToDelete);
-}
-
 void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & properties)
 {
     setImmutableProperties(properties.maxMotionDistance, properties.gridSize, properties.restOffset, properties.contactOffset, properties.restParticleDistance);
@@ -307,6 +336,12 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
 {
     assert(m_particleSystem);
     assert(m_scene);
+
+    m_immutableProperties.maxMotionDistance = maxMotionDistance;
+    m_immutableProperties.gridSize = gridSize;
+    m_immutableProperties.restOffset = restOffset;
+    m_immutableProperties.contactOffset = contactOffset;
+    m_immutableProperties.restParticleDistance = restParticleDistance;
 
     PxSceneWriteLock scopedLock(* m_scene);
 
@@ -324,6 +359,15 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
 
 void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
 {
+    m_mutableProperties.restitution = restitution;
+    m_mutableProperties.dynamicFriction = dynamicFriction;
+    m_mutableProperties.staticFriction = staticFriction;
+    m_mutableProperties.damping = damping;
+    m_mutableProperties.externalAcceleration = physx::PxVec3();
+    m_mutableProperties.particleMass = particleMass;
+    m_mutableProperties.viscosity = viscosity;
+    m_mutableProperties.stiffness = stiffness;
+
     m_particleSystem->setRestitution(restitution);
     m_particleSystem->setDynamicFriction(dynamicFriction);
     m_particleSystem->setStaticFriction(staticFriction);
@@ -348,6 +392,42 @@ void ParticleGroup::setUseGpuParticles(const bool enable)
     m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
 
     m_scene->addActor(*m_particleSystem);
+}
+
+bool ParticleGroup::useGpuParticles() const
+{
+    return m_gpuParticles;
+}
+
+void ParticleGroup::giveGiftTo(ParticleGroup & other)
+{
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> velocities;
+
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    assert(readData);
+
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+    PxStrideIterator<const PxVec3> pxVelocityIt = readData->velocityBuffer;
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt, ++pxVelocityIt) {
+        assert(pxPositionIt.ptr());
+        if (!(*pxFlagIt & PxParticleFlag::eVALID))
+            continue;
+        const physx::PxVec3 & pxPosition = *pxPositionIt;
+        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        const physx::PxVec3 & pxVelocity = *pxVelocityIt;
+        const glm::vec3 vel = glm::vec3(pxVelocity.x, pxVelocity.y, pxVelocity.z);
+        positions.push_back(pos);
+        velocities.push_back(vel);
+    }
+
+    readData->unlock();
+
+    other.createParticles(positions, &velocities);
+
+    // mix the temperatures :)
 }
 
 void ParticleGroup::particlesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & particles, glowutils::AxisAlignedBoundingBox & subbox) const
@@ -415,6 +495,33 @@ void ParticleGroup::particlePositionsIndicesInVolume(const glowutils::AxisAligne
             continue;
         positions.push_back(pos);
         particleIndices.push_back(i);
+    }
+
+    readData->unlock();
+}
+
+void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const
+{
+    PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
+    assert(readData);
+
+    PxStrideIterator<const PxVec3> pxPositionIt = readData->positionBuffer;
+    PxStrideIterator<const PxParticleFlags> pxFlagIt = readData->flagsBuffer;
+    PxStrideIterator<const PxVec3> pxVelocityIt = readData->velocityBuffer;
+
+    for (unsigned i = 0; i < readData->validParticleRange; ++i, ++pxPositionIt, ++pxFlagIt, ++pxVelocityIt) {
+        assert(pxPositionIt.ptr());
+        if (!(*pxFlagIt & PxParticleFlag::eVALID))
+            continue;
+        const physx::PxVec3 & pxPosition = *pxPositionIt;
+        const glm::vec3 pos = glm::vec3(pxPosition.x, pxPosition.y, pxPosition.z);
+        if (!boundingBox.inside(pos))
+            continue;
+        const physx::PxVec3 & pxVelocity = *pxVelocityIt;
+        const glm::vec3 vel = glm::vec3(pxVelocity.x, pxVelocity.y, pxVelocity.z);
+        positions.push_back(pos);
+        particleIndices.push_back(i);
+        velocities.push_back(vel);
     }
 
     readData->unlock();

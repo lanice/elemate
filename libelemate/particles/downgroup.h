@@ -13,11 +13,10 @@ public:
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
 
+    DownGroup(const ParticleGroup& lhs);
+    DownGroup(const DownGroup& lhs);
+
 protected:
-    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) override;
-
-
-public:
-    DownGroup() = delete;
-    void operator=(DownGroup &) = delete;
+    virtual void updateVisuals() override;
+    void operator=(ParticleGroup&) = delete;
 };

@@ -17,6 +17,7 @@
 #include "ui/hand.h"
 #include "terrain/terraingenerator.h"
 #include "terrain/terrain.h"
+#include "particles/particlegrouptycoon.h"
 #include "particles/particlescriptaccess.h"
 #include "particles/particlegroup.h"
 #include "lua/luawrapper.h"
@@ -63,13 +64,13 @@ World::World(PhysicsWrapper & physicsWrapper)
 
     m_skyColor = glm::vec3(0.6f, 0.9f, 1.f);
 
-    ParticleScriptAccess::initialize(*this);
+    ParticleGroupTycoon::initialize();
 }
 
 World::~World()
 {
     TextureManager::release();
-
+    ParticleGroupTycoon::release();
     s_instance = nullptr;
 }
 
@@ -110,8 +111,7 @@ void World::updatePhysics()
     ParticleScriptAccess::instance().checkCollisions(delta);
     terrain->updatePhysics(delta);
 
-    for (auto observer : m_particleGroupObservers)
-        observer->updateEmitting(delta);
+    ParticleGroupTycoon::instance().updatePhysics(delta);
 
     // simulate physx
     m_physicsWrapper.step(delta);
@@ -121,18 +121,7 @@ void World::updateVisuals()
 {
     updateListener();
 
-    for (auto observer : m_particleGroupObservers)
-        observer->updateVisuals();
-}
-
-void World::registerObserver(ParticleGroup * observer)
-{
-    m_particleGroupObservers.insert(observer);
-}
-
-void World::unregisterObserver(ParticleGroup * observer)
-{
-    m_particleGroupObservers.erase(observer);
+    ParticleGroupTycoon::instance().updateVisuals();
 }
 
 void World::createFountainSound(const glm::vec3& position)

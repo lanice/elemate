@@ -3,8 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include <glowutils/AxisAlignedBoundingBox.h>
-
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
@@ -48,19 +46,22 @@ public:
     ParticleGroup(
         const std::string & elementName,
         const bool enableGpuParticles,
+        const bool isDown,
         const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
     virtual ~ParticleGroup();
 
+    /** copy all attributes of the particle group (but not the particles) */
+    ParticleGroup(const ParticleGroup & lhs);
+
     const std::string & elementName() const;
+    uint32_t numParticles() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
     void setParticleSize(float size);
-    bool isDown() const;
-    glowutils::AxisAlignedBoundingBox collidedParticleBounds;
-    unsigned int numCollided;
+    const bool isDown;
 
     float temperature() const;
 
@@ -88,14 +89,12 @@ public:
     /** Get the indexes of the particles that are inside the bounding box.
       * This doesn't clear the particleIndicies container, if it contained any elements before. */
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
-    /** Get the positions and indexes of the particles that are inside the bounding box.
-      * This doesn't clear the referenced containers, if they contained any elements before. */
-    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
+    void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
-    /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
-    void updateEmitting(const double & delta);
-    /** Subscribed to World to update particle visuals. (Observer pattern) */
-    virtual void updateVisuals();
+    /** Subscribed to World to receive time delta for timed emit of particles. */
+    void updatePhysics(double delta);
+    /** Subscribed to World to update particle visuals. */
+    virtual void updateVisuals() = 0;
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
@@ -119,13 +118,19 @@ public:
         );
 
     void setUseGpuParticles(const bool enable);
+    bool useGpuParticles() const;
 
+    void giveGiftTo(ParticleGroup & other);
 
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
-    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) = 0;
+    /** Get the positions and indexes of the particles that are inside the bounding box.
+    * This doesn't clear the referenced containers, if they contained any elements before. */
+    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
 
+    ImmutableParticleProperties m_immutableProperties;
+    MutableParticleProperties m_mutableProperties;
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
@@ -133,11 +138,11 @@ protected:
 
     float m_particleSize;
     float m_temperature;
-    bool m_isDown;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
-    uint32_t m_maxParticleCount;
+    const uint32_t m_maxParticleCount;
+    uint32_t m_numParticles;
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
@@ -153,8 +158,6 @@ protected:
 
     std::vector<uint32_t> m_particlesToDelete;
 
-
 public:
-    ParticleGroup(ParticleGroup&) = delete;
     void operator=(ParticleGroup&) = delete;
 };

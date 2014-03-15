@@ -164,6 +164,8 @@ void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
         }
     }
 
+    assert((m_bbox.llf().x != std::numeric_limits<float>::max()) == (numParticles > 0));
+
     m_currentNumParticles = nextPointIndex;
 
     m_needBufferUpdate = true;

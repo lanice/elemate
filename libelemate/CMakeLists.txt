@@ -23,6 +23,8 @@ set(SOURCES
     lua/luawrapperfunction.h
     particles/particlegroup.cpp
     particles/particlegroup.h
+    particles/particlegrouptycoon.h
+    particles/particlegrouptycoon.cpp
     particles/emittergroup.h
     particles/emittergroup.cpp
     particles/downgroup.h
@@ -31,6 +33,8 @@ set(SOURCES
     particles/particlescriptaccess.h
     particles/particlecollision.h
     particles/particlecollision.cpp
+    particles/particlehelper.h
+    particles/particlehelper.cpp
     rendering/debugstep.h
     rendering/debugstep.cpp
     rendering/drawable.h

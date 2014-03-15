@@ -36,6 +36,8 @@ public:
     /** draw all instances of this drawable */
     static void drawParticles(const CameraEx & camera);
 
+    friend class ParticleGroup;
+
 protected:
     static std::list<ParticleDrawable*> s_instances;
 
