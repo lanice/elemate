@@ -46,7 +46,7 @@ function collisionWaterLava(waterGroup, lavaGroup)
     pc_releaseRememberParticles(waterGroup, collisionLlf, collisionUrb)
     -- and later.. check that ratio between the two particles types, the release functions return a number of particles
     -- this would create steam particles for water (once we have steam..):
-    -- pc_createFromRemembered("steam")
+    pc_createFromRemembered("steam")
     
     terrain_setInteractElement("bedrock")
     -- assuming the collision bbox is not "too large"

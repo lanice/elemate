@@ -46,6 +46,9 @@ void main()
     case 4u:
         particleC = vec4(0.3, 0.3, 0.3, 1.0);
         break;
+    case 5u:
+        particleC = vec4(1.0, 0.0, 1.0, 1.0);
+        break;
     default:
         particleC = vec4(1,1,1,1);
     }

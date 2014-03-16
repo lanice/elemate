@@ -32,6 +32,8 @@ uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
         return 3;
     if (elementName == "bedrock")
         return 4;
+    if (elementName == "steam")
+        return 5;
     assert(false);
     return 0;   // mean unset
 }

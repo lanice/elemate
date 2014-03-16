@@ -18,7 +18,7 @@ function setMutableProperties( index )
     dynamicFriction = 0.05
     staticFriction = 0.1
     damping = 0.1
-    externalAcceleration = {0, 0, 0}
+    externalAcceleration = {0, 11, 0}
     particleMass = 0.1
     viscosity = 35.0
     stiffness = 8.134

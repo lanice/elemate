@@ -4,7 +4,7 @@
 dofile "scripts/glfw.lua"
 
 local particleGroupId = psa_numParticleGroups()
-local elementTable = {"water", "sand", "lava", "bedrock"}
+local elementTable = {"water", "sand", "lava", "bedrock", "steam"}
 local elements = {}
 
 local isEmitting = false

@@ -80,3 +80,7 @@ vec4 lavaColor(vec2 v_uv){
         )
         ), 0.0);
 }
+
+vec4 steamColor(vec2 v_uv){
+    return vec4(1.0,0.0,1.0,1.0);
+}
