@@ -17,6 +17,7 @@ layout(location = 0)out vec4 fragColor;
 float linearize(float depth);
 vec4 waterColor(vec2 v_uv);
 vec4 lavaColor(vec2 v_uv);
+vec4 steamColor(vec2 v_uv);
 
 void main()
 {    
@@ -47,7 +48,7 @@ void main()
         particleC = vec4(0.3, 0.3, 0.3, 1.0);
         break;
     case 5u:
-        particleC = vec4(1.0, 0.0, 1.0, 1.0);
+        particleC = steamColor(v_uv);
         break;
     default:
         particleC = vec4(1,1,1,1);
