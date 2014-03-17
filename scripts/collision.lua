@@ -49,6 +49,7 @@ function collisionWaterLava(waterGroup, lavaGroup)
     pc_createFromRemembered("steam")
     
     terrain_setInteractElement("bedrock")
+    achievement_setProperty("bedrock", 1)
     -- assuming the collision bbox is not "too large"
     -- calculate a height delta that looks fine =)
     heightDelta = psa_restOffset(waterGroup) * numLavaParticles * terrain_sampleInterval() * 0.2
@@ -67,16 +68,23 @@ function enlargeBox(llf, urb, delta)
     urb[3] = urb[3] + delta
 end
 
-function temperatureCheck(element, bboxCenter, numParticles)
-    local delta = 0.0
-    if element == "lava" then
-        delta = 0.03  * numParticles
-    elseif element == "water" then
-        delta = -0.1 * numParticles
-    else
-        return
+function temperatureCheck(id, element, bboxCenter, numParticles)
+    terrain_setInteractElement("temperature")
+    local terrainTemp = terrain_heightAt(bboxCenter[1], bboxCenter[3])
+    local elementTemp = psa_temperature(id)
+    
+    local numberTerrainParticles = 200
+    local tempTarget = ((numberTerrainParticles * terrainTemp) + (numParticles * elementTemp)) / (numberTerrainParticles + numParticles)
+    local minStep = 0.001
+    
+    local terrainDelta = tempTarget - terrainTemp
+    local elementDelta = tempTarget - elementTemp
+    
+    if math.abs(terrainDelta) > minStep then
+        terrain_changeHeight(bboxCenter[1], bboxCenter[3], terrainDelta/10.0)
     end
     
-    terrain_setInteractElement("temperature")
-    terrain_changeHeight(bboxCenter[1], bboxCenter[3], delta)
+    if math.abs(elementDelta) > minStep then
+        psa_setTemperature(id, psa_temperature(id)+ elementDelta/10.0)
+    end
 end

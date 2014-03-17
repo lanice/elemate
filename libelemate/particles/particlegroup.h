@@ -3,8 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include <glowutils/AxisAlignedBoundingBox.h>
-
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
 #include <foundation/PxVec3.h>
@@ -47,22 +45,27 @@ class ParticleGroup
 public:
     ParticleGroup(
         const std::string & elementName,
+        const unsigned int id,
         const bool enableGpuParticles,
+        const bool isDown,
         const uint32_t maxParticleCount = 10000,
         const ImmutableParticleProperties & immutableProperties = ImmutableParticleProperties(),
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
     virtual ~ParticleGroup();
 
+    /** copy all attributes of the particle group (but not the particles) */
+    ParticleGroup(const ParticleGroup & lhs, unsigned int id);
+
     const std::string & elementName() const;
+    uint32_t numParticles() const;
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
     float particleSize() const;
     void setParticleSize(float size);
-    bool isDown() const;
-    glowutils::AxisAlignedBoundingBox collidedParticleBounds;
-    unsigned int numCollided;
+    const bool isDown;
 
     float temperature() const;
+    void setTemperature(float temperature);
 
     physx::PxParticleFluid * particleSystem();
 
@@ -75,11 +78,7 @@ public:
       * @return the number of particles that was deleted. */
     uint32_t releaseParticles(const glowutils::AxisAlignedBoundingBox & boundingBox);
     /** Release particles that are inside the bounding box and append their positions to the releasedPositions vector. */
-    void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions);
-
-    /** Emit particles with ratio as particles per second. */
-    void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
-    void stopEmit();
+    void releaseParticlesGetPositions(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & releasedPositions, glowutils::AxisAlignedBoundingBox & releasedBounds);
 
     /** fill particles with all my particles which have there center in the specified bounding box.
       * @param subbox is the axis aligned bounding box of the particles that are inside the input bounding box.
@@ -88,14 +87,11 @@ public:
     /** Get the indexes of the particles that are inside the bounding box.
       * This doesn't clear the particleIndicies container, if it contained any elements before. */
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
-    /** Get the positions and indexes of the particles that are inside the bounding box.
-      * This doesn't clear the referenced containers, if they contained any elements before. */
-    void particlePositionsIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices) const;
+    void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
-    /** Subscribed to World to receive time delta for timed emit of particles. (Observer pattern) */
-    void updateEmitting(const double & delta);
-    /** Subscribed to World to update particle visuals. (Observer pattern) */
-    virtual void updateVisuals();
+    virtual void updatePhysics(double delta) = 0;
+    /** Subscribed to World to update particle visuals. */
+    virtual void updateVisuals() = 0;
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
@@ -119,42 +115,38 @@ public:
         );
 
     void setUseGpuParticles(const bool enable);
+    bool useGpuParticles() const;
 
+    void giveGiftTo(ParticleGroup & other);
 
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
-    virtual void updateVisualsAmpl(const physx::PxParticleReadData & readData) = 0;
+    const unsigned int m_id;
 
+    ImmutableParticleProperties m_immutableProperties;
+    MutableParticleProperties m_mutableProperties;
     physx::PxParticleFluid * m_particleSystem;
     physx::PxScene * m_scene;
 
-    const std::string m_elementName;
+    std::string m_elementName;
 
     float m_particleSize;
     float m_temperature;
-    bool m_isDown;
 
     std::shared_ptr<ParticleDrawable> m_particleDrawable;
 
-    uint32_t m_maxParticleCount;
+    const uint32_t m_maxParticleCount;
+    uint32_t m_numParticles;
     physx::PxU32 * m_indices;
     std::vector<physx::PxU32> m_freeIndices;
     uint32_t m_nextFreeIndex;
     uint32_t m_lastFreeIndex;
 
-    float m_emitRatio;
-    glm::vec3 m_emitPosition;
-    glm::vec3 m_emitDirection;
-    bool m_emitting;
-    double m_timeSinceLastEmit;
-
     bool m_gpuParticles;
 
     std::vector<uint32_t> m_particlesToDelete;
 
-
 public:
-    ParticleGroup(ParticleGroup&) = delete;
     void operator=(ParticleGroup&) = delete;
 };

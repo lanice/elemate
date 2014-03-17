@@ -2,13 +2,16 @@
 
 #include <algorithm>
 
-#include <glowutils/AxisAlignedBoundingBox.h>
 #include <glow/logging.h>
 
+#include "particlegrouptycoon.h"
 #include "particlescriptaccess.h"
 #include "particlegroup.h"
+#include "particlehelper.h"
 #include "lua/luawrapper.h"
 #include "terrain/terraininteraction.h"
+
+#include "ui/achievementmanager.h"
 
 std::list<ParticleCollision::IntersectionBox> ParticleCollision::debug_intersectionBoxes;
 
@@ -31,13 +34,13 @@ void extractPointsInside(const std::vector<vec3> & points, const AxisAlignedBoun
 
 }
 
-ParticleCollision::ParticleCollision(ParticleScriptAccess & psa)
-: m_psa(psa)
-, m_lua(new LuaWrapper())
+ParticleCollision::ParticleCollision()
+: m_lua(new LuaWrapper())
 , m_terrainInteraction(new TerrainInteraction("bedrock"))
 {
+    AchievementManager::instance()->registerLuaFunctions(m_lua);
     m_lua->loadScript("scripts/collision.lua");
-    m_psa.registerLuaFunctions(*m_lua);
+    ParticleScriptAccess::instance().registerLuaFunctions(*m_lua);
     m_terrainInteraction->registerLuaFunctions(*m_lua);
 
     registerLuaFunctions();
@@ -67,41 +70,28 @@ void ParticleCollision::registerLuaFunctions()
     m_lua->Register("pc_createFromRemembered", func4);
 }
 
-void ParticleCollision::particleGroupDeleted(const std::string & elementName, int id)
-{
-    auto it = m_particleGroupIds.find(elementName);
-    if (it != m_particleGroupIds.end() && it->second == id)
-        m_particleGroupIds.erase(elementName);
-}
-
-void ParticleCollision::clearParticleGroups()
-{
-    m_particleGroupIds.clear();
-}
-
 void ParticleCollision::performCheck()
 {
-    const auto & particleGroups = m_psa.m_particleGroups;
+    const auto & particleGroups = ParticleGroupTycoon::instance().particleGroupsById();
 
     for (auto pair = particleGroups.cbegin(); pair != particleGroups.cend(); ++pair) {
-        if (!pair->second->isDown())
+        if (!pair->second->isDown)
             continue;
 
-        const vec3 & center = pair->second->collidedParticleBounds.center();
-        m_lua->call("temperatureCheck", pair->second->elementName(), center, pair->second->numCollided);
+        const vec3 & center = pair->second->boundingBox().center();
+        m_lua->call("temperatureCheck", pair->first, pair->second->elementName(), center, pair->second->numParticles());
     }
 
     if (particleGroups.size() < 2)
         return;
 
-    auto lastLeftHand = --particleGroups.cend();
+    auto lastLeftHand = particleGroups.cend();
     auto lastRightHand = particleGroups.cend();
 
     glowutils::AxisAlignedBoundingBox intersectVolume;
 
     debug_intersectionBoxes.clear();
 
-    // this .. tends to be ...slooooow
     for (auto leftHand = particleGroups.cbegin(); leftHand != lastLeftHand; ++leftHand) {
         auto rightHand = leftHand;
         ++rightHand;
@@ -130,10 +120,10 @@ void ParticleCollision::checkCollidedParticles(int leftGroup, int rightGroup, co
     AxisAlignedBoundingBox commonSubbox;
 
     // get some more information out of the bounding boxes: this requires iteration over the particles groups
-    m_psa.particleGroup(leftGroup)->particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
+    ParticleGroupTycoon::instance().particleGroupById(leftGroup)->particlesInVolume(intersectVolume, leftParticleSubset, leftSubbox);
     if (leftParticleSubset.empty())
         return;   // particles of one box flow into the other, where the other doesn't have particles
-    m_psa.particleGroup(rightGroup)->particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
+    ParticleGroupTycoon::instance().particleGroupById(rightGroup)->particlesInVolume(intersectVolume, rightParticleSubset, rightSubbox);
     if (rightParticleSubset.empty())
         return;
 
@@ -223,7 +213,6 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
     float maxLength = std::max(dimensions.x, std::max(dimensions.y, dimensions.z));
 
     if (maxLength < 0.3f || depth <= 0) {   // magic number: minimal size of the box for tree based check
-
         // call the script to handle this particle collision
         m_lua->call("particleCollision", volume.llf(), volume.urb());
 
@@ -234,27 +223,8 @@ void ParticleCollision::treeCheck(const AxisAlignedBoundingBox & volume, const s
 
     // still particles in the current box, and box is too large -> recursive split
 
-    float splitValue = std::numeric_limits<float>::max();
-    int splitAxis = -1;
-
-    // split along the longest axis
-    if (dimensions.x > dimensions.y) {
-        if (dimensions.x > dimensions.z) { // x-split
-            splitValue = (volume.urb().x - volume.llf().x) * 0.5f + volume.llf().x;
-            splitAxis = 0;
-        }
-    }
-    else {
-        if (dimensions.y > dimensions.z) { // y-split
-            splitValue = (volume.urb().y - volume.llf().y) * 0.5f + volume.llf().y;
-            splitAxis = 1;
-        }
-    }
-    if (splitAxis == -1) {  // z-split
-        splitValue = (volume.urb().z - volume.llf().x) * 0.5f + volume.llf().z;
-        splitAxis = 2;
-    }
-    assert(splitValue < std::numeric_limits<float>::max());
+    float splitValue = 0;
+    int splitAxis = longestAxis(volume, splitValue);
 
     // split the left hand and right hand particle lists into two special groups
     // group 1 for the smaller coordinates, group 2 for the greater ones
@@ -314,6 +284,7 @@ unsigned int ParticleCollision::forgetOldParticles()
     assert(m_remeberedParticles.size() < std::numeric_limits<unsigned int>::max());
     unsigned int num = static_cast<unsigned int>(m_remeberedParticles.size());
     m_remeberedParticles.clear();
+    m_rememberedBounds = AxisAlignedBoundingBox();
     return num;
 }
 
@@ -321,7 +292,7 @@ unsigned int ParticleCollision::releaseRemeberParticles(int groupId, const AxisA
 {
     unsigned int nbParticlesBefore = static_cast<unsigned int>(m_remeberedParticles.size());
     // this should append the deleted positions to the list
-    m_psa.particleGroup(groupId)->releaseParticlesGetPositions(volume, m_remeberedParticles);
+    ParticleGroupTycoon::instance().particleGroupById(groupId)->releaseParticlesGetPositions(volume, m_remeberedParticles, m_rememberedBounds);
     assert(m_remeberedParticles.size() >= nbParticlesBefore);
 
     return static_cast<unsigned int>(m_remeberedParticles.size()) - nbParticlesBefore;
@@ -329,27 +300,12 @@ unsigned int ParticleCollision::releaseRemeberParticles(int groupId, const AxisA
 
 unsigned int ParticleCollision::releaseForgetParticles(int groupId, const AxisAlignedBoundingBox & volume)
 {
-    return m_psa.particleGroup(groupId)->releaseParticles(volume);
+    return ParticleGroupTycoon::instance().particleGroupById(groupId)->releaseParticles(volume);
 }
 
 unsigned int ParticleCollision::createFromRemembered(const std::string & elementName)
 {
-    particleGroup(elementName)->createParticles(m_remeberedParticles);
+    ParticleGroup * group = ParticleGroupTycoon::instance().getNearestGroup(elementName, m_rememberedBounds.center());
+    group->createParticles(m_remeberedParticles);
     return static_cast<unsigned int>(m_remeberedParticles.size());
-}
-
-int ParticleCollision::particleGroupId(const std::string & elementName)
-{
-    const auto it = m_particleGroupIds.find(elementName);
-    if (it != m_particleGroupIds.end())
-        return it->second;
-
-    int newId = m_psa.createParticleGroup(false, elementName);
-    m_particleGroupIds.emplace(elementName, newId);
-    return newId;
-}
-
-ParticleGroup * ParticleCollision::particleGroup(const std::string & elementName)
-{
-    return m_psa.particleGroup(particleGroupId(elementName));
 }

@@ -271,7 +271,16 @@ float Terrain::heightAt(float x, float z, TerrainLevel level) const
 
     tileID.level = level;
 
-    return m_physicalTiles.at(tileID)->interpolatedValueAt(normX, normZ);
+    auto it = m_physicalTiles.find(tileID);
+    if (it != m_physicalTiles.end()) {
+        return it->second->interpolatedValueAt(normX, normZ);
+    }
+    auto attrIt = m_attributeTiles.find(tileID);
+    if (attrIt != m_attributeTiles.end()) {
+        return attrIt->second->interpolatedValueAt(normX, normZ);
+    }
+    assert(false);
+    return 0.0f;
 }
 
 bool Terrain::worldToPhysicalTileRowColumn(float x, float z, TerrainLevel level, std::shared_ptr<PhysicalTile> & physicalTile, unsigned int & row, unsigned int & column, float & row_fract, float & column_fract) const
