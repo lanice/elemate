@@ -108,7 +108,6 @@ void World::updatePhysics()
     if (delta == 0.0f)
         return;
 
-    ParticleScriptAccess::instance().checkCollisions(delta);
     terrain->updatePhysics(delta);
 
     ParticleGroupTycoon::instance().updatePhysics(delta);

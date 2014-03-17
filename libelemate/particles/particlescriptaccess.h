@@ -8,7 +8,6 @@
 
 namespace physx { class PxScene; }
 class ParticleGroup;
-class ParticleCollision;
 class LuaWrapper;
 
 
@@ -23,10 +22,9 @@ public:
     static void release();
     static ParticleScriptAccess& instance();
 
-    ParticleGroup * particleGroup(const int id);
-
     /** Creates an instance of ParticleGroup and registers it, returning the access id */
     int createParticleGroup(bool emittingGroup, const std::string & elementType = "default", uint32_t maxParticleCount = 10000U);
+    void setUpParticleGroup(const int id, const std::string & elementType);
     int addParticleGroup(ParticleGroup * group);
     void removeParticleGroup(const int id);
     void clearParticleGroups();
@@ -40,13 +38,15 @@ public:
 
     void registerLuaFunctions(LuaWrapper & lua);
 
-    void checkCollisions(double deltaTime);
-
 
 protected:
+    friend class ParticleGroupTycoon;
+
     ParticleScriptAccess(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups);
     ~ParticleScriptAccess();
     static ParticleScriptAccess * s_instance;
+
+    ParticleGroup * particleGroup(const int id);
 
     /** Functions callable from within lua scripts. */
     void createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ);
@@ -85,13 +85,8 @@ protected:
     float stiffness(int id);
     /************************************************/    
 
-    void setUpParticleGroup(const int id, const std::string & elementType);
-
     std::unordered_map<unsigned int, ParticleGroup *> & m_particleGroups;
     unsigned int m_id;
-
-    std::shared_ptr<ParticleCollision> m_collisions;
-    double m_collisionCheckDelta;
 
     bool m_gpuParticles;
     uint8_t m_gpuParticlesPauseFlags;
@@ -99,8 +94,6 @@ protected:
     LuaWrapper * m_lua;
 
     physx::PxScene * m_pxScene;
-
-    friend class ParticleCollision;
 
 public:
     void operator=(ParticleScriptAccess&) = delete;

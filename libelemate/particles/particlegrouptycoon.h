@@ -2,11 +2,13 @@
 
 #include <unordered_map>
 #include <cstdint>
+#include <memory>
 
 #include <glm/glm.hpp>
 
 class ParticleGroup;
 class DownGroup;
+class ParticleCollision;
 
 class ParticleGroupTycoon
 {
@@ -20,10 +22,18 @@ public:
     void updateVisuals();
 
     ParticleGroup * getNearestGroup(const std::string & elementName, const glm::vec3 & position);
+    ParticleGroup * particleGroupById(unsigned int id);
+    const ParticleGroup * particleGroupById(unsigned int id) const;
+
+    const std::unordered_map<unsigned int, ParticleGroup *> & particleGroupsById() const;
 
 private:
     ParticleGroupTycoon();
     ~ParticleGroupTycoon();
+
+    void checkCollisions(double deltaTime);
+    std::shared_ptr<ParticleCollision> m_collisions;
+    double m_collisionCheckDelta;
 
     void splitGroups();
     void mergeGroups();

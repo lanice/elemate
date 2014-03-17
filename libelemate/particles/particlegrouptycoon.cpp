@@ -6,9 +6,10 @@
 #include <glow/logging.h>
 #include <glowutils/AxisAlignedBoundingBox.h>
 
+#include "particlescriptaccess.h"
+#include "particlecollision.h"
 #include "particlegroup.h"
 #include "downgroup.h"
-#include "particlescriptaccess.h"
 #include "particlehelper.h"
 
 ParticleGroupTycoon * ParticleGroupTycoon::s_instance = nullptr;
@@ -36,8 +37,11 @@ ParticleGroupTycoon & ParticleGroupTycoon::instance()
 
 ParticleGroupTycoon::ParticleGroupTycoon()
 : m_timeSinceSplit(0.0)
+, m_collisions(nullptr)
+, m_collisionCheckDelta(0.0)
 {
     ParticleScriptAccess::initialize(m_particleGroups);
+    m_collisions = std::make_shared<ParticleCollision>();
 }
 
 ParticleGroupTycoon::~ParticleGroupTycoon()
@@ -45,11 +49,14 @@ ParticleGroupTycoon::~ParticleGroupTycoon()
     for (auto pair : m_particleGroups)
         delete pair.second;
 
+    ParticleScriptAccess::release();
     m_particleGroups.clear();
 }
 
 void ParticleGroupTycoon::updatePhysics(double delta)
 {
+    checkCollisions(delta);
+
     std::vector<unsigned int> groupsToDelete;
     groupsToDelete.reserve(10);
     for (auto pair : m_particleGroups) {
@@ -78,6 +85,11 @@ void ParticleGroupTycoon::updateVisuals()
         pair.second->updateVisuals();
 }
 
+const std::unordered_map<unsigned int, ParticleGroup *> & ParticleGroupTycoon::particleGroupsById() const
+{
+    return m_particleGroups;
+}
+
 ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & elementName, const glm::vec3 & position)
 {
     ParticleGroup * group = nullptr;
@@ -100,6 +112,29 @@ ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & element
     int id = ParticleScriptAccess::instance().createParticleGroup(false, elementName);
 
     return m_particleGroups.at(id);
+}
+
+ParticleGroup * ParticleGroupTycoon::particleGroupById(unsigned int id)
+{
+    auto it = m_particleGroups.find(id);
+    assert(it != m_particleGroups.end());
+    return it->second;
+}
+
+const ParticleGroup * ParticleGroupTycoon::particleGroupById(unsigned int id) const
+{
+    auto it = m_particleGroups.find(id);
+    assert(it != m_particleGroups.end());
+    return it->second;
+}
+
+void ParticleGroupTycoon::checkCollisions(double deltaTime)
+{
+    m_collisionCheckDelta += deltaTime;
+    if (m_collisionCheckDelta > 0.5) {
+        m_collisions->performCheck();
+        m_collisionCheckDelta = 0.0;
+    }
 }
 
 void ParticleGroupTycoon::splitGroups()
@@ -138,7 +173,8 @@ void ParticleGroupTycoon::splitGroups()
 
             pair.second->releaseParticles(extractIndices);
 
-            DownGroup * newGroup = new DownGroup(*pair.second);
+            const unsigned int id = ParticleScriptAccess::instance().m_id + newGroups.size();
+            DownGroup * newGroup = new DownGroup(*pair.second, id);
             newGroup->createParticles(extractPositions, &extractVelocities);
             newGroups.push_back(newGroup);
         }

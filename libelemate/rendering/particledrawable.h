@@ -23,6 +23,7 @@ class ParticleDrawable : public Drawable
 public:
     /** creates a new drawable with fixed maximum number of particles */
     ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount);
+    void setElement(const std::string & elementName);
 
     virtual ~ParticleDrawable();
 
@@ -43,8 +44,8 @@ protected:
 
     virtual void drawImplementation(const CameraEx & camera) override;
 
-    const std::string m_elementName;
-    const uint8_t m_elementIndex;
+    std::string m_elementName;
+    uint8_t m_elementIndex;
 
     static uint8_t elementIndex(const std::string & elementName);
 

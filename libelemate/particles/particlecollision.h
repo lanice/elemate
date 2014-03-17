@@ -8,10 +8,8 @@
 
 #include <glm/glm.hpp>
 
-namespace glowutils {
-    class AxisAlignedBoundingBox;
-}
-class ParticleScriptAccess;
+#include <glowutils/AxisAlignedBoundingBox.h>
+
 class ParticleGroup;
 class LuaWrapper;
 class TerrainInteraction;
@@ -19,10 +17,10 @@ class TerrainInteraction;
 class ParticleCollision
 {
 public:
-    ParticleCollision(ParticleScriptAccess & psa);
+    ParticleCollision();
     ~ParticleCollision();
 
-    /** check collision between the psa's particle group bounding boxes and call the scripts for further steps */
+    /** check collision between the particle group bounding boxes and call the scripts for further steps */
     void performCheck();
 
     /** @return whether the input axis aligned bounding boxes intersect
@@ -33,7 +31,6 @@ public:
     void clearParticleGroups();
 
 protected:
-    ParticleScriptAccess & m_psa;
     LuaWrapper * m_lua;
     TerrainInteraction * m_terrainInteraction;
 
@@ -53,6 +50,7 @@ protected:
     void treeCheck(const glowutils::AxisAlignedBoundingBox & volume, const std::vector<glm::vec3> & leftHandPositions, const std::vector<glm::vec3> & rightHandPositions, int depth);
     /** this list contains particles released by the script, but which i will remember to create new particles at the same positions, if requested. */
     std::vector<glm::vec3> m_remeberedParticles;
+    glowutils::AxisAlignedBoundingBox m_rememberedBounds;
     unsigned int forgetOldParticles();
     unsigned int releaseRemeberParticles(int groupId, const glowutils::AxisAlignedBoundingBox & volume);
     unsigned int releaseForgetParticles(int groupId, const glowutils::AxisAlignedBoundingBox & volume);
@@ -65,11 +63,6 @@ protected:
         std::vector<glm::vec3> & leftHandExtracted, std::vector<glm::vec3> & rightHandExtracted,
         glowutils::AxisAlignedBoundingBox & commonBBox);
 
-    /** for now: maintain one particle group (id) for each element that results of an element reaction */
-    std::unordered_map<std::string, int> m_particleGroupIds;
-    /** get the group id for the element and create the group if needed */
-    int particleGroupId(const std::string & elementName);
-    ParticleGroup * particleGroup(const std::string & elementName);
     /** for graphical debugging: the current list of intersection volumes **/
     static std::list<IntersectionBox> debug_intersectionBoxes;
     friend class DebugStep;

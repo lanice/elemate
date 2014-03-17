@@ -41,7 +41,6 @@ m_lua(new LuaWrapper())
 Manipulator::~Manipulator()
 {
     delete m_lua;
-    ParticleScriptAccess::release();
 }
 void Manipulator::handleMouseButtonEvent(int button, int action, int /*mods*/)
 {
