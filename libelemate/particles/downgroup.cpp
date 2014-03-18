@@ -36,23 +36,35 @@ DownGroup::DownGroup(const DownGroup& lhs, unsigned int id)
 
 void DownGroup::updatePhysics(double /*delta*/)
 _
-if (m_elementName == "lava" && m_temperature < 690.f)
+    if (m_elementName == "lava" && m_temperature < 690.f)
     _
-    float temp = m_temperature;
-ParticleScriptAccess::instance().setUpParticleGroup(m_id, "bedrock");
-m_temperature = temp;
-m_elementName = "bedrock";
-m_particleDrawable->setElement(m_elementName);
-__
+        float temp = m_temperature;
+        ParticleScriptAccess::instance().setUpParticleGroup(m_id, "bedrock");
+        m_temperature = temp;
+        m_elementName = "bedrock";
+        m_particleDrawable->setElement(m_elementName);
+        return;
+    __
+    
+    if (m_elementName == "bedrock" && m_temperature > 710.f)
+    _
+        float temp = m_temperature;
+        ParticleScriptAccess::instance().setUpParticleGroup(m_id, "lava");
+        m_temperature = temp;
+        m_elementName = "lava";
+        m_particleDrawable->setElement(m_elementName);
+        return;
+    __
 
-if (m_elementName == "bedrock" && m_temperature > 710.f)
+    if (m_elementName == "water" && m_temperature > 100.f)
     _
-    float temp = m_temperature;
-ParticleScriptAccess::instance().setUpParticleGroup(m_id, "lava");
-m_temperature = temp;
-m_elementName = "lava";
-m_particleDrawable->setElement(m_elementName);
-__
+        float temp = m_temperature;
+        ParticleScriptAccess::instance().setUpParticleGroup(m_id, "steam");
+        m_temperature = temp;
+        m_elementName = "steam";
+        m_particleDrawable->setElement(m_elementName);
+        return;
+    __
 __
 
 void DownGroup::updateVisuals()
