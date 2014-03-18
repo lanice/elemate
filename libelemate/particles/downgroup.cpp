@@ -8,6 +8,7 @@
 #include "rendering/particledrawable.h"
 #include "terrain/terraininteraction.h"
 #include "particles/particlescriptaccess.h"
+#include "ui/achievementmanager.h"
 
 #define _ {
 #define __ }
@@ -63,6 +64,8 @@ _
         m_temperature = temp;
         m_elementName = "steam";
         m_particleDrawable->setElement(m_elementName);
+
+        AchievementManager::instance()->setProperty("steam", AchievementManager::instance()->getProperty("steam") + 1);
         return;
     __
 __

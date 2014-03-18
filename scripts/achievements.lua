@@ -11,5 +11,9 @@ achievement_setProperty("maxWaterFallingHeight", 0)
 achievement_condition("Make it rain", "maxWaterFallingHeight", ">=", 15)
 
 achievement_add("Rock solid!", "Lava + Water = Rock","default")
-achievement_setProperty("bedrock",0)
-achievement_condition("Rock solid!", "bedrock", "==",1)
+achievement_setProperty("bedrock", 0)
+achievement_condition("Rock solid!", "bedrock", "==", 1)
+
+achievement_add("STEAM PUNK!", "(So retro...)", "default")
+achievement_setProperty("steam", 0)
+achievement_condition("STEAM PUNK!", "steam", ">=", 3)
