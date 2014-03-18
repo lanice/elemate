@@ -1,13 +1,7 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
-#include <memory>
-
-#include <glm/glm.hpp>
-
-#include "utils/pxcompilerfix.h"
-#include "foundation/PxErrorCallback.h"
+#include "physicserrorcallback.h"
 
 namespace physx {
     class PxPhysics;
@@ -15,26 +9,15 @@ namespace physx {
     class PxScene;
     class PxSceneDesc;
     class PxDefaultCpuDispatcher;
-    class PxCooking;
-    class PxProfileZoneManager;
     class PxActor;
     class PxRigidStatic;
     class PxCudaContextManager;
 }
 
-
-class ElematePxErrorCallback : public physx::PxErrorCallback
-{
-public:
-    virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override;
-};
-
-
 /** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
  * At the moment, the properly initialized physics and scene object are accessible via functions.
  * Using this class is simple: Istantiate it and you are able to use the already initialized physics and scene. To make a step in scene-simulation, call step() with the passed time.
  * We still have to decide if we want to wrap the standard functions of PhysX like addActor and athe creation of rigid actors themselves into a separate function.
- * The PxProfilZoneManager is currently disabled, but required code in Constructor, Destructor and Header file is present.
  */
 class PhysicsWrapper{
 public:
@@ -80,18 +63,15 @@ protected:
     void customizeSceneDescription(physx::PxSceneDesc&);
 
     /** Prints an error message and end the application after pressing enter. */
-    void fatalError(std::string error_message);
+    void fatalError(const std::string & error_message);
 
     bool checkPhysxGpuAvailable();
     
-
-    ElematePxErrorCallback                          m_errorCallback;
+    PhysicsErrorCallback                            m_errorCallback;
     physx::PxFoundation*                            m_foundation;
-    //physx::PxProfileZoneManager*                  m_profile_zone_manager; ///< currently disabled.
     physx::PxDefaultCpuDispatcher*                  m_cpu_dispatcher;
     physx::PxPhysics*                               m_physics;
     physx::PxScene*                                 m_scene;
-    //physx::PxCooking*                               m_cooking;
     const bool                                      m_physxGpuAvailable;
     physx::PxCudaContextManager*                    m_cudaContextManager;
 

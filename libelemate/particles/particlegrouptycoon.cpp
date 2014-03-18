@@ -173,7 +173,7 @@ void ParticleGroupTycoon::splitGroups()
 
             pair.second->releaseParticles(extractIndices);
 
-            const unsigned int id = ParticleScriptAccess::instance().m_id + newGroups.size();
+            const unsigned int id = ParticleScriptAccess::instance().m_id + static_cast<int>(newGroups.size());
             DownGroup * newGroup = new DownGroup(*pair.second, id);
             newGroup->createParticles(extractPositions, &extractVelocities);
             newGroups.push_back(newGroup);

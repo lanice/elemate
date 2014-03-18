@@ -390,7 +390,7 @@ void ParticleScriptAccess::setParticleMass(int id, float particleMass)
 void ParticleScriptAccess::setViscosity(int id, float viscosity)
 { m_particleGroups.at(id)->particleSystem()->setViscosity(viscosity); }
 void ParticleScriptAccess::setExternalAcceleration(int id, const glm::vec3 &externalAcceleration)
-{ m_particleGroups.at(id)->particleSystem()->setExternalAcceleration(*reinterpret_cast<const physx::PxVec3*>(&externalAcceleration));}
+{ m_particleGroups.at(id)->particleSystem()->setExternalAcceleration(reinterpret_cast<const physx::PxVec3&>(externalAcceleration));}
 void ParticleScriptAccess::setStiffness(int id, float stiffness)
 { m_particleGroups.at(id)->particleSystem()->setStiffness(stiffness);}
 float ParticleScriptAccess::maxMotionDistance(int id)
