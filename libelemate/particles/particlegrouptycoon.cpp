@@ -90,9 +90,9 @@ const std::unordered_map<unsigned int, ParticleGroup *> & ParticleGroupTycoon::p
     return m_particleGroups;
 }
 
-ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & elementName, const glm::vec3 & position)
+DownGroup * ParticleGroupTycoon::getNearestGroup(const std::string & elementName, const glm::vec3 & position)
 {
-    ParticleGroup * group = nullptr;
+    DownGroup * group = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
 
     for (auto & pair : m_particleGroups)
@@ -103,7 +103,7 @@ ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & element
         if (currentDistance >= nearestDistance)
             continue;
         nearestDistance = currentDistance;
-        group = pair.second;
+        group = static_cast<DownGroup*>(pair.second);
     }
 
     if (group != nullptr)
@@ -111,7 +111,7 @@ ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & element
 
     int id = ParticleScriptAccess::instance().createParticleGroup(false, elementName);
 
-    return m_particleGroups.at(id);
+    return static_cast<DownGroup*>(m_particleGroups.at(id));
 }
 
 ParticleGroup * ParticleGroupTycoon::particleGroupById(unsigned int id)

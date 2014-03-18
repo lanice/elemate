@@ -38,8 +38,9 @@ uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
     return 0;   // mean unset
 }
 
-ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount)
+ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount, bool isDown)
 : Drawable()
+, isDown(isDown)
 , m_elementName(elementName)
 , m_elementIndex(elementIndex(elementName))
 , m_maxParticleCount(maxParticleCount)

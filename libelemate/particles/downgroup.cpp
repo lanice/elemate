@@ -5,9 +5,12 @@
 #include <PxPhysics.h>
 #include <PxScene.h>
 
+#include <glowutils/AxisAlignedBoundingBox.h>
+
 #include "rendering/particledrawable.h"
 #include "terrain/terraininteraction.h"
 #include "particles/particlescriptaccess.h"
+#include "particles/particlegrouptycoon.h"
 #include "ui/achievementmanager.h"
 
 #define _ {
@@ -83,12 +86,22 @@ _
 
 
     TerrainInteraction terrain("water");
+    std::vector<unsigned int> lavaToSteam;
+    glowutils::AxisAlignedBoundingBox steamBbox;
+    std::vector<glm::vec3> steamPositions;
 
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) _
         if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) _
             if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
-            _ __
+                _
+                if (m_elementName == "lava")
+                _
+                    lavaToSteam.push_back(i);
+                    steamBbox.extend(reinterpret_cast<const glm::vec3&>(*positionIt));
+                    steamPositions.push_back(reinterpret_cast<const glm::vec3&>(*positionIt));
+                __
+            __
             else
             _ __
             if (terrain.topmostElementAt(positionIt->x, positionIt->z) ==  m_elementName)
@@ -99,8 +112,13 @@ _
     assert(m_numParticles == readData->nbValidParticles);
     readData->unlock();
 
-    if (indices.empty())
-        return;
+    if (!indices.empty())
+        releaseParticles(indices);
 
-    releaseParticles(indices);
+    if (!lavaToSteam.empty())
+    _
+        DownGroup * steamGroup = ParticleGroupTycoon::instance().getNearestGroup("steam", steamBbox.center());
+        steamGroup->createParticles(steamPositions);
+        releaseParticles(lavaToSteam);
+    __
 __
