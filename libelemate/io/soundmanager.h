@@ -1,14 +1,21 @@
 #pragma once
 
 #include <map>
-#include <memory>
+
+#include <fmod.h>
+
 #include <glm/glm.hpp>
-#include "fmod.hpp"
+
+namespace FMOD {
+    class Channel;
+    class Sound;
+    class System;
+}
 
 class SoundManager{
 public:
-    ~SoundManager();
-
+    static void initialize();
+    static void release();
     static SoundManager* instance();
 
     /** creates a new channel and returns the channelId */
@@ -47,6 +54,9 @@ public:
     void update();
     
 private:
+    SoundManager();
+    ~SoundManager();
+
     typedef struct SoundObject{
         bool isLoop;
         bool is3D;
@@ -57,7 +67,7 @@ private:
     }SoundObject;
     typedef std::map<unsigned int, SoundObject> SoundMap;
 
-    static std::unique_ptr<SoundManager> m_instance;
+    static SoundManager * s_instance;
 
     unsigned int        _version;
     unsigned int        _numdrivers;
@@ -68,15 +78,13 @@ private:
     SoundMap            _channels;
     FMOD_RESULT         _result;
     FMOD::System        *_system;
-    
-    SoundManager(const glm::vec3& startPosition = glm::vec3(0.f, 0.f, 0.f));
-    SoundManager(const SoundManager&) = delete;
-    const SoundManager& operator=(const SoundManager&) = delete;
 
     /** checks errors */
     void ERRCHECK(FMOD_RESULT);
     /** returns the next free channelId */
     unsigned int getNextFreeId();
-    /** inits the SoundManager with optional start position */
-    void init(const glm::vec3& position = glm::vec3(0.f, 0.f, 0.f), const glm::vec3& forward = glm::vec3(0.f, 0.f, 1.f), const glm::vec3& up = glm::vec3(0.f, 1.f, 0.f), const glm::vec3& velocity = glm::vec3(0.f, 0.f, 0.f));
+
+public:
+    SoundManager(const SoundManager&) = delete;
+    const SoundManager& operator=(const SoundManager&) = delete;
 };

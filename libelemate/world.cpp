@@ -40,16 +40,17 @@ World::World(PhysicsWrapper & physicsWrapper)
     assert(s_instance == nullptr);
     s_instance = this;
 
-    AchievementManager::initialize();
-
-    TextureManager::initialize();
-
+    SoundManager::initialize();
     // Create two non-3D channels (piano and rain)
     //initialize as paused
     int backgroundSoundId = SoundManager::instance()->createNewChannel("data/sounds/elemate.mp3", true, false, true);
     //set volume (make quieter)
     SoundManager::instance()->setVolume(backgroundSoundId, 0.25f);
     SoundManager::instance()->setPaused(backgroundSoundId, false);
+
+    AchievementManager::initialize();
+
+    TextureManager::initialize();
 
     TerrainGenerator terrainGen;
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
@@ -70,6 +71,7 @@ World::~World()
 {
     TextureManager::release();
     ParticleGroupTycoon::release();
+    SoundManager::release();
     s_instance = nullptr;
 }
 

@@ -2,52 +2,33 @@
 
 #include <glow/logging.h>
 
-#include "fmod_errors.h"
+#include <fmod.hpp>
+#include <fmod_errors.h>
 
-std::unique_ptr<SoundManager> SoundManager::m_instance;
+SoundManager * SoundManager::s_instance = nullptr;
 
 SoundManager* SoundManager::instance()
 {
-    if (!m_instance.get())
-        m_instance.reset(new SoundManager());
-    return m_instance.get();
+    assert(s_instance);
+    return s_instance;
+
 }
 
-SoundManager::SoundManager(const glm::vec3& startPosition){
-    init(startPosition);
-}
-
-SoundManager::~SoundManager(){
-    for (SoundMap::iterator it = _channels.begin(); it != _channels.end(); ++it){
-        _result = it->second.sound->release();
-        ERRCHECK(_result);
-    }
-
-    _result = _system->close();
-    ERRCHECK(_result);
-    _result = _system->release();
-    ERRCHECK(_result);
-}
-
-void SoundManager::ERRCHECK(FMOD_RESULT _result)
+void SoundManager::initialize()
 {
-    if (_result != FMOD_OK)
-    {
-        glow::warning("FMOD error! %; (%;)", FMOD_ErrorString(_result), _result);
-    }
+    assert(s_instance == nullptr);
+    s_instance = new SoundManager();
 }
 
-unsigned int SoundManager::getNextFreeId(){
-    unsigned int i = 0;
-    while (i < _channels.size()){
-        if (_channels.find(i) == _channels.end())
-            return i;
-        ++i;
-    }
-    return i;
+void SoundManager::release()
+{
+    assert(s_instance);
+    delete s_instance;
+    s_instance = nullptr;
 }
 
-void SoundManager::init(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up, const glm::vec3& velocity){
+SoundManager::SoundManager()
+{
     _result = FMOD::System_Create(&_system);
     ERRCHECK(_result);
 
@@ -106,16 +87,49 @@ void SoundManager::init(const glm::vec3& position, const glm::vec3& forward, con
     _result = _system->set3DSettings(1.0, _distanceFactor, 1.0f);
     ERRCHECK(_result);
 
-    FMOD_VECTOR f_position = { position.x, position.y, position.z };
-    FMOD_VECTOR f_velocity = { velocity.x, velocity.y, velocity.z };
-    FMOD_VECTOR f_forward = { forward.x, forward.y, forward.z };
-    FMOD_VECTOR f_up = { up.x, up.y, up.z };
+    FMOD_VECTOR f_position = { 0, 0, 0 };
+    FMOD_VECTOR f_velocity = { 0, 0, 0 };
+    FMOD_VECTOR f_forward = { 0, 0, 0 };
+    FMOD_VECTOR f_up = { 0, 1, 0 };
 
     _result = _system->set3DListenerAttributes(0, &f_position, &f_velocity, &f_forward, &f_up);
     ERRCHECK(_result);
 }
 
-unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, const glm::vec3& pos, const glm::vec3& vel){
+SoundManager::~SoundManager()
+{
+    for (SoundMap::iterator it = _channels.begin(); it != _channels.end(); ++it){
+        _result = it->second.sound->release();
+        ERRCHECK(_result);
+    }
+
+    _result = _system->close();
+    ERRCHECK(_result);
+    _result = _system->release();
+    ERRCHECK(_result);
+}
+
+void SoundManager::ERRCHECK(FMOD_RESULT _result)
+{
+    if (_result != FMOD_OK)
+    {
+        glow::warning("FMOD error! %; (%;)", FMOD_ErrorString(_result), _result);
+    }
+}
+
+unsigned int SoundManager::getNextFreeId()
+{
+    unsigned int i = 0;
+    while (i < _channels.size()){
+        if (_channels.find(i) == _channels.end())
+            return i;
+        ++i;
+    }
+    return i;
+}
+
+unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, const glm::vec3& pos, const glm::vec3& vel)
+{
     FMOD::Sound *_sound;
     FMOD::Channel *_channel = 0;
     unsigned int _id = getNextFreeId();
@@ -166,13 +180,15 @@ unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, b
     return _id;
 }
 
-void SoundManager::deleteChannel(unsigned int channelId){
+void SoundManager::deleteChannel(unsigned int channelId)
+{
     _channels[channelId].sound->release();
     ERRCHECK(_result);
     _channels.erase(channelId);
 }
 
-void SoundManager::play(unsigned int channelId){
+void SoundManager::play(unsigned int channelId)
+{
     bool _play;
     bool _paused;
     _channels[channelId].channel->isPlaying(&_play);
@@ -197,17 +213,20 @@ void SoundManager::play(unsigned int channelId){
     ERRCHECK(_result);
 }
 
-void SoundManager::setPaused(unsigned int channelId, bool paused){
+void SoundManager::setPaused(unsigned int channelId, bool paused)
+{
     _channels[channelId].channel->setPaused(paused);
 }
 
-bool SoundManager::isPaused(unsigned int channelId){
+bool SoundManager::isPaused(unsigned int channelId)
+{
     bool p;
     _channels[channelId].channel->getPaused(&p);
     return p;
 }
 
-void SoundManager::togglePause(unsigned int channelId){
+void SoundManager::togglePause(unsigned int channelId)
+{
     bool p;
     _channels[channelId].channel->getPaused(&p);
     _channels[channelId].channel->setPaused(!p);
@@ -224,7 +243,8 @@ void SoundManager::setListenerAttributes(const glm::vec3& pos, const glm::vec3& 
     ERRCHECK(_result);
 }
 
-void SoundManager::setSoundPos(unsigned int channelId, const glm::vec3& pos){
+void SoundManager::setSoundPos(unsigned int channelId, const glm::vec3& pos)
+{
     FMOD_VECTOR _vel = _channels[channelId].velocity;
     FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };    
 
@@ -237,7 +257,8 @@ void SoundManager::setSoundPos(unsigned int channelId, const glm::vec3& pos){
     _channels[channelId].position = f_pos;
 }
 
-void SoundManager::setSoundVel(unsigned int channelId, const glm::vec3& vel){
+void SoundManager::setSoundVel(unsigned int channelId, const glm::vec3& vel)
+{
     FMOD_VECTOR _pos = _channels[channelId].position;
     FMOD_VECTOR f_vel = { vel.x, vel.y, vel.z };
 
@@ -250,7 +271,8 @@ void SoundManager::setSoundVel(unsigned int channelId, const glm::vec3& vel){
     _channels[channelId].velocity = f_vel;
 }
 
-void SoundManager::setSoundPosAndVel(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel){
+void SoundManager::setSoundPosAndVel(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel)
+{
     bool p;
     FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };
     FMOD_VECTOR f_vel = { vel.x, vel.y, vel.z };
@@ -263,7 +285,8 @@ void SoundManager::setSoundPosAndVel(unsigned int channelId, const glm::vec3& po
     _channels[channelId].velocity = f_vel;
 }
 
-void SoundManager::setMute(unsigned int channelId, bool mute){
+void SoundManager::setMute(unsigned int channelId, bool mute)
+{
     _channels[channelId].channel->setMute(mute);
 }
 
@@ -273,21 +296,25 @@ bool SoundManager::isMute(unsigned int channelId){
     return mute;
 }
 
-void SoundManager::setVolume(unsigned int channelId, float vol){
+void SoundManager::setVolume(unsigned int channelId, float vol)
+{
     _channels[channelId].channel->setVolume(vol);
 }
 
-float SoundManager::getVolume(unsigned int channelId){
+float SoundManager::getVolume(unsigned int channelId)
+{
     float vol;
     _channels[channelId].channel->getVolume(&vol);
     return vol;
 }
 
-void SoundManager::changeVolume(unsigned int channelId, float dVol){
+void SoundManager::changeVolume(unsigned int channelId, float dVol)
+{
     _channels[channelId].channel->setVolume(getVolume(channelId) + dVol);
 }
 
-void SoundManager::changeFile(unsigned int channelId, const std::string & filePath){
+void SoundManager::changeFile(unsigned int channelId, const std::string & filePath)
+{
     FMOD_MODE _mode;
     bool _ispaused;
     // get current sound properties
@@ -305,6 +332,7 @@ void SoundManager::changeFile(unsigned int channelId, const std::string & filePa
     ERRCHECK(_result);
 }
 
-void SoundManager::update(){
+void SoundManager::update()
+{
     _system->update();
 }
