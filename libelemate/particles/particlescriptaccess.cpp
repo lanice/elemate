@@ -11,18 +11,16 @@
 
 #include "emittergroup.h"
 #include "downgroup.h"
-#include "particlecollision.h"
 #include "world.h"
 #include "lua/luawrapper.h"
 
 
 ParticleScriptAccess * ParticleScriptAccess::s_instance = nullptr;
 
-void ParticleScriptAccess::initialize(World & notifier)
+void ParticleScriptAccess::initialize(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups)
 {
     assert(s_instance == nullptr);
-    s_instance = new ParticleScriptAccess();
-    s_instance->m_worldNotifier = &notifier;
+    s_instance = new ParticleScriptAccess(particleGroups);
 }
 
 void ParticleScriptAccess::release()
@@ -32,11 +30,9 @@ void ParticleScriptAccess::release()
     s_instance = nullptr;
 }
 
-ParticleScriptAccess::ParticleScriptAccess()
-: m_id(0)
-, m_collisions(std::make_shared<ParticleCollision>(*this))
-, m_collisionCheckDelta(0.0)
-, m_worldNotifier(nullptr)
+ParticleScriptAccess::ParticleScriptAccess(std::unordered_map<unsigned int, ParticleGroup*> & particleGroups)
+: m_particleGroups(particleGroups)
+, m_id(0)
 , m_gpuParticles(false)
 , m_lua(nullptr)
 , m_pxScene(nullptr)
@@ -48,14 +44,7 @@ ParticleScriptAccess::ParticleScriptAccess()
 
     m_lua = new LuaWrapper();
 
-    std::function<int(int, float, float, float, float, float)> func1 = [=] (int id, float a, float b, float c, float d, float e)
-    { particleGroup(id)->setImmutableProperties(a, b, c, d, e); return 0; };
-
-    std::function<int(int, float, float, float, float, float, float, float)> func2 = [=] (int id, float a, float b, float c, float d, float e, float f, float g)
-    { particleGroup(id)->setMutableProperties(a, b, c, d, e, f, g); return 0; };
-
-    m_lua->Register("psa_setImmutableProperties", func1);
-    m_lua->Register("psa_setMutableProperties", func2);
+    registerLuaFunctions(*m_lua);
 }
 
 ParticleScriptAccess::~ParticleScriptAccess()
@@ -68,32 +57,31 @@ ParticleScriptAccess& ParticleScriptAccess::instance()
     return *s_instance;
 }
 
-void ParticleScriptAccess::checkCollisions(double deltaTime)
-{
-    m_collisionCheckDelta += deltaTime;
-    /*if (m_collisionCheckDelta > 0.5)*/ {
-        m_collisions->performCheck();
-        m_collisionCheckDelta = 0.0;
-    }
-}
-
 ParticleGroup * ParticleScriptAccess::particleGroup(const int id)
 {
-    return m_particleGroups.at(id);
+    auto it = m_particleGroups.find(id);
+    assert(it != m_particleGroups.end());
+    return it->second;
 }
 
 int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::string & elementType, uint32_t maxParticleCount)
 {
     ParticleGroup * particleGroup = nullptr;
     if (emittingGroup)
-        particleGroup = new EmitterGroup(elementType, m_gpuParticles, maxParticleCount);
+        particleGroup = new EmitterGroup(elementType, m_id, m_gpuParticles, maxParticleCount);
     else
-        particleGroup = new DownGroup(elementType, m_gpuParticles, maxParticleCount);
+        particleGroup = new DownGroup(elementType, m_id, m_gpuParticles, maxParticleCount);
 
     m_particleGroups.emplace(m_id, particleGroup);
 
     setUpParticleGroup(m_id, elementType);
-    m_worldNotifier->registerObserver(particleGroup);
+
+    return m_id++;
+}
+
+int ParticleScriptAccess::addParticleGroup(ParticleGroup * group)
+{
+    m_particleGroups.emplace(m_id, group);
 
     return m_id++;
 }
@@ -101,9 +89,6 @@ int ParticleScriptAccess::createParticleGroup(bool emittingGroup, const std::str
 void ParticleScriptAccess::removeParticleGroup(const int id)
 {
     ParticleGroup * group = m_particleGroups.at(id);
-    m_worldNotifier->unregisterObserver(group);
-
-    m_collisions->particleGroupDeleted(group->elementName(), id);
 
     delete group;
     m_particleGroups.erase(id);
@@ -113,10 +98,8 @@ void ParticleScriptAccess::clearParticleGroups()
 {
     for (auto it = m_particleGroups.begin(); it != m_particleGroups.end(); ++it)
     {
-        m_worldNotifier->unregisterObserver(it->second);
         delete it->second;
     }
-    m_collisions->clearParticleGroups();
     m_particleGroups.clear();
 }
 
@@ -126,6 +109,7 @@ void ParticleScriptAccess::setUpParticleGroup(const int id, const std::string & 
     m_lua->loadScript(script);
     m_lua->call("setImmutableProperties", id);
     m_lua->call("setMutableProperties", id);
+    m_lua->call("setTemperature", id);
     m_lua->removeScript(script);
 }
 
@@ -289,6 +273,15 @@ void ParticleScriptAccess::registerLuaFunctions(LuaWrapper & lua)
 
     lua.Register("psa_setImmutableProperties", func30);
     lua.Register("psa_setMutableProperties", func31);
+
+    std::function<float(int)> func32 = [=](int id)
+    { return particleGroup(id)->temperature(); };
+
+    std::function<int(int, float)> func33 = [=](int id, float temperature)
+    { particleGroup(id)->setTemperature(temperature); return 0; };
+
+    lua.Register("psa_temperature", func32);
+    lua.Register("psa_setTemperature", func33);
 }
 
 void ParticleScriptAccess::createParticle(const int id, const float positionX, const float positionY, const float positionZ, const float velocityX, const float velocityY, const float velocityZ)
@@ -298,12 +291,16 @@ void ParticleScriptAccess::createParticle(const int id, const float positionX, c
 
 void ParticleScriptAccess::emit(const int id, const float ratio, const float positionX, const float positionY, const float positionZ, const float directionX, const float directionY, const float directionZ)
 {
-    m_particleGroups.at(id)->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
+    EmitterGroup * e = dynamic_cast<EmitterGroup*>(m_particleGroups.at(id));
+    assert(e);
+    e->emit(ratio, glm::vec3(positionX, positionY, positionZ), glm::vec3(directionX, directionY, directionZ));
 }
 
 void ParticleScriptAccess::stopEmit(const int id)
 {
-    m_particleGroups.at(id)->stopEmit();
+    EmitterGroup * e = dynamic_cast<EmitterGroup*>(m_particleGroups.at(id));
+    assert(e);
+    e->stopEmit();
 }
 
 void ParticleScriptAccess::setImmutableProperties( const int id, const float maxMotionDistance, const float gridSize, const float restOffset, const float contactOffset, const float restParticleDistance)

@@ -39,14 +39,11 @@ public:
 
     void stopSimulation();
 
-    /** updates the physics but doesn't copy/update any datastructures */
+    /** updates the physics but doesn't copy/update any data structures */
     void updatePhysics();
 
     /** updates the world as needed for visualization and interaction */
     void updateVisuals();
-
-    void registerObserver(ParticleGroup * observer);
-    void unregisterObserver(ParticleGroup * observer);
 
     void createFountainSound(const glm::vec3& position);
     

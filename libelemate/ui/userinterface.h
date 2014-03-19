@@ -48,7 +48,6 @@ protected:
     bool m_mainMenuOnTop;
     bool m_activeHUD;
 
-    StringDrawer m_stringDrawer;
     std::list<TextObject> m_hudTexts;
 
     glow::ref_ptr<glow::VertexArrayObject> m_vao;
@@ -64,12 +63,13 @@ protected:
 
     std::vector<std::string> m_elementPreviews;
     unsigned int             m_activeElement;
-
-    void drawHUD();
-    void drawMainMenu();
+    
+	void drawHUD();
+	void drawMainMenu();
 
     void drawGreyScreen();
     void drawMenuEntries();
+    void drawAchievements();
 
     void drawPreview();
     void drawPreviewCircle(float x, float y, const std::string& element, float height, bool highlighted);
