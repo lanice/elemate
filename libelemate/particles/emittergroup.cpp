@@ -120,13 +120,11 @@ void EmitterGroup::updateVisuals()
     assert(m_numParticles == readData->nbValidParticles);
     readData->unlock();
 
-    if (m_particlesToDelete.empty())
-        return;
-    releaseParticles(m_particlesToDelete);
+    if (!m_particlesToDelete.empty()) {
+        releaseParticles(m_particlesToDelete);
 
-    if (m_downPositions.empty())
-        return;
-    DownGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());
-    group->createParticles(m_downPositions, &m_downVelocities);
-    group->setTemperature((m_numParticles * m_temperature + group->numParticles() * group->temperature()) / (m_numParticles + group->numParticles()));
+        DownGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());
+        group->createParticles(m_downPositions, &m_downVelocities);
+        group->setTemperature((m_numParticles * m_temperature + group->numParticles() * group->temperature()) / (m_numParticles + group->numParticles()));
+    }
 }

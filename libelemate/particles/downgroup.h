@@ -20,5 +20,7 @@ public:
 protected:
     virtual void updatePhysics(double delta) override;
     virtual void updateVisuals() override;
+
+public:
     void operator=(ParticleGroup&) = delete;
 };

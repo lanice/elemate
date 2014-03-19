@@ -147,6 +147,7 @@ void ParticleDrawable::updateBuffers()
 
 void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 {
+    assert(readData);
     unsigned numParticles = readData->nbValidParticles;
 
     m_bbox = glowutils::AxisAlignedBoundingBox();

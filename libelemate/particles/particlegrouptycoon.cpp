@@ -188,10 +188,6 @@ void ParticleGroupTycoon::splitGroups()
 
 void ParticleGroupTycoon::mergeGroups()
 {
-    /*for (auto elementToMapPair : m_grid)
-    {
-        elementToMapPair.second.clear();
-    }*/
     m_grid.clear();
 
     std::vector<unsigned int> groupsToRemove;
@@ -202,9 +198,7 @@ void ParticleGroupTycoon::mergeGroups()
 
         const glowutils::AxisAlignedBoundingBox & bounds = pair.second->boundingBox();
 
-        glm::vec3 center = bounds.center();
-
-        uint64_t gridIndex = gridIndexFromPosition(center);
+        uint64_t gridIndex = gridIndexFromPosition(bounds.center());
 
         DownGroup * gridGroup = particleGroupAtGridIndex(gridIndex, pair.second->elementName());
 

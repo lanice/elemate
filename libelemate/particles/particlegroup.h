@@ -5,7 +5,6 @@
 
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
-#include <foundation/PxVec3.h>
 
 #include <glm/glm.hpp>
 
