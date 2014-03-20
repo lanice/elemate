@@ -13,6 +13,7 @@
 #include "rendering/particledrawable.h"
 #include "terrain/terraininteraction.h"
 #include "downgroup.h"
+#include "io/soundmanager.h"
 
 
 namespace {
@@ -58,6 +59,8 @@ void EmitterGroup::stopEmit()
 
 void EmitterGroup::updatePhysics(double delta)
 {
+    ParticleGroup::updatePhysics(delta);
+
     if (!m_emitting) return;
 
     unsigned int particlesToEmit = static_cast<unsigned int>(glm::floor(m_emitRatio * delta));
@@ -86,15 +89,16 @@ void EmitterGroup::updatePhysics(double delta)
 
 void EmitterGroup::updateVisuals()
 {
+    ParticleGroup::updateVisuals();
+
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
     assert(readData);
+
+    m_particleDrawable->updateParticles(readData);
 
     m_particlesToDelete.clear();
     m_downPositions.clear();
     m_downVelocities.clear();
-
-    m_particleDrawable->updateParticles(readData);
-        
 
     // Get drained Particles
     PxStrideIterator<const PxParticleFlags> flagsIt(readData->flagsBuffer);

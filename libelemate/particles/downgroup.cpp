@@ -38,8 +38,9 @@ DownGroup::DownGroup(const DownGroup& lhs, unsigned int id)
 {
 }
 
-void DownGroup::updatePhysics(double /*delta*/)
+void DownGroup::updatePhysics(double delta)
 {
+ParticleGroup::updatePhysics(delta);
     if (m_elementName == "lava" && m_temperature < 690.f)
     {
         float temp = m_temperature;
@@ -75,6 +76,8 @@ void DownGroup::updatePhysics(double /*delta*/)
 
 void DownGroup::updateVisuals()
 {
+    ParticleGroup::updateVisuals();
+
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
     assert(readData);
 
