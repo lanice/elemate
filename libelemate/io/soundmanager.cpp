@@ -116,12 +116,13 @@ SoundManager::~SoundManager()
     ERRCHECK(result);
 }
 
-void SoundManager::ERRCHECK(FMOD_RESULT _result)
+void SoundManager::ERRCHECK(FMOD_RESULT result)
 {
-    if (_result != FMOD_OK)
+    if (result != FMOD_OK)
     {
-        glow::warning("FMOD error! %; (%;)", FMOD_ErrorString(_result), _result);
+        glow::warning("FMOD error! %; (%;)", FMOD_ErrorString(result), result);
     }
+    assert(result == FMOD_OK);
 }
 
 unsigned int SoundManager::getNextFreeId()

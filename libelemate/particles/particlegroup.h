@@ -120,6 +120,11 @@ public:
     void updateSounds(bool isWorldPaused);
     void startSound();
     void stopSound();
+
+private:
+    /** initialization done in constructor and copy constructor of this particle group base class */
+    void initialize(const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties);
+
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 

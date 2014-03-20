@@ -40,27 +40,7 @@ ParticleGroup::ParticleGroup(
 {
     static_assert(sizeof(glm::vec3) == sizeof(physx::PxVec3), "size of physx vec3 does not match the size of glm::vec3.");
 
-    for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
-
-    assert(PxGetPhysics().getNbScenes() == 1);
-    PxScene * pxScenePtrs[1];
-    PxGetPhysics().getScenes(pxScenePtrs, 1);
-    m_scene = pxScenePtrs[0];
-
-    PxSceneWriteLock scopedLock(* m_scene);
-
-    m_particleSystem = PxGetPhysics().createParticleFluid(maxParticleCount, false);
-    assert(m_particleSystem);
-    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
-
-    m_scene->addActor(*m_particleSystem);
-    
-    setImmutableProperties(immutableProperties);
-    setMutableProperties(mutableProperties);
-
-    m_soundChannel = SoundManager::instance()->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
-    SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
+    initialize(immutableProperties, mutableProperties);
 }
 
 ParticleGroup::~ParticleGroup()
@@ -88,6 +68,14 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 , m_lastFreeIndex(lhs.m_maxParticleCount - 1)
 , m_gpuParticles(lhs.m_gpuParticles)
 {
+    initialize(lhs.m_immutableProperties, lhs.m_mutableProperties);
+}
+
+void ParticleGroup::initialize(const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
+{
+    m_soundChannel = SoundManager::instance()->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
+    SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
+
     for (PxU32 i = 0; i < m_maxParticleCount; ++i) m_indices[i] = i;
 
     assert(PxGetPhysics().getNbScenes() == 1);
@@ -104,8 +92,8 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 
     m_scene->addActor(*m_particleSystem);
 
-    setImmutableProperties(lhs.m_immutableProperties);
-    setMutableProperties(lhs.m_mutableProperties);
+    setImmutableProperties(immutableProperties);
+    setMutableProperties(mutableProperties);
 }
 
 const std::string & ParticleGroup::elementName() const
