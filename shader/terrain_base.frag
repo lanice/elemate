@@ -95,8 +95,11 @@ void main()
                         max(gl_FragCoord.z / (gl_FragCoord.w * 0.1*zfar) - 9, 0.0)),
                     1.0);
                     
-    // lava rendering
-    // fragColor = mix(fragColor, vec4(1, 0, 0, 1), step(700, g_temperature));
+    // mix for hot zones
+    const float glowTemperature = 400;
+    if (g_temperature > glowTemperature) {
+        fragColor = mix(fragColor, vec4(0.32, 0.0, 0.0, 1), (g_temperature - glowTemperature) / (1000.0 - glowTemperature));
+    }
 }
 
 vec3 interpolate(vec2 coeff, vec3 values[4])

@@ -90,9 +90,9 @@ const std::unordered_map<unsigned int, ParticleGroup *> & ParticleGroupTycoon::p
     return m_particleGroups;
 }
 
-ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & elementName, const glm::vec3 & position)
+DownGroup * ParticleGroupTycoon::getNearestGroup(const std::string & elementName, const glm::vec3 & position)
 {
-    ParticleGroup * group = nullptr;
+    DownGroup * group = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
 
     for (auto & pair : m_particleGroups)
@@ -103,7 +103,7 @@ ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & element
         if (currentDistance >= nearestDistance)
             continue;
         nearestDistance = currentDistance;
-        group = pair.second;
+        group = static_cast<DownGroup*>(pair.second);
     }
 
     if (group != nullptr)
@@ -111,7 +111,7 @@ ParticleGroup * ParticleGroupTycoon::getNearestGroup(const std::string & element
 
     int id = ParticleScriptAccess::instance().createParticleGroup(false, elementName);
 
-    return m_particleGroups.at(id);
+    return static_cast<DownGroup*>(m_particleGroups.at(id));
 }
 
 ParticleGroup * ParticleGroupTycoon::particleGroupById(unsigned int id)
@@ -173,7 +173,7 @@ void ParticleGroupTycoon::splitGroups()
 
             pair.second->releaseParticles(extractIndices);
 
-            const unsigned int id = ParticleScriptAccess::instance().m_id + newGroups.size();
+            const unsigned int id = ParticleScriptAccess::instance().m_id + static_cast<int>(newGroups.size());
             DownGroup * newGroup = new DownGroup(*pair.second, id);
             newGroup->createParticles(extractPositions, &extractVelocities);
             newGroups.push_back(newGroup);
@@ -188,10 +188,6 @@ void ParticleGroupTycoon::splitGroups()
 
 void ParticleGroupTycoon::mergeGroups()
 {
-    /*for (auto elementToMapPair : m_grid)
-    {
-        elementToMapPair.second.clear();
-    }*/
     m_grid.clear();
 
     std::vector<unsigned int> groupsToRemove;
@@ -202,9 +198,7 @@ void ParticleGroupTycoon::mergeGroups()
 
         const glowutils::AxisAlignedBoundingBox & bounds = pair.second->boundingBox();
 
-        glm::vec3 center = bounds.center();
-
-        uint64_t gridIndex = gridIndexFromPosition(center);
+        uint64_t gridIndex = gridIndexFromPosition(bounds.center());
 
         DownGroup * gridGroup = particleGroupAtGridIndex(gridIndex, pair.second->elementName());
 

@@ -9,6 +9,7 @@
 #include <glowutils/global.h>
 
 #include "drawable.h"
+#include "particledrawable.h"
 #include "world.h"
 #include "particles/particlecollision.h"
 #include "utils/cameraex.h"
@@ -33,8 +34,10 @@ void DebugStep::draw(const CameraEx & camera)
     glFrontFace(GL_CCW);
     glEnable(GL_CULL_FACE);
 
+    static const glm::vec4 defaultColor(0, 1, 0, 1);
+    static const glm::vec4 emittingColor(1, 0, 0, 1);
+
     m_wireframeBoxProgram->use();
-    m_wireframeBoxProgram->setUniform("color", glm::vec4(0, 1, 0, 1));
     for (const Drawable * drawable : Drawable::instances()) {
         const glowutils::AxisAlignedBoundingBox & bbox = drawable->boundingBox();
 
@@ -42,6 +45,13 @@ void DebugStep::draw(const CameraEx & camera)
             continue;
 
         m_wireframeBoxProgram->setUniform("MVP", camera.viewProjectionEx() * drawable->transform());
+        
+        const ParticleDrawable * particleDrawable = dynamic_cast<const ParticleDrawable*>(drawable);
+        if (particleDrawable && !particleDrawable->isDown)
+            m_wireframeBoxProgram->setUniform("color", emittingColor);
+        else
+            m_wireframeBoxProgram->setUniform("color", defaultColor);
+
 
         m_vbo->setData(std::vector<glm::vec3>({ bbox.llf(), bbox.urb() }), GL_DYNAMIC_DRAW);
 

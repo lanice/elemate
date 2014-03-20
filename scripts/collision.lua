@@ -46,14 +46,18 @@ function collisionWaterLava(waterGroup, lavaGroup)
     pc_releaseRememberParticles(waterGroup, collisionLlf, collisionUrb)
     -- and later.. check that ratio between the two particles types, the release functions return a number of particles
     -- this would create steam particles for water (once we have steam..):
-    -- pc_createFromRemembered("steam")
+    pc_createFromRemembered("steam")
+    achievement_setProperty("steam", achievement_getProperty("steam") + 1)
     
     terrain_setInteractElement("bedrock")
     achievement_setProperty("bedrock", 1)
     -- assuming the collision bbox is not "too large"
     -- calculate a height delta that looks fine =)
     heightDelta = psa_restOffset(waterGroup) * numLavaParticles * terrain_sampleInterval() * 0.2
-    terrain_dropElement(collisionCenterXZ[1], collisionCenterXZ[2], heightDelta)
+    
+    if (heightDelta > 0) then
+        terrain_dropElement(collisionCenterXZ[1], collisionCenterXZ[2], heightDelta)
+    end
     
     -- discard all remembered particles
     pc_forgetOldParticles()

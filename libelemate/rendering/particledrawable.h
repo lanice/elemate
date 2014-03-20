@@ -22,8 +22,9 @@ class ParticleDrawable : public Drawable
 {
 public:
     /** creates a new drawable with fixed maximum number of particles */
-    ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount);
+    ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount, bool isDown);
     void setElement(const std::string & elementName);
+    bool isDown;
 
     virtual ~ParticleDrawable();
 

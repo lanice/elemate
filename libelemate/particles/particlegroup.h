@@ -5,7 +5,6 @@
 
 #include "utils/pxcompilerfix.h"
 #include <foundation/PxSimpleTypes.h>
-#include <foundation/PxVec3.h>
 
 #include <glm/glm.hpp>
 
@@ -33,7 +32,7 @@ struct MutableParticleProperties
     physx::PxReal dynamicFriction = 0.05f;
     physx::PxReal staticFriction = 0.0f;
     physx::PxReal damping = 0.0f;
-    physx::PxVec3 externalAcceleration = physx::PxVec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 externalAcceleration;
     physx::PxReal particleMass = 0.001f;
 
     physx::PxReal viscosity = 5.0f;
@@ -108,7 +107,7 @@ public:
         const physx::PxReal dynamicFriction,
         const physx::PxReal staticFriction,
         const physx::PxReal damping,
-        // const physx::PxVec3 externalAcceleration,
+        const glm::vec3 &externalAcceleration,
         const physx::PxReal particleMass,
         const physx::PxReal viscosity,
         const physx::PxReal stiffness
@@ -121,6 +120,11 @@ public:
     void updateSounds(bool isWorldPaused);
     void startSound();
     void stopSound();
+
+private:
+    /** initialization done in constructor and copy constructor of this particle group base class */
+    void initialize(const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties);
+
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
@@ -147,7 +151,7 @@ protected:
 
     bool m_gpuParticles;
 
-    bool m_wasSoundPlaying;
+    bool m_hasSound;
     unsigned int m_soundChannel;
     std::vector<uint32_t> m_particlesToDelete;
 

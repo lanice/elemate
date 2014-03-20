@@ -3,6 +3,7 @@
 #include <cassert>
 #include <functional>
 #include <type_traits>
+#include <fstream>
 
 #include <glow/logging.h>
 
@@ -30,7 +31,7 @@ ParticleGroup::ParticleGroup(
 , m_elementName(elementName)
 , m_temperature(0.0f)
 , isDown(isDown)
-, m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount))
+, m_particleDrawable(std::make_shared<ParticleDrawable>(elementName, maxParticleCount, isDown))
 , m_maxParticleCount(maxParticleCount)
 , m_numParticles(0)
 , m_indices(new PxU32[maxParticleCount]())
@@ -40,31 +41,16 @@ ParticleGroup::ParticleGroup(
 {
     static_assert(sizeof(glm::vec3) == sizeof(physx::PxVec3), "size of physx vec3 does not match the size of glm::vec3.");
 
-    for (PxU32 i = 0; i < maxParticleCount; ++i) m_indices[i] = i;
-
-    assert(PxGetPhysics().getNbScenes() == 1);
-    PxScene * pxScenePtrs[1];
-    PxGetPhysics().getScenes(pxScenePtrs, 1);
-    m_scene = pxScenePtrs[0];
-
-    PxSceneWriteLock scopedLock(* m_scene);
-
-    m_particleSystem = PxGetPhysics().createParticleFluid(maxParticleCount, false);
-    assert(m_particleSystem);
-    m_particleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, m_gpuParticles);
-    m_particleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
-
-    m_scene->addActor(*m_particleSystem);
-    
-    setImmutableProperties(immutableProperties);
-    setMutableProperties(mutableProperties);
-
-    m_soundChannel = SoundManager::instance()->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
-    SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
+    initialize(immutableProperties, mutableProperties);
 }
 
 ParticleGroup::~ParticleGroup()
 {
+    if (m_hasSound) {
+        stopSound();
+        SoundManager::instance()->deleteChannel(m_soundChannel);
+    }
+
     PxSceneWriteLock scopedLock(* m_scene);
 
     m_particleSystem->releaseParticles();
@@ -80,7 +66,7 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 , m_elementName(lhs.m_elementName)
 , m_temperature(lhs.m_temperature)
 , isDown(true)
-, m_particleDrawable(std::make_shared<ParticleDrawable>(lhs.m_elementName, lhs.m_maxParticleCount))
+, m_particleDrawable(std::make_shared<ParticleDrawable>(lhs.m_elementName, lhs.m_maxParticleCount, isDown))
 , m_maxParticleCount(lhs.m_maxParticleCount)
 , m_numParticles(0)
 , m_indices(new PxU32[lhs.m_maxParticleCount]())
@@ -88,6 +74,19 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 , m_lastFreeIndex(lhs.m_maxParticleCount - 1)
 , m_gpuParticles(lhs.m_gpuParticles)
 {
+    initialize(lhs.m_immutableProperties, lhs.m_mutableProperties);
+}
+
+void ParticleGroup::initialize(const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
+{
+    std::string soundFileName = "data/sounds/elements/" + m_elementName + ".wav";
+    std::ifstream soundFile(soundFileName);
+    m_hasSound = soundFile.good();
+    if (m_hasSound) {
+        m_soundChannel = SoundManager::instance()->createNewChannel(soundFileName, true, true, true);
+        SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
+    }
+
     for (PxU32 i = 0; i < m_maxParticleCount; ++i) m_indices[i] = i;
 
     assert(PxGetPhysics().getNbScenes() == 1);
@@ -104,8 +103,8 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 
     m_scene->addActor(*m_particleSystem);
 
-    setImmutableProperties(lhs.m_immutableProperties);
-    setMutableProperties(lhs.m_mutableProperties);
+    setImmutableProperties(immutableProperties);
+    setMutableProperties(mutableProperties);
 }
 
 const std::string & ParticleGroup::elementName() const
@@ -271,7 +270,7 @@ void ParticleGroup::setImmutableProperties(const ImmutableParticleProperties & p
 
 void ParticleGroup::setMutableProperties(const MutableParticleProperties & properties)
 {
-    setMutableProperties(properties.restitution, properties.dynamicFriction, properties.staticFriction, properties.damping, /*properties.externalAcceleration,*/ properties.particleMass, properties.viscosity, properties.stiffness);
+    setMutableProperties(properties.restitution, properties.dynamicFriction, properties.staticFriction, properties.damping, properties.externalAcceleration, properties.particleMass, properties.viscosity, properties.stiffness);
 }
 
 void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance, const physx::PxReal gridSize, const physx::PxReal restOffset, const physx::PxReal contactOffset, const physx::PxReal restParticleDistance)
@@ -299,13 +298,13 @@ void ParticleGroup::setImmutableProperties(const physx::PxReal maxMotionDistance
     m_scene->addActor(*m_particleSystem);
 }
 
-void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, /*const physx::PxVec3 externalAcceleration,*/ const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
+void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const physx::PxReal dynamicFriction, const physx::PxReal staticFriction, const physx::PxReal damping, const glm::vec3 &externalAcceleration, const physx::PxReal particleMass, const physx::PxReal viscosity, const physx::PxReal stiffness)
 {
     m_mutableProperties.restitution = restitution;
     m_mutableProperties.dynamicFriction = dynamicFriction;
     m_mutableProperties.staticFriction = staticFriction;
     m_mutableProperties.damping = damping;
-    m_mutableProperties.externalAcceleration = physx::PxVec3();
+    m_mutableProperties.externalAcceleration = externalAcceleration;
     m_mutableProperties.particleMass = particleMass;
     m_mutableProperties.viscosity = viscosity;
     m_mutableProperties.stiffness = stiffness;
@@ -314,7 +313,7 @@ void ParticleGroup::setMutableProperties(const physx::PxReal restitution, const 
     m_particleSystem->setDynamicFriction(dynamicFriction);
     m_particleSystem->setStaticFriction(staticFriction);
     m_particleSystem->setDamping(damping);
-    // m_particleSystem->setExternalAcceleration(externalAcceleration);
+    m_particleSystem->setExternalAcceleration(reinterpret_cast<const physx::PxVec3&>(externalAcceleration));
     m_particleSystem->setParticleMass(particleMass);
     m_particleSystem->setViscosity(viscosity);
     m_particleSystem->setStiffness(stiffness);
@@ -353,7 +352,7 @@ void ParticleGroup::updatePhysics(double /*delta*/)
 
 void ParticleGroup::updateVisuals()
 {
-    if (m_numParticles > 0)
+    if (m_hasSound && m_numParticles > 0)
         SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
 }
 
@@ -459,25 +458,24 @@ void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::
 
 void ParticleGroup::updateSounds(bool isWorldPaused)
 {
-    if (isWorldPaused)
-    {
-        stopSound();
-        m_wasSoundPlaying = true;
-    }
-    else if (m_wasSoundPlaying)
-    {
-        startSound();
-    }
+    if (!m_hasSound)
+        return;
+
+    SoundManager::instance()->setMute(m_soundChannel, isWorldPaused);
 }
 
 void ParticleGroup::startSound()
 {
+    if (!m_hasSound)
+        return;
+
     SoundManager::instance()->setPaused(m_soundChannel, false);
-    m_wasSoundPlaying = true;
 }
 
 void ParticleGroup::stopSound()
 {
+    if (!m_hasSound)
+        return;
+
     SoundManager::instance()->setPaused(m_soundChannel, true);
-    m_wasSoundPlaying = false;
 }

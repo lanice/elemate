@@ -6,7 +6,7 @@
 
 #include "particlegrouptycoon.h"
 #include "particlescriptaccess.h"
-#include "particlegroup.h"
+#include "downgroup.h"
 #include "particlehelper.h"
 #include "lua/luawrapper.h"
 #include "terrain/terraininteraction.h"
