@@ -29,7 +29,6 @@ World * World::s_instance = nullptr;
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(nullptr)
 , terrain(nullptr)
-, m_soundManager(std::make_shared<SoundManager>())
 , m_physicsWrapper(physicsWrapper)
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
@@ -41,16 +40,17 @@ World::World(PhysicsWrapper & physicsWrapper)
     assert(s_instance == nullptr);
     s_instance = this;
 
+    SoundManager::initialize();
+    // Create two non-3D channels (piano and rain)
+    //initialize as paused
+    int backgroundSoundId = SoundManager::instance()->createNewChannel("data/sounds/elemate.mp3", true, false, true);
+    //set volume (make quieter)
+    SoundManager::instance()->setVolume(backgroundSoundId, 0.25f);
+    SoundManager::instance()->setPaused(backgroundSoundId, false);
+
     AchievementManager::initialize();
 
     TextureManager::initialize();
-
-    // Create two non-3D channels (piano and rain)
-    //initialize as paused
-    int backgroundSoundId = m_soundManager->createNewChannel("data/sounds/elemate.mp3", true, false, true);
-    //set volume (make quieter)
-    m_soundManager->setVolume(backgroundSoundId, 0.25f);
-    m_soundManager->setPaused(backgroundSoundId, false);
 
     TerrainGenerator terrainGen;
     terrain = std::shared_ptr<Terrain>(terrainGen.generate());
@@ -71,6 +71,7 @@ World::~World()
 {
     TextureManager::release();
     ParticleGroupTycoon::release();
+    SoundManager::release();
     s_instance = nullptr;
 }
 
@@ -87,7 +88,10 @@ void World::togglePause()
 
     // Pause/resume all sounds except the background sounds.
     for (const auto sound : m_sounds)
-        m_soundManager->setPaused(sound, !m_time->isRunning());
+        SoundManager::instance()->setPaused(sound, !m_time->isRunning());
+
+    for (auto observer : m_particleGroupObservers)
+        observer->updateSounds(!m_time->isRunning());
 }
 
 time_t World::getTime()const{
@@ -125,23 +129,19 @@ void World::updateVisuals()
 
 void World::createFountainSound(const glm::vec3& position)
 {
-    int id = m_soundManager->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), { position.x, position.y, position.z });
+    int id = SoundManager::instance()->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), position);
     m_sounds.push_back(id);
 }
 
 void World::toggleBackgroundSound(int id){
-    m_soundManager->togglePause(id);
+    SoundManager::instance()->togglePause(id);
 }
 
 void World::updateListener(){
     const CameraEx & cam = m_navigation->camera();
     glm::vec3 forward = glm::normalize(cam.eye() - cam.center());
-    m_soundManager->setListenerAttributes(
-    { cam.eye().x, cam.eye().y, cam.eye().z },
-    { forward.x, forward.y, forward.z },
-    { cam.up().x, cam.up().y, cam.up().z }
-    );
-    m_soundManager->update();
+    SoundManager::instance()->setListenerAttributes(cam.eye(), forward, cam.up());
+    SoundManager::instance()->update();
 }
 
 void World::setNavigation(Navigation & navigation)

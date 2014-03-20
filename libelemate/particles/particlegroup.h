@@ -89,9 +89,9 @@ public:
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
     void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
-    virtual void updatePhysics(double delta) = 0;
+    virtual void updatePhysics(double delta);
     /** Subscribed to World to update particle visuals. */
-    virtual void updateVisuals() = 0;
+    virtual void updateVisuals();
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
     void setMutableProperties(const MutableParticleProperties & properties);
@@ -118,7 +118,9 @@ public:
     bool useGpuParticles() const;
 
     void giveGiftTo(ParticleGroup & other);
-
+    void updateSounds(bool isWorldPaused);
+    void startSound();
+    void stopSound();
 protected:
     void releaseOldParticles(const uint32_t numParticles);
 
@@ -145,6 +147,8 @@ protected:
 
     bool m_gpuParticles;
 
+    bool m_wasSoundPlaying;
+    unsigned int m_soundChannel;
     std::vector<uint32_t> m_particlesToDelete;
 
 public:

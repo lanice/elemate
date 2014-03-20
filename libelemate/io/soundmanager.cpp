@@ -2,22 +2,118 @@
 
 #include <glow/logging.h>
 
-#include "fmod_errors.h"
+#include <fmod.hpp>
+#include <fmod_errors.h>
 
-SoundManager::SoundManager(FMOD_VECTOR startPosition){
-    init(startPosition);
+SoundManager * SoundManager::s_instance = nullptr;
+
+SoundManager* SoundManager::instance()
+{
+    assert(s_instance);
+    return s_instance;
+
 }
 
-SoundManager::~SoundManager(){
-    for (SoundMap::iterator it = _channels.begin(); it != _channels.end(); ++it){
-        _result = it->second.sound->release();
-        ERRCHECK(_result);
+void SoundManager::initialize()
+{
+    assert(s_instance == nullptr);
+    s_instance = new SoundManager();
+}
+
+void SoundManager::release()
+{
+    assert(s_instance);
+    delete s_instance;
+    s_instance = nullptr;
+}
+
+SoundManager::SoundManager()
+{
+    FMOD_RESULT result;
+    result = FMOD::System_Create(&m_system);
+    ERRCHECK(result);
+
+    unsigned int version = 0;
+    result = m_system->getVersion(&version);
+    ERRCHECK(result);
+
+    if (version < FMOD_VERSION){
+        glow::fatal("You are using an old version of FMOD %08x;.  This program requires %08x;\n", version, FMOD_VERSION);
+        exit(-1);
     }
 
-    _result = _system->close();
-    ERRCHECK(_result);
-    _result = _system->release();
-    ERRCHECK(_result);
+    int numDrivers = 0;
+    result = m_system->getNumDrivers(&numDrivers);
+    ERRCHECK(result);
+
+    if (numDrivers == 0){
+        result = m_system->setOutput(FMOD_OUTPUTTYPE_NOSOUND);
+        ERRCHECK(result);
+    }else{
+        FMOD_SPEAKERMODE speakerMode;
+        FMOD_CAPS caps;
+        result = m_system->getDriverCaps(0, &caps, 0, &speakerMode);
+        ERRCHECK(result);
+
+        // set the user selected speaker mode.
+        result = m_system->setSpeakerMode(speakerMode);
+        ERRCHECK(result);
+
+        // if the user has the 'Acceleration' slider set to off!  (bad for latency)
+        if (caps & FMOD_CAPS_HARDWARE_EMULATED){
+            // maybe print pout a warning?
+            result = m_system->setDSPBufferSize(1024, 10);
+            ERRCHECK(result);
+        }
+
+        char name[256];
+        result = m_system->getDriverInfo(0, name, 256, 0);
+        ERRCHECK(result);
+
+        // Sigmatel sound devices crackle for some reason if the format is PCM 16bit.  PCM floating point output seems to solve it.
+        if (strstr(name, "SigmaTel"))
+        {
+            result = m_system->setSoftwareFormat(48000, FMOD_SOUND_FORMAT_PCMFLOAT, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
+            ERRCHECK(result);
+        }
+    }
+
+    // init _system with maximum of 100 channels
+    result = m_system->init(100, FMOD_INIT_NORMAL, 0);
+    // if the speaker mode selected isn't supported by this soundcard, switch it back to stereo
+    if (result == FMOD_ERR_OUTPUT_CREATEBUFFER)
+    {
+        result = m_system->setSpeakerMode(FMOD_SPEAKERMODE_STEREO);
+        ERRCHECK(result);
+
+        result = m_system->init(100, FMOD_INIT_NORMAL, 0);/* ... and re-init. */
+        ERRCHECK(result);
+    }
+
+    result = m_system->set3DSettings(1.0, m_distanceFactor, 1.0f);
+    ERRCHECK(result);
+
+    FMOD_VECTOR f_position = { 0, 0, 0 };
+    FMOD_VECTOR f_velocity = { 0, 0, 0 };
+    FMOD_VECTOR f_forward = { 0, 0, 0 };
+    FMOD_VECTOR f_up = { 0, 1, 0 };
+
+    result = m_system->set3DListenerAttributes(0, &f_position, &f_velocity, &f_forward, &f_up);
+    ERRCHECK(result);
+}
+
+SoundManager::~SoundManager()
+{
+    FMOD_RESULT result;
+    for (auto & it : m_loadedSounds) {
+        result = it.second->release();
+        ERRCHECK(result);
+    }
+
+    result = m_system->close();
+    ERRCHECK(result);
+    result = m_system->release();
+    ERRCHECK(result);
 }
 
 void SoundManager::ERRCHECK(FMOD_RESULT _result)
@@ -28,255 +124,239 @@ void SoundManager::ERRCHECK(FMOD_RESULT _result)
     }
 }
 
-unsigned int SoundManager::getNextFreeId(){
-    unsigned int i = 0;
-    while (i < _channels.size()){
-        if (_channels.find(i) == _channels.end())
-            return i;
-        ++i;
-    }
-    return i;
+unsigned int SoundManager::getNextFreeId()
+{
+    return static_cast<unsigned int>(m_channels.size());
 }
 
-void SoundManager::init(FMOD_VECTOR position, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity){
-    _result = FMOD::System_Create(&_system);
-    ERRCHECK(_result);
-
-    _result = _system->getVersion(&_version);
-    ERRCHECK(_result);
-
-    if (_version < FMOD_VERSION){
-        glow::fatal("You are using an old version of FMOD %08x;.  This program requires %08x;\n", _version, FMOD_VERSION);
-        exit(-1);
+FMOD::Sound * SoundManager::loadSound(const std::string & fileName, bool isLoop, bool is3D)
+{
+    // reuse already loaded sounds
+    const auto it = m_loadedSounds.find(fileName);
+    if (it != m_loadedSounds.end()) {
+        return it->second;
     }
 
-    _result = _system->getNumDrivers(reinterpret_cast<int*>(&_numdrivers));
-    ERRCHECK(_result);
-
-    if (_numdrivers == 0){
-        _result = _system->setOutput(FMOD_OUTPUTTYPE_NOSOUND);
-        ERRCHECK(_result);
-    }else{
-        _result = _system->getDriverCaps(0, &_caps, 0, &_speakermode);
-        ERRCHECK(_result);
-
-        // set the user selected speaker mode.
-        _result = _system->setSpeakerMode(_speakermode);
-        ERRCHECK(_result);
-
-        // if the user has the 'Acceleration' slider set to off!  (bad for latency)
-        if (_caps & FMOD_CAPS_HARDWARE_EMULATED){
-            // maybe print pout a warning?
-            _result = _system->setDSPBufferSize(1024, 10);
-            ERRCHECK(_result);
-        }
-
-        _result = _system->getDriverInfo(0, _name, 256, 0);
-        ERRCHECK(_result);
-
-        // Sigmatel sound devices crackle for some reason if the format is PCM 16bit.  PCM floating point output seems to solve it.
-        if (strstr(_name, "SigmaTel"))
-        {
-            _result = _system->setSoftwareFormat(48000, FMOD_SOUND_FORMAT_PCMFLOAT, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
-            ERRCHECK(_result);
-        }
+    // or load the sound if needed
+    FMOD::Sound * sound = nullptr;
+    FMOD_MODE mode;
+    if (is3D) {
+        mode = FMOD_3D;
     }
-
-    // init _system with maximum of 100 channels
-    _result = _system->init(100, FMOD_INIT_NORMAL, 0);
-    // if the speaker mode selected isn't supported by this soundcard, switch it back to stereo
-    if (_result == FMOD_ERR_OUTPUT_CREATEBUFFER)
-    {
-        _result = _system->setSpeakerMode(FMOD_SPEAKERMODE_STEREO);
-        ERRCHECK(_result);
-
-        _result = _system->init(100, FMOD_INIT_NORMAL, 0);/* ... and re-init. */
-        ERRCHECK(_result);
-    }
-
-    _result = _system->set3DSettings(1.0, _distanceFactor, 1.0f);
-    ERRCHECK(_result);
-
-    _result = _system->set3DListenerAttributes(0, &position, &velocity, &forward, &up);
-    ERRCHECK(_result);
-}
-
-unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, FMOD_VECTOR pos, FMOD_VECTOR vel){
-    FMOD::Sound *_sound;
-    FMOD::Channel *_channel = 0;
-    unsigned int _id = getNextFreeId();
-    FMOD_MODE _mode;
-
-    if (is3D){
-        _mode = FMOD_3D;
-    }else{
-        _mode = FMOD_SOFTWARE | FMOD_2D;
+    else {
+        mode = FMOD_SOFTWARE | FMOD_2D;
     }
 
     // create the sound
-
-    _result = _system->createSound(soundFilePath.c_str(), _mode, 0, &_sound);
-    ERRCHECK(_result);
+    FMOD_RESULT result;
+    result = m_system->createSound(fileName.c_str(), mode, 0, &sound);
+    ERRCHECK(result);
 
     // set sound properties
-    if (is3D){
-        _result = _sound->set3DMinMaxDistance(0.5f * _distanceFactor, 5000.0f * _distanceFactor);
-        ERRCHECK(_result);
+    if (is3D) {
+        result = sound->set3DMinMaxDistance(0.5f * m_distanceFactor, 5000.0f * m_distanceFactor);
+        ERRCHECK(result);
     }
 
-    if (isLoop){
-        _result = _sound->setMode(FMOD_LOOP_NORMAL);
-        ERRCHECK(_result);
+    if (isLoop) {
+        result = sound->setMode(FMOD_LOOP_NORMAL);
+        ERRCHECK(result);
     }
+
+    m_loadedSounds.emplace(fileName, sound);
+
+    return sound;
+}
+
+unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, const glm::vec3& pos, const glm::vec3& vel)
+{
+    FMOD::Sound * sound = nullptr;
+    FMOD::Channel * channel = nullptr;
+    unsigned int id = getNextFreeId();
+
+    // try to load the sound
+    sound = loadSound(soundFilePath, isLoop, is3D);
+    if (sound == nullptr) {
+        return 0;
+    }
+
 
     // create the channel
-    _result = _system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
-    ERRCHECK(_result);
+    FMOD_RESULT result = m_system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
+    ERRCHECK(result);
 
     // set channel properties
-    if (is3D){
-        _result = _channel->set3DAttributes(&pos, &vel);
-        ERRCHECK(_result);
+    FMOD_VECTOR position = { pos.x, pos.y, pos.z };
+    FMOD_VECTOR velocity = { vel.x, vel.y, vel.z };
+
+    if (is3D) {
+        result = channel->set3DAttributes(&position, &velocity);
+        ERRCHECK(result);
     }
 
-    if (!paused){
-        _result = _channel->setPaused(false);
-        ERRCHECK(_result);
+    if (!paused) {
+        result = channel->setPaused(false);
+        ERRCHECK(result);
     }
 
-    _channels[_id] = { isLoop, is3D, pos, vel, _channel, _sound };
-    _system->update();
-    return _id;
+    m_channels[id] = { isLoop, is3D, position, velocity, channel, sound };
+    m_system->update();
+    return id;
 }
 
-void SoundManager::deleteChannel(unsigned int channelId){
-    _channels[channelId].sound->release();
-    ERRCHECK(_result);
-    _channels.erase(channelId);
+void SoundManager::deleteChannel(unsigned int channelId)
+{
+    m_channels.erase(channelId);
 }
 
-void SoundManager::play(unsigned int channelId){
-    bool _play;
-    bool _paused;
-    _channels[channelId].channel->isPlaying(&_play);
-    _channels[channelId].channel->getPaused(&_paused);
-    if (_play && _paused){
-        _result = _channels[channelId].channel->setPaused(false);
-    }else{
-        _result = _channels[channelId].channel->stop();
-        ERRCHECK(_result);
-        if (_channels[channelId].is3D){
-            _result = _system->playSound(FMOD_CHANNEL_FREE, _channels[channelId].sound, true, &(_channels[channelId].channel));
-            ERRCHECK(_result);
-            _result = _channels[channelId].channel->set3DAttributes(&_channels[channelId].position, &_channels[channelId].velocity);
-            ERRCHECK(_result);
-            _result = _system->update();
-            ERRCHECK(_result);
-        _result = _channels[channelId].channel->setPaused(false);
-        }else{
-            _result = _system->playSound(FMOD_CHANNEL_FREE, _channels[channelId].sound, false, &(_channels[channelId].channel));
+void SoundManager::play(unsigned int channelId)
+{
+    bool play;
+    bool paused;
+    FMOD_RESULT result;
+    m_channels[channelId].channel->isPlaying(&play);
+    m_channels[channelId].channel->getPaused(&paused);
+    if (play && paused) {
+        result = m_channels[channelId].channel->setPaused(false);
+    } else {
+        result = m_channels[channelId].channel->stop();
+        ERRCHECK(result);
+        if (m_channels[channelId].is3D){
+            result = m_system->playSound(FMOD_CHANNEL_FREE, m_channels[channelId].sound, true, &(m_channels[channelId].channel));
+            ERRCHECK(result);
+            result = m_channels[channelId].channel->set3DAttributes(&m_channels[channelId].position, &m_channels[channelId].velocity);
+            ERRCHECK(result);
+            result = m_system->update();
+            ERRCHECK(result);
+        result = m_channels[channelId].channel->setPaused(false);
+        } else {
+            result = m_system->playSound(FMOD_CHANNEL_FREE, m_channels[channelId].sound, false, &(m_channels[channelId].channel));
         }
     }
-    ERRCHECK(_result);
+    ERRCHECK(result);
 }
 
-void SoundManager::setPaused(unsigned int channelId, bool paused){
-    _channels[channelId].channel->setPaused(paused);
+void SoundManager::setPaused(unsigned int channelId, bool paused)
+{
+    m_channels[channelId].channel->setPaused(paused);
 }
 
-bool SoundManager::isPaused(unsigned int channelId){
+bool SoundManager::isPaused(unsigned int channelId)
+{
     bool p;
-    _channels[channelId].channel->getPaused(&p);
+    m_channels[channelId].channel->getPaused(&p);
     return p;
 }
 
-void SoundManager::togglePause(unsigned int channelId){
+void SoundManager::togglePause(unsigned int channelId)
+{
     bool p;
-    _channels[channelId].channel->getPaused(&p);
-    _channels[channelId].channel->setPaused(!p);
+    m_channels[channelId].channel->getPaused(&p);
+    m_channels[channelId].channel->setPaused(!p);
 }
 
-void SoundManager::setListenerAttributes(FMOD_VECTOR pos, FMOD_VECTOR forward, FMOD_VECTOR up, FMOD_VECTOR velocity){
-    _result = _system->set3DListenerAttributes(0, &pos, &velocity, &forward, &up);
-    ERRCHECK(_result);
+void SoundManager::setListenerAttributes(const glm::vec3& pos, const glm::vec3& forward, const glm::vec3& up, const glm::vec3& velocity)
+{
+    FMOD_VECTOR f_pos = { pos.x, pos.y, pos.z };
+    FMOD_VECTOR f_velocity = { velocity.x, velocity.y, velocity.z };
+    FMOD_VECTOR f_forward = { forward.x, forward.y, forward.z };
+    FMOD_VECTOR f_up = { up.x, up.y, up.z };
+
+    FMOD_RESULT result = m_system->set3DListenerAttributes(0, &f_pos, &f_velocity, &f_forward, &f_up);
+    ERRCHECK(result);
 }
 
-void SoundManager::setSoundPos(unsigned int channelId, FMOD_VECTOR pos){
-    FMOD_VECTOR _vel = _channels[channelId].velocity;
+void SoundManager::setSoundPosition(unsigned int channelId, const glm::vec3& pos)
+{
+    FMOD_VECTOR velocity = m_channels[channelId].velocity;
+    FMOD_VECTOR position = { pos.x, pos.y, pos.z };    
 
     bool p;
-    _channels[channelId].channel->isPlaying(&p);
-    if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&pos, &_vel);
+    m_channels[channelId].channel->isPlaying(&p);
+    if (p) {
+        FMOD_RESULT result = m_channels[channelId].channel->set3DAttributes(&position, &velocity);
+        ERRCHECK(result);
     }
-    ERRCHECK(_result);
-    _channels[channelId].position = pos;
+    m_channels[channelId].position = position;
 }
 
-void SoundManager::setSoundVel(unsigned int channelId, FMOD_VECTOR vel){
-    FMOD_VECTOR _pos = _channels[channelId].position;
+void SoundManager::setSoundVelocity(unsigned int channelId, const glm::vec3& vel)
+{
+    FMOD_VECTOR _pos = m_channels[channelId].position;
+    FMOD_VECTOR f_vel = { vel.x, vel.y, vel.z };
 
     bool p;
-    _channels[channelId].channel->isPlaying(&p);
-    if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&_pos, &vel);
+    m_channels[channelId].channel->isPlaying(&p);
+    if (p) {
+        FMOD_RESULT result = m_channels[channelId].channel->set3DAttributes(&_pos, &f_vel);
+        ERRCHECK(result);
     }
-    ERRCHECK(_result);
-    _channels[channelId].velocity = vel;
+    m_channels[channelId].velocity = f_vel;
 }
 
-void SoundManager::setSoundPosAndVel(unsigned int channelId, FMOD_VECTOR pos, FMOD_VECTOR vel){
+void SoundManager::setSoundPositionAndVelocity(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel)
+{
     bool p;
-    _channels[channelId].channel->isPlaying(&p);
-    if (p){
-        _result = _channels[channelId].channel->set3DAttributes(&pos, &vel);
+    FMOD_VECTOR position = { pos.x, pos.y, pos.z };
+    FMOD_VECTOR velocity = { vel.x, vel.y, vel.z };
+
+    m_channels[channelId].channel->isPlaying(&p);
+    if (p) {
+        FMOD_RESULT result = m_channels[channelId].channel->set3DAttributes(&position, &velocity);
+        ERRCHECK(result);
     }
-    _channels[channelId].position = pos;
-    _channels[channelId].velocity = vel;
+    m_channels[channelId].position = position;
+    m_channels[channelId].velocity = velocity;
 }
 
-void SoundManager::setMute(unsigned int channelId, bool mute){
-    _channels[channelId].channel->setMute(mute);
+void SoundManager::setMute(unsigned int channelId, bool mute)
+{
+    m_channels[channelId].channel->setMute(mute);
 }
 
 bool SoundManager::isMute(unsigned int channelId){
     bool mute;
-    _channels[channelId].channel->getMute(&mute);
+    m_channels[channelId].channel->getMute(&mute);
     return mute;
 }
 
-void SoundManager::setVolume(unsigned int channelId, float vol){
-    _channels[channelId].channel->setVolume(vol);
+void SoundManager::setVolume(unsigned int channelId, float vol)
+{
+    m_channels[channelId].channel->setVolume(vol);
 }
 
-float SoundManager::getVolume(unsigned int channelId){
+float SoundManager::getVolume(unsigned int channelId)
+{
     float vol;
-    _channels[channelId].channel->getVolume(&vol);
+    m_channels[channelId].channel->getVolume(&vol);
     return vol;
 }
 
-void SoundManager::changeVolume(unsigned int channelId, float dVol){
-    _channels[channelId].channel->setVolume(getVolume(channelId) + dVol);
+void SoundManager::changeVolume(unsigned int channelId, float dVol)
+{
+    m_channels[channelId].channel->setVolume(getVolume(channelId) + dVol);
 }
 
-void SoundManager::changeFile(unsigned int channelId, const std::string & filePath){
-    FMOD_MODE _mode;
-    bool _ispaused;
+void SoundManager::changeFile(unsigned int channelId, const std::string & filePath)
+{
+    FMOD_MODE mode;
+    bool isPaused;
     // get current sound properties
-    _channels[channelId].channel->getPaused(&_ispaused);
-    _channels[channelId].sound->getMode(&_mode);
+    m_channels[channelId].channel->getPaused(&isPaused);
+    m_channels[channelId].sound->getMode(&mode);
     // stop and release current sound object
-    _channels[channelId].channel->stop();
-    _channels[channelId].sound->release();
+    m_channels[channelId].channel->stop();
+    m_channels[channelId].sound->release();
 
     // create new sound object
-    _result = _system->createSound(filePath.c_str(), _mode, 0, &(_channels[channelId].sound));
-    ERRCHECK(_result);
+    FMOD_RESULT result = m_system->createSound(filePath.c_str(), mode, 0, &(m_channels[channelId].sound));
+    ERRCHECK(result);
     // bind it to the channel
-    _result = _system->playSound(FMOD_CHANNEL_REUSE, _channels[channelId].sound, _ispaused, &(_channels[channelId].channel));
-    ERRCHECK(_result);
+    result = m_system->playSound(FMOD_CHANNEL_REUSE, m_channels[channelId].sound, isPaused, &(m_channels[channelId].channel));
+    ERRCHECK(result);
 }
 
-void SoundManager::update(){
-    _system->update();
+void SoundManager::update()
+{
+    m_system->update();
 }

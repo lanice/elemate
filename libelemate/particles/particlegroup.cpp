@@ -11,7 +11,7 @@
 #include <PxSceneLock.h>
 
 #include "rendering/particledrawable.h"
-
+#include "io/soundmanager.h"
 
 using namespace physx;
 
@@ -58,6 +58,9 @@ ParticleGroup::ParticleGroup(
     
     setImmutableProperties(immutableProperties);
     setMutableProperties(mutableProperties);
+
+    m_soundChannel = SoundManager::instance()->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
+    SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
 }
 
 ParticleGroup::~ParticleGroup()
@@ -338,6 +341,22 @@ bool ParticleGroup::useGpuParticles() const
     return m_gpuParticles;
 }
 
+void ParticleGroup::updatePhysics(double /*delta*/)
+{
+    if (m_numParticles == 0) {
+        stopSound();
+    }
+    else {
+        startSound();
+    }
+}
+
+void ParticleGroup::updateVisuals()
+{
+    if (m_numParticles > 0)
+        SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
+}
+
 void ParticleGroup::giveGiftTo(ParticleGroup & other)
 {
     std::vector<glm::vec3> positions;
@@ -435,4 +454,30 @@ void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::
     }
 
     readData->unlock();
+}
+
+
+void ParticleGroup::updateSounds(bool isWorldPaused)
+{
+    if (isWorldPaused)
+    {
+        stopSound();
+        m_wasSoundPlaying = true;
+    }
+    else if (m_wasSoundPlaying)
+    {
+        startSound();
+    }
+}
+
+void ParticleGroup::startSound()
+{
+    SoundManager::instance()->setPaused(m_soundChannel, false);
+    m_wasSoundPlaying = true;
+}
+
+void ParticleGroup::stopSound()
+{
+    SoundManager::instance()->setPaused(m_soundChannel, true);
+    m_wasSoundPlaying = false;
 }
