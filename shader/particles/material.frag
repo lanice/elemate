@@ -55,8 +55,8 @@ vec4 lavaColor(vec2 v_uv){
     return vec4(1.0,min(c2,1),0.9*min(c3,1),0); */
 
 
-    vec3 light = normalize(vec3(0.0,1.0,-0.5));
-    vec3 normal = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
+    vec3 light = vec3(0.0, 0.894427, -0.444721); // = normalize(vec3(0.0,1.0,-0.5));
+    vec3 normal = (texture(particleNormals, v_uv) * view).xyz;
     vec3 lavaCol = vec3(0.5,0.01,0.01);
 
     return vec4(mix(
@@ -79,6 +79,37 @@ vec4 lavaColor(vec2 v_uv){
             )
         )
         ), 0.0);
+}
+
+const vec3 baseSandColor = vec3(0.776, 0.741, 0.608);
+
+vec4 sandColor(vec2 v_uv){
+    float x = gl_FragCoord.x*sin(gl_FragCoord.x);
+    float y = gl_FragCoord.y*cos(gl_FragCoord.y);
+    float rand_val = 1.0 - clamp(int(x+y)*100 %(int(x-y)%2) * 0.0001,0.0,0.2);
+    x = 123+x;
+    y = 321+y;
+    rand_val = rand_val - clamp(int(x+y)*100 %(int(x-y)%5) * 0.0001,0.0,0.25);
+    x = 321+x;
+    y = 123+y;
+    rand_val = rand_val - clamp(int(x+y)*100 %(int(x-y)%10) * 0.0001,0.0,0.3);
+
+    vec3 light   = normalize(vec3(0.0,1.0,-0.5));
+    vec3 normal  = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
+    vec3 sandCol = baseSandColor * vec3(rand_val);
+
+    return vec4(
+        mix(
+            baseSandColor * (1 - rand_val),
+            sandCol,
+            0.5+
+            0.5*max(
+                    dot(normal,light),
+                    0.0
+            )
+        ), 
+        1.0
+    );
 }
 
 vec4 steamColor(vec2 v_uv){
