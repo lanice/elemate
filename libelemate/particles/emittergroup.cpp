@@ -48,18 +48,18 @@ void EmitterGroup::emit(const float ratio, const glm::vec3 & position, const glm
     m_emitPosition = position;
     m_emitDirection = glm::normalize(direction);
     m_emitting = true;
-    startSound();
 }
 
 void EmitterGroup::stopEmit()
 {
     m_emitting = false;
     m_timeSinceLastEmit = 0.0;
-    stopSound();
 }
 
 void EmitterGroup::updatePhysics(double delta)
 {
+    ParticleGroup::updatePhysics(delta);
+
     if (!m_emitting) return;
 
     unsigned int particlesToEmit = static_cast<unsigned int>(glm::floor(m_emitRatio * delta));
@@ -88,12 +88,12 @@ void EmitterGroup::updatePhysics(double delta)
 
 void EmitterGroup::updateVisuals()
 {
+    ParticleGroup::updateVisuals();
+
     PxParticleReadData * readData = m_particleSystem->lockParticleReadData();
     assert(readData);
 
     m_particleDrawable->updateParticles(readData);
-
-    SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
 
     m_particlesToDelete.clear();
     m_downPositions.clear();

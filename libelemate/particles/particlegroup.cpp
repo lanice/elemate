@@ -341,6 +341,22 @@ bool ParticleGroup::useGpuParticles() const
     return m_gpuParticles;
 }
 
+void ParticleGroup::updatePhysics(double /*delta*/)
+{
+    if (m_numParticles == 0) {
+        stopSound();
+    }
+    else {
+        startSound();
+    }
+}
+
+void ParticleGroup::updateVisuals()
+{
+    if (m_numParticles > 0)
+        SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
+}
+
 void ParticleGroup::giveGiftTo(ParticleGroup & other)
 {
     std::vector<glm::vec3> positions;
