@@ -151,7 +151,7 @@ protected:
 
     bool m_gpuParticles;
 
-    bool m_wasSoundPlaying;
+    bool m_hasSound;
     unsigned int m_soundChannel;
     std::vector<uint32_t> m_particlesToDelete;
 

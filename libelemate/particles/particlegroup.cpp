@@ -3,6 +3,7 @@
 #include <cassert>
 #include <functional>
 #include <type_traits>
+#include <fstream>
 
 #include <glow/logging.h>
 
@@ -45,6 +46,11 @@ ParticleGroup::ParticleGroup(
 
 ParticleGroup::~ParticleGroup()
 {
+    if (m_hasSound) {
+        stopSound();
+        SoundManager::instance()->deleteChannel(m_soundChannel);
+    }
+
     PxSceneWriteLock scopedLock(* m_scene);
 
     m_particleSystem->releaseParticles();
@@ -73,8 +79,13 @@ ParticleGroup::ParticleGroup(const ParticleGroup & lhs, unsigned int id)
 
 void ParticleGroup::initialize(const ImmutableParticleProperties & immutableProperties, const MutableParticleProperties & mutableProperties)
 {
-    m_soundChannel = SoundManager::instance()->createNewChannel("data/sounds/elements/" + m_elementName + ".wav", true, true, true);
-    SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
+    std::string soundFileName = "data/sounds/elements/" + m_elementName + ".wav";
+    std::ifstream soundFile(soundFileName);
+    m_hasSound = soundFile.good();
+    if (m_hasSound) {
+        m_soundChannel = SoundManager::instance()->createNewChannel(soundFileName, true, true, true);
+        SoundManager::instance()->setVolume(m_soundChannel, 0.15f);
+    }
 
     for (PxU32 i = 0; i < m_maxParticleCount; ++i) m_indices[i] = i;
 
@@ -447,25 +458,24 @@ void ParticleGroup::particlePositionsIndicesVelocitiesInVolume(const glowutils::
 
 void ParticleGroup::updateSounds(bool isWorldPaused)
 {
-    if (isWorldPaused)
-    {
-        stopSound();
-        m_wasSoundPlaying = true;
-    }
-    else if (m_wasSoundPlaying)
-    {
-        startSound();
-    }
+    if (!m_hasSound)
+        return;
+
+    SoundManager::instance()->setMute(m_soundChannel, isWorldPaused);
 }
 
 void ParticleGroup::startSound()
 {
+    if (!m_hasSound)
+        return;
+
     SoundManager::instance()->setPaused(m_soundChannel, false);
-    m_wasSoundPlaying = true;
 }
 
 void ParticleGroup::stopSound()
 {
+    if (!m_hasSound)
+        return;
+
     SoundManager::instance()->setPaused(m_soundChannel, true);
-    m_wasSoundPlaying = false;
 }
