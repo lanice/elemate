@@ -93,7 +93,7 @@ void EmitterGroup::updateVisuals()
 
     m_particleDrawable->updateParticles(readData);
 
-    SoundManager::instance()->setSoundPos(m_soundChannel, m_particleDrawable->boundingBox().center());
+    SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
 
     m_particlesToDelete.clear();
     m_downPositions.clear();

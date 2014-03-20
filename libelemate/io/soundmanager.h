@@ -33,11 +33,11 @@ public:
     /** sets general Listener attributes */
     void setListenerAttributes(const glm::vec3& pos, const glm::vec3& forward, const glm::vec3& up, const glm::vec3& velocity = glm::vec3( 0.f, 0.f, 0.f));
     /** sets position of a channel in the world */
-    void setSoundPos(unsigned int channelId, const glm::vec3& pos);
+    void setSoundPosition(unsigned int channelId, const glm::vec3& pos);
     /** sets the velocity of a channel */
-    void setSoundVel(unsigned int channelId, const glm::vec3& vel);
+    void setSoundVelocity(unsigned int channelId, const glm::vec3& vel);
     /** sets positions and velocity of a channel in the world */
-    void setSoundPosAndVel(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel);
+    void setSoundPositionAndVelocity(unsigned int channelId, const glm::vec3& pos, const glm::vec3& vel);
     /** mutes or unmutes the channel */
     void setMute(unsigned int channelId, bool mute);
     /** returns true if the channel is mute */
@@ -57,27 +57,20 @@ private:
     SoundManager();
     ~SoundManager();
 
-    typedef struct SoundObject{
+    struct SoundObject{
         bool isLoop;
         bool is3D;
         FMOD_VECTOR     position;
         FMOD_VECTOR     velocity;
         FMOD::Channel   *channel;
         FMOD::Sound     *sound;
-    }SoundObject;
-    typedef std::map<unsigned int, SoundObject> SoundMap;
+    };
 
     static SoundManager * s_instance;
 
-    unsigned int        _version;
-    unsigned int        _numdrivers;
-    FMOD_SPEAKERMODE    _speakermode;
-    FMOD_CAPS           _caps;
-    char                _name[256];
-    float               _distanceFactor = 5.f; // units per meter (centimeters = 100)
-    SoundMap            _channels;
-    FMOD_RESULT         _result;
-    FMOD::System        *_system;
+    float                               m_distanceFactor = 5.f; // units per meter (centimeters = 100)
+    std::map<unsigned int, SoundObject> m_channels;
+    FMOD::System *                      m_system;
 
     /** checks errors */
     void ERRCHECK(FMOD_RESULT);
