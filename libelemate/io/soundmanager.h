@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <unordered_map>
 
 #include <fmod.h>
 
@@ -76,6 +77,9 @@ private:
     void ERRCHECK(FMOD_RESULT);
     /** returns the next free channelId */
     unsigned int getNextFreeId();
+
+    FMOD::Sound * loadSound(const std::string & filename, bool isLoop, bool is3D);
+    std::unordered_map<std::string, FMOD::Sound *> m_loadedSounds;
 
 public:
     SoundManager(const SoundManager&) = delete;

@@ -105,8 +105,8 @@ SoundManager::SoundManager()
 SoundManager::~SoundManager()
 {
     FMOD_RESULT result;
-    for (auto & it : m_channels){
-        result = it.second.sound->release();
+    for (auto & it : m_loadedSounds) {
+        result = it.second->release();
         ERRCHECK(result);
     }
 
@@ -126,32 +126,30 @@ void SoundManager::ERRCHECK(FMOD_RESULT _result)
 
 unsigned int SoundManager::getNextFreeId()
 {
-    unsigned int i = 0;
-    while (i < m_channels.size()){
-        if (m_channels.find(i) == m_channels.end())
-            return i;
-        ++i;
-    }
-    return i;
+    return static_cast<unsigned int>(m_channels.size());
 }
 
-unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, const glm::vec3& pos, const glm::vec3& vel)
+FMOD::Sound * SoundManager::loadSound(const std::string & fileName, bool isLoop, bool is3D)
 {
-    FMOD::Sound * sound = nullptr;
-    FMOD::Channel * channel = nullptr;
-    unsigned int _id = getNextFreeId();
-    FMOD_MODE mode;
+    // reuse already loaded sounds
+    const auto it = m_loadedSounds.find(fileName);
+    if (it != m_loadedSounds.end()) {
+        return it->second;
+    }
 
-    if (is3D){
+    // or load the sound if needed
+    FMOD::Sound * sound = nullptr;
+    FMOD_MODE mode;
+    if (is3D) {
         mode = FMOD_3D;
-    }else{
+    }
+    else {
         mode = FMOD_SOFTWARE | FMOD_2D;
     }
 
     // create the sound
-
     FMOD_RESULT result;
-    result = m_system->createSound(soundFilePath.c_str(), mode, 0, &sound);
+    result = m_system->createSound(fileName.c_str(), mode, 0, &sound);
     ERRCHECK(result);
 
     // set sound properties
@@ -160,38 +158,54 @@ unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, b
         ERRCHECK(result);
     }
 
-    if (isLoop){
+    if (isLoop) {
         result = sound->setMode(FMOD_LOOP_NORMAL);
         ERRCHECK(result);
     }
 
+    m_loadedSounds.emplace(fileName, sound);
+
+    return sound;
+}
+
+unsigned int SoundManager::createNewChannel(const std::string & soundFilePath, bool isLoop, bool is3D, bool paused, const glm::vec3& pos, const glm::vec3& vel)
+{
+    FMOD::Sound * sound = nullptr;
+    FMOD::Channel * channel = nullptr;
+    unsigned int id = getNextFreeId();
+
+    // try to load the sound
+    sound = loadSound(soundFilePath, isLoop, is3D);
+    if (sound == nullptr) {
+        return 0;
+    }
+
+
     // create the channel
-    result = m_system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
+    FMOD_RESULT result = m_system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
     ERRCHECK(result);
 
     // set channel properties
     FMOD_VECTOR position = { pos.x, pos.y, pos.z };
     FMOD_VECTOR velocity = { vel.x, vel.y, vel.z };
 
-    if (is3D){
+    if (is3D) {
         result = channel->set3DAttributes(&position, &velocity);
         ERRCHECK(result);
     }
 
-    if (!paused){
+    if (!paused) {
         result = channel->setPaused(false);
         ERRCHECK(result);
     }
 
-    m_channels[_id] = { isLoop, is3D, position, velocity, channel, sound };
+    m_channels[id] = { isLoop, is3D, position, velocity, channel, sound };
     m_system->update();
-    return _id;
+    return id;
 }
 
 void SoundManager::deleteChannel(unsigned int channelId)
 {
-    FMOD_RESULT result = m_channels[channelId].sound->release();
-    ERRCHECK(result);
     m_channels.erase(channelId);
 }
 
@@ -202,9 +216,9 @@ void SoundManager::play(unsigned int channelId)
     FMOD_RESULT result;
     m_channels[channelId].channel->isPlaying(&play);
     m_channels[channelId].channel->getPaused(&paused);
-    if (play && paused){
+    if (play && paused) {
         result = m_channels[channelId].channel->setPaused(false);
-    }else{
+    } else {
         result = m_channels[channelId].channel->stop();
         ERRCHECK(result);
         if (m_channels[channelId].is3D){
@@ -215,7 +229,7 @@ void SoundManager::play(unsigned int channelId)
             result = m_system->update();
             ERRCHECK(result);
         result = m_channels[channelId].channel->setPaused(false);
-        }else{
+        } else {
             result = m_system->playSound(FMOD_CHANNEL_FREE, m_channels[channelId].sound, false, &(m_channels[channelId].channel));
         }
     }
