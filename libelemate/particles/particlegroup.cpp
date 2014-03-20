@@ -352,7 +352,7 @@ void ParticleGroup::updatePhysics(double /*delta*/)
 
 void ParticleGroup::updateVisuals()
 {
-    if (m_numParticles > 0)
+    if (m_hasSound && m_numParticles > 0)
         SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
 }
 
