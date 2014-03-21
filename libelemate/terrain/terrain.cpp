@@ -188,6 +188,7 @@ void Terrain::generateDrawGrid()
     // create a quad for all vertices, except for the last row and column (covered by the second last)
     // see PxHeightFieldDesc::samples documentation: "...(nbRows - 1) * (nbColumns - 1) cells are actually used."
     unsigned numIndices = (diameter - 1) * ((diameter) * 2 + 1);
+    m_indices.clear();
     m_indices.reserve(numIndices);
     for (unsigned int row = 0; row < diameter - 1; ++row) {
         const unsigned rowOffset = row * diameter;

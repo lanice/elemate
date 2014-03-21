@@ -127,7 +127,7 @@ void Renderer::initialize()
     setSamplerUniform("ShadowMapping", "shadowMap");
 
     World::instance()->setUpLighting(*m_quadProgram);
-    m_quadProgram->setUniform("blendZ", 0.8f);
+    m_quadProgram->setUniform("blendZ", 0.5f);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
     
