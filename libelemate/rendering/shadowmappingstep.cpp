@@ -42,13 +42,12 @@ const std::vector<glm::vec2> ShadowMappingStep::s_earlyBailSamples({
     glm::vec2(-earlyBailDistance, -earlyBailDistance)});
 
 
-ShadowMappingStep::ShadowMappingStep(const World & world)
-: m_world(world)
-, m_lightCam(new CameraEx(ProjectionType::orthographic))
+ShadowMappingStep::ShadowMappingStep()
+: m_lightCam(new CameraEx(ProjectionType::orthographic))
 {
     m_lightCam->setUp(glm::vec3(0, 1, 0));
-    m_lightCam->setTop(m_world.terrain->settings.maxHeight);
-    m_lightCam->setBottom(-m_world.terrain->settings.maxHeight);
+    m_lightCam->setTop(World::instance()->terrain->settings.maxHeight);
+    m_lightCam->setBottom(-World::instance()->terrain->settings.maxHeight);
     m_lightCam->setViewport(2048, 2048);
 
     m_lightTex = new glow::Texture(GL_TEXTURE_2D);
@@ -91,7 +90,7 @@ ShadowMappingStep::ShadowMappingStep(const World & world)
 void ShadowMappingStep::calculateLightMatrix(const CameraEx & camera)
 {
     m_lightCam->setEye(glm::vec3(camera.eye().x, 0.0f, camera.eye().z));
-    m_lightCam->setCenter(m_lightCam->eye() - m_world.sunPosition());
+    m_lightCam->setCenter(m_lightCam->eye() - World::instance()->sunPosition());
     const float shadowWidth = camera.zFarEx();
     m_lightCam->setLeft(-shadowWidth*1.5f);
     m_lightCam->setRight(shadowWidth*1.5f);
@@ -112,8 +111,8 @@ void ShadowMappingStep::drawLightMap(const CameraEx & camera)
     m_lightFbo->bind();
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->drawDepthMap(*m_lightCam, { "bedrock" });
-    m_world.hand->drawDepthMap(*m_lightCam);
+    World::instance()->terrain->drawDepthMap(*m_lightCam, { "bedrock" });
+    World::instance()->hand->drawDepthMap(*m_lightCam);
 
     m_lightFbo->unbind();
 
@@ -128,8 +127,8 @@ void ShadowMappingStep::draw(const CameraEx & camera)
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->drawShadowMapping(camera, *m_lightCam, { "bedrock" });
-    m_world.hand->drawShadowMapping(camera, *m_lightCam);
+    World::instance()->terrain->drawShadowMapping(camera, *m_lightCam, { "bedrock" });
+    World::instance()->hand->drawShadowMapping(camera, *m_lightCam);
 
     m_shadowFbo->unbind();
 }

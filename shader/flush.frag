@@ -6,11 +6,13 @@ uniform sampler2D sceneColor;
 uniform sampler2D sceneDepth;
 uniform sampler2D handColor;
 uniform sampler2D handDepth;
-uniform sampler2D particleNormals;
+// uniform sampler2D particleNormals;
 uniform sampler2D particleDepth;
 uniform sampler2D shadowMap;
-uniform sampler2D lightMap;
+// uniform sampler2D lightMap;
 uniform usampler2D elementID;
+uniform vec3 skyColor;
+uniform float blendZ;
 
 layout(location = 0)out vec4 fragColor;
 
@@ -55,10 +57,19 @@ void main()
         particleC = vec4(1,1,1,1);
     }
     
-	fragColor =
+	vec3 fragColorRgb =
     mix(
-        (1-particleC.w * (1-shadowFactor)) * particleC,
-		shadowFactor * sceneHandColor,
+        (1-particleC.w * (1-shadowFactor)) * particleC.rgb,
+		shadowFactor * sceneHandColor.rgb,
 		step(sceneHandZ,particleZ)
 	);
+    
+    float fragZ = min(sceneHandZ, particleZ);
+    
+    fragColor = vec4(mix(fragColorRgb, skyColor, // blend at the horizon 
+                    // max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0)),
+                    // max(gl_FragCoord.z / (fragDepth * 0.1*zfar) - 9, 0.0)),
+                    max((fragZ - blendZ) / (1.0 - blendZ), 0.0)),
+                1.0);
+    // fragColor = vec4(fragColorRgb, 1.0);
 }
