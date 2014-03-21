@@ -1,6 +1,6 @@
 -- Lua script for the properties of water particles (water.lua)
 
-io.write("water.lua\n")
+io.write("steam.lua\n")
 -- immutable properties
 function setImmutableProperties( index )
     maxMotionDistance = 0.055
@@ -18,14 +18,10 @@ function setMutableProperties( index )
     dynamicFriction = 0.05
     staticFriction = 0.1
     damping = 0.1
-    externalAcceleration = {0, 0, 0}
+    externalAcceleration = {0, 11, 0}
     particleMass = 0.1
     viscosity = 35.0
     stiffness = 8.134
 
     psa_setMutableProperties(index, restitution, dynamicFriction, staticFriction, damping, externalAcceleration, particleMass, viscosity, stiffness)
-end
-
-function setTemperature( index )
-    psa_setTemperature(index, 20.0)
 end

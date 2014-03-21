@@ -32,12 +32,15 @@ uint8_t ParticleDrawable::elementIndex(const std::string & elementName)
         return 3;
     if (elementName == "bedrock")
         return 4;
+    if (elementName == "steam")
+        return 5;
     assert(false);
     return 0;   // mean unset
 }
 
-ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount)
+ParticleDrawable::ParticleDrawable(const std::string & elementName, unsigned int maxParticleCount, bool isDown)
 : Drawable()
+, isDown(isDown)
 , m_elementName(elementName)
 , m_elementIndex(elementIndex(elementName))
 , m_maxParticleCount(maxParticleCount)
@@ -144,6 +147,7 @@ void ParticleDrawable::updateBuffers()
 
 void ParticleDrawable::updateParticles(const PxParticleReadData * readData)
 {
+    assert(readData);
     unsigned numParticles = readData->nbValidParticles;
 
     m_bbox = glowutils::AxisAlignedBoundingBox();

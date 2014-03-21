@@ -111,3 +111,21 @@ vec4 sandColor(vec2 v_uv){
         1.0
     );
 }
+
+vec4 steamColor(vec2 v_uv){
+    vec3 background = texture(sceneColor,v_uv).rgb;
+    vec3 light = normalize(vec3(0.0,1.0,-0.5));
+    vec3 normal = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
+    //return vec4(mix(background,vec3(0.8),0.5),1.0);
+
+    return vec4(
+        mix(
+            vec3(0.9),
+            background,
+            0.2+
+            0.8*abs(dot(
+                normal,
+                vec3(0,0,-1.0)
+            ))
+        ), 1.0);
+}

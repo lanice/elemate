@@ -143,4 +143,15 @@ namespace Luaw
     {
         lua_pushlstring(state, value.c_str(), value.size());
     }
+
+    void _push(lua_State * state, glm::vec3 && value)
+    {
+        lua_newtable(state);
+        lua_pushnumber(state, value.x);
+        lua_setfield(state, -2, "x");
+        lua_pushnumber(state, value.y);
+        lua_setfield(state, -2, "y");
+        lua_pushnumber(state, value.z);
+        lua_setfield(state, -2, "z");
+    }
 }

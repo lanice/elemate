@@ -7,6 +7,8 @@ set(SOURCES
     elements.h
     physicswrapper.cpp
     physicswrapper.h
+    physicserrorcallback.h
+    physicserrorcallback.cpp
     game.cpp
     game.h
     world.cpp

@@ -8,6 +8,7 @@
 #include "utils/pxcompilerfix.h"
 #include <PxPhysicsAPI.h>
 
+#include "physicserrorcallback.h"
 #include "elements.h"
 #include "particles/particlescriptaccess.h"
 
@@ -23,7 +24,6 @@ PhysicsWrapper::PhysicsWrapper()
 , m_physxGpuAvailable(checkPhysxGpuAvailable())
 , m_cudaContextManager(nullptr)
 , m_gpuParticles(false)
-//m_profile_zone_manager(nullptr)
 {
     initializePhysics();
     initializeScene();
@@ -43,8 +43,6 @@ PhysicsWrapper::~PhysicsWrapper()
     m_cpu_dispatcher->release();
     m_physics->release();
     PxCloseExtensions();
-    //Please don't forget if you activate this feature.
-    //m_profile_zone_manager->release();
     if (m_cudaContextManager)
         m_cudaContextManager->release();
     m_foundation->release();
@@ -85,10 +83,9 @@ void PhysicsWrapper::step(double delta)
 }
 
 void PhysicsWrapper::initializePhysics(){
-    static physx::PxDefaultErrorCallback gDefaultErrorCallback;
     static physx::PxDefaultAllocator     gDefaultAllocatorCallback;
 
-    m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
+    m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, m_errorCallback);
     if (!m_foundation)
         fatalError("PxCreateFoundation failed!");
     m_physics= PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, physx::PxTolerancesScale());
@@ -102,23 +99,6 @@ void PhysicsWrapper::initializePhysics(){
         m_cudaContextManager = physx::PxCreateCudaContextManager(*m_foundation, cudaContextManagerDesc, nullptr);
     }
 #endif
-
-    /* ... we still have to think about those:
-    //For Debugging Lab ....
-    m_profile_zone_manager = &physx::PxProfileZoneManager::createProfileZoneManager(m_foundation);
-    if (!m_profile_zone_manager)
-        fatalError("PxProfileZoneManager::createProfileZoneManager failed!");
-    
-    // Cooking
-    // The PhysX cooking library provides utilities for creating, converting, and serializing bulk data. 
-    // Depending on your application, you may wish to link to the cooking library in order to process such data at runtime. 
-    // Alternatively you may be able to process all such data in advance and just load it into memory as required. 
-    // Initialize the cooking library as follows: (after declaring member physx::PxCooking* m_cooking)
-
-    m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_foundation, PxCookingParams());
-    if (!m_cooking)
-        fatalError("PxCreateCooking failed!");
-    */
 
     //    Extensions
     // The extensions library contains many functions that may be useful to a large class of users, 
@@ -157,10 +137,9 @@ void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_descrip
     scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
 
-void PhysicsWrapper::fatalError(std::string error_message){
+void PhysicsWrapper::fatalError(const std::string & error_message){
     glow::fatal("PhysX Error occured:\n%;\nPress Enter to close the Application.", error_message);
-    std::string temp;
-    std::getline(std::cin, temp);
+    std::getc(stdin);
     exit(1);
 }
 
@@ -231,36 +210,4 @@ void PhysicsWrapper::restoreGPUAccelerated()
         return;
     }
     ParticleScriptAccess::instance().restoreGPUAccelerated();
-}
-
-void ElematePxErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
-{
-    switch (code) {
-    case physx::PxErrorCode::eNO_ERROR:
-        glow::info("PhysX: ""%;"" [%;%;]", message, file, line);
-        break;
-    case physx::PxErrorCode::eDEBUG_INFO:
-        glow::debug("PhysX: ""%;"" [%;%;]", message, file, line);
-        break;
-    case physx::PxErrorCode::eDEBUG_WARNING:
-        glow::warning("PhysX: ""%;"" [%;%;]", message, file, line);
-        break;
-    case physx::PxErrorCode::eINVALID_PARAMETER:
-    case physx::PxErrorCode::eINVALID_OPERATION:
-    case physx::PxErrorCode::eOUT_OF_MEMORY:
-        glow::critical("PhysX: ""%;"" [%;%;]", message, file, line);
-        break;
-    case physx::PxErrorCode::eINTERNAL_ERROR:
-        glow::fatal("PhysX: ""%;"" [%;%;]", message, file, line);
-        break;
-    case physx::PxErrorCode::eABORT:
-        glow::fatal("PhysX: ""%;"" [%;%;]", message, file, line);
-        exit(2);
-    case physx::PxErrorCode::ePERF_WARNING:
-        glow::debug("PhysX (performance): ""%;"" [%;%;]", message, file, line);
-        break;
-    case physx::PxErrorCode::eMASK_ALL:
-        glow::fatal("PhysX (something terrible happened): ""%;"" [%;%;]", message, file, line);
-        break;
-    }
 }

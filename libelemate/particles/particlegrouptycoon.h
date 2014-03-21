@@ -21,7 +21,7 @@ public:
     void updatePhysics(double delta);
     void updateVisuals();
 
-    ParticleGroup * getNearestGroup(const std::string & elementName, const glm::vec3 & position);
+    DownGroup * getNearestGroup(const std::string & elementName, const glm::vec3 & position);
     ParticleGroup * particleGroupById(unsigned int id);
     const ParticleGroup * particleGroupById(unsigned int id) const;
 

@@ -12,6 +12,7 @@
 #include "particlegrouptycoon.h"
 #include "rendering/particledrawable.h"
 #include "terrain/terraininteraction.h"
+#include "downgroup.h"
 #include "io/soundmanager.h"
 
 
@@ -110,36 +111,24 @@ void EmitterGroup::updateVisuals()
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt, ++pxVelocityIt) {
         if (*flagsIt & PxParticleFlag::eCOLLISION_WITH_STATIC) {
-            if (positionIt->y < m_particleSize + 0.1)   // collision with water plane
-            {
-            }
-            else if (!(terrain.topmostElementAt(positionIt->x, positionIt->z) == m_elementName))
-            {
-                const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*positionIt.ptr());
-                const glm::vec3 & vel = reinterpret_cast<const glm::vec3&>(*pxVelocityIt.ptr());
-                m_downPositions.push_back(pos);
-                m_downVelocities.push_back(vel);
-                m_particlesToDelete.push_back(i);
+            const glm::vec3 & pos = reinterpret_cast<const glm::vec3&>(*positionIt.ptr());
+            const glm::vec3 & vel = reinterpret_cast<const glm::vec3&>(*pxVelocityIt.ptr());
+            m_downPositions.push_back(pos);
+            m_downVelocities.push_back(vel);
+            m_particlesToDelete.push_back(i);
 
-                downBox.extend(pos);
-            }
-            else
-            {
-                m_particlesToDelete.push_back(i);
-            }
+            downBox.extend(pos);
         }
     }
     
     assert(m_numParticles == readData->nbValidParticles);
     readData->unlock();
 
-    if (m_particlesToDelete.empty())
-        return;
-    releaseParticles(m_particlesToDelete);
+    if (!m_particlesToDelete.empty()) {
+        releaseParticles(m_particlesToDelete);
 
-    if (m_downPositions.empty())
-        return;
-    ParticleGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());
-    group->createParticles(m_downPositions, &m_downVelocities);
-    group->setTemperature((m_numParticles * m_temperature + group->numParticles() * group->temperature()) / (m_numParticles + group->numParticles()));
+        DownGroup * group = ParticleGroupTycoon::instance().getNearestGroup(m_elementName, downBox.center());
+        group->createParticles(m_downPositions, &m_downVelocities);
+        group->setTemperature((m_numParticles * m_temperature + group->numParticles() * group->temperature()) / (m_numParticles + group->numParticles()));
+    }
 }
