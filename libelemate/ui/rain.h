@@ -8,6 +8,7 @@ namespace glow{
     class VertexArrayObject;
     class Program;
 }
+class CameraEx;
 
 class Rain{
 public:
@@ -15,7 +16,7 @@ public:
     ~Rain();
 
     void initialize();
-    void draw();
+    void draw(const CameraEx & camera);
     void resize(int width, int height);
     
 protected:

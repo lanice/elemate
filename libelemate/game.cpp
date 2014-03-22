@@ -88,7 +88,7 @@ void Game::loop(double delta)
                 m_world->updateVisuals();
                 
                 m_renderer(*m_camera);
-                m_rain.draw();
+                m_rain.draw(*m_camera);
                 m_userInterface.draw();
 
                 m_renderer.writeScreenShot();

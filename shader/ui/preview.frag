@@ -15,5 +15,5 @@ void main()
                                 0.3+(highlighted * 0.5),
                                 1.0), 
                     texture(element_texture,(v_uv*0.5+0.5)), 
-                    step(length(v_uv),0.8));     
+                    step(length(v_uv),0.8));
 }

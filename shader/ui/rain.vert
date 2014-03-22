@@ -1,11 +1,9 @@
 #version 330 core
 
-layout(location = 0)in vec2 _vertex;
-
-out vec2 v_uv;
+layout(location = 0)in vec3 _vertex;
+out vec3 v_vertex;
 
 void main()
 {
-    v_uv      = _vertex;
-    gl_Position = vec4(0.0,0.0,0.0,1.0);
+    v_vertex = _vertex;
 }
