@@ -9,8 +9,6 @@ out vec4 v_projPos;
 out vec3 v_normal;
 out float v_temperature;
 
-out uint v_isVisible;   // 0==false
-
 uniform mat4 modelTransform;
 uniform mat4 modelView;
 uniform mat4 modelViewProjection;
@@ -31,11 +29,6 @@ void main()
     vec4 vertex = vec4(v_vertex.s, height, v_vertex.t, 1.0);
     v_projPos = modelViewProjection * vertex;
     vec3 normProjPos = v_projPos.xyz / v_projPos.w;
-    
-    v_isVisible = uint(
-        normProjPos.x >= -1 && normProjPos.x <= 1
-        && normProjPos.y >= -1 && normProjPos.y <= 1
-        && normProjPos.z >= 0 && normProjPos.z <= 1);
     
     v_worldPos = (modelTransform * vertex).xyz;
     
