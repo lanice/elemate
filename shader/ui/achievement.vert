@@ -12,10 +12,10 @@ out vec2 v_uv;
 
 void main()
 {
-    v_uv 		= _vertex;
+    v_uv = _vertex;
     gl_Position = vec4(
-    				x+0.05+0.25*_vertex.x*scale, 
-    				y-0.05+time_mod*0.85+0.1*_vertex.y*ratio*scale,
-    				0,
-    				1);
+            x+0.05+0.25*_vertex.x*scale, 
+            y-0.05+time_mod*0.85+0.1*_vertex.y*ratio*scale,
+            0,
+            1);
 }

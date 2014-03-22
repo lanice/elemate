@@ -55,10 +55,10 @@ void main()
         particleC = vec4(1,1,1,1);
     }
     
-	fragColor =
+    fragColor =
     mix(
         (1-particleC.w * (1-shadowFactor)) * particleC,
-		shadowFactor * sceneHandColor,
-		step(sceneHandZ,particleZ)
-	);
+       shadowFactor * sceneHandColor,
+       step(sceneHandZ,particleZ)
+    );
 }

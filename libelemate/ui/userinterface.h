@@ -64,8 +64,8 @@ protected:
     std::vector<std::string> m_elementPreviews;
     unsigned int             m_activeElement;
     
-	void drawHUD();
-	void drawMainMenu();
+    void drawHUD();
+    void drawMainMenu();
 
     void drawGreyScreen();
     void drawMenuEntries();

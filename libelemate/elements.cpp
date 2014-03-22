@@ -12,7 +12,7 @@
 
 bool Elements::s_isInitialized = false;
 
-std::unordered_map<std::string, physx::PxMaterial*>	Elements::s_pxMaterials;
+std::unordered_map<std::string, physx::PxMaterial*> Elements::s_pxMaterials;
 std::unordered_map<std::string, glm::mat4>          Elements::s_shadingMatrices;
 
 const std::string Elements::s_elementUniformPrefix = "element_";

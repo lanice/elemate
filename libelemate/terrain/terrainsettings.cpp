@@ -63,6 +63,6 @@ bool std::less<TileID>::operator()(const TileID& lhs, const TileID& rhs) const
      ? static_cast<unsigned int>(lhs.level)
         < static_cast<unsigned int>(rhs.level)
      : (lhs.x != rhs.x)
-     	? (lhs.x < rhs.x)
-     	: (lhs.z < rhs.z);
+        ? (lhs.x < rhs.x)
+        : (lhs.z < rhs.z);
 }

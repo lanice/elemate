@@ -22,7 +22,7 @@ vec4 dRightUp = vec4(particleSize, particleSize, 0.0, 0.0);
 
 void addVertex(vec4 viewPosCenter, vec2 relPos)
 {
-	g_relPos = relPos;
+    g_relPos = relPos;
     g_viewPosCenter = viewPosCenter;
     g_viewPos = viewPosCenter + dRightUp * vec4(relPos, 0.0, 0.0);
     gl_Position = projection * g_viewPos;
@@ -32,11 +32,11 @@ void addVertex(vec4 viewPosCenter, vec2 relPos)
 void main()
 {    
     vec4 viewPosCenter = view * vec4(v_vertex[0], 1.0);
-	
-	addVertex(viewPosCenter, vec2(-1,-1));
-	addVertex(viewPosCenter, vec2(-1, 1));
-	addVertex(viewPosCenter, vec2( 1,-1));
-	addVertex(viewPosCenter, vec2( 1, 1));
+
+    addVertex(viewPosCenter, vec2(-1,-1));
+    addVertex(viewPosCenter, vec2(-1, 1));
+    addVertex(viewPosCenter, vec2( 1,-1));
+    addVertex(viewPosCenter, vec2( 1, 1));
     
     EndPrimitive();
 }

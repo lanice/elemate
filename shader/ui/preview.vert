@@ -11,10 +11,10 @@ out vec2 v_uv;
 
 void main()
 {
-    v_uv 		= _vertex;
+    v_uv      = _vertex;
     gl_Position = vec4(
-    				x+width * _vertex.x, 
-    				y+width *  _vertex.y*ratio,
-    				0,
-    				1);
+              x+width * _vertex.x, 
+              y+width *  _vertex.y*ratio,
+              0,
+              1);
 }

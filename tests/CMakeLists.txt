@@ -10,7 +10,7 @@ add_subdirectory(${gtestroot})
 
 set_target_properties(gtest
     PROPERTIES
-    FOLDER ${ELEMATE_TEST_GROUP})		
+    FOLDER ${ELEMATE_TEST_GROUP})
 set_target_properties(gtest_main
     PROPERTIES
     FOLDER ${ELEMATE_TEST_GROUP})
@@ -25,8 +25,8 @@ if(MSVC)
 endif()
 
 include_directories(
-	${ELEMATE_INCLUDE_DIR}
-	${gtestroot}/include
+    ${ELEMATE_INCLUDE_DIR}
+    ${gtestroot}/include
 )
 
 set( TEST_SOURCES
@@ -39,15 +39,15 @@ add_executable(${TARGET_NAME} ${TEST_SOURCES} )
 set_cxx_target_properties(${TARGET_NAME})
 
 target_link_libraries(${TARGET_NAME}
-	gtest
-	gtest_main
+    gtest
+    gtest_main
     libelemate
 )
 
 add_test(
-	NAME ${TARGET_NAME}
-	COMMAND ${TARGET_NAME})
+    NAME ${TARGET_NAME}
+    COMMAND ${TARGET_NAME})
     
 set_target_properties(${TARGET_NAME}
-	PROPERTIES
-	FOLDER ${ELEMATE_TEST_GROUP})
+    PROPERTIES
+    FOLDER ${ELEMATE_TEST_GROUP})

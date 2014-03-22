@@ -20,7 +20,7 @@
 #include "rendering/shadowmappingstep.h"
 #include "lua/luawrapper.h"
 
-const std::string Hand::s_modelFilename = "data/models/hand.3DS";
+const std::string Hand::s_modelFilename = "data/models/hand.3ds";
 
 Hand::Hand()
 : ShadowingDrawable()
