@@ -27,10 +27,9 @@ namespace glow {
 #include "debugstep.h"
 #include "texturemanager.h"
 
-Renderer::Renderer(const World & world)
+Renderer::Renderer()
 : m_drawDebugStep(false)
 , m_drawHeatMap(false)
-, m_world(world)
 , m_takeScreenShot(false)
 {
     initialize();
@@ -98,7 +97,7 @@ void Renderer::initialize()
 
 
     m_particleStep = std::make_shared<ParticleStep>();
-    m_shadowMappingStep = std::make_shared<ShadowMappingStep>(this->m_world);
+    m_shadowMappingStep = std::make_shared<ShadowMappingStep>();
 
     m_steps.push_back(m_particleStep.get());
     m_steps.push_back(m_shadowMappingStep.get());
@@ -126,6 +125,9 @@ void Renderer::initialize()
     setSamplerUniform("ParticleStep", "elementID");
     setSamplerUniform("ShadowMapping", "lightMap");
     setSamplerUniform("ShadowMapping", "shadowMap");
+
+    World::instance()->setUpLighting(*m_quadProgram);
+    m_quadProgram->setUniform("blendZ", 0.8f);
 
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
     
@@ -194,10 +196,11 @@ void Renderer::sceneStep(const CameraEx & camera)
 
     m_fboByName.at("scene")->bind();
 
-    glClearColor(m_world.skyColor().x, m_world.skyColor().y, m_world.skyColor().z, 1.0);
+    const glm::vec3 & skyColor = World::instance()->skyColor();
+    glClearColor(skyColor.x, skyColor.y, skyColor.z, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_world.terrain->draw(camera, { "bedrock" });
+    World::instance()->terrain->draw(camera, { "bedrock" });
 
     m_fboByName.at("scene")->unbind();
 }
@@ -208,7 +211,7 @@ void Renderer::handStep(const CameraEx & camera)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_world.hand->draw(camera);
+    World::instance()->hand->draw(camera);
 
     if (m_drawDebugStep)
         m_debugStep->draw(camera);  // rendered with the hand, to have it as a part of the scene
@@ -223,7 +226,7 @@ void Renderer::flushStep(const CameraEx & camera)
 
     m_quad->program()->setUniform("znear", camera.zNearEx());
     m_quad->program()->setUniform("zfar", camera.zFarEx());
-    m_quad->program()->setUniform("timef", int(m_world.getTime()));
+    m_quad->program()->setUniform("timef", int(World::instance()->getTime()));
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
     m_quad->program()->setUniform("viewport", camera.viewport());
@@ -254,7 +257,7 @@ void Renderer::setDrawDebugInfo(bool doDraw)
 void Renderer::toggleDrawHeatMap()
 {
     m_drawHeatMap = !m_drawHeatMap;
-    m_world.terrain->setDrawHeatMap(m_drawHeatMap);
+    World::instance()->terrain->setDrawHeatMap(m_drawHeatMap);
 }
 
 void Renderer::resize(int width, int height)

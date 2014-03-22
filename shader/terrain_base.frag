@@ -11,7 +11,6 @@ uniform float zfar;
 
 uniform vec3 lightdir2;
 uniform mat4 light2;
-uniform vec3 skyColor;
 
 uniform mat4 element_bedrock;
 uniform mat4 element_sand;
@@ -89,11 +88,7 @@ void main()
         lightColor = interpolate(texCoeff, lightColors);
     }
     
-    vec3 fragColorRgb = mix(lightColor, textureColor, 0.7);
-    fragColor = vec4(mix(fragColorRgb, skyColor, // blend at the horizon 
-                        // max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0)),
-                        max(gl_FragCoord.z / (gl_FragCoord.w * 0.1*zfar) - 9, 0.0)),
-                    1.0);
+    fragColor = vec4(mix(lightColor, textureColor, 0.7), 1.0);
                     
     // mix for hot zones
     const float glowTemperature = 400;

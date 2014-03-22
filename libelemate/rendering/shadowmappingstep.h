@@ -8,12 +8,10 @@
 
 #include "renderingstep.h"
 
-class World;
-
 class ShadowMappingStep : public RenderingStep
 {
 public:
-    ShadowMappingStep(const World & world);
+    ShadowMappingStep();
 
     virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;
@@ -26,8 +24,6 @@ public:
     static const glm::mat4 s_biasMatrix;
 
 protected:
-    const World & m_world;
-
     CameraEx * m_lightCam;
 
     virtual void drawLightMap(const CameraEx & camera);

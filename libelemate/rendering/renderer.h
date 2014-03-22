@@ -17,7 +17,6 @@ namespace glow {
 namespace glowutils {
     class ScreenAlignedQuad;
 }
-class World;
 class RenderingStep;
 class ParticleStep;
 class ShadowMappingStep;
@@ -28,7 +27,7 @@ class DebugStep;
 class Renderer
 {
 public:
-    Renderer(const World & world);
+    Renderer();
 
     void operator()(const CameraEx & camera);
 
@@ -63,8 +62,6 @@ protected:
 
     glm::ivec2 m_viewport;
 
-    const World & m_world;
-
     void initialize();
 
     typedef std::pair<std::string, glow::ref_ptr<glow::Texture>> NamedTexture;
@@ -81,7 +78,6 @@ protected:
     glow::ref_ptr<glow::Program> m_quadProgram;
 
 public:
-    Renderer() = delete;
     Renderer(Renderer&) = delete;
     void operator=(Renderer&) = delete;
 };

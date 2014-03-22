@@ -21,9 +21,9 @@ m_world(new World(*m_physicsWrapper)),
 m_camera(std::make_shared<CameraEx>(ProjectionType::perspective)),
 m_navigation(window, m_camera, m_world->terrain),
 m_manipulator(window, m_navigation, *m_world),
-m_renderer(*m_world),
-m_userInterface(window),
-m_rain()
+m_rain(),
+m_renderer(),
+m_userInterface(window)
 {
     setVSync(m_vsyncEnabled);
 

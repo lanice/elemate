@@ -8,7 +8,7 @@ in vec4 v_shadowCoord;
 layout(location = 0)out float shadowValue;
 
 const float zBias = 0.003;
-const float lightSize = 30.0f;
+const float lightSize = 70.0f;
 const float searchWidth = 5.0f;
 
 const int nbSamples = 32;
