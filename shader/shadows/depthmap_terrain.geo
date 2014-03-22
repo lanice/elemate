@@ -31,11 +31,7 @@ void main()
         if (baseTileCompare)
             isOnTop = g_height >= texelFetch(baseHeightField, texIndex).x;
         
-        visibleTriangle = visibleTriangle ||
-            (isOnTop &&
-            normProjPos.x >= -1 && normProjPos.x <= 1
-            && normProjPos.y >= -1 && normProjPos.y <= 1
-            && normProjPos.z >= 0 && normProjPos.z <= 1);
+        visibleTriangle = visibleTriangle || isOnTop;
     }
     
     if (!visibleTriangle)
