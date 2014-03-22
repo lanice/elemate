@@ -23,16 +23,19 @@ vec4 steamColor(vec2 v_uv);
 vec4 sandColor(vec2 v_uv);
 
 float shadowFactorLambert(float depth){
-    float depthX1 = linearize(texture(sceneDepth, v_uv+vec2(0.005, 0.0)).r)-depth;
-    float depthX2 = depth-linearize(texture(sceneDepth, v_uv+vec2(-0.005, 0.0)).r);
-    float depthY1 = depth-linearize(texture(sceneDepth, v_uv+vec2(0.0, 0.005)).r);
-    float depthY2 = linearize(texture(sceneDepth, v_uv+vec2(0.0, -0.005)).r)-depth;
+    float depthX1 = linearize(texture(sceneDepth, v_uv+vec2(0.004, 0.0)).r)-depth;
+    float depthX2 = depth-linearize(texture(sceneDepth, v_uv+vec2(-0.004, 0.0)).r);
+    float depthY1 = depth-linearize(texture(sceneDepth, v_uv+vec2(0.0, 0.004)).r);
+    float depthY2 = linearize(texture(sceneDepth, v_uv+vec2(0.0, -0.004)).r)-depth;
 
     float depthX = mix(depthX2,depthX1,step(abs(depthX1),abs(depthX2)));
     float depthY = mix(depthY2,depthY1,step(abs(depthY1),abs(depthY2)));
 
-    vec3 vecX = mix(vec3(0.005, 0.0, depthX),vec3(0.0005, 0.0, linearize(texture(sceneDepth, v_uv+vec2(0.0005, 0.0)).r)-depth),step(0.01,abs(depthX)));
-    vec3 vecY = mix(vec3(0.0, -0.005, depthY),vec3(0.0, -0.0005, depth-linearize(texture(sceneDepth, v_uv+vec2(0.0, -0.0005)).r)),step(0.01,abs(depthY)));
+    if (abs(depthX)>0.004 || abs(depthY)>0.004)
+        return 0.6;
+
+    vec3 vecX = vec3(0.004, 0.0, depthX);
+    vec3 vecY = vec3(0.0, -0.004, depthY);
 
     vec3 n = normalize(cross(vecX,vecY));
     return 0.7*pow(dot(n,vec3(0.0, 0,-1.0)),2)+0.3;
