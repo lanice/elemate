@@ -20,14 +20,6 @@ vec4 lavaColor(vec2 v_uv);
 vec4 steamColor(vec2 v_uv);
 vec4 sandColor(vec2 v_uv);
 
-
-
-uniform int timef;
-
-vec4 rain() {
-    return vec4(fract(sin(timef*dot(vec2(v_uv.x,floor(v_uv.y*20)/20.0) ,vec2(12.9898,78.233))) * 43758.5453));
-}
-
 void main()
 {    
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
@@ -69,5 +61,4 @@ void main()
 		shadowFactor * sceneHandColor,
 		step(sceneHandZ,particleZ)
 	);
-    fragColor = rain();
 }

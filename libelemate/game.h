@@ -8,6 +8,7 @@
 #include "ui/manipulator.h"
 #include "rendering/renderer.h"
 #include "ui/userinterface.h"
+#include "ui/rain.h"
 
 class PhysicsWrapper;
 class World;
@@ -60,6 +61,7 @@ protected:
 
     Renderer m_renderer;
     UserInterface m_userInterface;
+    Rain m_rain;
 
 public:
     Game() = delete;

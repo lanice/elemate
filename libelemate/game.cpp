@@ -22,13 +22,16 @@ m_camera(std::make_shared<CameraEx>(ProjectionType::perspective)),
 m_navigation(window, m_camera, m_world->terrain),
 m_manipulator(window, m_navigation, *m_world),
 m_renderer(*m_world),
-m_userInterface(window)
+m_userInterface(window),
+m_rain()
 {
     setVSync(m_vsyncEnabled);
 
     m_world->setNavigation(m_navigation);
 
     m_userInterface.initialize();
+
+    m_rain.initialize();
 }
 
 Game::~Game()
@@ -85,6 +88,7 @@ void Game::loop(double delta)
                 m_world->updateVisuals();
                 
                 m_renderer(*m_camera);
+                m_rain.draw();
                 m_userInterface.draw();
 
                 m_renderer.writeScreenShot();
@@ -163,6 +167,7 @@ void Game::resize(int width, int height)
     m_camera->setViewport(width, height);
     m_renderer.resize(width, height);
     m_userInterface.resize(width, height);
+    m_rain.resize(width, height);
 }
 
 UserInterface * Game::userInterface()

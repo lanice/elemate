@@ -90,6 +90,8 @@ set(SOURCES
     ui/hand.h
     ui/userinterface.cpp
     ui/userinterface.h
+    ui/rain.cpp
+    ui/rain.h
     ui/menupage.cpp
     ui/menupage.h
     ui/achievement.cpp
