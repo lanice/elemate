@@ -22,16 +22,33 @@ vec4 lavaColor(vec2 v_uv);
 vec4 steamColor(vec2 v_uv);
 vec4 sandColor(vec2 v_uv);
 
+float shadowFactorLambert(float depth){
+    float depthX1 = linearize(texture(sceneDepth, v_uv+vec2(0.005, 0.0)).r)-depth;
+    float depthX2 = depth-linearize(texture(sceneDepth, v_uv+vec2(-0.005, 0.0)).r);
+    float depthY1 = depth-linearize(texture(sceneDepth, v_uv+vec2(0.0, 0.005)).r);
+    float depthY2 = linearize(texture(sceneDepth, v_uv+vec2(0.0, -0.005)).r)-depth;
+
+    float depthX = mix(depthX2,depthX1,step(abs(depthX1),abs(depthX2)));
+    float depthY = mix(depthY2,depthY1,step(abs(depthY1),abs(depthY2)));
+
+    vec3 vecX = mix(vec3(0.005, 0.0, depthX),vec3(0.0005, 0.0, linearize(texture(sceneDepth, v_uv+vec2(0.0005, 0.0)).r)-depth),step(0.01,abs(depthX)));
+    vec3 vecY = mix(vec3(0.0, -0.005, depthY),vec3(0.0, -0.0005, depth-linearize(texture(sceneDepth, v_uv+vec2(0.0, -0.0005)).r)),step(0.01,abs(depthY)));
+
+    vec3 n = normalize(cross(vecX,vecY));
+    return 0.7*pow(dot(n,vec3(0.0, 0,-1.0)),2)+0.3;
+}
+
 void main()
 {    
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
+    //shadowFactorLambert(sceneZ);
+    //return;
     float handZ = linearize(texture(handDepth, v_uv).r);
     float particleZ = texture(particleDepth, v_uv).r;
     vec4 sceneC = texture(sceneColor, v_uv);
     vec4 handC = texture(handColor, v_uv);
     float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
-
-    vec4 sceneHandColor = mix(texture(handColor, v_uv), texture(sceneColor, v_uv), step(sceneZ, handZ));
+    vec4 sceneHandColor = mix(texture(handColor, v_uv), texture(sceneColor, v_uv)*shadowFactorLambert(sceneZ), step(sceneZ, handZ));
     float sceneHandZ = min(sceneZ, handZ);
 
     uint element = texture(elementID, v_uv).x;
