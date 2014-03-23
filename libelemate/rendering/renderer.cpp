@@ -23,6 +23,7 @@
 #include "shadowmappingstep.h"
 #include "debugstep.h"
 #include "texturemanager.h"
+#include "io/imagereader.h"
 
 Renderer::Renderer()
 : m_drawDebugStep(false)
@@ -107,6 +108,8 @@ void Renderer::initialize()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag")
     );
 
+    initSkybox();
+
     std::function<void(const std::string &)> setOwnSamplerUniform = [&](const std::string & name) {
         m_quadProgram->setUniform(name, TextureManager::getTextureUnit("Renderer", name));
     };
@@ -122,6 +125,7 @@ void Renderer::initialize()
     setSamplerUniform("ParticleStep", "elementID");
     setSamplerUniform("ShadowMapping", "lightMap");
     setSamplerUniform("ShadowMapping", "shadowMap");
+    setOwnSamplerUniform("skybox");
 
     World::instance()->setUpLighting(*m_quadProgram);
 
@@ -274,4 +278,44 @@ void Renderer::resize(int width, int height)
         assert(step);
         step->resize(width, height);
     }
+}
+
+void Renderer::initSkybox()
+{
+    // load the sky
+
+    const unsigned int skySize = 509;
+    RawImage * images[6];
+    images[0] = new RawImage("data/textures/sky/posx.raw", skySize, skySize);
+    images[1] = new RawImage("data/textures/sky/negx.raw", skySize, skySize);
+    images[2] = new RawImage("data/textures/sky/posy.raw", skySize, skySize);
+    images[3] = new RawImage("data/textures/sky/negy.raw", skySize, skySize);
+    images[4] = new RawImage("data/textures/sky/posz.raw", skySize, skySize);
+    images[5] = new RawImage("data/textures/sky/negz.raw", skySize, skySize);
+    for (int i = 0; i < 6; ++i) {
+        assert(images[i]->status() == RawImage::Status::Success);
+    }
+
+    m_skyboxTexture = new glow::Texture(GL_TEXTURE_CUBE_MAP);
+    const int textureUnit = TextureManager::reserveTextureUnit("Renderer", "skybox");
+    m_skyboxTexture->bindActive(GL_TEXTURE0 + textureUnit);
+    
+    for (int i = 0; i < 6; i++) {
+        m_skyboxTexture->image2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            0,
+            GL_RGB8,
+            skySize, skySize,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            images[i]->rawData());
+    }
+
+    m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_skyboxTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_skyboxTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    for (int i = 0; i < 6; ++i)
+        delete images[i];
 }
