@@ -69,10 +69,11 @@ public:
 
     /** change the air humidity (globally) depending on a number of steam particles */
     void changeAirHumidity(int numSteamParticles);
-    
-    float humidityFactor;
-    float rainStrength;
 
+    float rainStrength() const;
+
+    float humidityFactor;
+    
 protected:
     static World * s_instance;
 
@@ -89,11 +90,15 @@ protected:
     std::vector<int> m_sounds;
 
     void updateListener();
+    void fadeRainSound(float intensity);
 
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
     glm::vec3 m_skyColor;
     unsigned int m_airHumidity;
+    float m_rainStrength;
+    bool m_isRaining;
+    int m_rainSoundId;
 
     std::unordered_set<ParticleGroup *> m_particleGroupObservers;
 
