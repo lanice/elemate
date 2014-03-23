@@ -230,6 +230,8 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
     m_quad->program()->setUniform("viewport", camera.viewport());
+    m_quad->program()->setUniform("viewProjectionInverse", camera.viewProjectionInvertedEx());
+    m_quad->program()->setUniform("cameraPosition", camera.eye());
 
     m_quad->draw();
 }
@@ -282,19 +284,15 @@ void Renderer::resize(int width, int height)
 
 void Renderer::initSkybox()
 {
-    // load the sky
-
-    const unsigned int skySize = 509;
+    const unsigned int skySize = 1120;
     RawImage * images[6];
-    images[0] = new RawImage("data/textures/sky/posx.raw", skySize, skySize);
-    images[1] = new RawImage("data/textures/sky/negx.raw", skySize, skySize);
-    images[2] = new RawImage("data/textures/sky/posy.raw", skySize, skySize);
-    images[3] = new RawImage("data/textures/sky/negy.raw", skySize, skySize);
-    images[4] = new RawImage("data/textures/sky/posz.raw", skySize, skySize);
-    images[5] = new RawImage("data/textures/sky/negz.raw", skySize, skySize);
-    for (int i = 0; i < 6; ++i) {
-        assert(images[i]->status() == RawImage::Status::Success);
-    }
+    // http://www.3delyvisions.com/skf1.htm -> sky25.zip
+    images[0] = new RawImage("data/textures/sky/left2moon.raw", skySize, skySize);
+    images[1] = new RawImage("data/textures/sky/right2moon.raw", skySize, skySize);
+    images[2] = new RawImage("data/textures/sky/top2moon.raw", skySize, skySize);
+    images[3] = new RawImage("data/textures/sky/bot2moon.raw", skySize, skySize);
+    images[4] = new RawImage("data/textures/sky/back2moon.raw", skySize, skySize);
+    images[5] = new RawImage("data/textures/sky/front2moon.raw", skySize, skySize);
 
     m_skyboxTexture = new glow::Texture(GL_TEXTURE_CUBE_MAP);
     const int textureUnit = TextureManager::reserveTextureUnit("Renderer", "skybox");
@@ -313,8 +311,9 @@ void Renderer::initSkybox()
 
     m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_skyboxTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_skyboxTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    m_skyboxTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_skyboxTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     for (int i = 0; i < 6; ++i)
         delete images[i];

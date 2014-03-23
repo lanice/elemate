@@ -101,6 +101,12 @@ void main()
         vec3 viewPos = viewPos4.xyz / viewPos4.w;
         vec3 viewDir = normalize(viewPos - cameraPosition);
         
-        fragColor = texture(skybox, viewDir);
+        float mixV = viewDir.y * 0.5 + 0.5;
+        fragColor = vec4(
+            mix(
+                skyColor,
+                texture(skybox, viewDir).xyz,
+                smoothstep(0.0, 0.1, viewDir.y)),
+            1.0);
     }
 }
