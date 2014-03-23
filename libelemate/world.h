@@ -69,10 +69,9 @@ public:
 
     /** change the air humidity (globally) depending on a number of steam particles */
     void changeAirHumidity(int numSteamParticles);
-    /** number of emitted steam particles, representing the global air humidity */
-    float humidityFactor() const;
-
-    float rainStrength() const;
+    
+    float humidityFactor;
+    float rainStrength;
 
 protected:
     static World * s_instance;

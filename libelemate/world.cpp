@@ -29,6 +29,8 @@ World * World::s_instance = nullptr;
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(nullptr)
 , terrain(nullptr)
+, humidityFactor(-0.2f)
+, rainStrength(0.f)
 , m_physicsWrapper(physicsWrapper)
 , m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
@@ -194,18 +196,9 @@ void World::changeAirHumidity(int numSteamParticles)
     if (m_airHumidity > (unsigned int)(std::numeric_limits<int>::max()))
         m_airHumidity = std::numeric_limits<int>::max();
     m_airHumidity = std::max(0, int(m_airHumidity) + numSteamParticles);
-}
-
-float World::humidityFactor() const
-{
-    float humidityFactor = (40.f - std::max(20.0f, 60.0f - m_airHumidity * 0.0001f)) * 0.01f;
-    return humidityFactor;
-}
-
-float World::rainStrength() const
-{
-    float rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
-    return rainStrength;
+    humidityFactor = (40.f - std::max(20.0f, 60.0f - m_airHumidity * 0.0001f)) * 0.01f;
+    rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
+    AchievementManager::instance()->setProperty("rainStrength", rainStrength);
 }
 
 void World::registerLuaFunctions(LuaWrapper * lua)
