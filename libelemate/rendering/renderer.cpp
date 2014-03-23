@@ -135,16 +135,17 @@ void Renderer::initialize()
     m_debugStep = std::make_shared<DebugStep>();
 
     // Set Rain texture
-    glow::ref_ptr<glow::Texture> texture = new glow::Texture(GL_TEXTURE_2D);
-    texture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    texture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    m_rainTexture = new glow::Texture(GL_TEXTURE_2D);
 
-    RawImage image("data/textures/rain/depth_full.raw", 8192, 768);
+    m_rainTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_rainTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_rainTexture->setParameter(GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    m_rainTexture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    texture->image2D(0, GL_RGB8, 8192, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
-    texture->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "rain"));
+    RawImage m_image("data/textures/rain/depth_full.raw", 1024*16, 768);
+
+    m_rainTexture->image2D(0, GL_RGB8, 1024 * 16, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, m_image.rawData());
+    m_rainTexture->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "rain"));
     glActiveTexture(GL_TEXTURE0);
     CheckGLError();
 }

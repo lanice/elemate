@@ -46,8 +46,6 @@ float shadowFactorLambert(float depth){
 void main()
 {    
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
-    //shadowFactorLambert(sceneZ);
-    //return;
     float handZ = linearize(texture(handDepth, v_uv).r);
     float particleZ = texture(particleDepth, v_uv).r;
     vec4 sceneC = texture(sceneColor, v_uv);
@@ -55,6 +53,7 @@ void main()
     float shadowFactor = texture(shadowMap, v_uv).x * 0.7 + 0.3;
     vec4 sceneHandColor = mix(texture(handColor, v_uv), texture(sceneColor, v_uv)*shadowFactorLambert(sceneZ), step(sceneZ, handZ));
     float sceneHandZ = min(sceneZ, handZ);
+    float rainDepth = 1.0-texture(rainSampler, vec2(mod(timef/1000,16)/16.0+v_uv.x/8.0,v_uv.y)).r;
 
     uint element = texture(elementID, v_uv).x;
     
@@ -79,12 +78,16 @@ void main()
         particleC = vec4(1,1,1,1);
     }
     
-	vec3 fragColorRgb =
-    mix(
-        (1-particleC.w * (1-shadowFactor)) * particleC.rgb,
-		shadowFactor * sceneHandColor.rgb,
-		step(sceneHandZ,particleZ)
-	);
+    vec3 sceneColor =  mix(
+            (1-particleC.w * (1-shadowFactor)) * particleC.rgb,
+            shadowFactor * sceneHandColor.rgb,
+            step(sceneHandZ,particleZ)
+        );
+    vec3 fragColorRgb = mix(
+        mix(vec3(0.5,0.5,0.5),sceneColor,rainDepth*0.8+0.2),
+        sceneColor,
+        step(min(sceneHandZ,particleZ),rainDepth)
+    );
     
     float fragZ = min(sceneHandZ, particleZ);
     
