@@ -27,7 +27,6 @@ public:
       * @param intersectVolume will be set to the intersection volume, if the boxes intersect and the parameter is not set to nullptr */
     static bool checkBoundingBoxCollision(const glowutils::AxisAlignedBoundingBox & box1, const glowutils::AxisAlignedBoundingBox & box2, glowutils::AxisAlignedBoundingBox * intersectVolume = nullptr);
 
-    void particleGroupDeleted(const std::string & elementName, int id);
     void clearParticleGroups();
 
 protected:

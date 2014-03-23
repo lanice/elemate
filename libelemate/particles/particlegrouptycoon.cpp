@@ -85,7 +85,7 @@ void ParticleGroupTycoon::updateVisuals()
         pair.second->updateVisuals();
 }
 
-const std::unordered_map<unsigned int, ParticleGroup *> & ParticleGroupTycoon::particleGroupsById() const
+const std::unordered_map<unsigned int, ParticleGroup *> & ParticleGroupTycoon::particleGroups() const
 {
     return m_particleGroups;
 }
@@ -211,7 +211,7 @@ void ParticleGroupTycoon::mergeGroups()
         if (gridGroup == pair.second)
             continue;
 
-        pair.second->giveGiftTo(*gridGroup);
+        pair.second->moveParticlesTo(*gridGroup);
 
         groupsToRemove.push_back(pair.first);
     }

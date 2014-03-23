@@ -2,7 +2,7 @@
 
 #include "particlegroup.h"
 
-
+/** @brief ParticleGroup that contains particles which were emitted but not collided with the ground/water yet. */
 class EmitterGroup : public ParticleGroup
 {
 public:
@@ -15,11 +15,15 @@ public:
         const MutableParticleProperties & mutableProperties = MutableParticleProperties()
         );
 
-    /** Emit particles with ratio as particles per second. */
+    /** Emit particles with ratio as particles per second at given position with given direction. */
     void emit(const float ratio, const glm::vec3 & position, const glm::vec3 & direction);
+    /** Stops particle emitting. */
     void stopEmit();
 
+    /** Update physics of contained particles. */
     virtual void updatePhysics(double delta) override;
+
+    /** Update visuals of contained particles. */
     virtual void updateVisuals() override;
 
 protected:

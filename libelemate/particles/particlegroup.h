@@ -39,6 +39,7 @@ struct MutableParticleProperties
     physx::PxReal stiffness = 8.134f;
 };
 
+/** @brief Baseclass that contains a variable number of particles with the same physical properties. */
 class ParticleGroup
 {
 public:
@@ -58,7 +59,9 @@ public:
 
     const std::string & elementName() const;
     uint32_t numParticles() const;
+    
     const glowutils::AxisAlignedBoundingBox & boundingBox() const;
+
     float particleSize() const;
     void setParticleSize(float size);
     const bool isDown;
@@ -86,10 +89,13 @@ public:
     /** Get the indexes of the particles that are inside the bounding box.
       * This doesn't clear the particleIndicies container, if it contained any elements before. */
     void particleIndicesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<uint32_t> & particleIndices) const;
+    /** Get the indexes and velocities of the particles that are inside the bounding box.
+      * This doesn't clear the particleIndicies container, if it contained any elements before. */
     void particlePositionsIndicesVelocitiesInVolume(const glowutils::AxisAlignedBoundingBox & boundingBox, std::vector<glm::vec3> & positions, std::vector<uint32_t> & particleIndices, std::vector<glm::vec3> & velocities) const;
 
+    /** Update physics of contained particles. */
     virtual void updatePhysics(double delta);
-    /** Subscribed to World to update particle visuals. */
+    /** Update visuals of contained particles. */
     virtual void updateVisuals();
 
     void setImmutableProperties(const ImmutableParticleProperties & properties);
@@ -116,7 +122,9 @@ public:
     void setUseGpuParticles(const bool enable);
     bool useGpuParticles() const;
 
-    void giveGiftTo(ParticleGroup & other);
+    /** Transfers all particles to other ParticleGroup. */
+    void moveParticlesTo(ParticleGroup & other);
+
     void updateSounds(bool isWorldPaused);
     void startSound();
     void stopSound();

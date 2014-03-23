@@ -72,7 +72,7 @@ void ParticleCollision::registerLuaFunctions()
 
 void ParticleCollision::performCheck()
 {
-    const auto & particleGroups = ParticleGroupTycoon::instance().particleGroupsById();
+    const auto & particleGroups = ParticleGroupTycoon::instance().particleGroups();
 
     for (auto pair = particleGroups.cbegin(); pair != particleGroups.cend(); ++pair) {
         if (!pair->second->isDown)

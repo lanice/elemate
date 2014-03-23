@@ -361,7 +361,7 @@ void ParticleGroup::updateVisuals()
         SoundManager::instance()->setSoundPosition(m_soundChannel, m_particleDrawable->boundingBox().center());
 }
 
-void ParticleGroup::giveGiftTo(ParticleGroup & other)
+void ParticleGroup::moveParticlesTo(ParticleGroup & other)
 {
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> velocities;
