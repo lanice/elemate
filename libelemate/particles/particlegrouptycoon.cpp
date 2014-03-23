@@ -14,7 +14,7 @@
 
 ParticleGroupTycoon * ParticleGroupTycoon::s_instance = nullptr;
 
-const float gridSize = 6.0f;
+const float gridSize = 4.0f;
 
 void ParticleGroupTycoon::initialize()
 {

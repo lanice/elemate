@@ -13,7 +13,7 @@
 #include "particles/particlescriptaccess.h"
 
 
-const int   PhysicsWrapper::kNumberOfThreads = 2;
+const int   PhysicsWrapper::kNumberOfThreads = 4;
 PhysicsWrapper * PhysicsWrapper::s_instance = nullptr;
 
 PhysicsWrapper::PhysicsWrapper()
