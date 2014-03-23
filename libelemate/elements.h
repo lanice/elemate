@@ -1,7 +1,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <list>
 #include <string>
 
 #include <glm/glm.hpp>
@@ -9,7 +8,6 @@
 namespace glow {
     class Program;
 }
-
 namespace physx {
     class PxMaterial;
 }
@@ -21,10 +19,13 @@ struct Elements {
     static void initialize();
     static void clear();
 
+    /** set the material lighting matrix uniform for all elements on the program */
     static void setAllUniforms(glow::Program & program);
 
+    /** get a physx material definition for the named element */
     static physx::PxMaterial * pxMaterial(const std::string & physxMaterial);
 
+    /** uniform name prefix used for lighting matrices */
     static const std::string s_elementUniformPrefix;
 
 private:

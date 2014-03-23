@@ -21,15 +21,6 @@ Drawable::~Drawable()
     s_drawableInstances.erase(this);
 }
 
-const std::set<Drawable*> & Drawable::instances()
-{
-    return s_drawableInstances;
-}
-
-void Drawable::initialize()
-{
-}
-
 void Drawable::draw(const CameraEx & camera)
 {
     if (!m_vao)
@@ -48,11 +39,6 @@ void Drawable::draw(const CameraEx & camera)
 const glowutils::AxisAlignedBoundingBox & Drawable::boundingBox() const
 {
     return m_bbox;
-}
-
-void Drawable::setBoudingBox(const glowutils::AxisAlignedBoundingBox & bbox)
-{
-    m_bbox = bbox;
 }
 
 const glm::mat4 & Drawable::transform() const

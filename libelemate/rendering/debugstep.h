@@ -2,15 +2,19 @@
 
 #include "renderingstep.h"
 
+#include <glow/ref_ptr.h>
+
 namespace glow {
     class VertexArrayObject;
     class Buffer;
     class Program;
 }
 
-class DebugStep : RenderingStep
+/** Draw some debug information for registered classes. */
+class DebugStep : public RenderingStep
 {
 public:
+    /** draw bounding boxes of Drawable subclasses and the particle collision volumes */
     virtual void draw(const CameraEx & camera) override;
 
 protected:

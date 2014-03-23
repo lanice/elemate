@@ -38,7 +38,7 @@ void DebugStep::draw(const CameraEx & camera)
     static const glm::vec4 emittingColor(1, 0, 0, 1);
 
     m_wireframeBoxProgram->use();
-    for (const Drawable * drawable : Drawable::instances()) {
+    for (const Drawable * drawable : Drawable::s_drawableInstances) {
         const glowutils::AxisAlignedBoundingBox & bbox = drawable->boundingBox();
 
         if (bbox == glowutils::AxisAlignedBoundingBox())    // don't draw zero-initialized boxes

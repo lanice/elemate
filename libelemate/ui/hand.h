@@ -34,6 +34,8 @@ public:
     void registerLuaFunctions(LuaWrapper * lua);
 
 protected:
+    virtual void initialize() override;
+
     void loadModel();
     static const std::string s_modelFilename;
 

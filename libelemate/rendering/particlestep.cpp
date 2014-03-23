@@ -167,7 +167,6 @@ void ParticleStep::resize(int width, int height)
     m_elementIdTex->image2D(0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
     m_depthTex->image2D(0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
     m_particleSceneFbo->printStatus(true);
-    //assert(m_particleSceneFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
     m_postTempTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
     m_depthResultTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
@@ -175,7 +174,6 @@ void ParticleStep::resize(int width, int height)
 
     for (PostProcess & process : m_processes) {
         process.m_fbo->printStatus(true);
-        //assert(process.m_fbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 
         process.m_program->setUniform("viewport", glm::ivec2(width, height));
     }

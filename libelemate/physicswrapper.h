@@ -14,52 +14,47 @@ namespace physx {
     class PxCudaContextManager;
 }
 
-/** This Class initializes all basic objects that are necessary to use NVIDIA Physics.
- * At the moment, the properly initialized physics and scene object are accessible via functions.
- * Using this class is simple: Istantiate it and you are able to use the already initialized physics and scene. To make a step in scene-simulation, call step() with the passed time.
- * We still have to decide if we want to wrap the standard functions of PhysX like addActor and athe creation of rigid actors themselves into a separate function.
- */
-class PhysicsWrapper{
+/** Wraps the NVIDIA PhysX context and scene. Allows use of CUDA accelerated particles on windows and supporting NVIDIA GPUs. */
+class PhysicsWrapper
+{
 public:
     PhysicsWrapper();
     ~PhysicsWrapper();
 
-    /** return the current PhysicsWrapper object */
+    /** @return the current PhysicsWrapper object */
     static PhysicsWrapper * getInstance();
 
-    /** Proceeds with simulation for amount of given time delta. */
-    void step(double delta);
+    /** Proceeds with simulation for a given time delta. Calls simulate and a blocking fetchResults on the PhysX scene.
+        @param delta floating point time in seconds */
+    void step(float delta);
     
-    /** The returned object is initialized. */
-    physx::PxScene*             scene() const;
+    /** @returns the PhysX scene */
+    physx::PxScene * scene() const;
 
+    /** @returns the CUDA context manager on Windows, if a supporting GPU was found.  */
     physx::PxCudaContextManager * cudaContextManager() const;
-
-    /** add the actor to the current physx scene */
-    void addActor(physx::PxActor& actor);
-    void addActor(physx::PxRigidStatic& actor);
 
     void setUseGpuParticles(bool useGPU);
     void toogleUseGpuParticles();
     bool useGpuParticles() const;
-    /** pause the gpu acceleration if enabled, for scene mesh updates */
+    /** pause the GPU acceleration if currently enabled. Needed for scene mesh updates */
     void pauseGPUAcceleration();
-    /** restart gpu acceleration if it was enabled before last call of pauseGPUAcceleration */
+    /** restart GPU acceleration if it was enabled before last call of pauseGPUAcceleration */
     void restoreGPUAccelerated();
 
     static bool physxGpuAvailable();
 
-protected:
-    /** Default value is 2. Number of threads is required for the CPU Dispatcher of th PhysX library. */
-    static const int            kNumberOfThreads;
+private:
+    /** Number of threads is required for the CPU Dispatcher of th PhysX library. */
+    static const int kNumberOfThreads;
 
     /** Creation of PxFoundation, PxPhysics and Initialization of PxExtensions. */
     void initializePhysics();
 
-    /** Creation of PxDefaultCpuDispatcher and PxScene after customized SceneDescription provided by customizeSceneDescription() */
+    /** Creation of PxDefaultCpuDispatcher and PxScene. */
     void initializeScene();
 
-    /** Specifies special scene description.  */
+    /** Specifies special scene description. */
     void customizeSceneDescription(physx::PxSceneDesc&);
 
     /** Prints an error message and end the application after pressing enter. */

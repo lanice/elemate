@@ -73,17 +73,18 @@ PhysicsWrapper * PhysicsWrapper::getInstance()
     return s_instance;
 }
 
-void PhysicsWrapper::step(double delta)
+void PhysicsWrapper::step(float delta)
 {
     if (delta == 0)
         return;
 
-    m_scene->simulate(static_cast<physx::PxReal>(delta));
+    m_scene->simulate(delta);
     m_scene->fetchResults(true);
 }
 
-void PhysicsWrapper::initializePhysics(){
-    static physx::PxDefaultAllocator     gDefaultAllocatorCallback;
+void PhysicsWrapper::initializePhysics()
+{
+    static physx::PxDefaultAllocator gDefaultAllocatorCallback;
 
     m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, m_errorCallback);
     if (!m_foundation)
@@ -109,7 +110,8 @@ void PhysicsWrapper::initializePhysics(){
         fatalError("PxInitExtensions failed!");
 }
 
-void PhysicsWrapper::initializeScene(){
+void PhysicsWrapper::initializeScene()
+{
     physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
     customizeSceneDescription(sceneDesc);
 
@@ -133,11 +135,13 @@ void PhysicsWrapper::initializeScene(){
         fatalError("createScene failed!");
 }
 
-void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description){
+void PhysicsWrapper::customizeSceneDescription(physx::PxSceneDesc& scene_description)
+{
     scene_description.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 }
 
-void PhysicsWrapper::fatalError(const std::string & error_message){
+void PhysicsWrapper::fatalError(const std::string & error_message)
+{
     glow::fatal("PhysX Error occured:\n%;\nPress Enter to close the Application.", error_message);
     std::getc(stdin);
     exit(1);
@@ -153,16 +157,6 @@ physx::PxCudaContextManager * PhysicsWrapper::cudaContextManager() const
 {
     assert(m_cudaContextManager);
     return m_cudaContextManager;
-}
-
-void PhysicsWrapper::addActor(physx::PxActor & actor)
-{
-    scene()->addActor(actor);
-}
-
-void PhysicsWrapper::addActor(physx::PxRigidStatic & actor)
-{
-    scene()->addActor(actor);
 }
 
 void PhysicsWrapper::setUseGpuParticles(bool useGPU)

@@ -1,18 +1,27 @@
 #pragma once
 
-#include <vector>
+#include "renderingstep.h"
 
-#include <glow/global.h>
+#include <vector>
 
 #include <glm/glm.hpp>
 
-#include "renderingstep.h"
+#include <glow/ref_ptr.h>
+
+namespace glow {
+    class Texture;
+    class FrameBufferObject;
+    class RenderBufferObject;
+    class Program;
+}
 
 class ShadowMappingStep : public RenderingStep
 {
 public:
     ShadowMappingStep();
 
+    /** Draw the depth values as seen from the sun light defined in the world (orthographic projection).
+        Draw the shadow mapping for this light source, as seen by the passed camera. */
     virtual void draw(const CameraEx & camera) override;
     virtual void resize(int width, int height) override;
 

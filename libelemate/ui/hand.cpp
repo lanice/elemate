@@ -28,7 +28,10 @@ Hand::Hand()
 , m_heightOffset(1.0f)
 {
     setPosition(0.0f, 0.0f);
+}
 
+void Hand::initialize()
+{
     loadModel();
 
     m_program = new glow::Program();

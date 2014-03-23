@@ -115,7 +115,7 @@ void World::updatePhysics()
     ParticleGroupTycoon::instance().updatePhysics(delta);
 
     // simulate physx
-    m_physicsWrapper.step(delta);
+    m_physicsWrapper.step(static_cast<float>(delta));
 
     if (m_isRaining)
     {

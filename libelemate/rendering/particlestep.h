@@ -5,6 +5,24 @@
 
 #include "renderingstep.h"
 
+#include <glow/ref_ptr.h>
+
+namespace glow {
+    class FrameBufferObject;
+    class Texture;
+    class Program;
+}
+namespace glowutils {
+    class ScreenAlignedQuad;
+}
+
+
+/** @brief Particle and Fluid rendering
+    
+    - Draw the depth image of particles and the fluid terrain (water+lava)
+    - Apply vertical and horizontal blurring.
+    - Calculated normals based the the depth image.
+    The actual element colors are calculated in the flush step. */
 class ParticleStep : public RenderingStep
 {
 public:

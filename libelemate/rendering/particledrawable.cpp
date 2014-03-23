@@ -14,8 +14,6 @@
 #include <foundation/PxVec3.h>
 #include <particles/PxParticleReadData.h>
 
-#include <glm/glm.hpp>
-
 #include "world.h"
 
 using namespace physx;

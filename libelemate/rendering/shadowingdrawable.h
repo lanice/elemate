@@ -6,13 +6,16 @@ namespace glow {
     class Program;
 }
 
+/** Superclass for drawables that are meant to cast and receive shadows. */
 class ShadowingDrawable : public Drawable
 {
 public:
     ShadowingDrawable();
 
-    /** writes the linearized depth into the current depth attachment */
+    /** Writes the depth into the current depth attachment.
+        Depth values will be linearized for perspective projections. */
     virtual void drawDepthMap(const CameraEx & camera);
+    /** Draws the shadow map, that can be used in the flush shader to be combined with the color image of the rendered scene. */
     virtual void drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource);
 
 protected:

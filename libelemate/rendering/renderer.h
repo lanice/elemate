@@ -24,12 +24,19 @@ class CameraEx;
 class UserInterface;
 class DebugStep;
 
+/** Encapsulated the rendering pipeline.
+
+    Basic steps:
+        - draw the solid terrain and the hand, get the color and depth image from both.
+        - draw the particles see ParticleStep.
+        - call the ShadowMappingStep to create light and shadow maps.
+        - combine the results in the flush shader. */
 class Renderer
 {
 public:
     Renderer();
 
-    void operator()(const CameraEx & camera);
+    void render(const CameraEx & camera);
 
     void resize(int width, int height);
 
