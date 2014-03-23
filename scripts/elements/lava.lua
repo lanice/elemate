@@ -1,6 +1,5 @@
 -- Lua script for the properties of water particles (water.lua)
 
-io.write("water.lua\n")
 -- immutable properties
 function setImmutableProperties( index )
     maxMotionDistance = 0.04
