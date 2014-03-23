@@ -190,7 +190,7 @@ const glm::vec3 & World::skyColor() const
 
 void World::changeAirHumidity(int numSteamParticles)
 {
-    if (m_airHumidity > unsigned int(std::numeric_limits<int>::max()))
+    if (m_airHumidity > (unsigned int)(std::numeric_limits<int>::max()))
         m_airHumidity = std::numeric_limits<int>::max();
     m_airHumidity = std::max(0, int(m_airHumidity) + numSteamParticles);
 }
