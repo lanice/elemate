@@ -244,6 +244,7 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("viewport", camera.viewport());
     m_quad->program()->setUniform("rainSampler", TextureManager::getTextureUnit("Renderer", "rain"));
     m_quad->program()->setUniform("rainStrength", World::instance()->rainStrength());
+    m_quad->program()->setUniform("humidityFactor", World::instance()->humidityFactor());
 
     m_quad->draw();
 }

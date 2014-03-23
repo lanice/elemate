@@ -124,7 +124,7 @@ void World::updatePhysics()
 void World::updateVisuals(CameraEx & camera)
 {
     // set the view range depending on the humidity 'count', representing fog created by too much evaporated water
-    camera.setZFarEx(std::max(20.0f, 60.0f - m_airHumidity * 0.0001f));
+    // camera.setZFarEx(std::max(20.0f, 60.0f - m_airHumidity * 0.0001f));
 
     updateListener();
 
@@ -196,9 +196,10 @@ void World::changeAirHumidity(int numSteamParticles)
     m_airHumidity = std::max(0, int(m_airHumidity) + numSteamParticles);
 }
 
-unsigned int World::airHumidityCount() const
+float World::humidityFactor() const
 {
-    return m_airHumidity;
+    float humidityFactor = (40.f - std::max(20.0f, 60.0f - m_airHumidity * 0.0001f)) * 0.01f;
+    return humidityFactor;
 }
 
 float World::rainStrength() const

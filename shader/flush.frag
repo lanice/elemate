@@ -15,6 +15,7 @@ uniform usampler2D elementID;
 uniform vec3 skyColor;
 uniform int timef;
 uniform float rainStrength;
+uniform float humidityFactor;
 
 layout(location = 0)out vec4 fragColor;
 
@@ -77,7 +78,6 @@ void main()
     default:
         particleC = vec4(1,1,1,1);
     }
-    float strength = 1.0;
     
     vec3 sceneColor =  mix(
         (1-particleC.w * (1-shadowFactor)) * particleC.rgb,
@@ -87,10 +87,10 @@ void main()
     vec3 fragColorRgb = mix(
         sceneColor,
         vec3(0.5,0.5,0.5),
-        step(rainDepth,min(sceneHandZ,particleZ))*strength*(1.0-rainDepth)*(1.0-rainDepth)
+        step(rainDepth,min(sceneHandZ,particleZ))*rainStrength*(1.0-rainDepth)*(1.0-rainDepth)
     );
     
     float fragZ = min(sceneHandZ, particleZ);
     // blend (mostly) at the horizon
-    fragColor = vec4(mix(fragColorRgb, skyColor, fragZ * fragZ), 1.0);
+    fragColor = vec4(mix(fragColorRgb, skyColor, clamp(fragZ * fragZ + humidityFactor, 0, 1)), 1.0);
 }
