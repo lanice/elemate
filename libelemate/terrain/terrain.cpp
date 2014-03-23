@@ -24,8 +24,8 @@ Terrain::Terrain(const TerrainSettings & settings)
 , m_viewRange(0.0f)
 {
     TerrainInteraction::setDefaultTerrain(*this);
-    m_boudingBox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
-    m_boudingBox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
+    m_bbox.extend(glm::vec3(settings.sizeX * 0.5f, settings.maxHeight, settings.sizeZ * 0.5f));
+    m_bbox.extend(glm::vec3(-settings.sizeX * 0.5f, -settings.maxHeight, -settings.sizeZ * 0.5f));
 }
 
 void Terrain::draw(const CameraEx & camera, const std::initializer_list<std::string> & elements)
@@ -95,11 +95,6 @@ void Terrain::setDrawHeatMap(bool drawHeatMap)
         pair.second->m_drawHeatMap = drawHeatMap;
 }
 
-const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
-{
-    return m_boudingBox;
-}
-
 void Terrain::setViewRange(float zfar)
 {
     assert(zfar > 0);
@@ -122,13 +117,13 @@ const glowutils::AxisAlignedBoundingBox & Terrain::validBoundingBox() const
     glowutils::AxisAlignedBoundingBox newBox;
 
     newBox.extend(glm::vec3(
-        m_boudingBox.urb().x - m_viewRange,
-        m_boudingBox.urb().y,
-        m_boudingBox.urb().z - m_viewRange));
+        m_bbox.urb().x - m_viewRange,
+        m_bbox.urb().y,
+        m_bbox.urb().z - m_viewRange));
     newBox.extend(glm::vec3(
-        m_boudingBox.llf().x + m_viewRange,
-        m_boudingBox.llf().y,
-        m_boudingBox.llf().z + m_viewRange));
+        m_bbox.llf().x + m_viewRange,
+        m_bbox.llf().y,
+        m_bbox.llf().z + m_viewRange));
 
     m_validBoudingBox.setValue(newBox);
     return m_validBoudingBox.value();
@@ -231,11 +226,6 @@ std::shared_ptr<TerrainTile> Terrain::getTile(TileID tileID) const
     glow::fatal("Terrain: Trying to register a terrain tile with unknown level (%;)", int(tileID.level));
     assert(nullptr);
     return nullptr;
-}
-
-const std::map<TileID, physx::PxRigidStatic*> Terrain::pxActorMap() const
-{
-    return m_pxActors;
 }
 
 void Terrain::heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const

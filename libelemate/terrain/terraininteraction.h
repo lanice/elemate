@@ -8,7 +8,8 @@ class Terrain;
 class TerrainTile;
 class LuaWrapper;
 
-class TerrainInteraction {
+class TerrainInteraction
+{
 public:
     /** Creates an interaction interface for the specified terrain.
       * @param interactElement select the element this instance works with */

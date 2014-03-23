@@ -35,7 +35,7 @@ namespace {
 }
 
 TemperatureTile::TemperatureTile(Terrain & terrain, const TileID & tileID, PhysicalTile & baseTile, PhysicalTile & liquidTile)
-: TerrainTile(terrain, tileID, minTemperature, maxTemperature, 3, 1.0f)
+: TerrainTile(terrain, tileID, minTemperature, maxTemperature, 3)
 , m_baseTile(baseTile)
 , m_liquidTile(liquidTile)
 , m_deltaTime(0.0f)

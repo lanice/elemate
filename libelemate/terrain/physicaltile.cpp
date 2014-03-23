@@ -30,7 +30,7 @@
 #include "texturemanager.h"
 
 PhysicalTile::PhysicalTile(Terrain & terrain, const TileID & tileID, const std::initializer_list<std::string> & elementNames)
-: TerrainTile(terrain, tileID, -terrain.settings.maxHeight, terrain.settings.maxHeight, 7, 1.0f)
+: TerrainTile(terrain, tileID, -terrain.settings.maxHeight, terrain.settings.maxHeight, 7)
 , m_elementNames(elementNames)
 , m_pxShape(nullptr)
 {
@@ -176,7 +176,7 @@ void PhysicalTile::createPxObjects(PxRigidStatic & pxActor)
     delete[] materials;
 }
 
-void PhysicalTile::clearBufferUpdateRange()
+void PhysicalTile::clearPxBufferUpdateRange()
 {
     m_pxUpdateBox = UIntBoundingBox();
 }
@@ -268,4 +268,6 @@ void PhysicalTile::updatePxHeight()
         PxParticleGpu::createHeightFieldMirror(*hf, *PhysicsWrapper::getInstance()->cudaContextManager());
     }
 #endif
+
+    clearPxBufferUpdateRange();
 }

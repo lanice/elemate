@@ -2,13 +2,9 @@
 
 #include "terraintile.h"
 
-#include <foundation/PxSimpleTypes.h>
-
 namespace physx {
     class PxShape;
     class PxRigidStatic;
-    struct PxHeightFieldSample;
-    class PxMaterial;
 }
 
 /** Base class for tiles which can be rendered, with a representation as physx shape.
@@ -44,10 +40,6 @@ protected:
 
 
     virtual void createPxObjects(physx::PxRigidStatic & pxActor);
-    void pxSamplesAndMaterials(
-        physx::PxHeightFieldSample * hfSamples,
-        physx::PxReal heightScale,
-        physx::PxMaterial ** const &materials);
 
     physx::PxShape * m_pxShape;
 
@@ -58,8 +50,6 @@ protected:
 
     virtual void updateBuffers() override;
 
-    void clearBufferUpdateRange();  // static override
-
     void updatePxHeight();
     void addToPxUpdateBox(unsigned int minRow, unsigned int maxRow, unsigned int minColumn, unsigned int maxColumn);
     struct UIntBoundingBox {
@@ -67,6 +57,7 @@ protected:
         unsigned int minRow; unsigned int maxRow; unsigned int minColumn; unsigned int maxColumn;
     };
     UIntBoundingBox m_pxUpdateBox;
+    void clearPxBufferUpdateRange();
 
     friend class TerrainInteraction;
     friend class TemperatureTile;

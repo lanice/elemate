@@ -15,12 +15,15 @@
 #include "terrainsettings.h"
 
 namespace physx {
-    class PxShape;
     class PxRigidStatic;
 }
 class TerrainTile;
 class PhysicalTile;
 
+/** @brief base terrain object containing multiple tiles in different terrain levels.
+
+    The TerrainGenerator can be used to create an instance of this class.
+    Implements the scene and shadow rendering for the terrain tiles.*/
 class Terrain : public ShadowingDrawable
 {
 public:
@@ -31,15 +34,6 @@ public:
     virtual void drawDepthMap(const CameraEx & camera, const std::initializer_list<std::string> & elements);
     virtual void drawShadowMapping(const CameraEx & camera, const CameraEx & lightSource, const std::initializer_list<std::string> & elements);
 
-    /** PhysX shape containing height field geometry for one tile.
-    * Terrain tile in origin is identified by TileId(0, 0, 0) */
-    physx::PxShape * pxShape(const TileID & tileID) const;
-    /** static PhysX actor for terrain tiles at specified x/z-ID.
-    * Terrain tile in origin is identified by TileId(0, 0, 0) */
-    physx::PxRigidStatic * pxActor(const TileID & tileID) const;
-    /** Map of static PhysX actors. TileID's level is always BaseLevel.
-      * One actor owns the shapes for all terrain levels at its x/z-ID. */
-    const std::map<TileID, physx::PxRigidStatic*> pxActorMap() const;
     /** @return interpolated maximal height of all terrain layers at specific world position */
     float heightTotalAt(float x, float z) const;
     /** @return interpolated height at specific world position in a specific terrain level */
@@ -47,8 +41,6 @@ public:
     /** @return highest terrain level at position */
     TerrainLevel heighestLevelAt(float x, float z) const;
     void heighestLevelHeightAt(float x, float z, TerrainLevel & maxLevel, float & maxHeight) const;
-    /** @return the axis aligned bounding box including all tiles */
-    const glowutils::AxisAlignedBoundingBox & boudingBox() const;
     /** @return the bounding box reduced by the border width */
     const glowutils::AxisAlignedBoundingBox & validBoundingBox() const;
     /** Access settings object. This only stores values from creation time and cannot be changed. */
@@ -91,7 +83,6 @@ protected:
     /** lowest tile id in z direction */
     unsigned minTileZID;
 
-    glowutils::AxisAlignedBoundingBox m_boudingBox;
     /** Distance from camera to farthest visible point. The rendered terrain size depends on this parameter. */
     float m_viewRange;
     glowutils::CachedValue<glowutils::AxisAlignedBoundingBox> m_validBoudingBox;
@@ -110,7 +101,6 @@ protected:
     static const GLuint s_restartIndex;
 
 protected:
-
     /** Fetch the tile corresponding to the xz world coordinates and the terrain level and sets the row/column position in this tile.
     * @param terrainTile if world x/z position are in range, this pointer will be set to a valid terrain tile.
     * @return true, if the position is in terrain extent's range. */

@@ -13,30 +13,35 @@
 #include "terrainsettings.h"
 
 namespace glow {
-    class Program;
     class Texture;
     class Buffer;
 }
 class Terrain;
 class CameraEx;
 
-class TerrainTile {
+
+/** @brief Abstract base class for Terrain tiles.
+
+    This is basically a quadratic grid which is provided as a OpenGL texture buffer. 
+    This class implements interpolated access to the floating point values and lazy buffer updates as needed.
+    The tile will register itself in the passed Terrain instance. */
+class TerrainTile
+{
 public:
     /** @param terrain registers tile at this terrain
-      * @param tileID register tile at this position in the terrain
-      * @param resolutionScaling use a lower resolution than the maximum defined in the terrain settings.
-               a value lower than 1 will result in resolution scaling. */
-    TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float interactStdDeviation, float resolutionScaling = 1.0f);
+      * @param tileID register tile at this position in the terrain */
+    TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float interactStdDeviation);
     virtual ~TerrainTile();
 
     const std::string tileName;
 
-    /** update opengl buffers etc */
+    /** update OpenGL buffers etc */
     virtual void prepareDraw();
 
     virtual void bind(const CameraEx & camera);
     virtual void unbind();
 
+    /** timed update function that subclasses can implement */
     virtual void updatePhysics(double delta);
 
     /** @return interpolated value at specified normalized in tile position. */
@@ -87,8 +92,7 @@ protected:
     glow::ref_ptr<glow::Texture> m_valueTex;
     glow::ref_ptr<glow::Buffer>  m_valueBuffer;
 
-    /** Contains the tile values in row major order.
-      * Initially created by the TerrainGenerator. */
+    /** Contains the tile values in row major order. */
     std::vector<float> m_values;
 
     glm::mat4 m_transform;

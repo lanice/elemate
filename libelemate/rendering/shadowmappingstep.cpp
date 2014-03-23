@@ -66,7 +66,6 @@ ShadowMappingStep::ShadowMappingStep()
     m_lightFbo->attachTexture2D(GL_DEPTH_ATTACHMENT, m_lightTex);
     m_lightFbo->setDrawBuffers({ GL_NONE });
     m_lightFbo->printStatus(true);
-    assert(m_lightFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
     m_lightFbo->unbind();
 
 
@@ -138,7 +137,6 @@ void ShadowMappingStep::resize(int width, int height)
     m_shadowTex->image2D(0, GL_R16, width, height, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
     m_shadowDepthBuffer->storage(GL_DEPTH_COMPONENT16, width, height);
     m_shadowFbo->printStatus(true);
-    assert(m_shadowFbo->checkStatus() == GL_FRAMEBUFFER_COMPLETE);
 }
 
 glow::Texture * ShadowMappingStep::lightMap()

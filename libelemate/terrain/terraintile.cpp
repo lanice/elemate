@@ -13,21 +13,11 @@
 #include "world.h"
 #include "texturemanager.h"
 
-namespace {
-    uint32_t calcSamplesPerAxis(uint32_t baseSamples, float scaling) {
-        assert(scaling <= 1.0f && scaling > 0.0f);
-        if (scaling == 1.0f)
-            return baseSamples;
-
-        return static_cast<uint32_t>(std::ceil(baseSamples * scaling));
-    }
-}
-
-TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float interactStdDeviation, float resolutionScaling)
+TerrainTile::TerrainTile(Terrain & terrain, const TileID & tileID, float minValidValue, float maxValidValue, float interactStdDeviation)
 : tileName(generateName(tileID))
 , m_tileID(tileID)
 , m_terrain(terrain)
-, samplesPerAxis(calcSamplesPerAxis(terrain.settings.maxTileSamplesPerAxis, resolutionScaling))
+, samplesPerAxis(terrain.settings.maxTileSamplesPerAxis)
 , resolutionScaling(resolutionScaling)
 , samplesPerWorldCoord(samplesPerAxis / terrain.settings.tileBorderLength())
 , sampleInterval(terrain.settings.tileBorderLength() / (samplesPerAxis - 1))

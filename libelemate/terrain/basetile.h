@@ -4,6 +4,10 @@
 
 #include <vector>
 
+namespace glow {
+    class Program;
+}
+
 class BaseTile : public PhysicalTile
 {
 public:
