@@ -31,7 +31,6 @@ World::World(PhysicsWrapper & physicsWrapper)
 , terrain(nullptr)
 , humidityFactor(-0.2f)
 , m_physicsWrapper(physicsWrapper)
-, m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
 , m_sharedShaders()
 , m_sounds()
@@ -99,13 +98,9 @@ void World::togglePause()
         observer->updateSounds(!m_time->isRunning());
 }
 
-time_t World::getTime()const{
-    return this->m_time->gett(false);
-}
-
-void World::stopSimulation()
+time_t World::getTime() const
 {
-    m_time->stop(true);
+    return m_time->gett(false);
 }
 
 void World::updatePhysics()
@@ -141,15 +136,9 @@ void World::updatePhysics()
 
 void World::updateVisuals(CameraEx & camera)
 {
-    updateListener();
+    updateListener(camera);
 
     ParticleGroupTycoon::instance().updateVisuals();
-}
-
-void World::createFountainSound(const glm::vec3& position)
-{
-    int id = SoundManager::instance()->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), position);
-    m_sounds.push_back(id);
 }
 
 void World::toggleBackgroundSound(int id)
@@ -157,11 +146,10 @@ void World::toggleBackgroundSound(int id)
     SoundManager::instance()->togglePause(id);
 }
 
-void World::updateListener()
+void World::updateListener(const CameraEx & camera)
 {
-    const CameraEx & cam = m_navigation->camera();
-    glm::vec3 forward = glm::normalize(cam.eye() - cam.center());
-    SoundManager::instance()->setListenerAttributes(cam.eye(), forward, cam.up());
+    glm::vec3 forward = glm::normalize(camera.eye() - camera.center());
+    SoundManager::instance()->setListenerAttributes(camera.eye(), forward, camera.up());
     SoundManager::instance()->update();
 }
 
@@ -169,11 +157,6 @@ void World::fadeRainSound(float intensity)
 {
     SoundManager::instance()->setVolume(m_rainSoundId, intensity);
     intensity > 0.f ? SoundManager::instance()->setPaused(m_rainSoundId, false) : SoundManager::instance()->setPaused(m_rainSoundId, true);
-}
-
-void World::setNavigation(Navigation & navigation)
-{
-    m_navigation = &navigation;
 }
 
 const glm::vec3 & World::sunPosition() const
