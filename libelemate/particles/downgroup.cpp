@@ -98,7 +98,7 @@ void DownGroup::updateVisuals()
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
         // check range
-        if (positionIt->y < -1.0f /*terrainSettings.maxHeight*/ && positionIt->y > terrainSettings.maxHeight) {
+        if (positionIt->y > terrainSettings.maxHeight * 0.75f) {
             particlesToDelete.push_back(i);
             continue;
         }

@@ -194,7 +194,7 @@ void World::changeAirHumidity(int numSteamParticles)
     m_rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
     if (m_rainStrength >= 1.f) m_isRaining = true;
     AchievementManager::instance()->setProperty("rainStrength", m_rainStrength);
-    if (m_rainStrength > 0) fadeRainSound(m_rainStrength);
+    if (m_rainStrength > 0 && !m_isRaining) fadeRainSound(m_rainStrength);
 }
 
 float World::rainStrength() const

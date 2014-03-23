@@ -10,7 +10,7 @@ achievement_add("Make it rain", "Water for everyone!","default")
 achievement_setProperty("maxWaterFallingHeight", 0)
 achievement_condition("Make it rain", "maxWaterFallingHeight", ">=", 15)
 
-achievement_add("Rain... Rain everywhere", "Under my umbrella, ella, ella","default")
+achievement_add("Rain... Rain everywhere", "Damn... Forgot my umbrella","default")
 achievement_setProperty("rainStrength", 0)
 achievement_condition("Rain... Rain everywhere", "rainStrength", ">", 0)
 
