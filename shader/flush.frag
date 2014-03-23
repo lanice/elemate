@@ -12,6 +12,9 @@ uniform sampler2D shadowMap;
 // uniform sampler2D lightMap;
 uniform usampler2D elementID;
 uniform vec3 skyColor;
+uniform samplerCube skybox;
+uniform mat4 viewProjectionInverse;
+uniform vec3 cameraPosition;
 
 layout(location = 0)out vec4 fragColor;
 
@@ -41,7 +44,7 @@ float shadowFactorLambert(float depth){
 }
 
 void main()
-{    
+{
     float sceneZ = linearize(texture(sceneDepth, v_uv).r);
     //shadowFactorLambert(sceneZ);
     //return;
@@ -76,14 +79,28 @@ void main()
         particleC = vec4(1,1,1,1);
     }
     
-	vec3 fragColorRgb =
-    mix(
-        (1-particleC.w * (1-shadowFactor)) * particleC.rgb,
-		shadowFactor * sceneHandColor.rgb,
-		step(sceneHandZ,particleZ)
-	);
-    
     float fragZ = min(sceneHandZ, particleZ);
-    // blend (mostly) at the horizon
-    fragColor = vec4(mix(fragColorRgb, skyColor, fragZ * fragZ), 1.0);
+    
+    if (fragZ < 1.0)
+    {    
+        // mix the fragment color with its shadow (if applicable, depending on the element type)
+        vec3 fragColorRgb =
+        mix(
+            (1-particleC.w * (1-shadowFactor)) * particleC.rgb,
+            shadowFactor * sceneHandColor.rgb,
+            step(sceneHandZ,particleZ)
+        );
+    
+        // blend (mostly) at the horizon
+        fragColor = vec4(mix(fragColorRgb, skyColor, fragZ * fragZ), 1.0);
+    }
+    else
+    {
+        // use the skybox where needed
+        vec4 viewPos4 = (viewProjectionInverse * vec4(v_uv * 2.0 - 1.0, -1.0, 1.0));
+        vec3 viewPos = viewPos4.xyz / viewPos4.w;
+        vec3 viewDir = normalize(viewPos - cameraPosition);
+        
+        fragColor = texture(skybox, viewDir);
+    }
 }
