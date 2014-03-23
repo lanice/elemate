@@ -108,6 +108,7 @@ namespace Luaw
 }
 
 
+/** @brief Helper class that represents a cpp function that can be called within Lua. */
 template <int N, typename Return, typename... Args>
 class LuaFunction : public BaseLuaFunction
 {

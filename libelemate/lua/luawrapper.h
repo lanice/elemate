@@ -14,26 +14,36 @@
 
 struct lua_State;
 
+/** @brief Wraps a lua environment into a C++11 friendly object. */
 class LuaWrapper
 {
 public:
     LuaWrapper();
     ~LuaWrapper();
 
+    /** Load target Lua script. */
     void loadScript(const std::string & script);
+    /** Remove target loaded Lua script from LuaWrapper, so that it won't be reloaded. */
     void removeScript(const std::string & script);
+    /** Reload all current loaded Lua scripts. */
     void reloadScripts();
 
+    /** Reload all current loaded Lua script within all LuaWrapper instances. */
     static void reloadAll();
 
 
 protected:
+    /** Checks if a lua error occured. Prints out a critical warning if so. */ 
     void luaError();
+    /** Pushes a function onto the lua stack. Encapsulaiton for lua_getglobal. */ 
     void pushFunc(const std::string & func) const;
+    /** Calls a lua function in protected mode. Encapsulation for lua_pcall */ 
     void callFunc(const int numArgs, const int numRet);
 
+    /** Pops index elements from the lua stack. Encapsulation for lua_pop */ 
     void popStack(const int index);
 
+    /** Template for pushing various types of variables onto the lua stack. */
     template <typename T, typename... Ts>
     void push(const T value, const Ts... values) const
     {
@@ -57,6 +67,7 @@ protected:
     void push(const bool value) const;
     void push(const glm::vec3 & value) const;
 
+    /** Fetches a index return values from the lua stack. */
     template <typename T> T fetch(const int index) const;
 
     template <size_t, typename... Ts>
@@ -114,6 +125,7 @@ protected:
 
 
 public:
+    /** Calls a function that is present in the current Lua environment. */ 
     template <typename... Ret, typename... Args>
     typename _pop<sizeof...(Ret), Ret...>::type call(const std::string &fun, const Args&... args)
     {
@@ -128,6 +140,7 @@ public:
         return pop<Ret...>();
     }
 
+    /** Registers a function to the Lua environment. */ 
     template <typename Return, typename... Args>
     void Register(const std::string & name, std::function<Return(Args...)> function)
     {
@@ -135,6 +148,7 @@ public:
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
+    /** Registers a function to the Lua environment. */ 
     template <typename Return, typename... Args>
     void Register(const std::string & name, Return (*function)(Args...))
     {
@@ -142,6 +156,7 @@ public:
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
+    /** Registers a function to the Lua environment. */ 
     template <typename... Return, typename... Args>
     void Register(const std::string & name, std::function<std::tuple<Return...>(Args...)> function)
     {
@@ -150,6 +165,7 @@ public:
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
+    /** Registers a function to the Lua environment. */ 
     template <typename... Return, typename... Args>
     void Register(const std::string & name, std::tuple<Return...> (*function)(Args...))
     {
@@ -158,6 +174,7 @@ public:
         m_functions.insert(std::make_pair(name, std::move(tmp)));
     }
 
+    /** Unregisters a function from the Lua environment. */ 
     void Unregister(const std::string &name) {
         auto it = m_functions.find(name);
         if (it != m_functions.end()) m_functions.erase(it);
