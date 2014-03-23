@@ -25,8 +25,6 @@ m_userInterface(window)
 {
     setVSync(m_vsyncEnabled);
 
-    m_world->setNavigation(m_navigation);
-
     m_userInterface.initialize();
 }
 
@@ -127,16 +125,6 @@ Navigation * Game::navigation()
 Manipulator * Game::manipulator()
 {
     return & m_manipulator;
-}
-
-std::shared_ptr<CameraEx> Game::camera()
-{
-    return m_camera;
-}
-
-const std::shared_ptr<const CameraEx> Game::camera() const
-{
-    return m_camera;
 }
 
 Renderer * Game::renderer()
