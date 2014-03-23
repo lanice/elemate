@@ -133,6 +133,20 @@ void Renderer::initialize()
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
     
     m_debugStep = std::make_shared<DebugStep>();
+
+    // Set Rain texture
+    glow::ref_ptr<glow::Texture> texture = new glow::Texture(GL_TEXTURE_2D);
+    texture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    RawImage image("data/textures/rain/depth_full.raw", 8192, 768);
+
+    texture->image2D(0, GL_RGB8, 8192, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
+    texture->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "rain"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
 }
 
 void Renderer::operator()(const CameraEx & camera)
@@ -231,28 +245,9 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
     m_quad->program()->setUniform("viewport", camera.viewport());
-
-    setRainTextureUniform();
+    m_quad->program()->setUniform("rainSampler", TextureManager::getTextureUnit("Renderer", "rain"));
 
     m_quad->draw();
-}
-
-void Renderer::setRainTextureUniform()
-{
-    glow::ref_ptr<glow::Texture> texture = new glow::Texture(GL_TEXTURE_2D);
-    texture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    texture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    RawImage image("data/textures/rain/depth_full.raw", 8192, 768);
-
-    texture->image2D(0, GL_RGB8, 8192, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
-    texture->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "rain"));
-    glActiveTexture(GL_TEXTURE0);
-    CheckGLError();
-
-    m_quad->program()->setUniform("rainSampler", TextureManager::getTextureUnit("Renderer", "rain"));
 }
 
 const glow::FrameBufferObject *  Renderer::sceneFbo() const

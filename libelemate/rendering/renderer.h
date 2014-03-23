@@ -54,7 +54,6 @@ protected:
     std::shared_ptr<ParticleStep> m_particleStep;
     std::shared_ptr<ShadowMappingStep> m_shadowMappingStep;
     void flushStep(const CameraEx & camera);
-    void setRainTextureUniform();
 
     /** maintain a list of rendering all steps to apply operations on all of them, regardless of the ordering */
     std::vector<RenderingStep*> m_steps;

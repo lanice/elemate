@@ -10,9 +10,11 @@ uniform sampler2D handDepth;
 uniform sampler2D particleDepth;
 uniform sampler2D shadowMap;
 // uniform sampler2D lightMap;
+uniform sampler2D rainSampler;
 uniform usampler2D elementID;
 uniform vec3 skyColor;
 uniform float blendZ;
+uniform int timef;
 
 layout(location = 0)out vec4 fragColor;
 
