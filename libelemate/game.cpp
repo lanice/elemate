@@ -26,6 +26,8 @@ m_userInterface(window)
     setVSync(m_vsyncEnabled);
 
     m_userInterface.initialize();
+
+    m_camera->setZFarEx(60);
 }
 
 Game::~Game()

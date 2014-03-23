@@ -63,6 +63,8 @@ protected:
     glm::ivec2 m_viewport;
 
     void initialize();
+    void initSkybox();
+    glow::ref_ptr<glow::Texture> m_skyboxTexture;
 
     typedef std::pair<std::string, glow::ref_ptr<glow::Texture>> NamedTexture;
     typedef std::pair<std::string, glow::ref_ptr<glow::FrameBufferObject>> NamedFbo;

@@ -66,8 +66,6 @@ World::World(PhysicsWrapper & physicsWrapper)
     m_sunlight[2] = glm::vec4(0.7, 0.7, 0.5, 1.0);        //specular
     m_sunlight[3] = glm::vec4(0.002, 0.002, 0.0004, 1.4); //attenuation1, attenuation2, attenuation3, shininess
 
-    m_skyColor = glm::vec3(0.6f, 0.9f, 1.f);
-
     ParticleGroupTycoon::initialize();
 }
 
@@ -121,7 +119,7 @@ void World::updatePhysics()
 
     if (m_isRaining)
     {
-        unsigned int nextHumidity = m_airHumidity - 25000 * delta;
+        unsigned int nextHumidity = static_cast<unsigned int>(m_airHumidity - 25000 * delta);
         m_airHumidity = nextHumidity > m_airHumidity ? 0 : nextHumidity;
         humidityFactor = (40.f - std::max(20.0f, 60.0f - m_airHumidity * 0.0001f)) * 0.01f;
         m_rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
@@ -185,12 +183,6 @@ void World::setUpLighting(glow::Program & program) const
     program.setUniform("sunlight", sunlight());
     program.setUniform("lightdir2", lightdir2);
     program.setUniform("light2", lightMat2);
-    program.setUniform("skyColor", m_skyColor);
-}
-
-const glm::vec3 & World::skyColor() const
-{
-    return m_skyColor;
 }
 
 void World::changeAirHumidity(int numSteamParticles)

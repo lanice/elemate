@@ -108,6 +108,8 @@ void Renderer::initialize()
         glowutils::createShaderFromFile(GL_FRAGMENT_SHADER, "shader/flush.frag")
     );
 
+    initSkybox();
+
     std::function<void(const std::string &)> setOwnSamplerUniform = [&](const std::string & name) {
         m_quadProgram->setUniform(name, TextureManager::getTextureUnit("Renderer", name));
     };
@@ -123,6 +125,7 @@ void Renderer::initialize()
     setSamplerUniform("ParticleStep", "elementID");
     setSamplerUniform("ShadowMapping", "lightMap");
     setSamplerUniform("ShadowMapping", "shadowMap");
+    setOwnSamplerUniform("skybox");
 
     World::instance()->setUpLighting(*m_quadProgram);
 
@@ -208,8 +211,7 @@ void Renderer::sceneStep(const CameraEx & camera)
 
     m_fboByName.at("scene")->bind();
 
-    const glm::vec3 & skyColor = World::instance()->skyColor();
-    glClearColor(skyColor.x, skyColor.y, skyColor.z, 1.0);
+    glClearColor(0, 0, 0, 0);   // alpha == 0 means that the scene didn't set the color for a fragment position
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     World::instance()->terrain->draw(camera, { "bedrock" });
@@ -242,6 +244,8 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
     m_quad->program()->setUniform("viewport", camera.viewport());
+    m_quad->program()->setUniform("viewProjectionInverse", camera.viewProjectionInvertedEx());
+    m_quad->program()->setUniform("cameraPosition", camera.eye());
     m_quad->program()->setUniform("rainSampler", TextureManager::getTextureUnit("Renderer", "rain"));
     m_quad->program()->setUniform("rainStrength", World::instance()->rainStrength());
     m_quad->program()->setUniform("humidityFactor", World::instance()->humidityFactor);
@@ -293,4 +297,41 @@ void Renderer::resize(int width, int height)
         assert(step);
         step->resize(width, height);
     }
+}
+
+void Renderer::initSkybox()
+{
+    const unsigned int skySize = 1120;
+    RawImage * images[6];
+    // http://www.3delyvisions.com/skf1.htm -> sky25.zip
+    images[0] = new RawImage("data/textures/sky/left2moon.raw", skySize, skySize);
+    images[1] = new RawImage("data/textures/sky/right2moon.raw", skySize, skySize);
+    images[2] = new RawImage("data/textures/sky/top2moon.raw", skySize, skySize);
+    images[3] = new RawImage("data/textures/sky/bot2moon.raw", skySize, skySize);
+    images[4] = new RawImage("data/textures/sky/back2moon.raw", skySize, skySize);
+    images[5] = new RawImage("data/textures/sky/front2moon.raw", skySize, skySize);
+
+    m_skyboxTexture = new glow::Texture(GL_TEXTURE_CUBE_MAP);
+    const int textureUnit = TextureManager::reserveTextureUnit("Renderer", "skybox");
+    m_skyboxTexture->bindActive(GL_TEXTURE0 + textureUnit);
+    
+    for (int i = 0; i < 6; i++) {
+        m_skyboxTexture->image2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            0,
+            GL_RGB8,
+            skySize, skySize,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            images[i]->rawData());
+    }
+
+    m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_skyboxTexture->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    m_skyboxTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_skyboxTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    for (int i = 0; i < 6; ++i)
+        delete images[i];
 }

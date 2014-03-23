@@ -68,3 +68,8 @@ uint32_t RawImage::height() const
 {
     return m_height;
 }
+
+RawImage::Status RawImage::status() const
+{
+    return m_status;
+}

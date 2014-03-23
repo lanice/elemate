@@ -8,17 +8,28 @@ uniform int timef;
 uniform mat4 view;
 uniform vec3 camDirection;
 
-vec4 waterColor(vec2 v_uv){
+vec4 waterColor(vec2 v_uv, float worldHeight)
+{
     vec3 light = normalize(vec3(0.0,1.0,-0.5));
     vec3 normal = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;
     vec3 resVector = refract(vec3(0.0,0.0,-1.0),normal , 0.8);
     float depth = texture(particleDepth, v_uv).x;
-    //return vec4(0.5-depth);
-    vec3 waterCol = (5*texture(
-                            sceneColor, 
-                            v_uv - max(0.5-depth,0.0)*resVector.xy/10/resVector.z
-                    ).rgb
-        +vec3(0.1,0.8,1.0))/7.0;
+    
+    vec4 sceneC = texture(
+        sceneColor, 
+        v_uv - max(0.5-depth,0.0)*resVector.xy/10/resVector.z);
+        
+    // we can't see the oceans ground
+    float sceneToBackgroundLimit = -10;
+        
+    // fragColor = vec4(
+    // smoothstep(-20, -8, worldHeight - 10.0)
+    // , 0.0, 0.0, 1.0);
+    // return;
+    vec3 waterCol = (
+        5 * mix(vec3(0, 0.1, 0.3), sceneC.rgb, smoothstep(-18, -10, worldHeight))
+        + vec3(0.1, 0.8, 1.0))
+        * 0.14286 /* /7 */;
 
     return vec4(mix(
         mix(
@@ -42,7 +53,8 @@ vec4 waterColor(vec2 v_uv){
     ), 1.0);
 }
 
-vec4 lavaColor(vec2 v_uv){
+vec4 lavaColor(vec2 v_uv)
+{
     /* vec2 resolution = vec2(0.6,2);
     float x = v_uv.x*5;
     float y = v_uv.y*5;
@@ -83,7 +95,8 @@ vec4 lavaColor(vec2 v_uv){
 
 const vec3 baseSandColor = vec3(0.776, 0.741, 0.608);
 
-vec4 sandColor(vec2 v_uv){
+vec4 sandColor(vec2 v_uv)
+{
     float x = gl_FragCoord.x*sin(gl_FragCoord.x);
     float y = gl_FragCoord.y*cos(gl_FragCoord.y);
     float rand_val = 1.0 - clamp(int(x+y)*100 %(int(x-y)%2) * 0.0001,0.0,0.2);
@@ -112,7 +125,8 @@ vec4 sandColor(vec2 v_uv){
     );
 }
 
-vec4 steamColor(vec2 v_uv){
+vec4 steamColor(vec2 v_uv)
+{
     vec3 background = texture(sceneColor,v_uv).rgb;
     vec3 light = normalize(vec3(0.0,1.0,-0.5));
     vec3 normal = (vec4(texture(particleNormals, v_uv).xyz,1.0)*view).xyz;

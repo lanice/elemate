@@ -49,7 +49,6 @@ public:
 
     const glm::vec3 & sunPosition() const;
     const glm::mat4 & sunlight() const;
-    const glm::vec3 & skyColor() const;
     /** set lighting uniforms on program */
     void setUpLighting(glow::Program & program) const;
 
@@ -88,7 +87,6 @@ protected:
 
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
-    glm::vec3 m_skyColor;
     unsigned int m_airHumidity;
     float m_rainStrength;
     bool m_isRaining;
