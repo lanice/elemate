@@ -15,15 +15,21 @@ namespace glow{
 
 #include <string>
 
+/** @brief Represents a single achievable achievement. */
 class Achievement
 {
 public:
     Achievement(const std::string& title, const std::string& text = "", bool unlocked = false, const std::string& picture = "default");
 
+    /** Specifies property which is needed to unlock the achievement. */
     void setUnlockProperty(const std::string& property_name, const std::string& relation, float property_value);
+    /** Locks the achievement. */
     void lock();
+    /** Unlocks the achievement. */
     void unlock();
+    /** Checks if given unlock-properties are fulfullable. */
     bool unlockable(const std::unordered_map<std::string, float>& properties) const;
+    
     bool isUnlocked() const;
 
     void initialize();
