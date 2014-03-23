@@ -23,6 +23,7 @@
 #include "shadowmappingstep.h"
 #include "debugstep.h"
 #include "texturemanager.h"
+#include "io/imagereader.h"
 
 Renderer::Renderer()
 : m_drawDebugStep(false)
@@ -128,6 +129,21 @@ void Renderer::initialize()
     m_quad = new glowutils::ScreenAlignedQuad(m_quadProgram);
     
     m_debugStep = std::make_shared<DebugStep>();
+
+    // Set Rain texture
+    m_rainTexture = new glow::Texture(GL_TEXTURE_2D);
+
+    m_rainTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_rainTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_rainTexture->setParameter(GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    m_rainTexture->setParameter(GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+    RawImage m_image("data/textures/rain/depth_full.raw", 1024*16, 768);
+
+    m_rainTexture->image2D(0, GL_RGB8, 1024 * 16, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, m_image.rawData());
+    m_rainTexture->bindActive(GL_TEXTURE0 + TextureManager::reserveTextureUnit("Renderer", "rain"));
+    glActiveTexture(GL_TEXTURE0);
+    CheckGLError();
 }
 
 void Renderer::operator()(const CameraEx & camera)
@@ -226,6 +242,9 @@ void Renderer::flushStep(const CameraEx & camera)
     m_quad->program()->setUniform("view", camera.view());
     m_quad->program()->setUniform("camDirection", glm::normalize(camera.center() - camera.eye()));
     m_quad->program()->setUniform("viewport", camera.viewport());
+    m_quad->program()->setUniform("rainSampler", TextureManager::getTextureUnit("Renderer", "rain"));
+    m_quad->program()->setUniform("rainStrength", World::instance()->rainStrength());
+    m_quad->program()->setUniform("humidityFactor", World::instance()->humidityFactor);
 
     m_quad->draw();
 }
