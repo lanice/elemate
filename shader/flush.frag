@@ -101,7 +101,7 @@ void main()
         particleC = vec4(1,1,1,1);
     }
         
-    const vec3 fogColor = vec3(0.4);
+    const vec3 fogColor = vec3(0.6);
     
     vec3 fragColorRgbScene = mix( // mix the scene/element color (with shadow) with the horizon/fog blending
         mix(
