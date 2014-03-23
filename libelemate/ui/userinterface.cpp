@@ -254,11 +254,6 @@ void UserInterface::loadInitTexture(const std::string & elementName)
 }
 
 
-void UserInterface::toggleHUD()
-{
-    m_activeHUD = !m_activeHUD;
-}
-
 void UserInterface::toggleMainMenu()
 {
     m_mainMenuOnTop = !m_mainMenuOnTop;

@@ -28,6 +28,7 @@ public:
     void handleMouseMoveEvent(double xpos, double ypos);
     void handleScrollEvent(const double & xoffset, const double & yoffset);
 
+    /** Adjusts Hand position according to current camera position and orientation. */
     void updateHandPosition();
 
     LuaWrapper * lua();

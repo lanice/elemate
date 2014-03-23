@@ -24,7 +24,9 @@ public:
     void handleScrollEvent(const double & xoffset, const double & yoffset);
     void handleKeyEvent(const int & key, const int & scancode, const int & action, const int & mods);
 
+    /** Updates position of the focal center considering the passed time (for frame-independency). */
     void update(double delta);
+    /** Calculates and applies the new camera position and orientation from center position, rotation, pitch and eye-center-distance.*/
     void apply();
 
     const CameraEx & camera() const;
@@ -34,8 +36,11 @@ public:
 
 
 protected:
+    /** Moves given position into given direction. */
     void move(glm::vec3 & position, const glm::vec3 & direction);
+    /** Rotates the camera around the focal center. */
     void rotate(const float & degree);
+    /** Pitches the camera around the focal center. */
     void pitch(const float & degree);
 
     GLFWwindow & m_window;

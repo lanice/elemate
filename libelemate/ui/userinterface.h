@@ -25,7 +25,8 @@ public:
 
     void initialize();
     void draw();
-    void toggleHUD();
+
+    /** Toggles main menu appearance as well as game pausing. */
     void toggleMainMenu();
 
     bool isMainMenuOnTop() const;
@@ -38,6 +39,7 @@ public:
 
     void resize(int width, int height);
 
+    /** Registers functions of the UserInterface that can be used within given LuaWrapper instance. */
     void registerLuaFunctions(LuaWrapper * lua);
     
 protected:

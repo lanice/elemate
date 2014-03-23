@@ -11,6 +11,7 @@
 
 class LuaWrapper;
 
+/** @brief Representation of the ingame Hand. */
 class Hand : public ShadowingDrawable
 {
 public:
@@ -19,15 +20,17 @@ public:
     virtual const glm::mat4 & transform() const override;
 
     const glm::vec3 & position() const;
-    /** set the hand position to the specified x, z coordinates and get the height from the m_world's terrain 
-      * Uses the hand's bounding box to ensure that it is above the terrain */
+    /** Sets the hand position to the specified x, z coordinates and get the height from the m_world's terrain.
+      * Uses the hand's bounding box to ensure that it is above the terrain. */
     void setPosition(float worldX, float worldZ);
-    /** set the y-distance between the terrain and the hand */
+    /** Sets the y-distance between the terrain and the hand. */
     void setHeightOffset(float heightOffset);
     float heightOffset() const;
 
+    /** Rotates the hand model by given angle. */
     void rotate(float angle);
 
+    /** Registers functions of the Hand that can be used within given LuaWrapper instance. */
     void registerLuaFunctions(LuaWrapper * lua);
 
 protected:
@@ -46,10 +49,12 @@ protected:
 
     std::vector<glm::vec3> m_heightCheckPoints;
     float m_heightOffset;
+
     /** get the terrain height at all height checkpoints and calculate a transition value between them, + m_heightOffset*/
     float heightCheck(float worldX, float worldZ) const;
 
     float m_positionX;
+    
     /** height depending on terrain height at height checkpoints + m_heightOffset */
     glowutils::CachedValue<float> m_positionY;
     float m_positionZ;

@@ -3,21 +3,27 @@
 #include <vector>
 #include <string>
 
-class MenuPage{
+/** @brief Represents a page in the main menu. */
+class MenuPage
+{
 public:
     MenuPage(const std::string& page_name);
     ~MenuPage();
 
-    unsigned int activeEntry()const;
+    unsigned int activeEntry() const;
     void highlightPreviousEntry();
     void highlightNextEntry();
 
-    float topOffset()const;
+    /** Returns top offset between two page entries. */
+    float topOffset() const;
+    /** Sets top offset between two page entries. */
     void setTopOffset(float topOffset);
     
     void addEntry(std::string caption);
 
-    std::string entryCaption(unsigned int index)const;
+    /** Returns entry with index index. */
+    std::string entryCaption(unsigned int index) const;
+    /** Returns number of entries. */
     size_t      entryCount() const;
 protected:
     std::vector<std::string> m_entries;

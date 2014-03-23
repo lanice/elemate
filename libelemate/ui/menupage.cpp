@@ -21,7 +21,7 @@ void MenuPage::setTopOffset(float topOffset)
     m_topOffset = topOffset;
 }
 
-unsigned int MenuPage::activeEntry()const
+unsigned int MenuPage::activeEntry() const
 {
     return m_activeEntry;
 }
@@ -45,12 +45,12 @@ void MenuPage::addEntry(std::string caption)
 }
 
 
-std::string MenuPage::entryCaption(unsigned int index)const
+std::string MenuPage::entryCaption(unsigned int index) const
 {
     return m_entries[index];
 }
 
-size_t MenuPage::entryCount()const
+size_t MenuPage::entryCount() const
 {
     return m_entries.size();
 }
