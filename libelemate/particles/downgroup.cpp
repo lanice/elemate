@@ -112,6 +112,9 @@ void DownGroup::updateVisuals()
                     steamBbox.extend(reinterpret_cast<const glm::vec3&>(*positionIt));
                     steamPositions.push_back(reinterpret_cast<const glm::vec3&>(*positionIt));
                     continue;
+                } else {
+                    particlesToDelete.push_back(i);
+                    continue;
                 }
             }
             if (terrain.topmostElementAt(positionIt->x, positionIt->z) == m_elementName)
