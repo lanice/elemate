@@ -136,7 +136,7 @@ void Renderer::initialize()
     m_rainTexture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     m_rainTexture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     m_rainTexture->setParameter(GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    m_rainTexture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    m_rainTexture->setParameter(GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     RawImage m_image("data/textures/rain/depth_full.raw", 1024*16, 768);
 
