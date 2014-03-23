@@ -16,7 +16,6 @@ namespace glow {
     class Program;
 }
 
-class Navigation;
 class PhysicsWrapper;
 class CyclicTime;
 class Hand;
@@ -25,9 +24,9 @@ class ParticleGroup;
 class LuaWrapper;
 class CameraEx;
 
-class World {
+class World
+{
 public:
-
     World(PhysicsWrapper & physicsWrapper);
     ~World();
 
@@ -36,27 +35,23 @@ public:
     /** Pauses physics updates, causing the game to be 'frozen' (the navigation etc. will work though). */
     void togglePause();
 
+    /** in game time, running while the game is not paused */
     time_t getTime() const;
 
-    void stopSimulation();
-
-    /** updates the physics but doesn't copy/update any data structures */
+    /** updates the physics, depending on the in game time */
     void updatePhysics();
 
     /** updates the world as needed for visualization and interaction */
     void updateVisuals(CameraEx & camera);
-
-    void createFountainSound(const glm::vec3& position);
     
-    /** plays and pauses the background sound **/
+    /** starts and pauses the background sound playback */
     void toggleBackgroundSound(int id);
-
-    void setNavigation(Navigation & navigation);
 
     const glm::vec3 & sunPosition() const;
     const glm::mat4 & sunlight() const;
-    void setUpLighting(glow::Program & program) const;
     const glm::vec3 & skyColor() const;
+    /** set lighting uniforms on program */
+    void setUpLighting(glow::Program & program) const;
 
     void registerLuaFunctions(LuaWrapper * lua);
 
@@ -69,16 +64,17 @@ public:
 
     /** change the air humidity (globally) depending on a number of steam particles */
     void changeAirHumidity(int numSteamParticles);
-    /** number of emitted steam particles, representing the global air humidity */
-    unsigned int airHumidityCount() const;
 
+    float rainStrength() const;
+
+    float humidityFactor;
+    
 protected:
     static World * s_instance;
 
     PhysicsWrapper & m_physicsWrapper;
     std::list<std::string> m_currentElements;
 
-    Navigation * m_navigation;
     std::shared_ptr<CyclicTime> m_time;
 
     /** shaders that are needed multiple times in the game.
@@ -87,12 +83,16 @@ protected:
 
     std::vector<int> m_sounds;
 
-    void updateListener();
+    void updateListener(const CameraEx & camera);
+    void fadeRainSound(float intensity);
 
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
     glm::vec3 m_skyColor;
     unsigned int m_airHumidity;
+    float m_rainStrength;
+    bool m_isRaining;
+    int m_rainSoundId;
 
     std::unordered_set<ParticleGroup *> m_particleGroupObservers;
 

@@ -8,7 +8,6 @@
 
 #include <GLFW/glfw3.h>
 
-// Own Classes
 #include "physicswrapper.h"
 #include "world.h"
 
@@ -25,8 +24,6 @@ m_renderer(),
 m_userInterface(window)
 {
     setVSync(m_vsyncEnabled);
-
-    m_world->setNavigation(m_navigation);
 
     m_userInterface.initialize();
 }
@@ -95,16 +92,8 @@ void Game::loop(double delta)
             } else {
                 ++skippedFrames;
             }
-        // Don't need to sleep because vsync is on.
-        // } else {
-        //     double sleepTime = nextTime - currTime;
-
-        //     if (sleepTime > 0)
-        //         std::this_thread::sleep_for(std::chrono::milliseconds(int(sleepTime * 1000)));
         }
     }
-
-    m_world->stopSimulation();
 }
 
 void Game::setVSync(bool enabled)
@@ -136,16 +125,6 @@ Navigation * Game::navigation()
 Manipulator * Game::manipulator()
 {
     return & m_manipulator;
-}
-
-std::shared_ptr<CameraEx> Game::camera()
-{
-    return m_camera;
-}
-
-const std::shared_ptr<const CameraEx> Game::camera() const
-{
-    return m_camera;
 }
 
 Renderer * Game::renderer()

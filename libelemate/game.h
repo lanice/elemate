@@ -11,23 +11,20 @@
 
 class PhysicsWrapper;
 class World;
-namespace std {         class thread; }
 struct GLFWwindow;
 class CameraEx;
 
-/** The Game Class that invokes a game loop and initializes PhysX.
- *  To receive the initialized physics, call getPhysicsWrapper(). See for its usage the documentation of PhysicsWrapper class.
- *  Typical Workflow is instantiating the Game class, call start() and let it run until the game ends, then call end().
- */
-class Game{
+/** @brief Initializes the physics and game contents and maintains the game loop. */
+class Game
+{
 public:
     Game(GLFWwindow & window);
-
     ~Game();
 
     /** Starts the Game Loop until receiving a window close event. */
     void start();
 
+    /** enable or disable vertical synchronization */
     void setVSync(bool enabled);
     void toggleVSync();
     bool vSyncEnabled() const;
@@ -37,8 +34,6 @@ public:
     Manipulator * manipulator();
     UserInterface * userInterface();
 
-    std::shared_ptr<CameraEx> camera();
-    const std::shared_ptr<const CameraEx> camera() const;
     Renderer * renderer();
     PhysicsWrapper * physicsWrapper();
 

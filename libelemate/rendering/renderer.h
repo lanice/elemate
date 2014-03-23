@@ -78,6 +78,7 @@ protected:
 
     glow::ref_ptr<glowutils::ScreenAlignedQuad> m_quad;
     glow::ref_ptr<glow::Program> m_quadProgram;
+    glow::ref_ptr<glow::Texture> m_rainTexture;
 
 public:
     Renderer(Renderer&) = delete;

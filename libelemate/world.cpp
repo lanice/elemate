@@ -29,14 +29,16 @@ World * World::s_instance = nullptr;
 World::World(PhysicsWrapper & physicsWrapper)
 : hand(nullptr)
 , terrain(nullptr)
+, humidityFactor(-0.2f)
 , m_physicsWrapper(physicsWrapper)
-, m_navigation(nullptr)
 , m_time(std::make_shared<CyclicTime>(0.0L, 1.0L))
 , m_sharedShaders()
 , m_sounds()
 , m_sunPosition(glm::normalize(glm::vec3(0.0, 6.5, 7.5)))
 , m_sunlight()
 , m_airHumidity(0)
+, m_rainStrength(0.f)
+, m_isRaining(false)
 {
     assert(s_instance == nullptr);
     s_instance = this;
@@ -45,6 +47,7 @@ World::World(PhysicsWrapper & physicsWrapper)
     // Create two non-3D channels (piano and rain)
     //initialize as paused
     int backgroundSoundId = SoundManager::instance()->createNewChannel("data/sounds/elemate.mp3", true, false, true);
+    m_rainSoundId = SoundManager::instance()->createNewChannel("data/sounds/rain.mp3", true, false, true);
     //set volume (make quieter)
     SoundManager::instance()->setVolume(backgroundSoundId, 0.25f);
     SoundManager::instance()->setPaused(backgroundSoundId, false);
@@ -95,13 +98,9 @@ void World::togglePause()
         observer->updateSounds(!m_time->isRunning());
 }
 
-time_t World::getTime()const{
-    return this->m_time->gett(false);
-}
-
-void World::stopSimulation()
+time_t World::getTime() const
 {
-    m_time->stop(true);
+    return m_time->gett(false);
 }
 
 void World::updatePhysics()
@@ -119,22 +118,27 @@ void World::updatePhysics()
 
     // simulate physx
     m_physicsWrapper.step(delta);
+
+    if (m_isRaining)
+    {
+        unsigned int nextHumidity = m_airHumidity - 25000 * delta;
+        m_airHumidity = nextHumidity > m_airHumidity ? 0 : nextHumidity;
+        humidityFactor = (40.f - std::max(20.0f, 60.0f - m_airHumidity * 0.0001f)) * 0.01f;
+        m_rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
+
+        if (m_airHumidity < 100000)
+        {
+            fadeRainSound(static_cast<float>(m_airHumidity)/100000.f);
+            if (m_airHumidity == 0) m_isRaining = false;
+        }
+    }
 }
 
 void World::updateVisuals(CameraEx & camera)
 {
-    // set the view range depending on the humidity 'count', representing fog created by too much evaporated water
-    camera.setZFarEx(std::max(20.0f, 60.0f - m_airHumidity * 0.0001f));
-
-    updateListener();
+    updateListener(camera);
 
     ParticleGroupTycoon::instance().updateVisuals();
-}
-
-void World::createFountainSound(const glm::vec3& position)
-{
-    int id = SoundManager::instance()->createNewChannel("data/sounds/fountain_loop.wav", true, true, !m_time->isRunning(), position);
-    m_sounds.push_back(id);
 }
 
 void World::toggleBackgroundSound(int id)
@@ -142,17 +146,17 @@ void World::toggleBackgroundSound(int id)
     SoundManager::instance()->togglePause(id);
 }
 
-void World::updateListener()
+void World::updateListener(const CameraEx & camera)
 {
-    const CameraEx & cam = m_navigation->camera();
-    glm::vec3 forward = glm::normalize(cam.eye() - cam.center());
-    SoundManager::instance()->setListenerAttributes(cam.eye(), forward, cam.up());
+    glm::vec3 forward = glm::normalize(camera.eye() - camera.center());
+    SoundManager::instance()->setListenerAttributes(camera.eye(), forward, camera.up());
     SoundManager::instance()->update();
 }
 
-void World::setNavigation(Navigation & navigation)
+void World::fadeRainSound(float intensity)
 {
-    m_navigation = &navigation;
+    SoundManager::instance()->setVolume(m_rainSoundId, intensity);
+    intensity > 0.f ? SoundManager::instance()->setPaused(m_rainSoundId, false) : SoundManager::instance()->setPaused(m_rainSoundId, true);
 }
 
 const glm::vec3 & World::sunPosition() const
@@ -194,11 +198,17 @@ void World::changeAirHumidity(int numSteamParticles)
     if (m_airHumidity > (unsigned int)(std::numeric_limits<int>::max()))
         m_airHumidity = std::numeric_limits<int>::max();
     m_airHumidity = std::max(0, int(m_airHumidity) + numSteamParticles);
+    humidityFactor = (40.f - std::max(20.0f, 60.0f - m_airHumidity * 0.0001f)) * 0.01f;
+    m_rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
+    if (m_rainStrength >= 1.f) m_isRaining = true;
+    AchievementManager::instance()->setProperty("rainStrength", m_rainStrength);
+    if (m_rainStrength > 0) fadeRainSound(m_rainStrength);
 }
 
-unsigned int World::airHumidityCount() const
+float World::rainStrength() const
 {
-    return m_airHumidity;
+    if (m_isRaining) return 1.f;
+    return m_rainStrength;
 }
 
 void World::registerLuaFunctions(LuaWrapper * lua)
