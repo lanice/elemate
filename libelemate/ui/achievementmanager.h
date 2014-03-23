@@ -16,21 +16,26 @@ public:
     static void release();
     static AchievementManager* instance();
 
+    /** Adds an achievement with tile, substring and picture to the achievementpool. */
     void addAchievement(const std::string& title, const std::string& text = "", const std::string& picture = "default", bool unlocked = false);
+    /** Unlocks achievement with name title. */
     void unlockAchievement(const std::string& title);
     
-    /** Properties needed for complex and time-critic Achievements */
-    void  setProperty(const std::string& name, float value);
+    /** Set property used for achievement unlocking. */
+    void setProperty(const std::string& name, float value);
+    /** Get current property used for achievement unlocking. */
     float getProperty(const std::string& name) const;
-    void  checkForNewUnlocks(bool threaded = false);
 
-
+    /** Draws newly unlocked achievements onto the screen. */
     void drawAchievements();
     void resizeAchievements(int width, int height);
 
+    /** Get locked achievements. */
     std::unordered_map<std::string, Achievement*>* getLocked();
+    /** Get unlocked achievements. */
     std::unordered_map<std::string, Achievement*>* getUnlocked();
 
+    /** Registers functions of the AchievementManager that can be used within given LuaWrapper instance. */
     void registerLuaFunctions(LuaWrapper * lua);
 
 protected:
@@ -47,6 +52,7 @@ protected:
     std::unordered_map<std::string, Achievement*> m_drawQueue;
     std::unordered_map<std::string, Achievement*> m_unlocked;
 
+    void checkForNewUnlocks(bool threaded = false);
     void interruptUnlockerThread();
 
 private:
