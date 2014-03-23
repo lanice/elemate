@@ -12,7 +12,6 @@ uniform sampler2D shadowMap;
 // uniform sampler2D lightMap;
 uniform usampler2D elementID;
 uniform vec3 skyColor;
-uniform float blendZ;
 
 layout(location = 0)out vec4 fragColor;
 
@@ -85,11 +84,6 @@ void main()
 	);
     
     float fragZ = min(sceneHandZ, particleZ);
-    
-    fragColor = vec4(mix(fragColorRgb, skyColor, // blend at the horizon 
-                    // max((gl_FragCoord.z / gl_FragCoord.w - (zfar * 0.9)) / (zfar * 0.1), 0.0)),
-                    // max(gl_FragCoord.z / (fragDepth * 0.1*zfar) - 9, 0.0)),
-                    max((fragZ - blendZ) / (1.0 - blendZ), 0.0)),
-                1.0);
-    // fragColor = vec4(fragColorRgb, 1.0);
+    // blend (mostly) at the horizon
+    fragColor = vec4(mix(fragColorRgb, skyColor, fragZ * fragZ), 1.0);
 }

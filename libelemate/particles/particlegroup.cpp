@@ -13,6 +13,7 @@
 
 #include "rendering/particledrawable.h"
 #include "io/soundmanager.h"
+#include "world.h"
 
 using namespace physx;
 
@@ -151,6 +152,10 @@ physx::PxParticleFluid * ParticleGroup::particleSystem()
 
 void ParticleGroup::createParticles(const std::vector<glm::vec3> & pos, const std::vector<glm::vec3> * vel)
 {
+    if (m_elementName == "steam") {
+        World::instance()->changeAirHumidity(static_cast<int>(pos.size()));
+    }
+
     PxU32 numParticles = static_cast<PxU32>(pos.size());
     PxU32 * indices = new PxU32[numParticles];
     if (vel) {

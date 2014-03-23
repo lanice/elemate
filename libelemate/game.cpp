@@ -82,7 +82,7 @@ void Game::loop(double delta)
 
                 m_manipulator.updateHandPosition();
 
-                m_world->updateVisuals();
+                m_world->updateVisuals(*m_camera);
                 
                 m_renderer(*m_camera);
                 m_userInterface.draw();

@@ -23,6 +23,7 @@ class Hand;
 class Terrain;
 class ParticleGroup;
 class LuaWrapper;
+class CameraEx;
 
 class World {
 public:
@@ -43,7 +44,7 @@ public:
     void updatePhysics();
 
     /** updates the world as needed for visualization and interaction */
-    void updateVisuals();
+    void updateVisuals(CameraEx & camera);
 
     void createFountainSound(const glm::vec3& position);
     
@@ -63,8 +64,13 @@ public:
       * Request these shaders here by there filename, just as you would do with glowutils. */
     glow::Shader * sharedShader(GLenum type, const std::string & filename) const;
     
-    std::shared_ptr<Hand>                       hand;
-    std::shared_ptr<Terrain>                    terrain;
+    std::shared_ptr<Hand>    hand;
+    std::shared_ptr<Terrain> terrain;
+
+    /** change the air humidity (globally) depending on a number of steam particles */
+    void changeAirHumidity(int numSteamParticles);
+    /** number of emitted steam particles, representing the global air humidity */
+    unsigned int airHumidityCount() const;
 
 protected:
     static World * s_instance;
@@ -86,6 +92,7 @@ protected:
     glm::vec3 m_sunPosition;
     glm::mat4 m_sunlight;
     glm::vec3 m_skyColor;
+    unsigned int m_airHumidity;
 
     std::unordered_set<ParticleGroup *> m_particleGroupObservers;
 
