@@ -36,6 +36,7 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_sounds()
 , m_sunPosition(glm::normalize(glm::vec3(0.0, 6.5, 7.5)))
 , m_sunlight()
+, m_airHumidity(0)
 {
     assert(s_instance == nullptr);
     s_instance = this;
@@ -123,7 +124,7 @@ void World::updatePhysics()
 void World::updateVisuals(CameraEx & camera)
 {
     // set the view range depending on the humidity 'count', representing fog created by too much evaporated water
-    camera.setZFarEx(std::max(10.0f, 60.0f - m_airHumidity * 0.0001f));
+    camera.setZFarEx(std::max(20.0f, 60.0f - m_airHumidity * 0.0001f));
 
     updateListener();
 
