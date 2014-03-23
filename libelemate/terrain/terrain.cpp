@@ -103,6 +103,9 @@ const glowutils::AxisAlignedBoundingBox & Terrain::boudingBox() const
 void Terrain::setViewRange(float zfar)
 {
     assert(zfar > 0);
+
+    zfar = std::max(50.f, zfar);
+
     if (m_viewRange == zfar)
         return;
     
@@ -158,10 +161,10 @@ void Terrain::initialize()
 
 void Terrain::setDrawGridOffsetUniform(glow::Program & program, const glm::vec3 & cameraposition) const
 {
-    assert(m_renderGridRadius.isValid());
+    const float terrainMaxCoord = settings.sizeX * 0.5f;
 
-    unsigned int offsetX = static_cast<unsigned int>(std::floor((0.5f + cameraposition.x/settings.sizeX) * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
-    unsigned int offsetZ = static_cast<unsigned int>(std::floor((0.5f + cameraposition.z / settings.sizeZ) * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
+    unsigned int offsetX = static_cast<unsigned int>(std::floor((cameraposition.x + terrainMaxCoord) / settings.sizeX * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
+    unsigned int offsetZ = static_cast<unsigned int>(std::floor((cameraposition.z + terrainMaxCoord) / settings.sizeZ * settings.maxTileSamplesPerAxis - m_renderGridRadius.value()));
 
     program.setUniform("rowColumnOffset", glm::ivec2(offsetX, offsetZ));
 }
@@ -188,6 +191,7 @@ void Terrain::generateDrawGrid()
     // create a quad for all vertices, except for the last row and column (covered by the second last)
     // see PxHeightFieldDesc::samples documentation: "...(nbRows - 1) * (nbColumns - 1) cells are actually used."
     unsigned numIndices = (diameter - 1) * ((diameter) * 2 + 1);
+    m_indices.clear();
     m_indices.reserve(numIndices);
     for (unsigned int row = 0; row < diameter - 1; ++row) {
         const unsigned rowOffset = row * diameter;

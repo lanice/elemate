@@ -36,6 +36,7 @@ World::World(PhysicsWrapper & physicsWrapper)
 , m_sounds()
 , m_sunPosition(glm::normalize(glm::vec3(0.0, 6.5, 7.5)))
 , m_sunlight()
+, m_airHumidity(0)
 {
     assert(s_instance == nullptr);
     s_instance = this;
@@ -120,8 +121,11 @@ void World::updatePhysics()
     m_physicsWrapper.step(delta);
 }
 
-void World::updateVisuals()
+void World::updateVisuals(CameraEx & camera)
 {
+    // set the view range depending on the humidity 'count', representing fog created by too much evaporated water
+    camera.setZFarEx(std::max(20.0f, 60.0f - m_airHumidity * 0.0001f));
+
     updateListener();
 
     ParticleGroupTycoon::instance().updateVisuals();
@@ -133,11 +137,13 @@ void World::createFountainSound(const glm::vec3& position)
     m_sounds.push_back(id);
 }
 
-void World::toggleBackgroundSound(int id){
+void World::toggleBackgroundSound(int id)
+{
     SoundManager::instance()->togglePause(id);
 }
 
-void World::updateListener(){
+void World::updateListener()
+{
     const CameraEx & cam = m_navigation->camera();
     glm::vec3 forward = glm::normalize(cam.eye() - cam.center());
     SoundManager::instance()->setListenerAttributes(cam.eye(), forward, cam.up());
@@ -181,6 +187,18 @@ void World::setUpLighting(glow::Program & program) const
 const glm::vec3 & World::skyColor() const
 {
     return m_skyColor;
+}
+
+void World::changeAirHumidity(int numSteamParticles)
+{
+    if (m_airHumidity > (unsigned int)(std::numeric_limits<int>::max()))
+        m_airHumidity = std::numeric_limits<int>::max();
+    m_airHumidity = std::max(0, int(m_airHumidity) + numSteamParticles);
+}
+
+unsigned int World::airHumidityCount() const
+{
+    return m_airHumidity;
 }
 
 void World::registerLuaFunctions(LuaWrapper * lua)
