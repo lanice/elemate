@@ -14,6 +14,7 @@ uniform sampler2D rainSampler;
 uniform usampler2D elementID;
 uniform vec3 skyColor;
 uniform int timef;
+uniform float rainStrength;
 
 layout(location = 0)out vec4 fragColor;
 

@@ -72,6 +72,8 @@ public:
     /** number of emitted steam particles, representing the global air humidity */
     unsigned int airHumidityCount() const;
 
+    float rainStrength() const;
+
 protected:
     static World * s_instance;
 

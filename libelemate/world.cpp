@@ -201,6 +201,12 @@ unsigned int World::airHumidityCount() const
     return m_airHumidity;
 }
 
+float World::rainStrength() const
+{
+    float rainStrength = std::max(0.f, 1.f - 0.1f * (std::max(20.0f, 60.0f - m_airHumidity * 0.0001f) - 20.f));
+    return rainStrength;
+}
+
 void World::registerLuaFunctions(LuaWrapper * lua)
 {
     std::function<int()> func0 = [=] ()
