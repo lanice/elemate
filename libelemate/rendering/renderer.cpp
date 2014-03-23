@@ -211,8 +211,7 @@ void Renderer::sceneStep(const CameraEx & camera)
 
     m_fboByName.at("scene")->bind();
 
-    const glm::vec3 & skyColor = World::instance()->skyColor();
-    glClearColor(skyColor.x, skyColor.y, skyColor.z, 1.0);
+    glClearColor(0, 0, 0, 0);   // alpha == 0 means that the scene didn't set the color for a fragment position
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     World::instance()->terrain->draw(camera, { "bedrock" });
