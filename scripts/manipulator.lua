@@ -41,15 +41,8 @@ local function activeElement( eleType )
 end
 
 local function spawnSource(posX, posY, posZ)
-    local RADIUS = 1.5;
-    local SOURCE_HEIGHT = 0.3
-    terrain_heightGrab(posX, posZ)
-    for x = 0, 360, 10 do
-        terrain_dropElement(posX+math.sin(x)*RADIUS,   posZ+math.cos(x)*RADIUS, SOURCE_HEIGHT)   
-    end
-    local randomElement = math.random(2)*2 -1
     Id = createParticleGroup(true, psa_elementAtId(particleGroupId), 1000)
-    psa_emit(Id, 200, posX, posY-1.0+SOURCE_HEIGHT, posZ, 0, 1, 0)
+    psa_emit(Id, 200, posX, posY, posZ, 0, 1, 0)
 end
 
 local function emit( particleGroupId, rate, posX, posY, posZ, dirX, dirY, dirZ )
