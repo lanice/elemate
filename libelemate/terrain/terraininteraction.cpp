@@ -38,7 +38,7 @@ float TerrainInteraction::normalDist(float x, float mean, float stddev)
 TerrainInteraction::TerrainInteraction(Terrain & terrain, const std::string & interactElement)
 : m_terrain(terrain)
 , m_interactElement(interactElement)
-, m_interactLevel(levelForElement.at(interactElement))
+, m_interactLevel(levelForElement->at(interactElement))
 {
 }
 
@@ -60,7 +60,7 @@ const std::string & TerrainInteraction::interactElement() const
 void TerrainInteraction::setInteractElement(const std::string & elementName)
 {
     m_interactElement = elementName;
-    m_interactLevel = levelForElement.at(elementName);
+    m_interactLevel = levelForElement->at(elementName);
 }
 
 const std::string & TerrainInteraction::topmostElementAt(float worldX, float worldZ) const

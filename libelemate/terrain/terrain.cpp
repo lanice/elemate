@@ -45,7 +45,7 @@ void Terrain::setDrawElements(const std::initializer_list<std::string> & element
 
     m_drawLevels.clear();
     for (const std::string & name : elements)
-        m_drawLevels.insert(levelForElement.at(name));
+        m_drawLevels.insert(levelForElement->at(name));
 }
 
 const GLuint Terrain::s_restartIndex = std::numeric_limits<GLuint>::max();

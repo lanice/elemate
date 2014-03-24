@@ -31,6 +31,6 @@ struct Elements {
 private:
     static bool s_isInitialized;
 
-    static std::unordered_map<std::string, physx::PxMaterial*>	     s_pxMaterials;
-    static std::unordered_map<std::string, glm::mat4>                s_shadingMatrices;
+    static std::unordered_map<std::string, physx::PxMaterial*>	     * s_pxMaterials;
+    static std::unordered_map<std::string, glm::mat4>                * s_shadingMatrices;
 };

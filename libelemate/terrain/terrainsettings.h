@@ -23,7 +23,7 @@ extern bool levelIsPhysical(TerrainLevel level);
 extern bool levelIsAttribute(TerrainLevel level);
 
 /** mapping from element name to the terrain level that contains this element type */
-extern const std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> levelForElement;
+extern  std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> * levelForElement;
 
 struct TileID {
     TileID(TerrainLevel level = TerrainLevel::BaseLevel, int xID = 0, int zID = 0);

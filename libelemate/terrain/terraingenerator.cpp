@@ -34,8 +34,30 @@ namespace {// 1, 3, 8 for 513, 5(look around!) for 1025
     bool didRngInit = initRng();
 }
 
+namespace {
+    std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> * initElementTerrainLevels()
+    {
+        std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> * l_elementToLevel = new std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>>;
+
+        l_elementToLevel->emplace("water", TerrainLevel::WaterLevel);
+        l_elementToLevel->emplace("lava", TerrainLevel::WaterLevel);
+
+        l_elementToLevel->emplace("bedrock", TerrainLevel::BaseLevel);
+        l_elementToLevel->emplace("grassland", TerrainLevel::BaseLevel);
+        l_elementToLevel->emplace("sand", TerrainLevel::BaseLevel);
+
+        l_elementToLevel->emplace("temperature", TerrainLevel::TemperatureLevel);
+
+        return l_elementToLevel;
+    }
+
+}
+
 std::shared_ptr<Terrain> TerrainGenerator::generate() const
 {
+    if (!levelForElement)
+        levelForElement = initElementTerrainLevels();
+
     std::shared_ptr<Terrain> terrain = std::make_shared<Terrain>(m_settings);
 
     assert(PxGetPhysics().getNbScenes() == 1);

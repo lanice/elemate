@@ -26,20 +26,15 @@ const glm::mat4 ShadowMappingStep::s_biasMatrix(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0);
 
-std::vector<glm::vec2> initDepthSamples() {
-    std::vector<glm::vec2> samples;
+std::vector<glm::vec2> * initDepthSamples() {
+    std::vector<glm::vec2> * samples = new std::vector<glm::vec2>;
     for (int i = 0; i < 32; ++i)
-        samples.push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
+        samples->push_back(glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)));
     return samples;
 }
-const std::vector<glm::vec2> ShadowMappingStep::s_depthSamples = initDepthSamples();
+std::vector<glm::vec2> * ShadowMappingStep::s_depthSamples = nullptr;
 static const float earlyBailDistance = 3.0f;
-const std::vector<glm::vec2> ShadowMappingStep::s_earlyBailSamples({
-    glm::vec2(0, 0),
-    glm::vec2(earlyBailDistance, earlyBailDistance),
-    glm::vec2(earlyBailDistance, -earlyBailDistance),
-    glm::vec2(-earlyBailDistance, earlyBailDistance),
-    glm::vec2(-earlyBailDistance, -earlyBailDistance)});
+std::vector<glm::vec2> * ShadowMappingStep::s_earlyBailSamples = nullptr;
 
 
 ShadowMappingStep::ShadowMappingStep()
@@ -153,7 +148,20 @@ glow::Texture * ShadowMappingStep::result()
 
 void ShadowMappingStep::setUniforms(glow::Program & program)
 {
+    if (!s_depthSamples)
+    {
+        ShadowMappingStep::s_depthSamples = initDepthSamples();
+        ShadowMappingStep::s_earlyBailSamples = new std::vector<glm::vec2>(
+        {
+            glm::vec2(0, 0),
+                glm::vec2(earlyBailDistance, earlyBailDistance),
+                glm::vec2(earlyBailDistance, -earlyBailDistance),
+                glm::vec2(-earlyBailDistance, earlyBailDistance),
+                glm::vec2(-earlyBailDistance, -earlyBailDistance)
+        });
+    }
+
     program.setUniform("lightMap", TextureManager::getTextureUnit("ShadowMapping", "lightMap"));
-    program.setUniform("depthSamples", s_depthSamples);
-    program.setUniform("earlyBailSamples", s_earlyBailSamples);
+    program.setUniform("depthSamples", *s_depthSamples);
+    program.setUniform("earlyBailSamples", *s_earlyBailSamples);
 }

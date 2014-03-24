@@ -2,26 +2,9 @@
 
 #include <algorithm>
 
-namespace {
-    std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> initElementTerrainLevels()
-    {
-        std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> l_elementToLevel;
 
-        l_elementToLevel.emplace("water", TerrainLevel::WaterLevel);
-        l_elementToLevel.emplace("lava", TerrainLevel::WaterLevel);
 
-        l_elementToLevel.emplace("bedrock", TerrainLevel::BaseLevel);
-        l_elementToLevel.emplace("grassland", TerrainLevel::BaseLevel);
-        l_elementToLevel.emplace("sand", TerrainLevel::BaseLevel);
-
-        l_elementToLevel.emplace("temperature", TerrainLevel::TemperatureLevel);
-
-        return l_elementToLevel;
-    }
-
-}
-
-const std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> levelForElement = initElementTerrainLevels();
+std::unordered_map<const std::string, TerrainLevel, std::hash<std::string>> * levelForElement = nullptr;
 
 const std::initializer_list<TerrainLevel> PhysicalLevels = {
     TerrainLevel::BaseLevel,

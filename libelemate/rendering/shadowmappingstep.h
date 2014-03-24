@@ -46,8 +46,8 @@ protected:
     glow::ref_ptr<glow::RenderBufferObject> m_shadowDepthBuffer;
     glow::ref_ptr<glow::Texture> m_shadowTex;
 
-    static const std::vector<glm::vec2> s_depthSamples;
-    static const std::vector<glm::vec2> s_earlyBailSamples;
+    static std::vector<glm::vec2> * s_depthSamples;
+    static std::vector<glm::vec2> * s_earlyBailSamples;
 
 public:
     void operator=(ShadowMappingStep&) = delete;
