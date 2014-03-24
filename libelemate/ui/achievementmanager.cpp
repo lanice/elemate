@@ -69,7 +69,7 @@ void AchievementManager::unlockAchievement(const std::string& title)
 
 void AchievementManager::drawAchievements()
 {
-    while (!m_drawQueue.empty() && m_drawQueue.begin()->second->wasDrawn()){
+    while (!m_drawQueue.empty() && m_drawQueue.begin()->second->wasDrawn()) {
         auto first_achievement = m_drawQueue.begin();
         m_unlocked.insert(m_drawQueue.begin(), ++first_achievement);
         m_drawQueue.erase(m_drawQueue.begin());

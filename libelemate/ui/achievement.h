@@ -27,12 +27,11 @@ public:
     void lock();
     /** Unlocks the achievement. */
     void unlock();
-    /** Checks if given unlock-properties are fulfullable. */
+    /** Checks if given unlock-properties are satisfiable. */
     bool unlockable(const std::unordered_map<std::string, float>& properties) const;
     
     bool isUnlocked() const;
 
-    void initialize();
     void update();
     void draw(float x = 0.7f, float y = 0.9f, bool popup = true, float scale = 1.0f);
     bool wasDrawn()const;
@@ -52,7 +51,6 @@ protected:
     std::string m_text;
     bool        m_unlocked;
     bool        m_drawn;
-    std::string m_picture;
 
     std::unordered_map<std::string, std::pair<std::string, float>> m_properties;
 

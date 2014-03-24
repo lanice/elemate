@@ -19,17 +19,12 @@ Achievement::Achievement(const std::string& title, const std::string& text, bool
 m_title(title)
 , m_text(text)
 , m_unlocked(unlocked)
-, m_picture(picture)
 , m_drawn(false)
 , m_timeMod(0)
 {
-    initialize();
-}
+    const int TEXTURE_SIZE_X = 160;
+    const int TEXTURE_SIZE_Y = 120;
 
-void Achievement::initialize()
-{
-    const int TEXTURE_SIZE = 256;
-    
     std::vector<glm::vec2> points({
         glm::vec2(+1.f, -1.f)
         , glm::vec2(+1.f, +1.f)
@@ -63,13 +58,13 @@ void Achievement::initialize()
     m_texture = new glow::Texture(GL_TEXTURE_2D);
     m_texture->setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     m_texture->setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    m_texture->setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    m_texture->setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    m_texture->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_texture->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    RawImage image("data/textures/achievements/" + m_picture + ".raw", TEXTURE_SIZE, TEXTURE_SIZE);
+    RawImage image("data/textures/achievements/" + picture + ".raw", TEXTURE_SIZE_X, TEXTURE_SIZE_Y);
 
     m_texture->bind();
-    m_texture->image2D(0, GL_RGB8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
+    m_texture->image2D(0, GL_RGB8, TEXTURE_SIZE_X, TEXTURE_SIZE_Y, 0, GL_RGB, GL_UNSIGNED_BYTE, image.rawData());
     m_texture->unbind();
 }
 
@@ -163,7 +158,8 @@ std::list<std::string> Achievement::splitText(std::string text, size_t maxLineLe
     return split;
 }
 
-void Achievement::update(){
+void Achievement::update()
+{
     if (!m_timeMod)
         m_unlockTime = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = std::chrono::system_clock::now() - m_unlockTime;
