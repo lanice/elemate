@@ -21,7 +21,7 @@ m_title(title)
 , m_unlocked(unlocked)
 , m_drawn(false)
 , m_timeMod(0)
-{
+{   
     const int TEXTURE_SIZE_X = 160;
     const int TEXTURE_SIZE_Y = 120;
 

@@ -91,7 +91,7 @@ physx::PxMaterial * Elements::pxMaterial(const std::string & elementName)
     // for debugging: make sure to address only valid elements
     bool found = it != s_pxMaterials.end();
     if (!found) {
-        glow::warning("Physx material undefined for element ""%;"". using default element instead.", elementName);
+        //glow::warning("Physx material undefined for element ""%;"". using default element instead.", elementName);
         return s_pxMaterials.at("default");
     }
 
