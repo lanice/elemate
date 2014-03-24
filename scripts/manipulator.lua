@@ -3,13 +3,12 @@
 -- Load GLFW constants
 dofile "scripts/glfw.lua"
 
-local particleGroupId = psa_numParticleGroups()
 local elementTable = {"water", "sand", "lava", "bedrock", "steam"}
 local elements = {}
 
 local isEmitting = false
 local emitParameters = {}
-local emitId = particleGroupId
+
 
 local function createParticleGroup( emittingGroup, eleType , maxParticles)
     if maxParticles == nil then
@@ -30,6 +29,9 @@ local function selectElement( eleType )
     end
 end
 
+local particleGroupId = selectElement(elementTable[1])
+local emitId = particleGroupId
+
 local function activeElement( eleType )
     if elements[eleType] ~= nil and particleGroupId ~= nil then
         return elements[eleType] == particleGroupId
@@ -46,7 +48,7 @@ local function spawnSource(posX, posY, posZ)
         terrain_dropElement(posX+math.sin(x)*RADIUS,   posZ+math.cos(x)*RADIUS, SOURCE_HEIGHT)   
     end
     local randomElement = math.random(2)*2 -1
-    Id = createParticleGroup(true, elementTable[randomElement], 1000)
+    Id = createParticleGroup(true, psa_elementAtId(particleGroupId), 1000)
     psa_emit(Id, 200, posX, posY-1.0+SOURCE_HEIGHT, posZ, 0, 1, 0)
 end
 
@@ -139,10 +141,14 @@ function handleKeyEvent( inputKey, action )
             world_togglePause()
 
         elseif key == GLFW_KEY_PERIOD then
+            if (isEmitting) then
+                return
+            end
             io.write("Clear ParticleGroups.\n")
             elements = {}
+            local element = psa_elementAtId(particleGroupId)
             psa_clearParticleGroups()
-            particleGroupId = psa_numParticleGroups()
+            particleGroupId = selectElement(element)
 
         elseif key == GLFW_KEY_TAB then
             local hudPosition = hud_activeElement()

@@ -28,7 +28,7 @@ UserInterface::UserInterface(GLFWwindow& window) :
   m_activeHUD(true)
 , m_mainMenuOnTop(false)
 , m_window(window)
-, m_activeElement(1000) //Definitely out of range --> no initial highlighting
+, m_activeElement(3)
 {
 }
 
@@ -84,28 +84,29 @@ void UserInterface::initialize()
     loadInitTexture("water");
 
     m_activeMenu = "MainMenu";
-    m_menus.reserve(3);
     m_menus.emplace("MainMenu", new MenuPage("MainMenu"));
-    m_menus["MainMenu"]->addEntry("Fortsetzen");
-    m_menus["MainMenu"]->addEntry("Hilfe");
+    m_menus["MainMenu"]->addEntry("Continue");
+    m_menus["MainMenu"]->addEntry("Help");
     m_menus["MainMenu"]->addEntry("Achievements");
-    m_menus["MainMenu"]->addEntry("Beenden");
-    m_menus.emplace("Settings", new MenuPage("Settings"));
-    m_menus["Settings"]->addEntry("Zurück zur Hauptseite");
-    m_menus["Settings"]->addEntry("GPU Berechnung umschalten");
-    m_menus["Settings"]->addEntry("VSync umschalten ");
+    m_menus["MainMenu"]->addEntry("Exit");
     m_menus.emplace("Help", new MenuPage("Help"));
-    m_menus["Help"]->addEntry("Zurück zur Hauptseite");
+    m_menus["Help"]->addEntry("Back");
     m_menus["Help"]->addEntry("");
-    m_menus["Help"]->addEntry("Linksklicken zum Freisetzen des aktiven Elements");
-    m_menus["Help"]->addEntry("Scrollen zum Wählen des aktiven Elements");
-    m_menus["Help"]->addEntry("Rechtsklicken zum Sammeln eines Elements");
-    m_menus["Help"]->addEntry("Strg halten und scrollen zum Kippen der Kamera");
-    m_menus["Help"]->addEntry("Shift halten und scrollen zum Zoomen");
-    m_menus["Help"]->addEntry("Esc nimmt das Spiel wieder auf");
+    m_menus["Help"]->addEntry("Navigate with WASDQE and the scroll wheel");
+    m_menus["Help"]->addEntry("");
+    m_menus["Help"]->addEntry("Select the active element with numbers 1 - 4 or tab");
+    m_menus["Help"]->addEntry("Click left mouse button to emit active element");
+    m_menus["Help"]->addEntry("");
+    m_menus["Help"]->addEntry("Change height with scrolling while holding ALT");
+    m_menus["Help"]->addEntry("Pull and drag terrain with the mouse while holding ALT");
+    m_menus["Help"]->addEntry("");
+    m_menus["Help"]->addEntry("For Debugging:");
+    m_menus["Help"]->addEntry("- F1 - show particle group bounding boxes");
+    m_menus["Help"]->addEntry("- F2 - show the terrain heat map");
+    m_menus["Help"]->addEntry("- F10 - capture screen shot");
     m_menus.emplace("Achievements", new MenuPage("Achievements"));
     m_menus["Achievements"]->setTopOffset(-0.3f);
-    m_menus["Achievements"]->addEntry("Zurück zur Hauptseite");
+    m_menus["Achievements"]->addEntry("Back");
 }
 
 void UserInterface::draw()
@@ -163,6 +164,7 @@ void UserInterface::drawPreviewCircle(float x, float y, const std::string& eleme
 void UserInterface::drawGreyScreen()
 {
     glEnable(GL_BLEND);
+    glDepthMask(GL_TRUE);
     m_screenProgram->use();
     m_vao->bind();
 
@@ -171,6 +173,7 @@ void UserInterface::drawGreyScreen()
     m_vao->unbind();
     m_screenProgram->release();
     glDisable(GL_BLEND);
+    glDepthMask(GL_FALSE);
 }
 
 void UserInterface::drawMenuEntries()

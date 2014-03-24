@@ -40,7 +40,7 @@ DownGroup::DownGroup(const DownGroup& lhs, unsigned int id)
 
 void DownGroup::updatePhysics(double delta)
 {
-ParticleGroup::updatePhysics(delta);
+    ParticleGroup::updatePhysics(delta);
     if (m_elementName == "lava" && m_temperature < 690.f)
     {
         float temp = m_temperature;
@@ -98,6 +98,10 @@ void DownGroup::updateVisuals()
 
     for (unsigned i = 0; i < readData->validParticleRange; ++i, ++flagsIt, ++positionIt) {
         // check range
+        if (!(*flagsIt & PxParticleFlag::eVALID)) {
+            continue;
+        }
+
         if (positionIt->y > terrainSettings.maxHeight * 0.75f) {
             particlesToDelete.push_back(i);
             continue;

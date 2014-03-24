@@ -55,7 +55,8 @@ void ParticleDrawable::setElement(const std::string & elementName)
 {
     m_elementName = elementName;
     m_elementIndex = elementIndex(elementName);
-    m_program->setUniform("elementIndex", m_elementIndex);
+    if (m_program)
+        m_program->setUniform("elementIndex", m_elementIndex);
 }
 
 ParticleDrawable::~ParticleDrawable()
